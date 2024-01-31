@@ -1,6 +1,7 @@
+<div id="login-bg-image" class="login-bg-image tb--background bgStyle" data-se="login-bg-image"></div>
 <div class="container-divider"></div>
-<div class="container">
-  <div class="sub-nav">
+<div class="container container-new-request-page">
+  <nav class="sub-nav">
     {{breadcrumbs}}
     <div class="search-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="search-icon" aria-hidden="true">
@@ -9,16 +10,18 @@
       </svg>
       {{search submit=false}}
     </div>
-  </div>
+  </nav>
 
-  <h1>
-    {{t 'submit_a_request'}}
-    <span class="follow-up-hint">
-      {{follow_up}}
-    </span>
-  </h1>
+  <div class="form-heading-wrapper">
+    <h1 class="heading-centered">
+      {{t 'submit_a_request'}}
+      <span class="follow-up-hint">
+        {{follow_up}}
+      </span>
+    </h1>
 
-  <div id="main-content" class="form">
-    {{request_form wysiwyg=true}}
+    <div id="main-content" class="form new-request-form form-centered">
+      {{request_form wysiwyg=true}}
+    </div>
   </div>
 </div>

@@ -5,25 +5,36 @@
     {{#link 'help_center'}}
       <img src="{{settings.logo}}" alt="{{t 'home_page' name=help_center.name}}" />
       {{#if settings.show_brand_name}}
-        <span aria-hidden="true">{{help_center.name}}</span>
+       <span aria-hidden="true">{{!help_center.name}}</span>
       {{/if}}
     {{/link}}
   </div>
-
+  <div class="search-wrapper">
+      <!-- Search box -->
+    <h2 class="visibility-hidden">{{ t 'search' }}</h2>
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="search-icon" aria-hidden="true">
+      <circle cx="4.5" cy="4.5" r="4" fill="none" stroke="currentColor"/>
+      <path stroke="currentColor" stroke-linecap="round" d="M11 11L7.5 7.5"/>
+    </svg>
+    {{search submit=false instant=settings.instant_search class='search search-full'}}
+    <!-- End search box -->
+  </div>
   <div class="nav-wrapper-desktop">
-    <nav class="user-nav" id="user-nav" aria-label="{{t 'user_navigation'}}">
+    {{#unless signed_in}}
+    <nav class="user-nav" id="user-nav">
       <ul class="user-nav-list">
-        <li>{{link 'community'}}</li>
-        <li>{{link 'new_request' class='submit-a-request'}}</li>
-        {{#unless signed_in}}
+        <li>{{!link 'community'}}</li>
+        <li>{{!link 'new_request' class='submit-a-request'}}</li>
+        {{!#unless signed_in}}
           <li>
             {{#link "sign_in" class="sign-in"}}
               {{t 'sign_in'}}
             {{/link}}
           </li>
-        {{/unless}}
+        {{!/unless}}
       </ul>
     </nav>
+    {{/unless}}
     {{#if signed_in}}
       <div class="user-info dropdown">
         <button class="dropdown-toggle" aria-haspopup="true">
@@ -83,7 +94,9 @@
           <li class="nav-divider"></li>
         {{/if}}
         <li class="item">{{link 'community' role="menuitem"}}</li>
+    		{{#if signed_in}}        
         <li class="item">{{link 'new_request' role="menuitem" class='submit-a-request'}}</li>
+        {{/if}}
         <li class="nav-divider"></li>
         {{#if signed_in}}
           <li class="item">

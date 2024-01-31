@@ -1,7 +1,7 @@
 {
-  "name": "Copenhagen",
+  "name": "Copenhagen (ARPA-H customized)",
   "author": "Zendesk",
-  "version": "3.1.6",
+  "version": "3.1.2",
   "api_version": 3,
   "default_locale": "en-us",
   "settings": [
@@ -13,7 +13,7 @@
           "type": "color",
           "description": "brand_color_description",
           "label": "brand_color_label",
-          "value": "#17494D"
+          "value": "rgba(0, 27, 94, 1)"
         },
         {
           "identifier": "brand_text_color",
@@ -27,35 +27,35 @@
           "type": "color",
           "description": "text_color_description",
           "label": "text_color_label",
-          "value": "#2F3941"
+          "value": "rgba(19, 19, 20, 1)"
         },
         {
           "identifier": "link_color",
           "type": "color",
           "description": "link_color_description",
           "label": "link_color_label",
-          "value": "#1F73B7"
+          "value": "rgba(25, 84, 208, 1)"
         },
         {
           "identifier": "hover_link_color",
           "type": "color",
           "description": "hover_link_color_description",
           "label": "hover_link_color_label",
-          "value": "#0F3554"
+          "value": "rgba(0, 27, 94, 1)"
         },
         {
           "identifier": "visited_link_color",
           "type": "color",
           "description": "visited_link_color_description",
           "label": "visited_link_color_label",
-          "value": "#9358B0"
+          "value": "rgba(47, 177, 230, 1)"
         },
         {
           "identifier": "background_color",
           "type": "color",
           "description": "background_color_description",
           "label": "background_color_label",
-          "value": "#FFFFFF"
+          "value": "rgba(255, 255, 255, 1)"
         }
       ]
     },
@@ -67,6 +67,7 @@
           "type": "list",
           "description": "heading_font_description",
           "label": "heading_font_label",
+          "value": "'Helvetica Neue', Arial, Helvetica, sans-serif",
           "options": [
             {
               "label": "System",
@@ -132,14 +133,14 @@
               "label": "Trebuchet MS",
               "value": "'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif"
             }
-          ],
-          "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+          ]
         },
         {
           "identifier": "text_font",
           "type": "list",
           "description": "text_font_description",
           "label": "text_font_label",
+          "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
           "options": [
             {
               "label": "System",
@@ -205,8 +206,7 @@
               "label": "Trebuchet MS",
               "value": "'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif"
             }
-          ],
-          "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+          ]
         }
       ]
     },
@@ -303,7 +303,7 @@
           "type": "checkbox",
           "description": "articles_in_section_description",
           "label": "articles_in_section_label",
-          "value": true
+          "value": false
         },
         {
           "identifier": "show_article_author",
@@ -369,14 +369,14 @@
           "type": "checkbox",
           "description": "follow_post_description",
           "label": "follow_post_label",
-          "value": true
+          "value": false
         },
         {
           "identifier": "show_post_sharing",
           "type": "checkbox",
           "description": "post_sharing_description",
           "label": "post_sharing_label",
-          "value": true
+          "value": false
         }
       ]
     },
@@ -401,6 +401,39 @@
           "description": "request_list_beta_description",
           "label": "request_list_beta_label",
           "value": false
+        }
+      ]
+    },
+    {
+      "label": "Alert Banner Settings",
+      "variables": [
+        {
+          "identifier": "display_alert_banner",
+          "type": "checkbox",
+          "description": "Display Alert Banner",
+          "label": "Display Alert Banner",
+          "value": true
+        },
+        {
+          "identifier": "alert_banner_bg_color",
+          "type": "color",
+          "description": "Set background color for alert banner",
+          "label": "Alert Banner Background Color",
+          "value": "rgba(148, 40, 89, 1)"
+        },
+        {
+          "identifier": "alert_banner_text_color",
+          "type": "color",
+          "description": "Set text color for alert banner",
+          "label": "Alert Banner Text Color",
+          "value": "rgba(255, 255, 255, 1)"
+        },
+        {
+          "identifier": "alert_banner_text",
+          "type": "text",
+          "description": "Alert Banner Text",
+          "label": "Alert Banner Text",
+          "value": "For onboarding inquires, please contact your onboarding specialist. For all other inquires, please log in and submit a support request. Our hours of operation for weekdays are 6am - 6pm (ET), and weekends 8am - 5pm (ET). Thank you!"
         }
       ]
     }
