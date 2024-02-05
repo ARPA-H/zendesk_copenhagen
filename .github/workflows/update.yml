@@ -1,0 +1,42 @@
+name: Update theme
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update_theme:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check out repository and updateTheme.js
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            '.github/workflows/scripts/updateTheme.js'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.x
+
+      - name: Install dependencies
+        run: npm ci --prefix ./.github/workflows/scripts/
+
+      - name: Zip theme files
+        run: |
+          zip -r theme.zip . -x ".*"
+          mv theme.zip ./.github/workflows/scripts/
+
+      - name: Run updateTheme.js
+        run: node ./.github/workflows/scripts/updateTheme.js
+        env:
+          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
+          ZENDESK_TOKEN: ${{ secrets.ZENDESK_TOKEN }}
+          THEME_ID: ${{secrets.THEME_ID}}
+
+      - name: Upload theme file
+        uses: actions/upload-artifact@v2
+        with:
+          name: theme-file
+          path: ./.github/workflows/scripts/theme.zip
