@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Check out repository and updateTheme.js
+      - name: Check out repository,  updateTheme.js, and package files
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
-            '.github/workflows/scripts/updateTheme.js'
+            '.github/workflows/scripts'
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
