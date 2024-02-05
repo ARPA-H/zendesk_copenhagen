@@ -2,6 +2,7 @@ const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 
+
 // Validate required environment variables
 if (!process.env['ZENDESK_SUBDOMAIN'] || !process.env['ZENDESK_EMAIL'] || !process.env['ZENDESK_TOKEN'], !process.env['THEME_ID']) {
     console.error('Missing required environment variables: ZENDESK_SUBDOMAIN, ZENDESK_EMAIL, ZENDESK_TOKEN, THEME_ID');
@@ -17,6 +18,25 @@ const instance = axios.create({
         'Authorization': `Basic ${authValue}`, // Base64 encoded "username:token"
     }
 });
+
+
+// adding this to test auth
+var config = {
+    method: 'GET',
+    url: 'https://support.zendesk.com/api/v2/guide/theming/themes',
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${authValue}`, // Base64 encoded "username:password"
+    },
+};
+
+axios(config)
+    .then(function (response) {
+        console.log(JSON.stringify(response.data));
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
 
 const themeId = process.env['THEME_ID'];
 const filePath = './.github/workflows/scripts/theme.zip';
