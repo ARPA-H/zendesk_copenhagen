@@ -20,7 +20,7 @@ const instance = axios.create({
 
 const themeId = process.env['THEME_ID'];
 const filePath = './.github/workflows/scripts/theme.zip';
-const replaceSettings = 'true';
+const replaceSettings = true;
 
 const MAX_WAIT_TIME = 5 * 60 * 1000;
 
