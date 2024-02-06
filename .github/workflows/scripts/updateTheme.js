@@ -23,7 +23,7 @@ const instance = axios.create({
 // adding this to test auth
 var config = {
     method: 'GET',
-    url: 'https://support.zendesk.com/api/v2/guide/theming/themes?brand_id=18469345913499',
+    url: `https://${process.env['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/guide/theming/themes?brand_id=18469345913499`,
     headers: {
         'Content-Type': 'application/json',
         'Authorization': `Basic ${authValue}`, // Base64 encoded "username:password"
