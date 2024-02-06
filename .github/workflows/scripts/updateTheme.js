@@ -133,7 +133,7 @@ async function checkUpdateJobStatus(jobId) {
 async function run() {
     try {
 
-        axios(config)
+        await axios(config)
             .then(function (response) {
                 console.log('::group::Test result');
                 console.log(JSON.stringify(response.data));
