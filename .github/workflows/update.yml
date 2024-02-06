@@ -9,12 +9,11 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-        
-      - name: Check out repository,  updateTheme.js, and package files
-        uses: actions/checkout@v4
+
+      - name: Check out updateTheme.js
+        uses: Bhacaz/checkout-files@v2
         with:
-          sparse-checkout: |
-            .github/workflows/scripts
+          files: '.github/workflows/scripts/updateTheme.js'
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
