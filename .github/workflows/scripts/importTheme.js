@@ -2,12 +2,14 @@ const axios = require('axios');
 const fs = require('fs');
 const FormData = require('form-data');
 
+var authValue = Buffer.from(`${process.env['ZENDESK_EMAIL']}/token:${process.env['ZENDESK_TOKEN']}`).toString('base64')
+
 const instance = axios.create({
-  baseURL: `https://${process.env['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2`,
-  auth: {
-    username: process.env['ZENDESK_EMAIL'],
-    password: process.env['ZENDESK_TOKEN']
-  }
+    baseURL: `https://${process.env['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2`,
+    headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${authValue}`, // Base64 encoded "username:token"
+    }
 });
 
 const brandId = process.argv[2];
