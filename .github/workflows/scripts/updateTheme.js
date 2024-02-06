@@ -21,7 +21,7 @@ const instance = axios.create({
 
 
 // adding this to test auth
-var config = {
+const config = {
     method: 'GET',
     url: `https://${process.env['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2/guide/theming/themes?brand_id=18469345913499`,
     headers: {
@@ -29,18 +29,6 @@ var config = {
         'Authorization': `Basic ${authValue}`, // Base64 encoded "username:password"
     },
 };
-
-axios(config)
-    .then(function (response) {
-        console.log('::group::Test result');
-        console.log(JSON.stringify(response.data));
-        console.log('::endgroup::');
-    })
-    .catch(function (error) {
-        console.log('::group::Test result (failure)');
-        console.log(error);
-        console.log('::endgroup::');
-    });
 
 const themeId = process.env['THEME_ID'];
 const filePath = './.github/workflows/scripts/theme.zip';
@@ -143,41 +131,20 @@ async function checkUpdateJobStatus(jobId) {
 }
 
 async function run() {
-    const { jobId, uploadUrl, uploadParameters } = await updateTheme(themeId, replaceSettings);
-    console.log('Job ID:', jobId);
-
-    console.log('Uploading theme file...');
-    await uploadThemeFile(uploadUrl, uploadParameters, filePath);
-    console.log('Theme file uploaded.');
-
-    let jobStatus = await checkUpdateJobStatus(jobId);
-    const startTime = Date.now();
-    while (jobStatus.status !== 'completed' && jobStatus.status !== 'failed') {
-        if (Date.now() - startTime > MAX_WAIT_TIME) {
-            console.error('Job status check timed out');
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Job Status Check Timeout\nJob did not complete within ${MAX_WAIT_TIME / 1000} seconds`);
-            process.exit(1);
-        }
-        console.log('Waiting for job to complete...');
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        jobStatus = await checkUpdateJobStatus(jobId);
-    }
-
-    if (jobStatus.status === 'failed') {
-        console.error('Job failed:', JSON.stringify(jobStatus.errors, null, 2));
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Job Failed\n\`\`\`json\n${JSON.stringify(jobStatus.errors, null, 2)}\n\`\`\``);
-        process.exit(1);
-    } else if (jobStatus.status === 'completed') {
-        console.log('Job completed. Theme updated.');
-    } else {
-        console.error('Job in unexpected state:', jobStatus.status);
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Unexpected Job State\n\`\`\`json\n${jobStatus.status}\n\`\`\``);
-        process.exit(1);
-    }
-}
-
-async function run() {
     try {
+
+        axios(config)
+            .then(function (response) {
+                console.log('::group::Test result');
+                console.log(JSON.stringify(response.data));
+                console.log('::endgroup::');
+            })
+            .catch(function (error) {
+                console.log('::group::Test result (failure)');
+                console.log(error);
+                console.log('::endgroup::');
+            });
+
         const { jobId, uploadUrl, uploadParameters } = await updateTheme(themeId, replaceSettings);
         console.log('Job ID:', jobId);
 
