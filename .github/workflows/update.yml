@@ -38,7 +38,7 @@ jobs:
           THEME_ID: ${{secrets.THEME_ID}}
 
       - name: Upload theme file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: theme-file
           path: ./.github/workflows/scripts/theme.zip
