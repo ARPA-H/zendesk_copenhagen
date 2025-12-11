@@ -9,6 +9,10 @@ on:
       branchName:
         description: 'Branch Name'
         required: true
+        type: choice
+        options:
+          - main
+          - sandbox
       scriptBranch:
         description: 'Run scripts from'
         required: true
@@ -45,9 +49,9 @@ jobs:
       - name: Run importTheme.js
         run: node ./.github/workflows/scripts/importTheme.js ${{ github.event.inputs.brandId }} ./.github/workflows/scripts/theme.zip
         env:
-          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_SUBDOMAIN: ${{ github.event.inputs.branchName == 'sandbox' && secrets.SANDBOX_DOMAIN || secrets.ZENDESK_SUBDOMAIN }}
           ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
-          ZENDESK_TOKEN: ${{ secrets.ZENDESK_TOKEN }}
+          ZENDESK_TOKEN: ${{ github.event.inputs.branchName == 'sandbox' && secrets.SANDBOX_TOKEN || secrets.ZENDESK_TOKEN }}
 
       - name: Upload theme file
         uses: actions/upload-artifact@v2
