@@ -1,8 +1,16 @@
+<!-- Customized 5-21-25 -->
 <h1 class="visibility-hidden">{{ help_center.name }}</h1>
 
 <section id="main-content" class="section hero">
   <div class="hero-inner">
-    {{#if signed_in}}
+    <!-- <h2 class="visibility-hidden">{{ t 'search' }}</h2>
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="search-icon" aria-hidden="true">
+      <circle cx="4.5" cy="4.5" r="4" fill="none" stroke="currentColor"/>
+      <path stroke="currentColor" stroke-linecap="round" d="M11 11L7.5 7.5"/>
+    </svg>
+    {{search submit=false instant=settings.instant_search class='search search-full'}}
+    -->
+  {{#if signed_in}}
     <span class="item">{{link 'new_request' class='submit-a-request'}}</span>
     {{/if}}
   </div>
@@ -45,15 +53,15 @@
                 <!-- Category image -->
                 <span class="blocks-item-img-wrapper">
                   {{! Human Resources }}
-                  {{#is id 19382778885915}}<img class="blocks-item-img" alt="People at table icon representing Human Resources." src="{{asset 'ARPA-H-icons-humanresouces-01-rgb-full-color.svg'}}" />{{/is}}
-                  {{! Asset Management }}
-                  {{#is id 19382792225691}}<img class="blocks-item-img" alt="Icon representing asset management." src="{{asset 'ARPA-H-icons-community-rgb-full-color.svg'}}" />{{/is}}
-                  {{! Help Desk }}
+                  {{#is id 37066828975515}}<img class="blocks-item-img" alt="People at table icon representing Human Resources." src="{{asset 'ARPA-H-icons-humanresouces-01-rgb-full-color.svg'}}" />{{/is}} 
+                  {{! Service Desk }}
                   {{#is id 19382804915227}}<img class="blocks-item-img" alt="Magifying class icon representing help desk."  src="{{asset 'ARPA-H-icons-magnifying-glass-rgb-full-color.svg'}}" />{{/is}}
-                  {{! User Support }}
+                  {{! Asset Management }}
+                  {{#is id 30126071388315}}<img class="blocks-item-img" alt="Icon representing asset management." src="{{asset 'ARPA-H-icons-community-rgb-full-color.svg'}}" />{{/is}}
+                  {{! Self Service }}
                   {{#is id 19382827542427}}<img class="blocks-item-img" alt="Oganization chart icon representing user support." src="{{asset 'ARPA-H-icons-org-chart-02-rgb-full-color.svg'}}" />{{/is}}
                   {{! External User Support }}
-                  {{#is id 19382819454491}}<img class="blocks-item-img" alt="Shaking hands icon represening external user support." src="{{asset 'ARPA-H-icons-handshake-01-rgb-full-color.svg'}}" />{{/is}}
+                  {{#is id 37066784640923}}<img class="blocks-item-img" alt="Shaking hands icon represening external user support." src="{{asset 'ARPA-H-icons-handshake-01-rgb-full-color.svg'}}" />{{/is}}
                 </span>
                 <!-- End category image -->
                 <span class="blocks-item-title">{{name}}</span>

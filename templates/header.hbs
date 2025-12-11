@@ -1,3 +1,5 @@
+<!-- Customized 5-21-25 -->
+<!--New Header -->
 <a class="skip-navigation" tabindex="1" href="#main-content">{{t 'skip_navigation' }}</a>
 
 <header class="header">
@@ -5,11 +7,11 @@
     {{#link 'help_center'}}
       <img src="{{settings.logo}}" alt="{{t 'home_page' name=help_center.name}}" />
       {{#if settings.show_brand_name}}
-       <span aria-hidden="true">{{!help_center.name}}</span>
+        <span aria-hidden="true">{{!help_center.name}}</span>
       {{/if}}
     {{/link}}
   </div>
-  <div class="search-wrapper">
+<div class="search-wrapper">
       <!-- Search box -->
     <h2 class="visibility-hidden">{{ t 'search' }}</h2>
     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="search-icon" aria-hidden="true">
@@ -20,8 +22,9 @@
     <!-- End search box -->
   </div>
   <div class="nav-wrapper-desktop">
+    <!-- modded -->
     {{#unless signed_in}}
-    <nav class="user-nav" id="user-nav">
+    <nav class="user-nav" id="user-nav" aria-label="{{t 'user_navigation'}}">
       <ul class="user-nav-list">
         <li>{{!link 'community'}}</li>
         <li>{{!link 'new_request' class='submit-a-request'}}</li>
@@ -36,6 +39,12 @@
     </nav>
     {{/unless}}
     {{#if signed_in}}
+     {{!new block}}
+      <!--<nav class="user-nav" id="user-nav" aria-label="{{t 'user_navigation'}}">
+      <ul class="user-nav-list">
+        <a href="https://arpah-mars-sandbox.zendesk.com/hc/en-us" target="_blank">MARS Helpcenter</a> -->
+    {{!end new block}}
+      
       <div class="user-info dropdown">
         <button class="dropdown-toggle" aria-haspopup="true">
           {{user_avatar class="user-avatar"}}
@@ -72,7 +81,7 @@
       <ul class="menu-list-mobile-items">
         {{#if signed_in}}
           <li class="user-avatar-item item">
-            {{#my_profile role="menuitem" class="my-profile"}}
+            {{#my_profile class="my-profile"}}
               {{user_avatar class="menu-profile-avatar"}}
               <div class="menu-profile-name">
                 <div>{{user_name}}</div>
@@ -80,27 +89,25 @@
               </div>
             {{/my_profile}}
           </li>
-          <li class="item">{{link "requests" role="menuitem"}}</li>
-          <li class="item">{{#link "contributions" role="menuitem"}}{{t "activities"}}{{/link}}</li>
-          <li class="item">{{contact_details role="menuitem"}}</li>
-          <li class="item">{{change_password role="menuitem" class='change-password'}}</li>
+          <li class="item">{{link "requests"}}</li>
+          <li class="item">{{#link "contributions"}}{{t "activities"}}{{/link}}</li>
+          <li class="item">{{contact_details}}</li>
+          <li class="item">{{change_password class='change-password'}}</li>
           <li class="nav-divider"></li>
         {{else}}
           <li class="item">
-            {{#link "sign_in" role="menuitem"}}
+            {{#link "sign_in"}}
               {{t 'sign_in'}}
             {{/link}}
           </li>
           <li class="nav-divider"></li>
         {{/if}}
-        <li class="item">{{link 'community' role="menuitem"}}</li>
-    		{{#if signed_in}}        
-        <li class="item">{{link 'new_request' role="menuitem" class='submit-a-request'}}</li>
-        {{/if}}
+        <li class="item">{{link 'community'}}</li>
+        <li class="item">{{link 'new_request' class='submit-a-request'}}</li>
         <li class="nav-divider"></li>
         {{#if signed_in}}
           <li class="item">
-            {{link "sign_out" role="menuitem"}}
+            {{link "sign_out"}}
           </li>
         {{/if}}
       </ul>

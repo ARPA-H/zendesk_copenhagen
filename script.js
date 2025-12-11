@@ -657,8 +657,5 @@
       notificationElm.previousElementSibling.focus();
     }
   });
-    let ticketForm = location.search.indexOf('ticket_form_id=');
-    if(ticketForm > -1) {
-     document.querySelector('#request_subject').value = document.querySelector('select[name="request[ticket_form_id]"] option[selected="selected"]').innerText;
-    }
+
 })();

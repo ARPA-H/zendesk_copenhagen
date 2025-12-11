@@ -1,6 +1,12 @@
+<!-- Customized 5-21-25 -->
+<style>
+  .hero-banner {
+    display: none !important;
+  }
+</style>
 <div class="container-divider"></div>
 <div class="container">
-  <nav class="sub-nav">
+  <div class="sub-nav">
     {{breadcrumbs}}
     <div class="search-container">
       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="search-icon" aria-hidden="true">
@@ -9,7 +15,7 @@
       </svg>
       {{search scoped=settings.scoped_kb_search submit=false}}
     </div>
-  </nav>
+  </div>
 
   <div class="section-container">
     <section id="main-content" class="section-content">
@@ -70,3 +76,13 @@
     </section>
   </div>
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const articleLinks = document.querySelectorAll(".article-list li a");
+
+    if (articleLinks.length === 1) {
+      // Redirect to the single article if it's the only one in the section
+      window.location.href = articleLinks[0].href;
+    }
+  });
+</script>
