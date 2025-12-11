@@ -54,7 +54,7 @@ jobs:
           ZENDESK_TOKEN: ${{ github.event.inputs.branchName == 'sandbox' && secrets.SANDBOX_TOKEN || secrets.ZENDESK_TOKEN }}
 
       - name: Upload theme file
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: theme-file
           path: ./.github/workflows/scripts/theme.zip
