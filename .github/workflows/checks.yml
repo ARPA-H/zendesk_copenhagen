@@ -3,10 +3,11 @@ name: Checks
 on:
   pull_request:
     branches:
-      - master
+      - "*"
   push:
     branches:
       - master
+      - beta
 
 jobs:
   commitlint:
