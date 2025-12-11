@@ -7,6 +7,7 @@ on:
       - closed
     branches:
       - main
+      - sandbox
 
 jobs:
   update_theme:
@@ -32,10 +33,10 @@ jobs:
       - name: Run updateTheme.js
         run: node ./.github/workflows/scripts/updateTheme.js
         env:
-          ZENDESK_SUBDOMAIN: ${{ secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_SUBDOMAIN: ${{ (github.ref_name == 'sandbox' || github.base_ref == 'sandbox') && secrets.SANDBOX_DOMAIN || secrets.ZENDESK_SUBDOMAIN }}
           ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
-          ZENDESK_TOKEN: ${{ secrets.ZENDESK_TOKEN }}
-          THEME_ID: ${{secrets.THEME_ID}}
+          ZENDESK_TOKEN: ${{ (github.ref_name == 'sandbox' || github.base_ref == 'sandbox') && secrets.SANDBOX_TOKEN || secrets.ZENDESK_TOKEN }}
+          THEME_ID: ${{ (github.ref_name == 'sandbox' || github.base_ref == 'sandbox') && secrets.SANDBOX_THEME_ID || secrets.THEME_ID }}
 
       - name: Upload theme file
         uses: actions/upload-artifact@v4
