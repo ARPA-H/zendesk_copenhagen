@@ -1,0 +1,73 @@
+name: Enforce Required Reviewers
+
+on:
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+jobs:
+  launch-reviewer-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/create-github-app-token@v1
+      id: app-token
+      with:
+        app-id: ${{ vars.GH_APP_ID }}
+        private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ steps.app-token.outputs.token }}
+      
+    - name: Read allowed reviewers
+      id: reviewers
+      run: |
+        # we might move this to a .github/allowed-reviewers.txt file
+        if [ -f .github/allowed-reviewers.txt ]; then
+          REVIEWERS=$(cat .github/allowed-reviewers.txt | tr '\n' ' ')
+          echo "reviewers=$REVIEWERS" >> $GITHUB_OUTPUT
+        else
+          echo "reviewers=ksavilaNIH petersonjdNIH" >> $GITHUB_OUTPUT
+        fi
+        
+    - name: Check if approved by authorized reviewer
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ steps.app-token.outputs.token }}
+        script: |
+          const allowedReviewers = '${{ steps.reviewers.outputs.reviewers }}'.split(' ').filter(r => r);
+          
+          const reviews = await github.rest.pulls.listReviews({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number
+          });
+          
+          const hasValidApproval = reviews.data.some(review => 
+            review.state === 'APPROVED' && 
+            allowedReviewers.includes(review.user.login)
+          );
+          
+          // Create a check run
+          const checkName = 'Authorized Reviewer Check';
+          const conclusion = hasValidApproval ? 'success' : 'failure';
+          const output = {
+            title: checkName,
+            summary: hasValidApproval 
+              ? '✅ Approved by authorized reviewer' 
+              : '❌ Requires approval from: ' + allowedReviewers.join(', ')
+          };
+          
+          await github.rest.checks.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            name: checkName,
+            head_sha: context.payload.pull_request?.head.sha || context.sha,
+            status: 'completed',
+            conclusion: conclusion,
+            output: output
+          });
