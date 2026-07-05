@@ -7996,9 +7996,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-theming@npm:9.15.5":
-  version: 9.15.5
-  resolution: "@zendeskgarden/react-theming@npm:9.15.5"
+"@zendeskgarden/react-theming@npm:9.15.6":
+  version: 9.15.6
+  resolution: "@zendeskgarden/react-theming@npm:9.15.6"
   dependencies:
     "@floating-ui/react-dom": "npm:^2.0.0"
     color2k: "npm:^2.0.3"
@@ -8010,7 +8010,7 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^4.2.0 || ^5.3.1 || ^6.0.0
-  checksum: 10c0/d63981b98dbede498f867dd43a1d9d735f7cd90ef3fd1d4ebf005f20116200fc1c83604285c6626437e51f98859e6fec741adfb8cd87a049233e75fed9a7840e
+  checksum: 10c0/360579fda54a1d416d88b2aea769a4659fe78966ed46bf3fea4dff5859fd88e6d67fcc36aa4fab5897b0feb13f692ce159cca8f781f2d69d770cb7c0e0f69a8b
   languageName: node
   linkType: hard
 
@@ -10278,7 +10278,7 @@ __metadata:
     "@zendeskgarden/react-tables": "npm:9.15.6"
     "@zendeskgarden/react-tabs": "npm:9.15.6"
     "@zendeskgarden/react-tags": "npm:9.15.6"
-    "@zendeskgarden/react-theming": "npm:9.15.5"
+    "@zendeskgarden/react-theming": "npm:9.15.6"
     "@zendeskgarden/react-tooltips": "npm:9.15.5"
     "@zendeskgarden/react-typography": "npm:9.15.5"
     "@zendeskgarden/svg-icons": "npm:8.4.0"
