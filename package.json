@@ -16,7 +16,7 @@
     "zcli": "zcli"
   },
   "dependencies": {
-    "@zendesk/help-center-wysiwyg": "1.1.1",
+    "@zendesk/help-center-wysiwyg": "1.1.2",
     "@zendeskgarden/container-grid": "^3.0.21",
     "@zendeskgarden/container-utilities": "^2.0.5",
     "@zendeskgarden/react-accordions": "9.15.6",
