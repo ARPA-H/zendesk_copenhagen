@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.0",
-    "@commitlint/config-conventional": "^20.5.3",
+    "@commitlint/config-conventional": "^21.2.0",
     "@jest/globals": "^29.7.0",
     "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-dynamic-import-vars": "^2.1.5",
