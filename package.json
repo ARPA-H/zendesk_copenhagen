@@ -16,6 +16,7 @@
     "zcli": "zcli"
   },
   "dependencies": {
+    "@iconify/react": "^6.0.2",
     "@zendesk/help-center-wysiwyg": "1.1.2",
     "@zendeskgarden/container-grid": "^3.0.21",
     "@zendeskgarden/container-utilities": "^2.0.5",

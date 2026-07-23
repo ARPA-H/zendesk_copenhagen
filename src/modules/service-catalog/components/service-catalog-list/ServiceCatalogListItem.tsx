@@ -2,6 +2,7 @@ import type { ServiceCatalogItem } from "../../data-types/ServiceCatalogItem";
 import styled from "styled-components";
 import { getColor } from "@zendeskgarden/react-theming";
 import { ItemThumbnail } from "../item-thumbnail/ItemThumbnail";
+import { stripIconMarker } from "../../utils/serviceIcon";
 import { useMemo } from "react";
 import { htmlToText } from "../../utils/sanitize";
 
@@ -76,14 +77,19 @@ const ServiceCatalogListItem = ({
   );
 
   const cleanText = useMemo(
-    () => htmlToText(serviceItem.description || ""),
+    () => htmlToText(stripIconMarker(serviceItem.description || "")),
     [serviceItem.description]
   );
 
   return (
     <ItemContainer data-testid="service-catalog-list-item-container">
       <ItemLink href={itemUrl}>
-        <ItemThumbnail size="medium" url={serviceItem.thumbnail_url} />
+        <ItemThumbnail
+          size="medium"
+          name={serviceItem.name}
+          description={serviceItem.description}
+          url={serviceItem.thumbnail_url}
+        />
         <TextContainer>
           <ItemTitle>{titleText}</ItemTitle>
           <ItemDescription>{cleanText}</ItemDescription>

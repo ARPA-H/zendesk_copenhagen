@@ -141,11 +141,15 @@
     const { renderServiceCatalogPage } = await import("service-catalog");
     const main = document.getElementById("service-catalog-main-content");
     if (main) {
+      // Derive the theme's assets/ base URL from a committed asset (the module
+      // can't use the {{asset}} helper) so it can resolve [icon: file.svg] refs.
+      const iconAssetBase = "{{asset 'arpa-h-logomark.svg'}}".replace(/arpa-h-logomark\.svg.*$/, "");
       renderServiceCatalogPage(
         main,
         {{json settings}},
         {{json help_center.base_locale}},
-        {{json (page_path 'help_center')}}
+        {{json (page_path 'help_center')}},
+        iconAssetBase
       );
     }
   } catch (e) {

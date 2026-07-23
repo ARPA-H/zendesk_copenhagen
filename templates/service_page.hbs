@@ -169,7 +169,10 @@
     serviceCatalogItemId:  id,
     helpCenterPath:        {{json (page_path 'help_center')}},
   };
-  renderServiceCatalogItem(container, settings, props);
+  // Derive the theme's assets/ base URL from a committed asset (the module
+  // can't use the {{asset}} helper) so it can resolve [icon: file.svg] refs.
+  const iconAssetBase = "{{asset 'arpa-h-logomark.svg'}}".replace(/arpa-h-logomark\.svg.*$/, "");
+  renderServiceCatalogItem(container, settings, props, iconAssetBase);
 </script>
 
 {{!-- Native instant-search wiring: the pink button submits the native
