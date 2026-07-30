@@ -66,7 +66,7 @@ async function importTheme(brandId) {
                 id: data.job.id,
                 status: data.job.status,
                 theme_id: data.job.data.theme_id,
-                upload_url: data.job.data.upload.url,
+                upload_url: '[REDACTED]',
                 upload_parameters: '[REDACTED]'
             }
         };
@@ -112,7 +112,7 @@ async function updateTheme(themeId) {
             job: {
                 id: data.job.id,
                 status: data.job.status,
-                upload_url: data.job.data.upload.url,
+                upload_url: '[REDACTED]',
                 upload_parameters: '[REDACTED]'
             }
         };
