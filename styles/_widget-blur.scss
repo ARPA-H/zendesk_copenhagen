@@ -1,0 +1,111 @@
+/* ---------------------------------------------------------------------------
+ * ARPA-Help chat-widget corner blur backdrop
+ * ---------------------------------------------------------------------------
+ * The Zendesk messaging launcher iframe (id="launcher") is injected by
+ * Zendesk's own Messaging/Widget script - it is NOT part of this theme and
+ * cannot be edited directly (cross-origin iframe, hardcoded inline styles:
+ * position: fixed; bottom: 16px; right: 16px; z-index: 999999;).
+ *
+ * Because it floats over whatever page content happens to scroll underneath
+ * it (e.g. the ".svc-help-banner" / "General request" pill at the bottom of
+ * service pages), high-contrast content can visually "clip" against its
+ * rounded-corner edge.
+ *
+ * This adds a purely decorative, click-through corner backdrop that softens
+ * (blurs) page content the closer it gets to the widget's corner, fading
+ * back to fully crisp/original content ~300px out. It uses the standard
+ * `backdrop-filter` + gradient `mask-image` technique (see
+ * https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter and
+ * https://www.joshwcomeau.com/css/backdrop-filter/), stacked across 4 layers
+ * so the blur amount ramps up gradually instead of switching on/off at a
+ * hard edge (layers "drop out" moving away from the corner, so blur amounts
+ * compound near the widget and taper to nothing further away).
+ *
+ * `backdrop-filter` reached full cross-browser Baseline support in Sept 2024
+ * (see https://caniuse.com/css-backdrop-filter); unsupported browsers simply
+ * render nothing here (no background of their own), so this degrades safely.
+ * ------------------------------------------------------------------------ */
+
+.widget-blur-backdrop {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  height: 300px;
+  max-width: 60vw;
+  max-height: 60vh;
+  // Sits above ordinary page content but below the widget iframe's own
+  // z-index: 999999 (and below the 2147483647 flash-notification layer, see
+  // src/modules/shared/notifications/constants.ts) so it never covers a
+  // real interactive overlay.
+  z-index: 999998;
+  pointer-events: none;
+}
+
+.widget-blur-backdrop-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+@media (min-width: 480px) {
+  // Heaviest, tightest blur - dominant right behind the widget itself.
+  .widget-blur-backdrop-layer-1 {
+    backdrop-filter: blur(26px);
+    -webkit-backdrop-filter: blur(26px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 50px, transparent 90px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 50px, transparent 90px);
+  }
+
+  .widget-blur-backdrop-layer-2 {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 100px, transparent 160px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 100px, transparent 160px);
+  }
+
+  .widget-blur-backdrop-layer-3 {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 180px, transparent 240px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 180px, transparent 240px);
+  }
+
+  // Lightest, widest reach - the first hint of softening as content scrolls in.
+  .widget-blur-backdrop-layer-4 {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 260px, transparent 300px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 260px, transparent 300px);
+  }
+}
+
+// Below 480px viewports the corner region is scaled down (via max-width/
+// max-height above) small enough that a single, lighter blur reads better
+// than four full-strength layers crowding a small screen.
+@media (max-width: 479px) {
+  .widget-blur-backdrop-layer-1,
+  .widget-blur-backdrop-layer-2 {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 35%, transparent 65%);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 35%, transparent 65%);
+  }
+
+  .widget-blur-backdrop-layer-3,
+  .widget-blur-backdrop-layer-4 {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 55%, transparent 90%);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 55%, transparent 90%);
+  }
+}
+
+// Respect the "reduce transparency" accessibility preference (Safari/macOS;
+// unsupported browsers simply ignore this media feature - see
+// https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-transparency).
+@media (prefers-reduced-transparency: reduce) {
+  .widget-blur-backdrop {
+    display: none;
+  }
+}
