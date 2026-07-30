@@ -23,3 +23,17 @@
     </div>
   </div>
 </footer>
+
+{{!--
+  Decorative, click-through blur backdrop behind the Zendesk ARPA-Help chat
+  launcher (bottom-right corner). See styles/_widget-blur.scss for details
+  on why this exists and how the layered blur works. aria-hidden because
+  it carries no content and must never be reachable by AT or keyboard/mouse
+  (pointer-events: none is also set in CSS as a second guard).
+--}}
+<div class="widget-blur-backdrop" aria-hidden="true">
+  <div class="widget-blur-backdrop-layer widget-blur-backdrop-layer-4"></div>
+  <div class="widget-blur-backdrop-layer widget-blur-backdrop-layer-3"></div>
+  <div class="widget-blur-backdrop-layer widget-blur-backdrop-layer-2"></div>
+  <div class="widget-blur-backdrop-layer widget-blur-backdrop-layer-1"></div>
+</div>

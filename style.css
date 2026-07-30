@@ -7956,3 +7956,95 @@ html.svc-home .header .search-wrapper {
     display: none !important;
   }
 }
+/* ---------------------------------------------------------------------------
+ * ARPA-Help chat-widget corner blur backdrop
+ * ---------------------------------------------------------------------------
+ * The Zendesk messaging launcher iframe (id="launcher") is injected by
+ * Zendesk's own Messaging/Widget script - it is NOT part of this theme and
+ * cannot be edited directly (cross-origin iframe, hardcoded inline styles:
+ * position: fixed; bottom: 16px; right: 16px; z-index: 999999;).
+ *
+ * Because it floats over whatever page content happens to scroll underneath
+ * it (e.g. the ".svc-help-banner" / "General request" pill at the bottom of
+ * service pages), high-contrast content can visually "clip" against its
+ * rounded-corner edge.
+ *
+ * This adds a purely decorative, click-through corner backdrop that softens
+ * (blurs) page content the closer it gets to the widget's corner, fading
+ * back to fully crisp/original content ~300px out. It uses the standard
+ * `backdrop-filter` + gradient `mask-image` technique (see
+ * https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter and
+ * https://www.joshwcomeau.com/css/backdrop-filter/), stacked across 4 layers
+ * so the blur amount ramps up gradually instead of switching on/off at a
+ * hard edge (layers "drop out" moving away from the corner, so blur amounts
+ * compound near the widget and taper to nothing further away).
+ *
+ * `backdrop-filter` reached full cross-browser Baseline support in Sept 2024
+ * (see https://caniuse.com/css-backdrop-filter); unsupported browsers simply
+ * render nothing here (no background of their own), so this degrades safely.
+ * ------------------------------------------------------------------------ */
+.widget-blur-backdrop {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  height: 300px;
+  max-width: 60vw;
+  max-height: 60vh;
+  z-index: 999998;
+  pointer-events: none;
+}
+
+.widget-blur-backdrop-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+@media (min-width: 480px) {
+  .widget-blur-backdrop-layer-1 {
+    backdrop-filter: blur(26px);
+    -webkit-backdrop-filter: blur(26px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 50px, transparent 90px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 50px, transparent 90px);
+  }
+  .widget-blur-backdrop-layer-2 {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 100px, transparent 160px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 100px, transparent 160px);
+  }
+  .widget-blur-backdrop-layer-3 {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 180px, transparent 240px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 180px, transparent 240px);
+  }
+  .widget-blur-backdrop-layer-4 {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 260px, transparent 300px);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 260px, transparent 300px);
+  }
+}
+@media (max-width: 479px) {
+  .widget-blur-backdrop-layer-1,
+  .widget-blur-backdrop-layer-2 {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 35%, transparent 65%);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 35%, transparent 65%);
+  }
+  .widget-blur-backdrop-layer-3,
+  .widget-blur-backdrop-layer-4 {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    mask-image: radial-gradient(circle at 100% 100%, black 0, black 55%, transparent 90%);
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 55%, transparent 90%);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .widget-blur-backdrop {
+    display: none;
+  }
+}
