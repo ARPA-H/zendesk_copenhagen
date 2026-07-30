@@ -1,0 +1,166 @@
+/* ============================================================
+   ARPA-H custom — "angry" inline validation for the service
+   request form (#service-catalog-item inside .svc-form-panel,
+   see templates/service_page.hbs).
+
+   PROBLEM: when a required field is left empty/invalid, the
+   theme's only feedback is a toast in the corner of the screen
+   (see src/modules/shared/notifications). That toast tells the
+   user *something* is wrong, but not *which* field — so we
+   highlight the offending control directly, in place, without
+   any JS/React changes (CSS only, by design).
+
+   HOW (no JS/monkeypatching required):
+   Every request field already renders a real `required` HTML
+   attribute on its native control — see e.g.
+   src/modules/ticket-fields/fields/Input.tsx (`required={required}`
+   on a Zendesk Garden <Input>, which is a plain <input>), and the
+   same pattern in TextArea.tsx/Checkbox.tsx/DropDown.tsx/
+   MultiSelect.tsx/LookupField.tsx/Tagger.tsx/DatePicker.tsx.
+   ItemRequestForm.tsx sets `noValidate` on the <form>, but
+   `novalidate` only turns off the *browser's own* validation
+   report/submit-blocking step — it does not change a control's
+   underlying constraint-validity, so the standard CSS validity
+   pseudo-classes still reflect it:
+     https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attr-fs-novalidate
+     https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constraint-validation
+
+   `:user-invalid` (CSS Selectors Level 4) matches a control that
+   fails its constraints only *after the user has interacted with
+   it* — e.g. tabbing/clicking away from an empty required field —
+   which is exactly the "navigate away from an unfilled field"
+   trigger asked for, with zero JS:
+     https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:user-invalid
+   Support is broad in every evergreen browser as of 2026 (Chrome/
+   Edge 119+, Firefox 88+, Safari 16.5+):
+     https://caniuse.com/mdn-css_selectors_user-invalid
+
+   We additionally key off `[aria-invalid="true"]`, which Zendesk
+   Garden's own <Field>/<Input>/<Combobox> already set whenever a
+   `validation="error"` prop reaches them from React (post-submit
+   server-side field errors mapped in ServiceCatalogItem.tsx, and
+   the asset/asset-type/attachments errors from
+   useValidateServiceItemForm.ts) — so every error path, native or
+   server-driven, renders identically.
+
+   Zendesk Garden's Combobox (used by DropDown/MultiSelect/
+   Tagger/LookupField) puts the visible border on the
+   `dropdowns.combobox.trigger` wrapper, while `aria-invalid`/
+   `:user-invalid` land on the (possibly visually-hidden) real
+   <input> nested inside it — so those need the `:has()`
+   relational selector to reach the wrapper. `:has()` has also
+   been supported in every evergreen browser since late 2023
+   (Firefox 121, Chrome 105, Safari 15.4):
+     https://caniuse.com/css-has
+
+   ACCESSIBILITY NOTES:
+   - Not color-only (WCAG 1.4.1): invalid controls also get a
+     visibly thicker border (1px -> 2px, dashed outline for
+     checkboxes), so the state reads as a shape change too, not
+     just a color/hue change.
+   - Contrast (WCAG 1.4.3 / 1.4.11): --svc-error (#bf2d1d) is a
+     5.8:1 contrast ratio against white — well past the 4.5:1 text
+     and 3:1 non-text/UI-component minimums.
+   - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus
+     ring (`0 0 0 1px #0957be, 0 0 3px 1px #0957be`) is layered on
+     top of, not swapped out for, the red invalid ring.
+   - Motion (WCAG 2.3.3): the one-shot "shake" is gated behind
+     `prefers-reduced-motion: no-preference` and runs once, never
+     looping, so it can't become a persistent distraction and is
+     skipped entirely for users who've asked for reduced motion.
+
+   KNOWN LIMITATION: `aria-invalid` can only be toggled by script,
+   so a field that is merely `required` and empty (and has never
+   been through a submit attempt or the asset/attachment
+   client-side check) is flagged *visually* via `:user-invalid`
+   but is not independently announced as "invalid" to screen
+   reader users the moment they leave it — only the pre-existing,
+   already-accessible toast is announced at that point. Closing
+   that last gap would require a small script to mirror
+   `:user-invalid` into `aria-invalid`, which is intentionally out
+   of scope here (SCSS-only fix, per design).
+   ============================================================ */
+
+@mixin svc-invalid-ring($width: 2px) {
+  border: $width solid var(--svc-error) !important;
+  background-color: var(--svc-error-bg) !important;
+  box-shadow: 0 0 0 1px var(--svc-error) !important;
+}
+
+.svc-form-panel {
+  // ---- Plain native controls: <input>, <textarea>, and the
+  // real (if visually nested) <input> that backs react-forms'
+  // <DatePicker>/<Input>/<Checkbox>. ----
+  input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    &:user-invalid,
+    &[aria-invalid="true"] {
+      @include svc-invalid-ring;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: svcFieldAngryShake 0.4s ease-in-out 1;
+      }
+    }
+
+    // Focus indicator must stay visible even while invalid.
+    &:user-invalid:focus-visible,
+    &[aria-invalid="true"]:focus-visible {
+      box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset,
+        0 0 3px 1px #0957be !important;
+    }
+  }
+
+  // Checkboxes are too small for a background icon or thick
+  // border to read cleanly, so the non-color cue is a dashed
+  // (not solid) outline — a shape change, not just a color one.
+  input[type="checkbox"] {
+    &:user-invalid,
+    &[aria-invalid="true"] {
+      outline: 2px dashed var(--svc-error) !important;
+      outline-offset: 3px !important;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: svcFieldAngryShake 0.4s ease-in-out 1;
+      }
+    }
+
+    &:user-invalid:focus-visible,
+    &[aria-invalid="true"]:focus-visible {
+      outline: 2px dashed var(--svc-error) !important;
+      box-shadow: 0 0 0 3px #fff, 0 0 0 5px #0957be !important;
+    }
+  }
+
+  // ---- Zendesk Garden Combobox-based fields (dropdown, multi-
+  // select, tagger, lookup): the real invalid <input> is nested
+  // and often visually hidden, so target the trigger it lives in. ----
+  [data-garden-id="dropdowns.combobox.trigger"] {
+    &:has(input:user-invalid),
+    &:has(input[aria-invalid="true"]) {
+      @include svc-invalid-ring;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: svcFieldAngryShake 0.4s ease-in-out 1;
+      }
+    }
+
+    &:has(input:user-invalid):focus-within,
+    &:has(input[aria-invalid="true"]):focus-within {
+      box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset,
+        0 0 3px 1px #0957be !important;
+    }
+  }
+}
+
+// A single, short, non-looping "angry" shake. Reinforces the
+// invalid state through motion for sighted users who have not
+// opted out of animation (WCAG 2.3.3 — see prefers-reduced-motion
+// guards above; this keyframe is only ever referenced there).
+@keyframes svcFieldAngryShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}

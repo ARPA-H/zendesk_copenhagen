@@ -26,6 +26,13 @@
   --svc-font: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   // Display + h1/h2 (NEXUS primary). Poppins is self-hosted — see document_head.hbs.
   --svc-font-display: "Poppins", "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  // NEXUS Feedback/error ramp (color/red primitives). Used for invalid form
+  // field states — see _svc-form-validation.scss. #bf2d1d on white is a
+  // 5.8:1 contrast ratio, comfortably clearing WCAG 1.4.3 (4.5:1 text) and
+  // 1.4.11 (3:1 non-text/UI component) requirements.
+  --svc-error:      #bf2d1d;   // NEXUS Feedback/error (color/red/red-neutral)
+  --svc-error-dark: #7f1e13;   // NEXUS Feedback/error-dark (color/red/red-700)
+  --svc-error-bg:   #f4dcd9;   // NEXUS Feedback/error-light (color/red/red-50)
 }
 
 /* Hide the native header search (the home hero provides its own search). */
