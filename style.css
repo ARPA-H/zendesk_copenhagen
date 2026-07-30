@@ -7960,10 +7960,9 @@ html.svc-home .header .search-wrapper {
  * ARPA-Help chat-widget blur backdrops
  * ---------------------------------------------------------------------------
  * The Zendesk messaging launcher button AND the conversation panel it opens
- * both render inside Zendesk's own cross-origin iframes (id="launcher" and
- * id="webWidget") - they are NOT part of this theme and cannot be restyled
- * directly. This was confirmed against Zendesk's full public customization
- * surface for the Messaging Web Widget
+ * both render inside Zendesk's own cross-origin iframes - they are NOT part
+ * of this theme and cannot be restyled directly. This was confirmed against
+ * Zendesk's full public customization surface for the Messaging Web Widget
  * (https://developer.zendesk.com/api-reference/widget-messaging/web/core/,
  * `messenger:set customization` command): it covers theme colors, position/
  * offset, and content toggles, but has no corner-radius or CSS-injection
@@ -7975,9 +7974,12 @@ html.svc-home .header .search-wrapper {
  * radii already used elsewhere in this theme:
  *
  * 1. `.widget-blur-backdrop` - a static halo hugging the closed launcher
- *    button (fixed 64x64 + 16px offset), shaped as a circle
- *    (`border-radius: 50%`) per NEXUS's "Icon Button Drop Shadow" floating-
- *    action-button spec. Reaches exactly 25px beyond the launcher's edges.
+ *    button (fixed 64x64, offset 16px from the screen edges). Reaches
+ *    exactly 25px beyond the launcher's own box on every side - using the
+ *    same uniform "picture-frame" mask technique as the panel halo below
+ *    (not a corner-anchored radial gradient, which would NOT produce a
+ *    uniform margin here since the launcher's own box doesn't touch the
+ *    physical screen corner - it's inset 16px from it).
  *
  * 2. `.widget-blur-backdrop-panel` - a dynamically sized/positioned halo
  *    (see src/widgetBlurTracker.js) that grows to hug the conversation panel
@@ -8005,35 +8007,38 @@ html.svc-home .header .search-wrapper {
 
 .widget-blur-backdrop {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  width: 105px;
-  height: 105px;
-  border-radius: 50%;
+  right: -9px;
+  bottom: -9px;
+  width: 114px;
+  height: 114px;
+  border-radius: 1000px;
   overflow: hidden;
   z-index: 999998;
   pointer-events: none;
 }
 
-.widget-blur-backdrop-layer-1 {
+.widget-blur-backdrop .widget-blur-backdrop-layer-1 {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  mask-image: radial-gradient(circle at 100% 100%, black 0, black 60px, transparent 80px);
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 60px, transparent 80px);
+  mask-image: linear-gradient(to right, transparent, black 17px, black calc(100% - 17px), transparent), linear-gradient(to bottom, transparent, black 17px, black calc(100% - 17px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 17px, black calc(100% - 17px), transparent), linear-gradient(to bottom, transparent, black 17px, black calc(100% - 17px), transparent);
 }
 
-.widget-blur-backdrop-layer-2 {
+.widget-blur-backdrop .widget-blur-backdrop-layer-2 {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  mask-image: radial-gradient(circle at 100% 100%, black 0, black 75px, transparent 95px);
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 75px, transparent 95px);
+  mask-image: linear-gradient(to right, transparent, black 9px, black calc(100% - 9px), transparent), linear-gradient(to bottom, transparent, black 9px, black calc(100% - 9px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 9px, black calc(100% - 9px), transparent), linear-gradient(to bottom, transparent, black 9px, black calc(100% - 9px), transparent);
 }
 
-.widget-blur-backdrop-layer-3 {
+.widget-blur-backdrop .widget-blur-backdrop-layer-3 {
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  mask-image: radial-gradient(circle at 100% 100%, black 0, black 90px, transparent 105px);
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 90px, transparent 105px);
+  mask-image: linear-gradient(to right, transparent, black 5px, black calc(100% - 5px), transparent), linear-gradient(to bottom, transparent, black 5px, black calc(100% - 5px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 5px, black calc(100% - 5px), transparent), linear-gradient(to bottom, transparent, black 5px, black calc(100% - 5px), transparent);
 }
 
 .widget-blur-backdrop-panel {

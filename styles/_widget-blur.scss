@@ -2,10 +2,9 @@
  * ARPA-Help chat-widget blur backdrops
  * ---------------------------------------------------------------------------
  * The Zendesk messaging launcher button AND the conversation panel it opens
- * both render inside Zendesk's own cross-origin iframes (id="launcher" and
- * id="webWidget") - they are NOT part of this theme and cannot be restyled
- * directly. This was confirmed against Zendesk's full public customization
- * surface for the Messaging Web Widget
+ * both render inside Zendesk's own cross-origin iframes - they are NOT part
+ * of this theme and cannot be restyled directly. This was confirmed against
+ * Zendesk's full public customization surface for the Messaging Web Widget
  * (https://developer.zendesk.com/api-reference/widget-messaging/web/core/,
  * `messenger:set customization` command): it covers theme colors, position/
  * offset, and content toggles, but has no corner-radius or CSS-injection
@@ -17,9 +16,12 @@
  * radii already used elsewhere in this theme:
  *
  * 1. `.widget-blur-backdrop` - a static halo hugging the closed launcher
- *    button (fixed 64x64 + 16px offset), shaped as a circle
- *    (`border-radius: 50%`) per NEXUS's "Icon Button Drop Shadow" floating-
- *    action-button spec. Reaches exactly 25px beyond the launcher's edges.
+ *    button (fixed 64x64, offset 16px from the screen edges). Reaches
+ *    exactly 25px beyond the launcher's own box on every side - using the
+ *    same uniform "picture-frame" mask technique as the panel halo below
+ *    (not a corner-anchored radial gradient, which would NOT produce a
+ *    uniform margin here since the launcher's own box doesn't touch the
+ *    physical screen corner - it's inset 16px from it).
  *
  * 2. `.widget-blur-backdrop-panel` - a dynamically sized/positioned halo
  *    (see src/widgetBlurTracker.js) that grows to hug the conversation panel
@@ -40,6 +42,8 @@
  * render nothing here (no background of their own), so this degrades safely.
  * ------------------------------------------------------------------------ */
 
+$halo-margin: 25px; // required margin beyond the widget's own edges, in any direction
+
 // Shared base for every blur layer, regardless of which halo it belongs to.
 .widget-blur-backdrop-layer {
   position: absolute;
@@ -47,25 +51,47 @@
   pointer-events: none;
 }
 
+// A uniform-width "picture frame" fade: two perpendicular linear-gradients
+// combined with mask-composite: intersect multiply their alpha together, so
+// the mask is fully opaque over the tracked element's own footprint and
+// fades to transparent over exactly the last $fade-start..edge distance on
+// every side, regardless of the box's width/height. This is what makes the
+// margin genuinely uniform "in any direction" - a radial gradient anchored
+// at a single point cannot do this for a box that isn't itself centered on
+// that point. Standard since Chrome 120, Firefox 53, Safari 15.4
+// (https://caniuse.com/mdn-css_properties_mask-composite).
+@mixin frame-mask($fade-start) {
+  mask-image:
+    linear-gradient(to right, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent),
+    linear-gradient(to bottom, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent),
+    linear-gradient(to bottom, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent);
+}
+
 // ---------------------------------------------------------------------------
 // 1. Launcher halo (static - the closed launcher button never changes size)
 // ---------------------------------------------------------------------------
-// Launcher footprint is 64px + a 16px offset from the corner = 80px; a 25px
-// margin beyond that on every side gives a 105px square.
-$launcher-reach: 80px; // distance from the viewport corner to the launcher's far edge
-$halo-margin: 25px; // required margin beyond the widget's own edges, in any direction
-$launcher-halo-size: $launcher-reach + $halo-margin; // 105px
+// Launcher box is fixed 64x64, offset 16px from the screen edges. Expanding
+// that box by $halo-margin (25px) on every side gives a 114x114 box offset
+// -9px from the edges (i.e. 9px of it sits past the physical screen edge,
+// which is expected and harmless - there's nothing to blur off-screen).
+$launcher-size: 64px;
+$launcher-offset: 16px;
+$launcher-halo-size: $launcher-size + ($halo-margin * 2); // 114px
+$launcher-halo-offset: $launcher-offset - $halo-margin; // -9px
 
 .widget-blur-backdrop {
   position: fixed;
-  right: 0;
-  bottom: 0;
+  right: $launcher-halo-offset;
+  bottom: $launcher-halo-offset;
   width: $launcher-halo-size;
   height: $launcher-halo-size;
-  // Circle, per NEXUS's "Icon Button Drop Shadow" component spec (used for
-  // floating actions like this one) - the box is a perfect square, so a 50%
-  // radius renders a true circle rather than an arbitrary corner token.
-  border-radius: 50%;
+  // NEXUS corner-radius/round (pill token) - on a square box this renders a
+  // true circle, matching NEXUS's "Icon Button Drop Shadow" floating-action
+  // spec used for round floating buttons like this one.
+  border-radius: 1000px;
   overflow: hidden;
   // Sits above ordinary page content but below the widget iframe's own
   // z-index: 999999 (and below the 2147483647 flash-notification layer, see
@@ -75,27 +101,23 @@ $launcher-halo-size: $launcher-reach + $halo-margin; // 105px
   pointer-events: none;
 }
 
-// Heaviest, tightest blur - right behind the launcher itself.
-.widget-blur-backdrop-layer-1 {
+.widget-blur-backdrop .widget-blur-backdrop-layer-1 {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
-  mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 20px}, transparent #{$launcher-reach});
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 20px}, transparent #{$launcher-reach});
+  @include frame-mask(17px);
 }
 
-.widget-blur-backdrop-layer-2 {
+.widget-blur-backdrop .widget-blur-backdrop-layer-2 {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 5px}, transparent #{$launcher-reach + 15px});
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 5px}, transparent #{$launcher-reach + 15px});
+  @include frame-mask(9px);
 }
 
-// Lightest, widest reach - fades out exactly at the 25px margin.
-.widget-blur-backdrop-layer-3 {
+// Lightest, widest reach - fades out right at the box's own outer edge.
+.widget-blur-backdrop .widget-blur-backdrop-layer-3 {
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach + 10px}, transparent #{$launcher-halo-size});
-  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach + 10px}, transparent #{$launcher-halo-size});
+  @include frame-mask(5px);
 }
 
 // ---------------------------------------------------------------------------
@@ -114,32 +136,16 @@ $launcher-halo-size: $launcher-reach + $halo-margin; // 105px
   transition: left 0.12s ease-out, top 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out;
 }
 
-// A uniform-width "picture frame" fade: two perpendicular linear-gradients
-// combined with mask-composite: intersect multiply their alpha together, so
-// the mask is fully opaque over the panel's own footprint and fades to
-// transparent over exactly the last $halo-margin (25px) on every edge,
-// regardless of the panel's current width/height. Standard since Chrome 120,
-// Firefox 53, Safari 15.4 (https://caniuse.com/mdn-css_properties_mask-composite).
-@mixin panel-frame-mask($fade-start) {
-  mask-image:
-    linear-gradient(to right, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent),
-    linear-gradient(to bottom, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent);
-  mask-composite: intersect;
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent),
-    linear-gradient(to bottom, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent);
-}
-
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-1 {
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  @include panel-frame-mask(17px);
+  @include frame-mask(17px);
 }
 
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-2 {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  @include panel-frame-mask(9px);
+  @include frame-mask(9px);
 }
 
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-3 {
@@ -149,7 +155,7 @@ $launcher-halo-size: $launcher-reach + $halo-margin; // 105px
   // at the exact same position, producing a hard cut instead of a smooth
   // ramp - use a small positive value so even the widest-reaching, lightest
   // layer still fades in gradually right at the box's outer edge.
-  @include panel-frame-mask(5px);
+  @include frame-mask(5px);
 }
 
 // Respect the "reduce transparency" accessibility preference (Safari/macOS;
