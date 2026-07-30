@@ -7970,32 +7970,29 @@ html.svc-home .header .search-wrapper {
  * only OUR decorative chrome around it can be shaped to match NEXUS tokens.
  *
  * Two click-through, purely decorative backdrops soften the hard edge
- * between page content and the widget, each shaped with real NEXUS corner
- * radii already used elsewhere in this theme:
+ * between page content and the widget:
  *
  * 1. `.widget-blur-backdrop` - a static halo hugging the closed launcher
- *    button (fixed 64x64, offset 16px from the screen edges). Reaches
- *    exactly 25px beyond the launcher's own box on every side - using the
- *    same uniform "picture-frame" mask technique as the panel halo below
- *    (not a corner-anchored radial gradient, which would NOT produce a
- *    uniform margin here since the launcher's own box doesn't touch the
- *    physical screen corner - it's inset 16px from it).
- *
+ *    button (fixed 64x64, offset 16px from the screen edges).
  * 2. `.widget-blur-backdrop-panel` - a dynamically sized/positioned halo
  *    (see src/widgetBlurTracker.js) that grows to hug the conversation panel
- *    iframe as it opens, always 25px beyond its current edges on every side.
- *    Uses `border-radius: 24px` (NEXUS `corner-radius/xl`), matching
- *    `.svc-shell` elsewhere in this theme for large panel-like surfaces.
- *    The tracker only ever reads the iframe ELEMENT's own box geometry
- *    (always readable, even cross-origin) - it never reaches into the
- *    iframe's content.
+ *    iframe as it opens. The tracker only ever reads the iframe ELEMENT's
+ *    own box geometry (always readable, even cross-origin) - it never
+ *    reaches into the iframe's content.
  *
- * Both use the standard `backdrop-filter` + gradient `mask-image` technique
+ * Both reach exactly $halo-margin (40px) beyond the widget's own box on
+ * every side, with backdrop-filter blur opacity ramping smoothly from 100%
+ * at the point touching the widget down to 0% at the outer edge - see the
+ * `edge-band-mask` mixin below for how that ramp is constructed. Rounded
+ * with a real (finite) corner radius rather than a full circle/pill, so the
+ * margin stays a true, uniform 40px in every direction including the
+ * diagonals - a circle inscribed in a square inherently tapers to nothing
+ * at 45°, which would break the "same margin in any direction" requirement.
+ *
+ * Uses the standard `backdrop-filter` + gradient `mask-image` technique
  * (see https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter and
- * https://www.joshwcomeau.com/css/backdrop-filter/), stacked across layers so
- * blur ramps up gradually within that 25px margin instead of a hard edge.
- *
- * `backdrop-filter` reached full cross-browser Baseline support in Sept 2024
+ * https://www.joshwcomeau.com/css/backdrop-filter/). `backdrop-filter`
+ * reached full cross-browser Baseline support in Sept 2024
  * (see https://caniuse.com/css-backdrop-filter); unsupported browsers simply
  * render nothing here (no background of their own), so this degrades safely.
  * ------------------------------------------------------------------------ */
@@ -8007,38 +8004,14 @@ html.svc-home .header .search-wrapper {
 
 .widget-blur-backdrop {
   position: fixed;
-  right: -9px;
-  bottom: -9px;
-  width: 114px;
-  height: 114px;
-  border-radius: 1000px;
+  right: -24px;
+  bottom: -24px;
+  width: 144px;
+  height: 144px;
+  border-radius: 48px;
   overflow: hidden;
   z-index: 999998;
   pointer-events: none;
-}
-
-.widget-blur-backdrop .widget-blur-backdrop-layer-1 {
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  mask-image: linear-gradient(to right, transparent, black 17px, black calc(100% - 17px), transparent), linear-gradient(to bottom, transparent, black 17px, black calc(100% - 17px), transparent);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 17px, black calc(100% - 17px), transparent), linear-gradient(to bottom, transparent, black 17px, black calc(100% - 17px), transparent);
-}
-
-.widget-blur-backdrop .widget-blur-backdrop-layer-2 {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  mask-image: linear-gradient(to right, transparent, black 9px, black calc(100% - 9px), transparent), linear-gradient(to bottom, transparent, black 9px, black calc(100% - 9px), transparent);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 9px, black calc(100% - 9px), transparent), linear-gradient(to bottom, transparent, black 9px, black calc(100% - 9px), transparent);
-}
-
-.widget-blur-backdrop .widget-blur-backdrop-layer-3 {
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  mask-image: linear-gradient(to right, transparent, black 5px, black calc(100% - 5px), transparent), linear-gradient(to bottom, transparent, black 5px, black calc(100% - 5px), transparent);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 5px, black calc(100% - 5px), transparent), linear-gradient(to bottom, transparent, black 5px, black calc(100% - 5px), transparent);
 }
 
 .widget-blur-backdrop-panel {
@@ -8051,28 +8024,28 @@ html.svc-home .header .search-wrapper {
   transition: left 0.12s ease-out, top 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out;
 }
 
+.widget-blur-backdrop .widget-blur-backdrop-layer-1,
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-1 {
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  mask-image: linear-gradient(to right, transparent, black 17px, black calc(100% - 17px), transparent), linear-gradient(to bottom, transparent, black 17px, black calc(100% - 17px), transparent);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 17px, black calc(100% - 17px), transparent), linear-gradient(to bottom, transparent, black 17px, black calc(100% - 17px), transparent);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  mask-image: linear-gradient(to right, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 24px, black 40px, transparent 41px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 24px, black 40px, transparent 41px);
 }
 
+.widget-blur-backdrop .widget-blur-backdrop-layer-2,
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-2 {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  mask-image: linear-gradient(to right, transparent, black 9px, black calc(100% - 9px), transparent), linear-gradient(to bottom, transparent, black 9px, black calc(100% - 9px), transparent);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 9px, black calc(100% - 9px), transparent), linear-gradient(to bottom, transparent, black 9px, black calc(100% - 9px), transparent);
+  backdrop-filter: blur(11px);
+  -webkit-backdrop-filter: blur(11px);
+  mask-image: linear-gradient(to right, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 12px, black 40px, transparent 41px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 12px, black 40px, transparent 41px);
 }
 
+.widget-blur-backdrop .widget-blur-backdrop-layer-3,
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-3 {
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  mask-image: linear-gradient(to right, transparent, black 5px, black calc(100% - 5px), transparent), linear-gradient(to bottom, transparent, black 5px, black calc(100% - 5px), transparent);
-  mask-composite: intersect;
-  -webkit-mask-image: linear-gradient(to right, transparent, black 5px, black calc(100% - 5px), transparent), linear-gradient(to bottom, transparent, black 5px, black calc(100% - 5px), transparent);
+  mask-image: linear-gradient(to right, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 0px, black 40px, transparent 41px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 0px, black 40px, transparent 41px);
 }
 
 @media (prefers-reduced-transparency: reduce) {
