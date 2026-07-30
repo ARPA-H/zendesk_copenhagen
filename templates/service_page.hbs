@@ -345,7 +345,18 @@
 
     function getNativeSubmit() {
       if (!serviceContainer) return null;
-      return serviceContainer.querySelector('button[type="submit"], input[type="submit"], [role="button"]');
+      // [data-svc-native-submit] is set on the real submit Button in
+      // ItemRequestForm.tsx and is checked first. The native submit-type
+      // fallback below must never include a bare `[role="button"]` — that
+      // previously matched Garden's FileUpload dropzone (it hardcodes
+      // role="button") whenever a service had an attachments field, since
+      // that dropzone renders earlier in the DOM than the real submit
+      // button. That caused this proxy to open the OS file picker instead
+      // of submitting the form.
+      return (
+        serviceContainer.querySelector('[data-svc-native-submit]') ||
+        serviceContainer.querySelector('button[type="submit"], input[type="submit"]')
+      );
     }
 
     function hideNativeActionArea() {
