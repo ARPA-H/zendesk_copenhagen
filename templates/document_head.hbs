@@ -1,5 +1,48 @@
+<!--
+  Zero-flash guard against a specific broken-navigation bug: Zendesk's
+  native instant-search widget (the platform's own `<zd-autocomplete>` /
+  `<zd-autocomplete-multibrand>` custom elements behind the native "search"
+  template helper's instant-search mode, used on service_list_page.hbs and
+  service_page.hbs) returns service-catalog suggestions with a *relative*
+  URL missing its leading slash (e.g. "hc/services/<id>"). Clicking one
+  makes the browser resolve it against whatever directory the user was in,
+  producing a duplicated "/hc/" segment somewhere in the path (shape
+  differs by page, e.g. /hc/<locale>/hc/services/<id> or
+  /hc/<locale>/services/<other-id>/hc/services/<id>) and landing on a 404.
+
+  We can't patch that widget directly - its DOM lives in closed shadow
+  roots we have no access to. This runs here, inline and dependency-free
+  at the very top of <head>, rather than in script.js, so the redirect
+  happens synchronously before the browser parses or paints any <body>
+  content - avoiding a visible flash of the broken page. This is the only
+  copy of this logic; it intentionally isn't duplicated into script.js.
+-->
+<script type="text/javascript">
+  (function () {
+    var pathname = window.location.pathname;
+    var firstSegmentMatch = /^\/hc\/([^/]+)\//.exec(pathname);
+    if (!firstSegmentMatch) return;
+    var locale = firstSegmentMatch[1];
+    var lastHcIndex = pathname.lastIndexOf("/hc/");
+    if (lastHcIndex <= 0) return;
+    var rest = pathname.slice(lastHcIndex + "/hc/".length);
+    if (!rest) return;
+    var corrected = "/hc/" + locale + "/" + rest;
+    if (corrected === pathname) return;
+    window.location.replace(corrected + window.location.search + window.location.hash);
+  })();
+</script>
+
 <!-- Customized 5-21-25 -->
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
+<!--
+  Self-hosted Public Sans (USWDS / ARPA-H standard type) and Poppins (NEXUS
+  display type) @font-face declarations now live in styles/_fonts.scss,
+  referenced via Zendesk's $assets-<filename>-<ext> asset variable
+  convention (see zass.mjs) instead of an inline <style> block here.
+-->
+
 <!-- Make the translated search clear button label available for use in JS -->
 <!-- See buildClearSearchButton() in script.js -->
 <script type="text/javascript">window.searchClearButtonLabelLocalized = "{{t 'search_clear'}}";</script>
@@ -29,20 +72,11 @@
 </script>
 <script type="module">
   import { renderFlashNotifications } from "flash-notifications";
-
   const settings = {{json settings}};
   const baseLocale = {{json help_center.base_locale}};
-
   renderFlashNotifications(settings, baseLocale);
 </script>
-  <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const elements = document.querySelectorAll("a, li, div");
-    elements.forEach(el => {
-      if (el.textContent.trim().toLowerCase() === "empty") {
-        el.style.display = "none";
-      }
-    });
-  });
-</script>
 
+{{!-- The breadcrumb neutralizer and "empty"-text hider that used to live here
+     inline now live in src/domFixups.js (bundled into script.js). Do not
+     re-add them inline. --}}

@@ -1,6 +1,7 @@
 @import "normalize";
 @import "variables";
 @import "mixins";
+@import "fonts";
 @import "base";
 @import "buttons";
 @import "split_button";
@@ -46,3 +47,12 @@
 @import "upload_dropzone";
 @import "summary";
 @import "service_catalog";
+
+// ARPA-H custom — knowledge-center / service-catalog customizations.
+// Kept last so they layer over the base theme. Tokens first, then pages.
+@import "svc-tokens";
+@import "svc-home";
+@import "svc-category";
+@import "svc-service-item";
+@import "svc-search-results";
+@import "svc-header";

@@ -1,0 +1,234 @@
+/* ============================================================
+   ARPA-H custom — header section
+   ============================================================ */
+.header .logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  order: 1;
+}
+// Redundant next to the logo image (and, for this org, long enough — e.g.
+// "Advanced Research Projects Agency for Health - Sandbox" — to be a major
+// contributor to header overflow at narrow widths); hide it everywhere.
+// Controlled by the theme's "Show Help Center name" setting, but even when
+// enabled we don't want it rendered.
+.header .logo span {
+  display: none !important;
+}
+.header .nav-wrapper-desktop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 0 0 auto;
+  order: 2;
+}
+html.svc-home .header .search-wrapper {
+  display: none !important;
+}
+.header .search-wrapper {
+  flex: 1 1 320px;
+  order: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-width: 0;
+}
+.header .search-wrapper .search,
+.header .search-wrapper form {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+.header .search-wrapper .search-icon {
+  position: absolute;
+  left: calc(50% - 280px + 18px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: #9aa3b2;
+  z-index: 2;
+  pointer-events: none;
+}
+@media (max-width: 616px) {
+  .header .search-wrapper .search-icon { left: 18px; }
+}
+.header .search-wrapper input[type="search"],
+.header .search-wrapper input[type="text"],
+.header .search-wrapper .search input {
+  width: 100%;
+  height: 44px;
+  padding-left: 46px;
+  border-radius: 1000px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 980px) {
+  .header .search-wrapper {
+    order: 3;
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+  .header .search-wrapper .search,
+  .header .search-wrapper form {
+    max-width: 100%;
+    margin: 0;
+  }
+  .header .search-wrapper .search-icon {
+    left: 18px;
+  }
+}
+
+/* ---- RESPONSIVE HEADER: swap desktop / mobile nav ---- */
+.header { position: relative; }
+/* Desktop default */
+.header .nav-wrapper-desktop { display: flex; }
+.header .nav-wrapper-mobile { display: none; }
+@media (max-width: 768px) {
+  .header {
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 16px;
+    padding: 12px 16px;
+  }
+  /* Swap: hide desktop nav entirely, show mobile hamburger only.
+     .menu-button-mobile already renders the avatar plus a menu containing
+     every .user-info dropdown action (profile/requests/activities/sign
+     out) *and* the nav items that only exist in .nav-wrapper-desktop (Ask
+     AI, Submit a request, Service Catalog). Keeping .user-info visible
+     here duplicated the avatar on-screen and added unshrinkable width to
+     the header (logo + user-info + hamburger, none of which can shrink),
+     which is what pushed content off the right edge below ~612px. */
+  .header .nav-wrapper-desktop {
+    display: none !important;
+  }
+  .header .nav-wrapper-mobile { display: flex !important; align-items: center; }
+  .header .menu-button-mobile { display: inline-flex !important; align-items: center; gap: 8px; }
+  .header .icon-menu { display: inline-flex !important; }
+  .header .logo img { height: 30px; width: auto; }
+  .header .search-wrapper { display: none !important; }
+  /* Mobile dropdown panel */
+  .header .menu-list-mobile {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 12px;
+    left: 12px;
+    background: #ffffff;
+    border: 1px solid var(--svc-line);
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(15, 33, 80, 0.16);
+    padding: 8px;
+    z-index: 9500;
+  }
+  .header .menu-list-mobile[aria-expanded="true"] { display: block; }
+  .header .menu-list-mobile-items { list-style: none; margin: 0; padding: 0; }
+  .header .menu-list-mobile-items .item a,
+  .header .menu-list-mobile-items .item {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--svc-ink);
+    text-decoration: none;
+  }
+  .header .menu-list-mobile-items .item a:hover { background: #f5f8ff; color: var(--svc-navy); }
+  .header .menu-list-mobile-items .nav-divider { height: 1px; background: var(--svc-line); margin: 6px 4px; }
+}
+
+.header .user-info .dropdown-toggle .svc-username {
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  animation: svcUsernameFailsafe 0s linear 2.5s forwards;
+}
+.header .user-info .dropdown-toggle .svc-username.svc-username-in {
+  opacity: 1;
+  animation: none;
+}
+@keyframes svcUsernameFailsafe { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .header .user-info .dropdown-toggle .svc-username { transition: none; }
+}
+@media (max-width: 768px) {
+  .header {
+    gap: 12px 16px;
+  }
+  html.svc-home .header .search-wrapper {
+    display: none !important;
+  }
+ /* Mobile: prevent user-menu overflow from locking horizontal scroll */
+  html, body {
+    max-width: 100% !important;
+  }
+  .svc-cardwrap, #main-content {
+    overflow-x: clip !important;
+    max-width: 100% !important;
+  }
+}
+/* Tooltip must never create off-screen scroll area (all widths) */
+.svc-tooltip {
+  right: auto;
+}
+.svc-tooltip:not(.svc-tooltip-visible) {
+  left: 0 !important;
+  top: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-9999px) !important;
+}
+
+/* ============================================
+   HEADER FINAL: one user icon, logo left,
+   icon right, scales on all sizes
+   ============================================ */
+.header {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+}
+
+.header > .logo {
+  order: 0 !important;
+  margin: 0 auto 0 0 !important;
+  flex: 0 0 auto !important;
+}
+
+.header > .search-wrapper {
+  order: 1 !important;
+  margin: 0 !important;
+  flex: 0 1 auto !important;
+}
+
+.header > .nav-wrapper-desktop {
+  order: 2 !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+// Desktop-only: hide the mobile hamburger nav above the 768px breakpoint.
+// Must stay scoped to a media query — an unscoped `!important` here has the
+// same specificity as (and previously overrode, via later source order) the
+// `@media (max-width: 768px) { .header .nav-wrapper-mobile { display: flex } }`
+// rule above, which permanently hid the mobile hamburger button at every
+// viewport width.
+@media (min-width: 769px) {
+  .header > .nav-wrapper-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  // .nav-wrapper-desktop (and the .user-info avatar dropdown it contains)
+  // is fully hidden on mobile above in the "Swap" block — .menu-button-mobile
+  // is the one user icon shown here, so there's nothing left to anchor or
+  // hide the username inside .user-info for.
+  .header > .nav-wrapper-desktop {
+    display: none !important;
+  }
+}
