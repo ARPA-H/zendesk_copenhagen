@@ -54,6 +54,7 @@ Commit a safe example with placeholder values so developers know what settings a
     "DCR_RULE_ID": "<your-dcr-immutable-id>",
     "DCR_STREAM_NAME": "Custom-Product<ConnectorName><LogType>_CL",
     "STATE_STORAGE_URL": "<your-storage-account-url>",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "<your-app-insights-connection-string>",
     "SOURCE_API_KEY": "<your-api-key-or-token>"
   }
 }
@@ -414,3 +415,84 @@ In the repository or environment settings, add these as **Variables** (not Secre
 | Java | `java` | `pom.xml` / `build.gradle` | `@FunctionName`-annotated method |
 
 All languages share the same `host.json`, `local.settings.json`, `.funcignore`, and infrastructure layout — only the function code folder internals differ.
+
+---
+
+## README Templates
+
+### Root `README.md`
+
+Short overview: project name, data source description, quick infra deploy command, and link to the connector README.
+
+### `<source>/README.md` — Connector README
+
+The primary document. Include these sections in order:
+
+1. **Overview** — what data is ingested and why it matters for Sentinel
+2. **Architecture** — Mermaid diagram (template below)
+3. **Prerequisites** — Azure permissions, source system credential name in Key Vault
+4. **Infrastructure Deployment** — `az deployment group create` command referencing `parameters.json`
+5. **Function Deployment** — `./deploy-function.ps1` command
+6. **Configuration** — App Settings reference table (template below)
+7. **Monitoring & Alerts** — action group name, alert summary table
+8. **Troubleshooting** — symptom / cause / fix table (template below)
+
+#### Architecture Diagram
+
+```mermaid
+flowchart TD
+    SRC["Source API"]
+    FA["Azure Function<br/>(Timer Trigger)"]
+    BLOB[("Blob Storage<br/>State: last_run")]
+    KV["Key Vault<br/>API credentials"]
+    DCE["Data Collection<br/>Endpoint (DCE)"]
+    DCR["Data Collection Rule<br/>(KQL transform)"]
+    LA[("Log Analytics<br/>ProductConnectorLogType_CL")]
+    SEN["Microsoft Sentinel<br/>Analytics · Workbooks · Hunting"]
+
+    SRC -->|"fetch since last_run"| FA
+    BLOB <-->|"read / write last_run"| FA
+    KV -.->|"API key<br/>(managed identity)"| FA
+    FA -->|"batched records ≤1 MB"| DCE
+    DCE --> DCR --> LA --> SEN
+```
+
+#### App Settings Table
+
+| App Setting | Description |
+| --- | --- |
+| `DCE_ENDPOINT` | DCE logs ingestion URL |
+| `DCR_RULE_ID` | DCR immutable ID (`dcr-xxxxxxxxxxxxxxxx`) |
+| `DCR_STREAM_NAME` | `Custom-Product<ConnectorName><LogType>_CL` |
+| `STATE_STORAGE_URL` | State storage account URL |
+| `APPLICATIONINSIGHTS_CONNECTION_STRING` | App Insights telemetry connection string |
+| `SOURCE_API_KEY` | `@Microsoft.KeyVault(SecretUri=https://<kv>.vault.azure.net/secrets/<source>-api-key/)` |
+
+#### Monitoring Section
+
+Action group: `FunctionAlerts-ActionGroup` in `rg-operations-sentinel-playbooks-usc`
+
+| Alert | Severity | Trigger |
+| --- | --- | --- |
+| Http5xx errors | 2 (Warning) | > 5 in 15 min |
+| High latency | 3 (Info) | avg > 5s in 15 min |
+| Low availability | 1 (Error) | health check fails |
+| Failure anomalies (App Insights) | Sev3 | smart detection |
+
+#### Troubleshooting Table
+
+| Symptom | Likely cause | Fix |
+| --- | --- | --- |
+| `403` on upload | Missing `Monitoring Metrics Publisher` on DCR | Re-run role assignment |
+| Table not found | `DCR_STREAM_NAME` mismatch | Verify stream name matches table name |
+| Missing rows | `TimeGenerated` null or outside 48h window | Fix in DCR transform KQL |
+| Schema mismatch | Column type mismatch | Cast in DCR transform KQL |
+| Count = 0 (no functions registered) | Module import error at indexing time | Check App Insights for startup exceptions |
+
+### `function-code/README.md` — Local Dev
+
+Three sections only:
+
+1. **Prerequisites** — runtime version (e.g. Python 3.11), Core Tools v4, `az login`
+2. **Setup** — `cp local.settings.json.example local.settings.json` and populate values from infra outputs
+3. **Run Locally** — `func start` (`DefaultAzureCredential` uses CLI login automatically in local dev)

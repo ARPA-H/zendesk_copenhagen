@@ -127,7 +127,7 @@ client.upload(rule_id=DCR_RULE_ID, stream_name=DCR_STREAM_NAME, logs=records)
 
 - `Microsoft.Storage/storageAccounts` (+ blobServices/containers)
 - `Microsoft.Web/serverfarms` (Flex Consumption: sku FC1)
-- `Microsoft.Insights/components`
+- `Microsoft.Insights/components` — naming: `appi-operations-sentinel-<connector>-usc`; set `APPLICATIONINSIGHTS_CONNECTION_STRING` on the Function App
 - `Microsoft.Insights/dataCollectionEndpoints`
 - `Microsoft.Insights/dataCollectionRules`
 - `Microsoft.Web/sites` with `identity: { type: 'SystemAssigned' }`
@@ -206,14 +206,27 @@ When the connector must not traverse the public internet, integrate the Function
 
 ### Architecture
 
-```text
-Function App (Flex Consumption)
-  └─ VNet Integration (delegated subnet) → outbound traffic via VNet
-       ├─ Private Endpoint → Data Collection Endpoint (DCE)
-       ├─ Private Endpoint → Key Vault
-       ├─ Private Endpoint → Storage Account
-       └─ AMPLS (Azure Monitor Private Link Scope)
-            └─ Scoped Resource → DCE
+```mermaid
+flowchart TD
+    FA["Azure Function<br/>(Flex Consumption)"]
+
+    subgraph vnet["Virtual Network"]
+        direction LR
+        INT["Integration Subnet<br/>(delegated /26)"]
+        PE_DCE["Private Endpoint → DCE"]
+        PE_KV["Private Endpoint → Key Vault"]
+        PE_ST["Private Endpoint → Storage"]
+    end
+
+    subgraph ampls_scope["AMPLS"]
+        DCE["DCE<br/>(logs-ingestion)"]
+    end
+
+    FA -->|"VNet integration<br/>(all outbound)"| INT
+    INT --> PE_DCE --> DCE
+    INT --> PE_KV --> KV["Key Vault"]
+    INT --> PE_ST --> STOR["Storage Account"]
+    DCE --> DCR["DCR"] --> LA[("Log Analytics")]
 ```
 
 `deployment.bicep` already supports this via the `subnetResourceId` and `privateLinkScopeName` parameters. Leave `subnetResourceId` empty for a public deployment.
@@ -460,23 +473,14 @@ Alert on connector health, ingestion gaps, and Function App errors.
 | **Metric alert**       | Azure resource metrics     | Function execution failures, CPU, availability         |
 | **Activity log alert** | Azure control-plane events | Resource deletion, config changes                      |
 
-### Bicep: Action Group
+### Bicep: Action Group (shared reference)
+
+The `FunctionAlerts-ActionGroup` action group is shared across all connectors. Reference it as an existing resource — do not create a new one per connector.
 
 ```bicep
-resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' = {
-  name: 'ag-connector-alerts'
-  location: 'global'
-  properties: {
-    groupShortName: 'connector'
-    enabled: true
-    emailReceivers: [
-      {
-        name: 'SOC Team'
-        emailAddress: 'soc@example.com'
-        useCommonAlertSchema: true
-      }
-    ]
-  }
+resource actionGroup 'Microsoft.Insights/actionGroups@2023-01-01' existing = {
+  name: 'FunctionAlerts-ActionGroup'
+  scope: resourceGroup('rg-operations-sentinel-playbooks-usc')
 }
 ```
 
@@ -512,45 +516,83 @@ resource ingestionGapAlert 'Microsoft.Insights/scheduledQueryRules@2023-03-15-pr
 }
 ```
 
-### Bicep: Metric Alert (Function Errors)
+### Bicep: Metric Alerts (Function App)
+
+Three metric alert rules per connector, matching the thresholds used by `Setup-FunctionAlerts.ps1`:
 
 ```bicep
-resource functionErrorAlert 'Microsoft.Insights/metricAlerts@2018-03-01' = {
-  name: 'alert-function-errors'
+var metricAlertDefs = [
+  { suffix: 'Http5xx';         metric: 'Http5xx';           aggregation: 'Total';   operator: 'GreaterThan'; threshold: 5;   severity: 2; evalFreq: 'PT5M'; window: 'PT15M' }
+  { suffix: 'HighLatency';     metric: 'HttpResponseTime';  aggregation: 'Average'; operator: 'GreaterThan'; threshold: 5;   severity: 3; evalFreq: 'PT5M'; window: 'PT15M' }
+  { suffix: 'LowAvailability'; metric: 'HealthCheckStatus'; aggregation: 'Average'; operator: 'LessThan';    threshold: 100; severity: 1; evalFreq: 'PT1M'; window: 'PT5M'  }
+]
+
+resource metricAlerts 'Microsoft.Insights/metricAlerts@2018-03-01' = [for a in metricAlertDefs: {
+  name: 'FuncAlert-${functionApp.name}-${a.suffix}'
   location: 'global'
   properties: {
-    severity: 2
+    severity: a.severity
     enabled: true
     scopes: [ functionApp.id ]
-    evaluationFrequency: 'PT5M'
-    windowSize: 'PT15M'
+    evaluationFrequency: a.evalFreq
+    windowSize: a.window
     criteria: {
       'odata.type': 'Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria'
       allOf: [
         {
-          name: 'FailedExecutions'
-          metricName: 'FunctionExecutionCount'
-          dimensions: [ { name: 'Status', operator: 'Include', values: [ 'Failed' ] } ]
-          operator: 'GreaterThan'
-          threshold: 5
-          timeAggregation: 'Count'
+          name: a.suffix
+          metricName: a.metric
+          operator: a.operator
+          threshold: a.threshold
+          timeAggregation: a.aggregation
           criterionType: 'StaticThresholdCriterion'
         }
       ]
     }
     actions: [ { actionGroupId: actionGroup.id } ]
   }
-}
+}]
+```
+
+### Bicep: Smart Detector Rules (App Insights)
+
+Four smart detector rules per App Insights instance. `FailureAnomaliesDetector` fires in near-real-time (PT1M); the remaining three are daily trend detectors.
+
+```bicep
+var smartDetectors = [
+  { id: 'FailureAnomaliesDetector';                 name: 'Failure Anomalies';                 frequency: 'PT1M'  }
+  { id: 'ExceptionVolumeChangedDetector';           name: 'Abnormal Rise in Exception Volume'; frequency: 'PT24H' }
+  { id: 'DependencyPerformanceDegradationDetector'; name: 'Dependency Latency Degradation';    frequency: 'PT24H' }
+  { id: 'TraceSeverityDetector';                    name: 'Trace Severity Degradation';        frequency: 'PT24H' }
+]
+
+resource smartDetectorAlerts 'Microsoft.AlertsManagement/smartDetectorAlertRules@2021-04-01' = [for d in smartDetectors: {
+  name: '${d.name} - ${appInsights.name}'
+  location: 'global'
+  properties: {
+    state: 'Enabled'
+    severity: 'Sev3'
+    frequency: d.frequency
+    detector: { id: d.id }
+    scope: [ appInsights.id ]
+    actionGroups: { groupIds: [ actionGroup.id ] }
+  }
+}]
 ```
 
 ### Recommended Alerts for This Connector
 
-| Alert                           | Type       | Severity     | Frequency |
-| ------------------------------- | ---------- | ------------ | --------- |
-| No logs ingested in 1h          | Log search | 1 (Error)    | PT15M     |
-| Function execution failures > 5 | Metric     | 2 (Warning)  | PT5M      |
-| Key Vault access denied         | Log search | 1 (Error)    | PT5M      |
-| Function App stopped (runs = 0) | Metric     | 0 (Critical) | PT5M      |
+| Alert                                         | Type           | Severity    | Frequency |
+| --------------------------------------------- | -------------- | ----------- | --------- |
+| No logs ingested in 1h                        | Log search     | 1 (Error)   | PT15M     |
+| Http5xx errors > 5                            | Metric         | 2 (Warning) | PT5M      |
+| High latency avg > 5s                         | Metric         | 3 (Info)    | PT5M      |
+| Low availability                              | Metric         | 1 (Error)   | PT1M      |
+| Key Vault access denied                       | Log search     | 1 (Error)   | PT5M      |
+| Failure anomalies (App Insights)              | Smart detector | Sev3        | PT1M      |
+| Exception volume spike (App Insights)         | Smart detector | Sev3        | PT24H     |
+| Dependency latency degradation (App Insights) | Smart detector | Sev3        | PT24H     |
+| Trace severity degradation (App Insights)     | Smart detector | Sev3        | PT24H     |
 
 ### Common KQL Alert Queries
 
@@ -570,6 +612,30 @@ AzureDiagnostics
 | count
 ```
 
+### Operational Alert Setup (PowerShell — retrofit existing connectors)
+
+Use these scripts to add alerts to connectors already deployed without them. For new connectors, add the Bicep resources to `deployment.bicep` instead.
+
+> Scripts are provided in full in [Monitoring Scripts](./references/monitoring-scripts.md). Both scripts discover connector resources automatically by resource group prefix (`rg-operations-sentinel-` by default) — no hardcoded lists to maintain.
+
+**Step 1 — Function App metric alerts:**
+
+```powershell
+.\Setup-FunctionAlerts.ps1 `
+  -EmailAddresses "sentinel-connector-alerts@arpa-h.gov"
+```
+
+Creates `Http5xx`, `HighLatency`, and `LowAvailability` metric alert rules per Function App.
+
+**Step 2 — App Insights smart detector rules:**
+
+```powershell
+.\Setup-AppInsightsAlerts.ps1 `
+  -EmailAddresses "sentinel-connector-alerts@arpa-h.gov"
+```
+
+Creates `FailureAnomalies`, `ExceptionVolumeChanged`, `DependencyPerformanceDegradation`, and `TraceSeverity` smart detector rules per App Insights instance.
+
 ---
 
 ## References
@@ -581,6 +647,7 @@ AzureDiagnostics
 - [Connector Manifest (ARM Template)](./references/connector-manifest.md)
 - [Terraform Connector Reference](./references/terraform.md)
 - [Codeless Connector Platform](./references/ccp.md)
+- [Monitoring Scripts (PowerShell)](./references/monitoring-scripts.md)
 - [Create a codeless connector (Microsoft Learn)](https://learn.microsoft.com/en-us/azure/sentinel/create-codeless-connector)
 - [VNet integration for Azure Functions](https://learn.microsoft.com/azure/azure-functions/functions-networking-options#virtual-network-integration)
 - [Azure Monitor Private Link Scope (AMPLS)](https://learn.microsoft.com/azure/azure-monitor/logs/private-link-security)

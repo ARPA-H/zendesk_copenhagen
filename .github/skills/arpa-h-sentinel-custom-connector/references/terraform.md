@@ -110,7 +110,15 @@ resource "azurerm_storage_container" "state" {
   storage_account_name  = azurerm_storage_account.state.name
   container_access_type = "private"
 }
-
+# ── Application Insights ───────────────────────────────────────────────────
+resource "azurerm_application_insights" "connector" {
+  # derives appi-operations-sentinel-<connector>-usc from func-operations-sentinel-<connector>-usc
+  name                = "appi-${trimprefix(var.function_app_name, "func-")}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  application_type    = "web"
+  workspace_id        = var.workspace_resource_id
+}
 # ── App Service Plan ─────────────────────────────────────────────────────────
 # Use sku_name = "FC1" for Flex Consumption (recommended); "Y1" for standard Consumption.
 resource "azurerm_service_plan" "connector" {
@@ -149,8 +157,9 @@ resource "azurerm_linux_function_app" "connector" {
     DCE_ENDPOINT                = azurerm_monitor_data_collection_endpoint.connector.logs_ingestion_endpoint
     DCR_RULE_ID                 = azurerm_monitor_data_collection_rule.connector.immutable_id
     DCR_STREAM_NAME             = "Custom-Product${var.connector_name}Events_CL"
-    STATE_STORAGE_URL           = "https://${azurerm_storage_account.state.name}.blob.core.windows.net"
-    SOURCE_API_KEY              = "@Microsoft.KeyVault(SecretUri=${var.source_api_key_secret_uri})"
+    STATE_STORAGE_URL                      = "https://${azurerm_storage_account.state.name}.blob.core.windows.net"
+    APPLICATIONINSIGHTS_CONNECTION_STRING  = azurerm_application_insights.connector.connection_string
+    SOURCE_API_KEY                         = "@Microsoft.KeyVault(SecretUri=${var.source_api_key_secret_uri})"
   }
 }
 
@@ -173,6 +182,64 @@ resource "azurerm_role_assignment" "kv_secrets_user" {
   scope                = data.azurerm_key_vault.existing.id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_linux_function_app.connector.identity[0].principal_id
+}
+
+# ── Shared action group (in rg-operations-sentinel-playbooks-usc) ─────────────────
+data "azurerm_monitor_action_group" "shared" {
+  name                = "FunctionAlerts-ActionGroup"
+  resource_group_name = "rg-operations-sentinel-playbooks-usc"
+}
+
+locals {
+  metric_alert_defs = [
+    { suffix = "Http5xx",         metric = "Http5xx",           aggregation = "Total",   operator = "GreaterThan", threshold = 5,   severity = 2, freq = "PT5M", window = "PT15M" },
+    { suffix = "HighLatency",     metric = "HttpResponseTime",  aggregation = "Average", operator = "GreaterThan", threshold = 5,   severity = 3, freq = "PT5M", window = "PT15M" },
+    { suffix = "LowAvailability", metric = "HealthCheckStatus", aggregation = "Average", operator = "LessThan",    threshold = 100, severity = 1, freq = "PT1M", window = "PT5M"  },
+  ]
+  smart_detectors = {
+    "Failure Anomalies"                 = { type = "FailureAnomaliesDetector",                 freq = "PT1M"  }
+    "Abnormal Rise in Exception Volume" = { type = "ExceptionVolumeChangedDetector",           freq = "PT24H" }
+    "Dependency Latency Degradation"    = { type = "DependencyPerformanceDegradationDetector", freq = "PT24H" }
+    "Trace Severity Degradation"        = { type = "TraceSeverityDetector",                    freq = "PT24H" }
+  }
+}
+
+# ── Metric alerts (Function App) ───────────────────────────────────────────────────
+resource "azurerm_monitor_metric_alert" "func" {
+  for_each            = { for a in local.metric_alert_defs : a.suffix => a }
+  name                = "FuncAlert-${azurerm_linux_function_app.connector.name}-${each.value.suffix}"
+  resource_group_name = var.resource_group_name
+  scopes              = [azurerm_linux_function_app.connector.id]
+  severity            = each.value.severity
+  frequency           = each.value.freq
+  window_size         = each.value.window
+
+  criteria {
+    metric_namespace = "Microsoft.Web/sites"
+    metric_name      = each.value.metric
+    aggregation      = each.value.aggregation
+    operator         = each.value.operator
+    threshold        = each.value.threshold
+  }
+
+  action {
+    action_group_id = data.azurerm_monitor_action_group.shared.id
+  }
+}
+
+# ── Smart detector alert rules (App Insights) ────────────────────────────────────
+resource "azurerm_monitor_smart_detector_alert_rule" "appi" {
+  for_each            = local.smart_detectors
+  name                = "${each.key} - ${azurerm_application_insights.connector.name}"
+  resource_group_name = var.resource_group_name
+  scope_resource_ids  = [azurerm_application_insights.connector.id]
+  severity            = "Sev3"
+  frequency           = each.value.freq
+  detector_type       = each.value.type
+
+  action_group {
+    ids = [data.azurerm_monitor_action_group.shared.id]
+  }
 }
 ```
 
@@ -245,6 +312,12 @@ output "dce_logs_ingestion_endpoint" {
 output "function_app_principal_id" {
   description = "System-assigned managed identity principal ID of the Function App."
   value       = azurerm_linux_function_app.connector.identity[0].principal_id
+}
+
+output "application_insights_connection_string" {
+  description = "Application Insights connection string — also set as APPLICATIONINSIGHTS_CONNECTION_STRING on the Function App."
+  value       = azurerm_application_insights.connector.connection_string
+  sensitive   = true
 }
 ```
 
