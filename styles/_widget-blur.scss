@@ -1,39 +1,72 @@
 /* ---------------------------------------------------------------------------
- * ARPA-Help chat-widget corner blur backdrop
+ * ARPA-Help chat-widget blur backdrops
  * ---------------------------------------------------------------------------
- * The Zendesk messaging launcher iframe (id="launcher") is injected by
- * Zendesk's own Messaging/Widget script - it is NOT part of this theme and
- * cannot be edited directly (cross-origin iframe, hardcoded inline styles:
- * position: fixed; bottom: 16px; right: 16px; z-index: 999999;).
+ * The Zendesk messaging launcher button AND the conversation panel it opens
+ * both render inside Zendesk's own cross-origin iframes (id="launcher" and
+ * id="webWidget") - they are NOT part of this theme and cannot be restyled
+ * directly. This was confirmed against Zendesk's full public customization
+ * surface for the Messaging Web Widget
+ * (https://developer.zendesk.com/api-reference/widget-messaging/web/core/,
+ * `messenger:set customization` command): it covers theme colors, position/
+ * offset, and content toggles, but has no corner-radius or CSS-injection
+ * hook. So the widget's own internal corners can't be changed from here -
+ * only OUR decorative chrome around it can be shaped to match NEXUS tokens.
  *
- * Because it floats over whatever page content happens to scroll underneath
- * it (e.g. the ".svc-help-banner" / "General request" pill at the bottom of
- * service pages), high-contrast content can visually "clip" against its
- * rounded-corner edge.
+ * Two click-through, purely decorative backdrops soften the hard edge
+ * between page content and the widget, each shaped with real NEXUS corner
+ * radii already used elsewhere in this theme:
  *
- * This adds a purely decorative, click-through corner backdrop that softens
- * (blurs) page content the closer it gets to the widget's corner, fading
- * back to fully crisp/original content ~300px out. It uses the standard
- * `backdrop-filter` + gradient `mask-image` technique (see
- * https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter and
- * https://www.joshwcomeau.com/css/backdrop-filter/), stacked across 4 layers
- * so the blur amount ramps up gradually instead of switching on/off at a
- * hard edge (layers "drop out" moving away from the corner, so blur amounts
- * compound near the widget and taper to nothing further away).
+ * 1. `.widget-blur-backdrop` - a static halo hugging the closed launcher
+ *    button (fixed 64x64 + 16px offset), shaped as a circle
+ *    (`border-radius: 50%`) per NEXUS's "Icon Button Drop Shadow" floating-
+ *    action-button spec. Reaches exactly 25px beyond the launcher's edges.
+ *
+ * 2. `.widget-blur-backdrop-panel` - a dynamically sized/positioned halo
+ *    (see src/widgetBlurTracker.js) that grows to hug the conversation panel
+ *    iframe as it opens, always 25px beyond its current edges on every side.
+ *    Uses `border-radius: 24px` (NEXUS `corner-radius/xl`), matching
+ *    `.svc-shell` elsewhere in this theme for large panel-like surfaces.
+ *    The tracker only ever reads the iframe ELEMENT's own box geometry
+ *    (always readable, even cross-origin) - it never reaches into the
+ *    iframe's content.
+ *
+ * Both use the standard `backdrop-filter` + gradient `mask-image` technique
+ * (see https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter and
+ * https://www.joshwcomeau.com/css/backdrop-filter/), stacked across layers so
+ * blur ramps up gradually within that 25px margin instead of a hard edge.
  *
  * `backdrop-filter` reached full cross-browser Baseline support in Sept 2024
  * (see https://caniuse.com/css-backdrop-filter); unsupported browsers simply
  * render nothing here (no background of their own), so this degrades safely.
  * ------------------------------------------------------------------------ */
 
+// Shared base for every blur layer, regardless of which halo it belongs to.
+.widget-blur-backdrop-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+// ---------------------------------------------------------------------------
+// 1. Launcher halo (static - the closed launcher button never changes size)
+// ---------------------------------------------------------------------------
+// Launcher footprint is 64px + a 16px offset from the corner = 80px; a 25px
+// margin beyond that on every side gives a 105px square.
+$launcher-reach: 80px; // distance from the viewport corner to the launcher's far edge
+$halo-margin: 25px; // required margin beyond the widget's own edges, in any direction
+$launcher-halo-size: $launcher-reach + $halo-margin; // 105px
+
 .widget-blur-backdrop {
   position: fixed;
   right: 0;
   bottom: 0;
-  width: 300px;
-  height: 300px;
-  max-width: 60vw;
-  max-height: 60vh;
+  width: $launcher-halo-size;
+  height: $launcher-halo-size;
+  // Circle, per NEXUS's "Icon Button Drop Shadow" component spec (used for
+  // floating actions like this one) - the box is a perfect square, so a 50%
+  // radius renders a true circle rather than an arbitrary corner token.
+  border-radius: 50%;
+  overflow: hidden;
   // Sits above ordinary page content but below the widget iframe's own
   // z-index: 999999 (and below the 2147483647 flash-notification layer, see
   // src/modules/shared/notifications/constants.ts) so it never covers a
@@ -42,70 +75,89 @@
   pointer-events: none;
 }
 
-.widget-blur-backdrop-layer {
-  position: absolute;
-  inset: 0;
+// Heaviest, tightest blur - right behind the launcher itself.
+.widget-blur-backdrop-layer-1 {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 20px}, transparent #{$launcher-reach});
+  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 20px}, transparent #{$launcher-reach});
+}
+
+.widget-blur-backdrop-layer-2 {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 5px}, transparent #{$launcher-reach + 15px});
+  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach - 5px}, transparent #{$launcher-reach + 15px});
+}
+
+// Lightest, widest reach - fades out exactly at the 25px margin.
+.widget-blur-backdrop-layer-3 {
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach + 10px}, transparent #{$launcher-halo-size});
+  -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black #{$launcher-reach + 10px}, transparent #{$launcher-halo-size});
+}
+
+// ---------------------------------------------------------------------------
+// 2. Conversation-panel halo (dynamic - sized/positioned by
+//    src/widgetBlurTracker.js to hug the panel iframe + 25px on every side)
+// ---------------------------------------------------------------------------
+.widget-blur-backdrop-panel {
+  position: fixed;
+  display: none; // toggled on by the tracker once the panel iframe has real size
+  border-radius: 24px; // NEXUS corner-radius/xl, matching .svc-shell
+  overflow: hidden;
+  z-index: 999998;
   pointer-events: none;
+  // Smooths between observer callbacks so the halo reads as "growing with"
+  // the panel rather than snapping between measurements.
+  transition: left 0.12s ease-out, top 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out;
 }
 
-@media (min-width: 480px) {
-  // Heaviest, tightest blur - dominant right behind the widget itself.
-  .widget-blur-backdrop-layer-1 {
-    backdrop-filter: blur(26px);
-    -webkit-backdrop-filter: blur(26px);
-    mask-image: radial-gradient(circle at 100% 100%, black 0, black 50px, transparent 90px);
-    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 50px, transparent 90px);
-  }
-
-  .widget-blur-backdrop-layer-2 {
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    mask-image: radial-gradient(circle at 100% 100%, black 0, black 100px, transparent 160px);
-    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 100px, transparent 160px);
-  }
-
-  .widget-blur-backdrop-layer-3 {
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    mask-image: radial-gradient(circle at 100% 100%, black 0, black 180px, transparent 240px);
-    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 180px, transparent 240px);
-  }
-
-  // Lightest, widest reach - the first hint of softening as content scrolls in.
-  .widget-blur-backdrop-layer-4 {
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
-    mask-image: radial-gradient(circle at 100% 100%, black 0, black 260px, transparent 300px);
-    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 260px, transparent 300px);
-  }
+// A uniform-width "picture frame" fade: two perpendicular linear-gradients
+// combined with mask-composite: intersect multiply their alpha together, so
+// the mask is fully opaque over the panel's own footprint and fades to
+// transparent over exactly the last $halo-margin (25px) on every edge,
+// regardless of the panel's current width/height. Standard since Chrome 120,
+// Firefox 53, Safari 15.4 (https://caniuse.com/mdn-css_properties_mask-composite).
+@mixin panel-frame-mask($fade-start) {
+  mask-image:
+    linear-gradient(to right, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent),
+    linear-gradient(to bottom, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent),
+    linear-gradient(to bottom, transparent, black #{$fade-start}, black calc(100% - #{$fade-start}), transparent);
 }
 
-// Below 480px viewports the corner region is scaled down (via max-width/
-// max-height above) small enough that a single, lighter blur reads better
-// than four full-strength layers crowding a small screen.
-@media (max-width: 479px) {
-  .widget-blur-backdrop-layer-1,
-  .widget-blur-backdrop-layer-2 {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    mask-image: radial-gradient(circle at 100% 100%, black 0, black 35%, transparent 65%);
-    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 35%, transparent 65%);
-  }
+.widget-blur-backdrop-panel .widget-blur-backdrop-layer-1 {
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  @include panel-frame-mask(17px);
+}
 
-  .widget-blur-backdrop-layer-3,
-  .widget-blur-backdrop-layer-4 {
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    mask-image: radial-gradient(circle at 100% 100%, black 0, black 55%, transparent 90%);
-    -webkit-mask-image: radial-gradient(circle at 100% 100%, black 0, black 55%, transparent 90%);
-  }
+.widget-blur-backdrop-panel .widget-blur-backdrop-layer-2 {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  @include panel-frame-mask(9px);
+}
+
+.widget-blur-backdrop-panel .widget-blur-backdrop-layer-3 {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  // A literal 0px fade-start would put the "transparent" and "black 0" stops
+  // at the exact same position, producing a hard cut instead of a smooth
+  // ramp - use a small positive value so even the widest-reaching, lightest
+  // layer still fades in gradually right at the box's outer edge.
+  @include panel-frame-mask(5px);
 }
 
 // Respect the "reduce transparency" accessibility preference (Safari/macOS;
 // unsupported browsers simply ignore this media feature - see
 // https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-transparency).
 @media (prefers-reduced-transparency: reduce) {
-  .widget-blur-backdrop {
+  .widget-blur-backdrop,
+  .widget-blur-backdrop-panel {
     display: none;
   }
 }
