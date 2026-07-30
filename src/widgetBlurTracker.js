@@ -14,19 +14,39 @@
  * not subject to the same-origin restriction - only its *content* is) - it
  * never reaches into the iframe's content or its cross-origin document.
  *
- * Zendesk renders the conversation panel in an iframe with id="webWidget"
- * (kept for backward compatibility across the Classic Web Widget and the
- * newer Messaging Web Widget). If Zendesk ever renames it, update
- * WIDGET_PANEL_IFRAME_IDS below.
+ * The Zendesk snippet that actually creates these iframes is configured in
+ * Zendesk Admin Center, not in this repo, so its exact DOM (element IDs)
+ * isn't something we can read from source control or verify against a local
+ * build. Rather than hard-coding a single guessed iframe id (which silently
+ * finds nothing - and shows no blur at all - if Zendesk names it
+ * differently), this identifies the panel iframe with a few independent,
+ * best-effort signals and takes the first match:
+ *
+ *   1. A known id Zendesk has used historically ("webWidget").
+ *   2. Its `src` pointing at a Zendesk widget domain (zdassets.com /
+ *      zendesk.com / zopim.com) - readable on any iframe element regardless
+ *      of cross-origin restrictions, since `src` is just an attribute of
+ *      the outer element in OUR document, not the iframe's cross-origin
+ *      content.
+ *   3. Its accessible name (title/aria-label) mentioning "messag"/"convers"/
+ *      "chat" - matches the launcher's own
+ *      `title="Button to launch messaging window..."` pattern.
+ *
+ * The launcher button itself is explicitly excluded from all of the above so
+ * it's never mistaken for the panel.
  *
  * ES2015 only (no async/await, no optional chaining, no arrow functions in
  * places that would need `this`) - bundled into script.js, which ships
  * without a transpiler.
  */
 (function () {
-  var WIDGET_PANEL_IFRAME_IDS = ["webWidget"];
+  var KNOWN_PANEL_IDS = ["webWidget"];
+  var WIDGET_DOMAIN_PATTERN = /zdassets\.com|zendesk\.com|zopim\.com/i;
+  var MESSAGING_TEXT_PATTERN = /messag|convers|chat/i;
+  var LAUNCHER_TEXT_PATTERN = /launch/i;
   var HALO_MARGIN = 25; // px beyond the tracked iframe's own edges, in any direction
   var LAYER_COUNT = 3;
+  var RECHECK_INTERVAL_MS = 1500; // safety net in case the tracked iframe is swapped out
 
   var haloEl = null;
   var trackedIframe = null;
@@ -46,11 +66,39 @@
     return el;
   }
 
+  function accessibleText(el) {
+    return (
+      (el.getAttribute("title") || "") +
+      " " +
+      (el.getAttribute("aria-label") || "")
+    );
+  }
+
+  function isLauncherIframe(el) {
+    if (el.id === "launcher") return true;
+    return LAUNCHER_TEXT_PATTERN.test(accessibleText(el));
+  }
+
+  function looksLikeWidgetPanel(el) {
+    if (WIDGET_DOMAIN_PATTERN.test(el.getAttribute("src") || "")) return true;
+    return MESSAGING_TEXT_PATTERN.test(accessibleText(el));
+  }
+
   function findPanelIframe() {
-    for (var i = 0; i < WIDGET_PANEL_IFRAME_IDS.length; i++) {
-      var el = document.getElementById(WIDGET_PANEL_IFRAME_IDS[i]);
-      if (el && el.tagName === "IFRAME") return el;
+    for (var i = 0; i < KNOWN_PANEL_IDS.length; i++) {
+      var known = document.getElementById(KNOWN_PANEL_IDS[i]);
+      if (known && known.tagName === "IFRAME" && !isLauncherIframe(known)) {
+        return known;
+      }
     }
+
+    var iframes = document.querySelectorAll("iframe");
+    for (var j = 0; j < iframes.length; j++) {
+      var candidate = iframes[j];
+      if (isLauncherIframe(candidate)) continue;
+      if (looksLikeWidgetPanel(candidate)) return candidate;
+    }
+
     return null;
   }
 
@@ -91,10 +139,6 @@
       // so the halo tracks smoothly rather than only at the start/end state.
       var ro = new ResizeObserver(scheduleUpdate);
       ro.observe(iframe);
-    } else {
-      // Fallback for browsers without ResizeObserver: cheap low-frequency
-      // poll, only while a panel iframe is present on the page.
-      window.setInterval(scheduleUpdate, 200);
     }
 
     // Catches position-only changes (e.g. a slide-in) that don't necessarily
@@ -121,8 +165,24 @@
         startTracking(iframe);
       }
     });
-    bodyObserver.observe(document.body, { childList: true, subtree: false });
+    bodyObserver.observe(document.body, { childList: true, subtree: true });
   }
+
+  // Safety net: browsers without ResizeObserver never get scheduleUpdate
+  // called by size changes, and ANY browser could have its tracked iframe
+  // silently removed/replaced (widget reset, re-init) without our observers
+  // firing. A cheap low-frequency poll re-measures the current iframe and
+  // re-attaches to a replacement if the original one leaves the document.
+  window.setInterval(function () {
+    if (trackedIframe && !document.contains(trackedIframe)) {
+      trackedIframe = null;
+      var replacement = findPanelIframe();
+      if (replacement) startTracking(replacement);
+      else if (haloEl) haloEl.style.display = "none";
+      return;
+    }
+    if (!window.ResizeObserver) scheduleUpdate();
+  }, RECHECK_INTERVAL_MS);
 
   if (document.readyState !== "loading") {
     watchForPanelIframe();
