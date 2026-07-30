@@ -2,26 +2,24 @@
 
 ## Pattern 1: Azure Function + Log Ingestion API (Recommended for SaaS APIs)
 
-```text
-Source API (SaaS / REST / custom)
-    │
-    ▼
-Azure Function (Timer Trigger)
-    │  - Fetch records since last_run timestamp
-    │  - Transform to DCR schema
-    │  - Batch into ≤1 MB chunks
-    │
-    ▼
-Log Ingestion API (DCE endpoint)
-    │
-    ▼
-DCR (optional KQL transform)
-    │
-    ▼
-Log Analytics Custom Table (_CL)
-    │
-    ▼
-Microsoft Sentinel (Analytics Rules, Workbooks, Hunting)
+```mermaid
+flowchart TD
+    SRC["Source API<br/>(SaaS / REST)"]
+    FA["Azure Function<br/>(Timer Trigger)"]
+    BLOB[("Blob Storage<br/>State: last_run")]
+    KV["Key Vault<br/>API credentials"]
+    DCE["Data Collection<br/>Endpoint (DCE)"]
+    DCR["Data Collection Rule<br/>(optional KQL transform)"]
+    LA[("Log Analytics<br/>Product_CL table")]
+    SEN["Microsoft Sentinel<br/>Analytics · Workbooks · Hunting"]
+
+    SRC -->|"fetch since last_run"| FA
+    BLOB <-->|"read / write last_run"| FA
+    KV -.->|"API key via managed identity"| FA
+    FA -->|"batched records ≤1 MB"| DCE
+    DCE --> DCR
+    DCR -->|"write rows"| LA
+    LA --> SEN
 ```
 
 ### State Tracking
@@ -134,6 +132,18 @@ No Azure Function required. Connector runs inside Sentinel's infrastructure.
 
 See [CCP Reference](./ccp.md) for full details.
 
+```mermaid
+flowchart TD
+    SRC["Source API<br/>(SaaS / REST)"]
+    CCP["Codeless Connector Platform<br/>(runs inside Sentinel infrastructure)"]
+    LA[("Log Analytics<br/>Custom Table")]
+    SEN["Microsoft Sentinel<br/>Data Connectors Gallery"]
+
+    SRC -->|"REST poll<br/>(declarative config)"| CCP
+    CCP -->|"ingest"| LA
+    LA --> SEN
+```
+
 **Use when:**
 
 - The SaaS API is publicly accessible with predictable pagination
@@ -143,6 +153,20 @@ See [CCP Reference](./ccp.md) for full details.
 ---
 
 ## Pattern 3: Logic App
+
+```mermaid
+flowchart TD
+    SRC["Source API<br/>(event / webhook)"]
+    LA_APP["Logic App<br/>(event-driven workflow)"]
+    DCE["Log Ingestion API<br/>(DCE endpoint)"]
+    TABLE[("Log Analytics<br/>Custom Table")]
+    SEN["Microsoft Sentinel"]
+
+    SRC -->|"trigger"| LA_APP
+    LA_APP -->|"optional enrichment<br/>+ transform"| DCE
+    DCE --> TABLE
+    TABLE --> SEN
+```
 
 **Use when:**
 

@@ -17,6 +17,7 @@ azuredeploy.json
 ├── resources
 │   ├── Microsoft.Insights/dataCollectionEndpoints
 │   ├── Microsoft.Insights/dataCollectionRules
+│   ├── Microsoft.Insights/components              (App Insights)
 │   ├── Microsoft.Storage/storageAccounts          (state tracking)
 │   ├── Microsoft.Web/serverfarms                  (App Service Plan)
 │   ├── Microsoft.Web/sites                        (Function App)
@@ -37,6 +38,7 @@ azuredeploy.json
     "workspaceResourceId":     { "type": "string" },
     "functionAppName":         { "type": "string" },
     "storageAccountName":      { "type": "string" },
+    "applicationInsightsName": { "type": "string" },
     "sourceApiKeySecretUri":  { "type": "string", "metadata": { "description": "Key Vault secret URI for the source system API key or token" } },
     "location":                { "type": "string", "defaultValue": "[resourceGroup().location]" }
   },
@@ -110,6 +112,17 @@ azuredeploy.json
       }
     },
     {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[parameters('applicationInsightsName')]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "WorkspaceResourceId": "[parameters('workspaceResourceId')]"
+      }
+    },
+    {
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2022-09-01",
       "name": "[concat(parameters('functionAppName'), '-plan')]",
@@ -127,6 +140,7 @@ azuredeploy.json
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', concat(parameters('functionAppName'), '-plan'))]",
         "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]",
+        "[resourceId('Microsoft.Insights/components', parameters('applicationInsightsName'))]",
         "[resourceId('Microsoft.Insights/dataCollectionEndpoints', variables('dceName'))]",
         "[resourceId('Microsoft.Insights/dataCollectionRules', variables('dcrName'))]"
       ],
@@ -141,6 +155,7 @@ azuredeploy.json
             { "name": "DCR_RULE_ID",            "value": "[reference(resourceId('Microsoft.Insights/dataCollectionRules', variables('dcrName'))).immutableId]" },
             { "name": "DCR_STREAM_NAME",        "value": "[variables('streamName')]" },
             { "name": "STATE_STORAGE_URL",      "value": "[concat('https://', parameters('storageAccountName'), '.blob.core.windows.net')]" },
+            { "name": "APPLICATIONINSIGHTS_CONNECTION_STRING", "value": "[reference(resourceId('Microsoft.Insights/components', parameters('applicationInsightsName')), '2020-02-02').ConnectionString]" },
             { "name": "SOURCE_API_KEY",        "value": "[concat('@Microsoft.KeyVault(SecretUri=', parameters('sourceApiKeySecretUri'), ')')]" }
           ]
         }
