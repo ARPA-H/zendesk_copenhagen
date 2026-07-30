@@ -418,6 +418,15 @@ export function ItemRequestForm({
                 size="large"
                 isStretched
                 type="submit"
+                // Marks the real submit button so the static proxy button in
+                // service_page.hbs (#svc-custom-submit) can find it
+                // unambiguously. Do not remove: a generic `[role="button"]`
+                // selector also matches Garden's FileUpload dropzone (it
+                // hardcodes role="button"), which sits earlier in the DOM
+                // when an attachments field is configured and was
+                // previously matched first, causing the proxy to open the
+                // file picker instead of submitting the form.
+                data-svc-native-submit
                 disabled={isPreviewMode}
                 title={
                   isPreviewMode
