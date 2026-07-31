@@ -6140,14 +6140,33 @@ a.svc-help-btn:hover,
     overflow-x: hidden !important;
     max-width: 100% !important;
   }
-  /* Hide only stray/duplicate menu buttons — NOT our real menu button */
-  .svc-home .header .mobile-menu-button,
-  .svc-home .header button[aria-label*=menu i],
-  .svc-home .header button[aria-label*=Menu i],
-  .svc-home .header [class*=MobileMenu],
-  .svc-home .header [class*=mobile-menu],
-  .svc-home .header [data-testid*=mobile-menu],
-  .svc-home .header [data-testid*=MobileMenu] {
+  /* Hide only stray/duplicate menu buttons — NOT our real menu button.
+     BUG: the intent (per the original comment) was already to exclude our
+     real button, but the exclusion was never actually encoded in the
+     selectors — they matched on heuristics (aria-label containing "menu",
+     class/data-testid containing "mobile-menu") instead of positively
+     excluding .menu-button-mobile. Our real button's aria-label comes from
+     Zendesk's built-in {{t 'toggle_navigation'}} translation, which
+     apparently contains "menu" (case-insensitively) in the deployed locale,
+     so `button[aria-label*="menu" i]` matched it — and because that
+     selector's specificity (class + element + attribute) is HIGHER than
+     `.svc-home .header .menu-button-mobile` below (three classes, no
+     element/attribute), the hide rule always won over the show rule once
+     both are !important, regardless of source order. That hid the button
+     (and the avatar/icon inside it), which in turn collapsed the whole
+     .nav-wrapper-mobile flex container to 0x0 since it had no other visible
+     content. Only templates/service_list_page.hbs is affected because it's
+     the only page that adds the .svc-home class this block is scoped to.
+     Fix: explicitly exclude .menu-button-mobile with :not() so no future
+     translation/locale change can ever make this heuristic match our real
+     button again. */
+  .svc-home .header .mobile-menu-button:not(.menu-button-mobile),
+  .svc-home .header button[aria-label*=menu i]:not(.menu-button-mobile),
+  .svc-home .header button[aria-label*=Menu i]:not(.menu-button-mobile),
+  .svc-home .header [class*=MobileMenu]:not(.menu-button-mobile),
+  .svc-home .header [class*=mobile-menu]:not(.menu-button-mobile),
+  .svc-home .header [data-testid*=mobile-menu]:not(.menu-button-mobile),
+  .svc-home .header [data-testid*=MobileMenu]:not(.menu-button-mobile) {
     display: none !important;
   }
   /* Show the real mobile menu button on home. NOTE: no forced white color
