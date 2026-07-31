@@ -91,6 +91,7 @@ describe("useValidateServiceItemForm", () => {
         assetType: null,
         asset: null,
       });
+      expect(validationResult.fieldErrors).toEqual({});
     });
 
     it("returns no errors when optional fields are empty", () => {
@@ -356,14 +357,18 @@ describe("useValidateServiceItemForm", () => {
       expect(validationResult.hasError).toBe(false);
     });
 
-    it("ignores non-asset fields in validation", () => {
+    it("flags a required non-asset field generically instead of ignoring it", () => {
       const { result } = renderHook(() =>
         useValidateServiceItemForm(undefined)
       );
 
-      // A required text field without asset relationship should not trigger errors
+      // A required text field without an asset relationship used to be
+      // silently ignored by this hook (no client-side error at all),
+      // leaving it entirely up to a server round-trip to ever flag it.
+      // It must now get a generic required-field error instead.
       const fields = [
         createTextField({
+          id: 42,
           required: true,
           value: null,
           relationship_target_type: undefined,
@@ -372,10 +377,30 @@ describe("useValidateServiceItemForm", () => {
 
       const validationResult = result.current.validate(fields, []);
 
-      // No asset-related errors, even though field is required and empty
-      expect(validationResult.hasError).toBe(false);
+      expect(validationResult.hasError).toBe(true);
       expect(validationResult.errors.assetType).toBeNull();
       expect(validationResult.errors.asset).toBeNull();
+      expect(validationResult.fieldErrors[42]).toBe("This field is required.");
+    });
+
+    it("does not flag a required non-asset field once it has a value", () => {
+      const { result } = renderHook(() =>
+        useValidateServiceItemForm(undefined)
+      );
+
+      const fields = [
+        createTextField({
+          id: 42,
+          required: true,
+          value: "some answer",
+          relationship_target_type: undefined,
+        }),
+      ];
+
+      const validationResult = result.current.validate(fields, []);
+
+      expect(validationResult.hasError).toBe(false);
+      expect(validationResult.fieldErrors).toEqual({});
     });
   });
 });

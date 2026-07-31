@@ -154,7 +154,15 @@ describe("ServiceCatalogItem", () => {
       label: "Field 1",
       required: true,
       options: [],
-      value: null,
+      // Non-empty on purpose: this fixture is shared by every test in this
+      // file (see beforeEach below), most of which are about server
+      // response handling / on-behalf submission, not about required-field
+      // validation itself. Since useValidateServiceItemForm now correctly
+      // blocks the client-side submit when ANY required field is empty
+      // (see the dedicated "client-side required-field validation" tests
+      // below), leaving this field empty would incidentally block every
+      // other test's submission before it ever reaches the server.
+      value: "Field 1 value",
       error: null,
     },
   ];
@@ -373,6 +381,75 @@ describe("ServiceCatalogItem", () => {
 
       await waitFor(() => {
         expect(mockSubmitServiceItemRequest).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("client-side required-field validation", () => {
+    it("blocks submission and flags a required non-asset field left empty", async () => {
+      const setRequestFields = jest.fn();
+
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: [
+          {
+            id: 1,
+            name: "custom_fields_1",
+            type: "text",
+            description: "Field 1",
+            label: "Field 1",
+            required: true,
+            options: [],
+            value: null,
+            error: null,
+          },
+        ],
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields,
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(setRequestFields).toHaveBeenCalledWith([
+          expect.objectContaining({
+            id: 1,
+            error: "This field is required.",
+          }),
+        ]);
+      });
+
+      // Client-side validation should stop the request before it ever
+      // reaches the network -- the field's own red highlight (driven by
+      // the `error` set above -> aria-invalid, see _svc-form-validation.scss)
+      // is the feedback, not a round trip to the server.
+      expect(mockSubmitServiceItemRequest).not.toHaveBeenCalled();
+    });
+
+    it("submits normally once the required field has a value", async () => {
+      const successResponse = {
+        ok: true,
+        json: () => Promise.resolve({ request: { id: 555 } }),
+      } as unknown as Response;
+      mockSubmitServiceItemRequest.mockResolvedValue(successResponse);
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(mockSubmitServiceItemRequest).toHaveBeenCalled();
       });
     });
   });
