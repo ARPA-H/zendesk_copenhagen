@@ -10,4 +10,4 @@ import "./svcSearch";
 import "./svcGreeting";
 import "./svcReveal";
 import "./svcCatalogEnhancements";
-import "./widgetBlurTracker";
+import "./widgetElevationTracker";

@@ -1,38 +1,35 @@
 /*
- * Dynamically hugs a soft blur halo around the ARPA-Help messaging widget's
- * conversation panel iframe as it opens/grows, since the panel's size is
- * animated and viewport/locale-dependent and can't be predicted with static
- * CSS (see styles/_widget-blur.scss for the launcher's static halo, which
- * CAN be static because the closed launcher button never resizes).
+ * Dynamically sizes/positions a plain box-shadow "backer" element behind
+ * the ARPA-Help messaging widget's conversation panel iframe as it
+ * opens/grows, since the panel's size is animated and viewport/locale-
+ * dependent and can't be predicted with static CSS (see
+ * styles/_widget-elevation.scss for the launcher's static shadow, which CAN
+ * be static because the closed launcher button never resizes).
  *
- * IMPORTANT: confirmed via live inspection that Zendesk mounts its widget
- * iframes (both the launcher AND the conversation panel) inside an *open*
- * Shadow DOM tree, not directly in the page's light DOM. A plain
- * `document.querySelectorAll('iframe')` finds nothing at all; the iframes
- * only turn up by recursively walking into every element's `.shadowRoot`.
- * This affects both how we find the panel iframe and how we watch for it
- * appearing later, since a light-DOM `MutationObserver` does not observe
- * mutations happening inside a separate shadow tree.
+ * IMPORTANT: confirmed via live inspection of the actual site that Zendesk
+ * mounts its widget iframes (both the launcher AND the conversation panel)
+ * inside an *open* Shadow DOM tree, not directly in the page's light DOM. A
+ * plain `document.querySelectorAll('iframe')` finds nothing at all; the
+ * iframes only turn up by recursively walking into every element's
+ * `.shadowRoot`. This affects both how we find the panel iframe and how we
+ * watch for it appearing later, since a light-DOM `MutationObserver` does
+ * not observe mutations happening inside a separate shadow tree.
  *
- * The widget itself is Zendesk's own content (see
- * https://developer.zendesk.com/api-reference/widget-messaging/web/core/ -
- * the widget's public "customization" API covers colors/position/behavior
- * but has no corner-radius or CSS-injection hook), so this only ever reads
- * the iframe ELEMENT's own box geometry on our page (always readable, even
- * cross-origin, since layout geometry of an iframe's own box is not subject
- * to the cross-origin restriction - only its *content* is) - it never
- * reaches into the iframe's content or its cross-origin document. Reading
- * into an *open* shadow root (as opposed to `mode: 'closed'`) is standard,
- * fully public DOM API - it's deliberately inspectable by any page script,
- * same as browser devtools can see it.
+ * This only ever reads the iframe ELEMENT's own box geometry (always
+ * readable, even cross-origin, since layout geometry of an iframe's own box
+ * is not subject to the cross-origin restriction - only its *content* is)
+ * - it never reaches into the iframe's content or its cross-origin
+ * document. Reading into an *open* shadow root (as opposed to
+ * `mode: 'closed'`) is standard, fully public DOM API - it's deliberately
+ * inspectable by any page script, same as browser devtools can see it.
  *
  * The Zendesk snippet that actually creates these iframes is configured in
  * Zendesk Admin Center, not in this repo, so its exact DOM (element IDs)
  * isn't something we can read from source control or verify against a local
  * build. Rather than hard-coding a single guessed iframe id (which silently
- * finds nothing - and shows no blur at all - if Zendesk names it
- * differently), this identifies the panel iframe with a few independent,
- * best-effort signals and takes the first match:
+ * finds nothing if Zendesk names it differently), this identifies the panel
+ * iframe with a few independent, best-effort signals and takes the first
+ * match:
  *
  *   1. A known id Zendesk has used historically ("webWidget").
  *   2. Its `src` pointing at a Zendesk widget domain (zdassets.com /
@@ -55,25 +52,17 @@
   var WIDGET_DOMAIN_PATTERN = /zdassets\.com|zendesk\.com|zopim\.com/i;
   var MESSAGING_TEXT_PATTERN = /messag|convers|chat/i;
   var LAUNCHER_TEXT_PATTERN = /launch/i;
-  var HALO_MARGIN = 40; // px beyond the tracked iframe's own edges, in any direction - must match $halo-margin in styles/_widget-blur.scss
-  var LAYER_COUNT = 3;
   var RECHECK_INTERVAL_MS = 1500; // safety net in case the tracked iframe is swapped out
 
-  var haloEl = null;
+  var shadowEl = null;
   var trackedIframe = null;
   var rafId = null;
   var watchedShadowRoots = []; // ShadowRoot objects we've already attached a MutationObserver to, so we don't double-attach
 
-  function createHalo() {
+  function createShadowEl() {
     var el = document.createElement("div");
-    el.className = "widget-blur-backdrop-panel";
+    el.className = "widget-elevation-backdrop-panel";
     el.setAttribute("aria-hidden", "true");
-    for (var i = LAYER_COUNT; i >= 1; i--) {
-      var layer = document.createElement("div");
-      layer.className =
-        "widget-blur-backdrop-layer widget-blur-backdrop-layer-" + i;
-      el.appendChild(layer);
-    }
     document.body.appendChild(el);
     return el;
   }
@@ -143,44 +132,44 @@
     return null;
   }
 
-  function updateHaloPosition() {
+  function updatePosition() {
     rafId = null;
-    if (!trackedIframe || !haloEl) return;
+    if (!trackedIframe || !shadowEl) return;
 
     var rect = trackedIframe.getBoundingClientRect();
     var hasSize = rect.width > 1 && rect.height > 1;
     if (!hasSize) {
-      haloEl.style.display = "none";
+      shadowEl.style.display = "none";
       return;
     }
 
-    haloEl.style.display = "block";
-    haloEl.style.left = Math.max(0, rect.left - HALO_MARGIN) + "px";
-    haloEl.style.top = Math.max(0, rect.top - HALO_MARGIN) + "px";
-    haloEl.style.width = rect.width + HALO_MARGIN * 2 + "px";
-    haloEl.style.height = rect.height + HALO_MARGIN * 2 + "px";
+    shadowEl.style.display = "block";
+    shadowEl.style.left = rect.left + "px";
+    shadowEl.style.top = rect.top + "px";
+    shadowEl.style.width = rect.width + "px";
+    shadowEl.style.height = rect.height + "px";
   }
 
   function scheduleUpdate() {
     if (rafId !== null) return;
     if (window.requestAnimationFrame) {
-      rafId = window.requestAnimationFrame(updateHaloPosition);
+      rafId = window.requestAnimationFrame(updatePosition);
     } else {
-      updateHaloPosition();
+      updatePosition();
     }
   }
 
   function startTracking(iframe) {
     trackedIframe = iframe;
-    if (!haloEl) haloEl = createHalo();
+    if (!shadowEl) shadowEl = createShadowEl();
 
     if (window.ResizeObserver) {
       // Fires repeatedly while the iframe's box is actively changing size,
       // including mid-way through a CSS transition Zendesk may be running,
-      // so the halo tracks smoothly rather than only at the start/end state.
-      // Works the same whether the iframe lives in the light DOM or inside
-      // a shadow root - ResizeObserver operates on the element reference
-      // itself, not on its position in the tree.
+      // so the shadow tracks smoothly rather than only at the start/end
+      // state. Works the same whether the iframe lives in the light DOM or
+      // inside a shadow root - ResizeObserver operates on the element
+      // reference itself, not on its position in the tree.
       var ro = new ResizeObserver(scheduleUpdate);
       ro.observe(iframe);
     }
@@ -230,7 +219,7 @@
       trackedIframe = null;
       var replacement = findPanelIframe();
       if (replacement) startTracking(replacement);
-      else if (haloEl) haloEl.style.display = "none";
+      else if (shadowEl) shadowEl.style.display = "none";
       return;
     }
     if (!trackedIframe) handlePotentialPanelChange();

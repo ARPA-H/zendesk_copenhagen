@@ -58,6 +58,6 @@
 @import "svc-search-results";
 @import "svc-header";
 
-// ARPA-Help chat-widget corner blur backdrop (footer.hbs). Kept last so it
+// ARPA-Help chat-widget elevation shadow (footer.hbs). Kept last so it
 // isn't overridden by page-specific z-index/backdrop rules above.
-@import "widget-blur";
+@import "widget-elevation";
