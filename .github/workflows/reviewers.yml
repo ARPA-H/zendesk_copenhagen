@@ -1,5 +1,8 @@
 name: Enforce Required Reviewers
 
+permissions:
+  contents: read
+
 on:
   pull_request_review:
     types: [submitted]

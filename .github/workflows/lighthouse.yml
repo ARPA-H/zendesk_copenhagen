@@ -1,4 +1,8 @@
 name: Lighthouse
+
+permissions:
+  contents: read
+
 "on": [push]
 
 jobs:
@@ -6,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: zendesk/checkout@v3
+        uses: zendesk/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
       - name: Setup Node.js
-        uses: zendesk/setup-node@v3
+        uses: zendesk/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
           node-version-file: '.nvmrc'
       # The following step is needed to run puppeteer with ubuntu >= 23.10
