@@ -2,9 +2,9 @@
  * ARPA-Help chat-widget blur backdrops
  * ---------------------------------------------------------------------------
  * The Zendesk messaging launcher button AND the conversation panel it opens
- * both render inside Zendesk's own cross-origin iframes - they are NOT part
- * of this theme and cannot be restyled directly. This was confirmed against
- * Zendesk's full public customization surface for the Messaging Web Widget
+ * both render inside Zendesk's own widget - it is NOT part of this theme and
+ * cannot be restyled directly. This was confirmed against Zendesk's full
+ * public customization surface for the Messaging Web Widget
  * (https://developer.zendesk.com/api-reference/widget-messaging/web/core/,
  * `messenger:set customization` command): it covers theme colors, position/
  * offset, and content toggles, but has no corner-radius or CSS-injection
@@ -18,23 +18,30 @@
  *    button (fixed 64x64, offset 16px from the screen edges).
  * 2. `.widget-blur-backdrop-panel` - a dynamically sized/positioned halo
  *    (see src/widgetBlurTracker.js) that grows to hug the conversation panel
- *    iframe as it opens. The tracker only ever reads the iframe ELEMENT's
- *    own box geometry (always readable, even cross-origin) - it never
- *    reaches into the iframe's content.
+ *    iframe as it opens.
  *
- * Both reach exactly $halo-margin (40px) beyond the widget's own box on
- * every side, with backdrop-filter blur opacity ramping smoothly from 100%
- * at the point touching the widget down to 0% at the outer edge - see the
- * `edge-band-mask` mixin below for how that ramp is constructed. Rounded
- * with a real (finite) corner radius rather than a full circle/pill, so the
- * margin stays a true, uniform 40px in every direction including the
- * diagonals - a circle inscribed in a square inherently tapers to nothing
- * at 45°, which would break the "same margin in any direction" requirement.
+ * Both sit at a LOWER z-index than the widget (999998 vs the widget's
+ * 999999), so the widget itself always renders on top and fully covers
+ * whatever is happening in the middle of our halo - we don't need to cut a
+ * "hole" for the widget's own footprint at all. That keeps the mask about as
+ * simple as this technique gets: ONE rounded box per halo, with
+ * `backdrop-filter: blur()` fading smoothly from fully opaque near the
+ * widget down to fully transparent at $halo-margin (40px) out, using two
+ * perpendicular linear-gradients combined with `mask-composite: intersect`
+ * (https://developer.mozilla.org/en-US/docs/Web/CSS/mask-composite).
  *
- * Uses the standard `backdrop-filter` + gradient `mask-image` technique
- * (see https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter and
- * https://www.joshwcomeau.com/css/backdrop-filter/). `backdrop-filter`
- * reached full cross-browser Baseline support in Sept 2024
+ * A previous version tried to build a "picture frame" ring out of 4
+ * independent single-axis gradients unioned together, each spanning the
+ * FULL width/height of the box. That produced thin, bright ridge lines
+ * running the entire length of each edge (because each one-directional
+ * gradient's opacity peaks sharply right at the point touching the widget,
+ * and that peak isn't localized near the corners - it stretches the full
+ * side, so it reads as a hard streak/"blade" rather than a soft halo). The
+ * fix is this much simpler, more standard two-gradient intersect technique,
+ * which fades smoothly and symmetrically in every direction without ever
+ * needing an artificial "ring" shape.
+ *
+ * `backdrop-filter` reached full cross-browser Baseline support in Sept 2024
  * (see https://caniuse.com/css-backdrop-filter); unsupported browsers simply
  * render nothing here (no background of their own), so this degrades safely.
  * ------------------------------------------------------------------------ */
@@ -48,38 +55,26 @@ $halo-margin: 40px; // required margin beyond the widget's own edges, in any dir
   pointer-events: none;
 }
 
-// Builds a mask for ONE layer that is fully transparent across the widget's
-// own footprint (and beyond the halo's outer edge), and ramps smoothly and
-// MONOTONICALLY from 100% opacity at the point touching the widget down to
-// 0% at $reach px outward from it - never flat/opaque in between, so there
-// is no hard edge anywhere along the ramp. $reach can be less than
-// $halo-margin so different layers (see below) fade out at different
-// distances, building up a soft compound blur without ever reintroducing a
-// plateau.
+// Builds a mask for one layer: fully opaque from the box's center out to
+// $reach px from its own edge, then ramps smoothly down to fully
+// transparent right at the edge. Deep in the middle (behind the widget,
+// which always covers it - see file header) it just stays opaque; nothing
+// ever needs to render there since the widget itself is on top.
 //
-// This is built from 4 independent single-axis linear-gradients (one per
-// edge), unioned together with the default `add` (source-over) mask
-// compositing - NOT `intersect`, which was the bug in the previous version:
-// intersecting two perpendicular ramps produces a hard bilinear crease in
-// the corners instead of a smooth falloff. Each gradient only contributes
-// alpha within its own edge-adjacent band and is fully transparent
-// everywhere else (including the opposite edge and the widget's own
-// footprint), so on a straight edge exactly one gradient contributes (a
-// clean linear ramp), and in a corner two overlap and blend smoothly via
-// normal alpha compositing (source-over never exceeds full opacity).
-@mixin edge-band-mask($reach) {
-  $inner: $halo-margin - $reach; // distance from the halo's own edge where the ramp begins
-  $stop-2: $inner;
-  $stop-3: $halo-margin;
-  $stop-4: $halo-margin + 1px;
+// Two perpendicular gradients (`to right`/`to bottom`, each fading in from
+// both of their own edges) are combined with mask-composite: intersect
+// (multiply). Near a straight edge, away from any corner, only one
+// gradient is actually ramping (the other is already at full opacity deep
+// in that dimension), so it's a clean linear fade. In a corner, both
+// gradients are simultaneously ramping - their product is a smooth,
+// continuous (if not perfectly circular) falloff, not a hard crease.
+@mixin edge-fade-mask($reach) {
+  $x: linear-gradient(to right, transparent, black #{$reach}, black calc(100% - #{$reach}), transparent);
+  $y: linear-gradient(to bottom, transparent, black #{$reach}, black calc(100% - #{$reach}), transparent);
 
-  $left: linear-gradient(to right, transparent 0, transparent #{$stop-2}, black #{$stop-3}, transparent #{$stop-4});
-  $right: linear-gradient(to left, transparent 0, transparent #{$stop-2}, black #{$stop-3}, transparent #{$stop-4});
-  $top: linear-gradient(to bottom, transparent 0, transparent #{$stop-2}, black #{$stop-3}, transparent #{$stop-4});
-  $bottom: linear-gradient(to top, transparent 0, transparent #{$stop-2}, black #{$stop-3}, transparent #{$stop-4});
-
-  mask-image: #{$left}, #{$right}, #{$top}, #{$bottom};
-  -webkit-mask-image: #{$left}, #{$right}, #{$top}, #{$bottom};
+  mask-image: #{$x}, #{$y};
+  mask-composite: intersect;
+  -webkit-mask-image: #{$x}, #{$y};
 }
 
 // ---------------------------------------------------------------------------
@@ -100,8 +95,8 @@ $launcher-halo-offset: $launcher-offset - $halo-margin; // -24px
   // keeps the 40px margin uniform at the diagonals too.
   border-radius: 48px;
   overflow: hidden;
-  // Sits above ordinary page content but below the widget iframe's own
-  // z-index: 999999 (and below the 2147483647 flash-notification layer, see
+  // Sits above ordinary page content but below the widget's own z-index:
+  // 999999 (and below the 2147483647 flash-notification layer, see
   // src/modules/shared/notifications/constants.ts) so it never covers a
   // real interactive overlay.
   z-index: 999998;
@@ -124,29 +119,21 @@ $launcher-halo-offset: $launcher-offset - $halo-margin; // -24px
   transition: left 0.12s ease-out, top 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out;
 }
 
-// Three stacked layers building a soft compound blur: a tight, strong blur
-// close to the widget, widening out to a faint, soft blur that fully
-// disappears by $halo-margin. Every layer independently ramps 100% -> 0%
-// with no plateau - see edge-band-mask above.
+// Two stacked layers building a soft compound blur: a tight, strong blur
+// close to the widget, widening out to a faint, soft blur that reaches the
+// full $halo-margin.
 .widget-blur-backdrop .widget-blur-backdrop-layer-1,
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-1 {
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  @include edge-band-mask(16px);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  @include edge-fade-mask(20px);
 }
 
 .widget-blur-backdrop .widget-blur-backdrop-layer-2,
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-2 {
-  backdrop-filter: blur(11px);
-  -webkit-backdrop-filter: blur(11px);
-  @include edge-band-mask(28px);
-}
-
-.widget-blur-backdrop .widget-blur-backdrop-layer-3,
-.widget-blur-backdrop-panel .widget-blur-backdrop-layer-3 {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  @include edge-band-mask($halo-margin);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  @include edge-fade-mask($halo-margin);
 }
 
 // Respect the "reduce transparency" accessibility preference (Safari/macOS;

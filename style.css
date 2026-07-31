@@ -7960,9 +7960,9 @@ html.svc-home .header .search-wrapper {
  * ARPA-Help chat-widget blur backdrops
  * ---------------------------------------------------------------------------
  * The Zendesk messaging launcher button AND the conversation panel it opens
- * both render inside Zendesk's own cross-origin iframes - they are NOT part
- * of this theme and cannot be restyled directly. This was confirmed against
- * Zendesk's full public customization surface for the Messaging Web Widget
+ * both render inside Zendesk's own widget - it is NOT part of this theme and
+ * cannot be restyled directly. This was confirmed against Zendesk's full
+ * public customization surface for the Messaging Web Widget
  * (https://developer.zendesk.com/api-reference/widget-messaging/web/core/,
  * `messenger:set customization` command): it covers theme colors, position/
  * offset, and content toggles, but has no corner-radius or CSS-injection
@@ -7976,23 +7976,30 @@ html.svc-home .header .search-wrapper {
  *    button (fixed 64x64, offset 16px from the screen edges).
  * 2. `.widget-blur-backdrop-panel` - a dynamically sized/positioned halo
  *    (see src/widgetBlurTracker.js) that grows to hug the conversation panel
- *    iframe as it opens. The tracker only ever reads the iframe ELEMENT's
- *    own box geometry (always readable, even cross-origin) - it never
- *    reaches into the iframe's content.
+ *    iframe as it opens.
  *
- * Both reach exactly $halo-margin (40px) beyond the widget's own box on
- * every side, with backdrop-filter blur opacity ramping smoothly from 100%
- * at the point touching the widget down to 0% at the outer edge - see the
- * `edge-band-mask` mixin below for how that ramp is constructed. Rounded
- * with a real (finite) corner radius rather than a full circle/pill, so the
- * margin stays a true, uniform 40px in every direction including the
- * diagonals - a circle inscribed in a square inherently tapers to nothing
- * at 45°, which would break the "same margin in any direction" requirement.
+ * Both sit at a LOWER z-index than the widget (999998 vs the widget's
+ * 999999), so the widget itself always renders on top and fully covers
+ * whatever is happening in the middle of our halo - we don't need to cut a
+ * "hole" for the widget's own footprint at all. That keeps the mask about as
+ * simple as this technique gets: ONE rounded box per halo, with
+ * `backdrop-filter: blur()` fading smoothly from fully opaque near the
+ * widget down to fully transparent at $halo-margin (40px) out, using two
+ * perpendicular linear-gradients combined with `mask-composite: intersect`
+ * (https://developer.mozilla.org/en-US/docs/Web/CSS/mask-composite).
  *
- * Uses the standard `backdrop-filter` + gradient `mask-image` technique
- * (see https://developer.mozilla.org/en-US/docs/Web/CSS/backdrop-filter and
- * https://www.joshwcomeau.com/css/backdrop-filter/). `backdrop-filter`
- * reached full cross-browser Baseline support in Sept 2024
+ * A previous version tried to build a "picture frame" ring out of 4
+ * independent single-axis gradients unioned together, each spanning the
+ * FULL width/height of the box. That produced thin, bright ridge lines
+ * running the entire length of each edge (because each one-directional
+ * gradient's opacity peaks sharply right at the point touching the widget,
+ * and that peak isn't localized near the corners - it stretches the full
+ * side, so it reads as a hard streak/"blade" rather than a soft halo). The
+ * fix is this much simpler, more standard two-gradient intersect technique,
+ * which fades smoothly and symmetrically in every direction without ever
+ * needing an artificial "ring" shape.
+ *
+ * `backdrop-filter` reached full cross-browser Baseline support in Sept 2024
  * (see https://caniuse.com/css-backdrop-filter); unsupported browsers simply
  * render nothing here (no background of their own), so this degrades safely.
  * ------------------------------------------------------------------------ */
@@ -8026,26 +8033,20 @@ html.svc-home .header .search-wrapper {
 
 .widget-blur-backdrop .widget-blur-backdrop-layer-1,
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-1 {
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  mask-image: linear-gradient(to right, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 24px, black 40px, transparent 41px);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 24px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 24px, black 40px, transparent 41px);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent), linear-gradient(to bottom, transparent, black 20px, black calc(100% - 20px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 20px, black calc(100% - 20px), transparent), linear-gradient(to bottom, transparent, black 20px, black calc(100% - 20px), transparent);
 }
 
 .widget-blur-backdrop .widget-blur-backdrop-layer-2,
 .widget-blur-backdrop-panel .widget-blur-backdrop-layer-2 {
-  backdrop-filter: blur(11px);
-  -webkit-backdrop-filter: blur(11px);
-  mask-image: linear-gradient(to right, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 12px, black 40px, transparent 41px);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 12px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 12px, black 40px, transparent 41px);
-}
-
-.widget-blur-backdrop .widget-blur-backdrop-layer-3,
-.widget-blur-backdrop-panel .widget-blur-backdrop-layer-3 {
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  mask-image: linear-gradient(to right, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 0px, black 40px, transparent 41px);
-  -webkit-mask-image: linear-gradient(to right, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to left, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to bottom, transparent 0, transparent 0px, black 40px, transparent 41px), linear-gradient(to top, transparent 0, transparent 0px, black 40px, transparent 41px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent), linear-gradient(to bottom, transparent, black 40px, black calc(100% - 40px), transparent);
+  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 40px, black calc(100% - 40px), transparent), linear-gradient(to bottom, transparent, black 40px, black calc(100% - 40px), transparent);
 }
 
 @media (prefers-reduced-transparency: reduce) {
