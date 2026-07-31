@@ -359,3 +359,8 @@ parts:
       title: "Line in the request comment naming the requester. {{name}} is that requester's name."
       screenshot: "https://drive.google.com/file/d/1DsOq3atb9velOovcY-abPqa41S4NNp9v/view?usp=sharing"
       value: "Requester: {{name}}"
+  - translation:
+      key: "service-catalog.field-required-error"
+      title: "Generic error message shown under a required service-catalog request field left empty on submit (any field type without its own dedicated message, e.g. text, dropdown, checkbox, tagger, date)"
+      screenshot: ""
+      value: "This field is required."

@@ -343,9 +343,23 @@ export function useItemFormFields(
 
   const handleChange = useCallback(
     (field: TicketFieldObject, value: TicketFieldObject["value"]) => {
+      const hasValue = Array.isArray(value)
+        ? value.length > 0
+        : value !== undefined && value !== null && value !== "";
+
       const updatedFields = allRequestFields.map((ticketField) =>
         ticketField.name === field.name
-          ? { ...ticketField, value }
+          ? {
+              ...ticketField,
+              value,
+              // Clear a previously-flagged required-field error the moment
+              // the user supplies a value, rather than leaving it red
+              // until their next submit attempt (see
+              // useValidateServiceItemForm.ts's generic fieldErrors and
+              // ServiceCatalogItem.tsx's validateForm/handleValidationErrors,
+              // which are the only other places `error` gets set/cleared).
+              error: hasValue ? null : ticketField.error,
+            }
           : ticketField
       );
 
