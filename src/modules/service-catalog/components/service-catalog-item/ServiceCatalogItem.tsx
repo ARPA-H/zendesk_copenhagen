@@ -252,11 +252,23 @@ export function ServiceCatalogItem({
     fields: TicketFieldObject[],
     attachments: Attachment[]
   ): boolean {
-    const { hasError, errors } = validate(fields, attachments);
+    const { hasError, errors, fieldErrors } = validate(fields, attachments);
 
     setAttachmentsRequiredError(errors.attachments);
     setAssetTypeError(errors.assetType);
     setAssetError(errors.asset);
+
+    // Merge the generic required-field errors directly onto each field's
+    // `error` prop, the same way handleValidationErrors() below merges
+    // server-returned errors -- this is what actually drives aria-invalid
+    // (see _svc-form-validation.scss). Runs fresh on every submit attempt,
+    // so any field not currently in fieldErrors is reset to no error.
+    setRequestFields(
+      fields.map((field) => ({
+        ...field,
+        error: fieldErrors[field.id] ?? null,
+      }))
+    );
 
     return hasError;
   }

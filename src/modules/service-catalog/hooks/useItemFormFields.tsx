@@ -5,6 +5,7 @@ import type { TicketFieldObject } from "../../ticket-fields/data-types/TicketFie
 import type { EndUserCondition } from "../../ticket-fields/data-types/EndUserCondition";
 import { getCustomObjectKey } from "../../ticket-fields/fields/LookupField";
 import { getVisibleFields } from "../../ticket-fields/getVisibleFields";
+import { hasFieldValue } from "../../ticket-fields/data-types/hasFieldValue";
 import linkifyStr from "linkify-string";
 import { useAssetDataFetchers } from "./useAssetDataFetchers";
 import type {
@@ -343,9 +344,21 @@ export function useItemFormFields(
 
   const handleChange = useCallback(
     (field: TicketFieldObject, value: TicketFieldObject["value"]) => {
+      const hasValue = hasFieldValue({ ...field, value });
+
       const updatedFields = allRequestFields.map((ticketField) =>
         ticketField.name === field.name
-          ? { ...ticketField, value }
+          ? {
+              ...ticketField,
+              value,
+              // Clear a previously-flagged required-field error the moment
+              // the user supplies a value, rather than leaving it red
+              // until their next submit attempt (see
+              // useValidateServiceItemForm.ts's generic fieldErrors and
+              // ServiceCatalogItem.tsx's validateForm/handleValidationErrors,
+              // which are the only other places `error` gets set/cleared).
+              error: hasValue ? null : ticketField.error,
+            }
           : ticketField
       );
 

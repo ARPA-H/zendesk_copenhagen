@@ -5337,6 +5337,9 @@ zd-summary-block {
   --svc-tint-hover: #f3f5f8;
   --svc-font: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --svc-font-display: "Poppins", "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --svc-error: #bf2d1d;
+  --svc-error-dark: #7f1e13;
+  --svc-error-bg: #f4dcd9;
 }
 
 /* Hide the native header search (the home hero provides its own search). */
@@ -6140,14 +6143,33 @@ a.svc-help-btn:hover,
     overflow-x: hidden !important;
     max-width: 100% !important;
   }
-  /* Hide only stray/duplicate menu buttons — NOT our real menu button */
-  .svc-home .header .mobile-menu-button,
-  .svc-home .header button[aria-label*=menu i],
-  .svc-home .header button[aria-label*=Menu i],
-  .svc-home .header [class*=MobileMenu],
-  .svc-home .header [class*=mobile-menu],
-  .svc-home .header [data-testid*=mobile-menu],
-  .svc-home .header [data-testid*=MobileMenu] {
+  /* Hide only stray/duplicate menu buttons — NOT our real menu button.
+     BUG: the intent (per the original comment) was already to exclude our
+     real button, but the exclusion was never actually encoded in the
+     selectors — they matched on heuristics (aria-label containing "menu",
+     class/data-testid containing "mobile-menu") instead of positively
+     excluding .menu-button-mobile. Our real button's aria-label comes from
+     Zendesk's built-in {{t 'toggle_navigation'}} translation, which
+     apparently contains "menu" (case-insensitively) in the deployed locale,
+     so `button[aria-label*="menu" i]` matched it — and because that
+     selector's specificity (class + element + attribute) is HIGHER than
+     `.svc-home .header .menu-button-mobile` below (three classes, no
+     element/attribute), the hide rule always won over the show rule once
+     both are !important, regardless of source order. That hid the button
+     (and the avatar/icon inside it), which in turn collapsed the whole
+     .nav-wrapper-mobile flex container to 0x0 since it had no other visible
+     content. Only templates/service_list_page.hbs is affected because it's
+     the only page that adds the .svc-home class this block is scoped to.
+     Fix: explicitly exclude .menu-button-mobile with :not() so no future
+     translation/locale change can ever make this heuristic match our real
+     button again. */
+  .svc-home .header .mobile-menu-button:not(.menu-button-mobile),
+  .svc-home .header button[aria-label*=menu i]:not(.menu-button-mobile),
+  .svc-home .header button[aria-label*=Menu i]:not(.menu-button-mobile),
+  .svc-home .header [class*=MobileMenu]:not(.menu-button-mobile),
+  .svc-home .header [class*=mobile-menu]:not(.menu-button-mobile),
+  .svc-home .header [data-testid*=mobile-menu]:not(.menu-button-mobile),
+  .svc-home .header [data-testid*=MobileMenu]:not(.menu-button-mobile) {
     display: none !important;
   }
   /* Show the real mobile menu button on home. NOTE: no forced white color
@@ -7490,6 +7512,143 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   }
   #svc-greeting {
     transition: none !important;
+  }
+}
+/* ============================================================
+   ARPA-H custom — inline invalid-field styling for the service
+   request form (#service-catalog-item inside .svc-form-panel,
+   see templates/service_page.hbs).
+
+   PROBLEM: when a required field is left empty/invalid, the
+   theme's only feedback is a toast in the corner of the screen
+   (see src/modules/shared/notifications). That toast tells the
+   user *something* is wrong, but not *which* field — so we
+   highlight the offending control directly, in place, without
+   any JS/React changes (CSS only, by design).
+
+   WHEN it lights up: only after the user actually tries to
+   submit, never before. Every rule below keys off
+   `[aria-invalid="true"]`, which Zendesk Garden's own
+   <Field>/<Input>/<Combobox> set whenever a `validation="error"`
+   prop reaches them from React — and that only ever happens in
+   two places, both submit-triggered:
+     - the asset/asset-type/attachments client-side check in
+       useValidateServiceItemForm.ts, run from validateForm() at
+       the top of handleRequestSubmit in ServiceCatalogItem.tsx;
+     - the server's 422 response mapped back onto fields in
+       handleValidationErrors() in the same file, which is also
+       exactly where the "Service couldn't be submitted" toast
+       fires from (notifySubmitError()).
+   Nothing here reacts to blur, typing, or native HTML validity
+   (no `:invalid`/`:user-invalid`) precisely so a field never
+   turns red just because the user tabbed past it or hasn't
+   filled it in yet — only a real submit attempt can set
+   `aria-invalid`, so that's the only thing that can turn a field
+   red. This is an intentional product decision (an earlier
+   interaction-based version of this file used `:invalid`/
+   `:user-invalid` and lit up before submission; that approach
+   was dropped for this reason).
+
+   Zendesk Garden's Combobox (used by DropDown/MultiSelect/
+   Tagger/LookupField) puts the visible border on the
+   `dropdowns.combobox.trigger` wrapper, while `aria-invalid`
+   lands on the (visually-hidden) real <input> nested inside it —
+   so that one needs the `:has()` relational selector to reach
+   the wrapper. `:has()` has been supported in every evergreen
+   browser since late 2023 (Firefox 121, Chrome 105, Safari 15.4):
+     https://caniuse.com/css-has
+
+   ACCESSIBILITY NOTES:
+   - Not color-only (WCAG 1.4.1): invalid controls also get a
+     visibly thicker border (1px -> 2px, dashed outline for
+     checkboxes), so the state reads as a shape change too, not
+     just a color/hue change.
+   - Contrast (WCAG 1.4.3 / 1.4.11): --svc-error (#bf2d1d) is a
+     5.8:1 contrast ratio against white — well past the 4.5:1 text
+     and 3:1 non-text/UI-component minimums.
+   - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus
+     ring (`0 0 0 1px #0957be, 0 0 3px 1px #0957be`) is layered on
+     top of, not swapped out for, the red invalid ring.
+   - Motion (WCAG 2.3.3): the one-shot "shake" is gated behind
+     `prefers-reduced-motion: no-preference` and runs once, never
+     looping, so it can't become a persistent distraction and is
+     skipped entirely for users who've asked for reduced motion.
+
+   KNOWN LIMITATION — required dropdowns defaulted to a "-"
+   sentinel: some ticket-field setups default a required dropdown
+   to a literal "-" placeholder tag rather than a truly empty
+   value (see useItemFormFields.tsx's getFieldValue). Whether that
+   renders red after a submit attempt depends entirely on whether
+   Zendesk's backend treats "-" as satisfying the field's
+   required-ness: if the backend accepts it as a real answer, no
+   422/field error ever comes back, `aria-invalid` never gets set,
+   and this field won't render invalid even though nothing
+   meaningful was chosen. Fixing that would mean changing which
+   value the field defaults to (or how "required" is judged),
+   which is app/data logic, not styling — flag it if that turns
+   out to be happening, rather than have CSS guess at it again.
+   ============================================================ */
+.svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true],
+.svc-form-panel textarea[aria-invalid=true],
+.svc-form-panel select[aria-invalid=true] {
+  border: 2px solid var(--svc-error) !important;
+  background-color: var(--svc-error-bg) !important;
+  box-shadow: 0 0 0 1px var(--svc-error) !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true],
+  .svc-form-panel textarea[aria-invalid=true],
+  .svc-form-panel select[aria-invalid=true] {
+    animation: svcFieldAngryShake 0.4s ease-in-out 1;
+  }
+}
+.svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true]:focus-visible,
+.svc-form-panel textarea[aria-invalid=true]:focus-visible,
+.svc-form-panel select[aria-invalid=true]:focus-visible {
+  box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset, 0 0 3px 1px #0957be !important;
+}
+.svc-form-panel input[type=checkbox][aria-invalid=true] {
+  outline: 2px dashed var(--svc-error) !important;
+  outline-offset: 3px !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .svc-form-panel input[type=checkbox][aria-invalid=true] {
+    animation: svcFieldAngryShake 0.4s ease-in-out 1;
+  }
+}
+.svc-form-panel input[type=checkbox][aria-invalid=true]:focus-visible {
+  outline: 2px dashed var(--svc-error) !important;
+  box-shadow: 0 0 0 3px #fff, 0 0 0 5px #0957be !important;
+}
+.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
+  border: 2px solid var(--svc-error) !important;
+  background-color: var(--svc-error-bg) !important;
+  box-shadow: 0 0 0 1px var(--svc-error) !important;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
+    animation: svcFieldAngryShake 0.4s ease-in-out 1;
+  }
+}
+.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]):focus-within {
+  box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset, 0 0 3px 1px #0957be !important;
+}
+
+@keyframes svcFieldAngryShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
   }
 }
 /* ============================================================

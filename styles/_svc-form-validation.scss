@@ -1,0 +1,152 @@
+/* ============================================================
+   ARPA-H custom — inline invalid-field styling for the service
+   request form (#service-catalog-item inside .svc-form-panel,
+   see templates/service_page.hbs).
+
+   PROBLEM: when a required field is left empty/invalid, the
+   theme's only feedback is a toast in the corner of the screen
+   (see src/modules/shared/notifications). That toast tells the
+   user *something* is wrong, but not *which* field — so we
+   highlight the offending control directly, in place, without
+   any JS/React changes (CSS only, by design).
+
+   WHEN it lights up: only after the user actually tries to
+   submit, never before. Every rule below keys off
+   `[aria-invalid="true"]`, which Zendesk Garden's own
+   <Field>/<Input>/<Combobox> set whenever a `validation="error"`
+   prop reaches them from React — and that only ever happens in
+   two places, both submit-triggered:
+     - the asset/asset-type/attachments client-side check in
+       useValidateServiceItemForm.ts, run from validateForm() at
+       the top of handleRequestSubmit in ServiceCatalogItem.tsx;
+     - the server's 422 response mapped back onto fields in
+       handleValidationErrors() in the same file, which is also
+       exactly where the "Service couldn't be submitted" toast
+       fires from (notifySubmitError()).
+   Nothing here reacts to blur, typing, or native HTML validity
+   (no `:invalid`/`:user-invalid`) precisely so a field never
+   turns red just because the user tabbed past it or hasn't
+   filled it in yet — only a real submit attempt can set
+   `aria-invalid`, so that's the only thing that can turn a field
+   red. This is an intentional product decision (an earlier
+   interaction-based version of this file used `:invalid`/
+   `:user-invalid` and lit up before submission; that approach
+   was dropped for this reason).
+
+   Zendesk Garden's Combobox (used by DropDown/MultiSelect/
+   Tagger/LookupField) puts the visible border on the
+   `dropdowns.combobox.trigger` wrapper, while `aria-invalid`
+   lands on the (visually-hidden) real <input> nested inside it —
+   so that one needs the `:has()` relational selector to reach
+   the wrapper. `:has()` has been supported in every evergreen
+   browser since late 2023 (Firefox 121, Chrome 105, Safari 15.4):
+     https://caniuse.com/css-has
+
+   ACCESSIBILITY NOTES:
+   - Not color-only (WCAG 1.4.1): invalid controls also get a
+     visibly thicker border (1px -> 2px, dashed outline for
+     checkboxes), so the state reads as a shape change too, not
+     just a color/hue change.
+   - Contrast (WCAG 1.4.3 / 1.4.11): --svc-error (#bf2d1d) is a
+     5.8:1 contrast ratio against white — well past the 4.5:1 text
+     and 3:1 non-text/UI-component minimums.
+   - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus
+     ring (`0 0 0 1px #0957be, 0 0 3px 1px #0957be`) is layered on
+     top of, not swapped out for, the red invalid ring.
+   - Motion (WCAG 2.3.3): the one-shot "shake" is gated behind
+     `prefers-reduced-motion: no-preference` and runs once, never
+     looping, so it can't become a persistent distraction and is
+     skipped entirely for users who've asked for reduced motion.
+
+   KNOWN LIMITATION — required dropdowns defaulted to a "-"
+   sentinel: some ticket-field setups default a required dropdown
+   to a literal "-" placeholder tag rather than a truly empty
+   value (see useItemFormFields.tsx's getFieldValue). Whether that
+   renders red after a submit attempt depends entirely on whether
+   Zendesk's backend treats "-" as satisfying the field's
+   required-ness: if the backend accepts it as a real answer, no
+   422/field error ever comes back, `aria-invalid` never gets set,
+   and this field won't render invalid even though nothing
+   meaningful was chosen. Fixing that would mean changing which
+   value the field defaults to (or how "required" is judged),
+   which is app/data logic, not styling — flag it if that turns
+   out to be happening, rather than have CSS guess at it again.
+   ============================================================ */
+
+@mixin svc-invalid-ring($width: 2px) {
+  border: $width solid var(--svc-error) !important;
+  background-color: var(--svc-error-bg) !important;
+  box-shadow: 0 0 0 1px var(--svc-error) !important;
+}
+
+.svc-form-panel {
+  // ---- Plain native controls: <input>, <textarea>, and the
+  // real (if visually nested) <input> that backs react-forms'
+  // <DatePicker>/<Input>/<Checkbox>. ----
+  input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    &[aria-invalid="true"] {
+      @include svc-invalid-ring;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: svcFieldAngryShake 0.4s ease-in-out 1;
+      }
+    }
+
+    // Focus indicator must stay visible even while invalid.
+    &[aria-invalid="true"]:focus-visible {
+      box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset,
+        0 0 3px 1px #0957be !important;
+    }
+  }
+
+  // Checkboxes are too small for a background icon or thick
+  // border to read cleanly, so the non-color cue is a dashed
+  // (not solid) outline — a shape change, not just a color one.
+  input[type="checkbox"] {
+    &[aria-invalid="true"] {
+      outline: 2px dashed var(--svc-error) !important;
+      outline-offset: 3px !important;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: svcFieldAngryShake 0.4s ease-in-out 1;
+      }
+    }
+
+    &[aria-invalid="true"]:focus-visible {
+      outline: 2px dashed var(--svc-error) !important;
+      box-shadow: 0 0 0 3px #fff, 0 0 0 5px #0957be !important;
+    }
+  }
+
+  // ---- Zendesk Garden Combobox-based fields (dropdown, multi-
+  // select, tagger, lookup): the real invalid <input> is nested
+  // and often visually hidden, so target the trigger it lives in. ----
+  [data-garden-id="dropdowns.combobox.trigger"] {
+    &:has(input[aria-invalid="true"]) {
+      @include svc-invalid-ring;
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: svcFieldAngryShake 0.4s ease-in-out 1;
+      }
+    }
+
+    &:has(input[aria-invalid="true"]):focus-within {
+      box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset,
+        0 0 3px 1px #0957be !important;
+    }
+  }
+}
+
+// A single, short, non-looping "angry" shake. Reinforces the
+// invalid state through motion for sighted users who have not
+// opted out of animation (WCAG 2.3.3 — see prefers-reduced-motion
+// guards above; this keyframe is only ever referenced there).
+@keyframes svcFieldAngryShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
