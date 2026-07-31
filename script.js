@@ -598,10 +598,11 @@
     }
 
     function isEmptyHtml(html) {
-      const template = document.createElement("template");
-      template.innerHTML = html;
-      const hasImg = template.content.querySelector("img") !== null;
-      const text = template.content.textContent || "";
+      // Parse with DOMParser (rather than assigning to innerHTML) so the
+      // untrusted comment text is never reinterpreted as live, renderable HTML.
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const hasImg = doc.querySelector("img") !== null;
+      const text = doc.body.textContent || "";
       return !hasImg && isEmptyPlaintext(text);
     }
 
