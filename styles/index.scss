@@ -57,7 +57,3 @@
 @import "svc-form-validation";
 @import "svc-search-results";
 @import "svc-header";
-
-// ARPA-Help chat-widget elevation shadow (footer.hbs). Kept last so it
-// isn't overridden by page-specific z-index/backdrop rules above.
-@import "widget-elevation";
