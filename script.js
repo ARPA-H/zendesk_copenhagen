@@ -1816,20 +1816,32 @@
   })();
 
   /*
-   * Dynamically hugs a soft 25px blur halo around the ARPA-Help messaging
-   * widget's conversation panel iframe as it opens/grows, since the panel's
-   * size is animated and viewport/locale-dependent and can't be predicted with
-   * static CSS (see styles/_widget-blur.scss for the launcher's static halo,
-   * which CAN be static because the closed launcher button never resizes).
+   * Dynamically hugs a soft blur halo around the ARPA-Help messaging widget's
+   * conversation panel iframe as it opens/grows, since the panel's size is
+   * animated and viewport/locale-dependent and can't be predicted with static
+   * CSS (see styles/_widget-blur.scss for the launcher's static halo, which
+   * CAN be static because the closed launcher button never resizes).
    *
-   * The widget itself is Zendesk's own cross-origin content (see
+   * IMPORTANT: confirmed via live inspection that Zendesk mounts its widget
+   * iframes (both the launcher AND the conversation panel) inside an *open*
+   * Shadow DOM tree, not directly in the page's light DOM. A plain
+   * `document.querySelectorAll('iframe')` finds nothing at all; the iframes
+   * only turn up by recursively walking into every element's `.shadowRoot`.
+   * This affects both how we find the panel iframe and how we watch for it
+   * appearing later, since a light-DOM `MutationObserver` does not observe
+   * mutations happening inside a separate shadow tree.
+   *
+   * The widget itself is Zendesk's own content (see
    * https://developer.zendesk.com/api-reference/widget-messaging/web/core/ -
    * the widget's public "customization" API covers colors/position/behavior
    * but has no corner-radius or CSS-injection hook), so this only ever reads
    * the iframe ELEMENT's own box geometry on our page (always readable, even
-   * cross-origin, since layout geometry of a cross-origin iframe's own box is
-   * not subject to the same-origin restriction - only its *content* is) - it
-   * never reaches into the iframe's content or its cross-origin document.
+   * cross-origin, since layout geometry of an iframe's own box is not subject
+   * to the cross-origin restriction - only its *content* is) - it never
+   * reaches into the iframe's content or its cross-origin document. Reading
+   * into an *open* shadow root (as opposed to `mode: 'closed'`) is standard,
+   * fully public DOM API - it's deliberately inspectable by any page script,
+   * same as browser devtools can see it.
    *
    * The Zendesk snippet that actually creates these iframes is configured in
    * Zendesk Admin Center, not in this repo, so its exact DOM (element IDs)
@@ -1841,13 +1853,12 @@
    *
    *   1. A known id Zendesk has used historically ("webWidget").
    *   2. Its `src` pointing at a Zendesk widget domain (zdassets.com /
-   *      zendesk.com / zopim.com) - readable on any iframe element regardless
-   *      of cross-origin restrictions, since `src` is just an attribute of
-   *      the outer element in OUR document, not the iframe's cross-origin
-   *      content.
-   *   3. Its accessible name (title/aria-label) mentioning "messag"/"convers"/
-   *      "chat" - matches the launcher's own
-   *      `title="Button to launch messaging window..."` pattern.
+   *      zendesk.com / zopim.com).
+   *   3. Its accessible name (`title`, `aria-label`, or `name`) mentioning
+   *      "messag"/"convers"/"chat" - matches the real, confirmed
+   *      `title="Messaging window"` / `name="Messaging window"` pair Zendesk
+   *      sets on the panel iframe (and the launcher's own
+   *      `title="Button to launch messaging window..."` pattern).
    *
    * The launcher button itself is explicitly excluded from all of the above so
    * it's never mistaken for the panel.
@@ -1861,13 +1872,14 @@
     var WIDGET_DOMAIN_PATTERN = /zdassets\.com|zendesk\.com|zopim\.com/i;
     var MESSAGING_TEXT_PATTERN = /messag|convers|chat/i;
     var LAUNCHER_TEXT_PATTERN = /launch/i;
-    var HALO_MARGIN = 25; // px beyond the tracked iframe's own edges, in any direction
+    var HALO_MARGIN = 40; // px beyond the tracked iframe's own edges, in any direction - must match $halo-margin in styles/_widget-blur.scss
     var LAYER_COUNT = 3;
     var RECHECK_INTERVAL_MS = 1500; // safety net in case the tracked iframe is swapped out
 
     var haloEl = null;
     var trackedIframe = null;
     var rafId = null;
+    var watchedShadowRoots = []; // ShadowRoot objects we've already attached a MutationObserver to, so we don't double-attach
 
     function createHalo() {
       var el = document.createElement("div");
@@ -1887,7 +1899,9 @@
       return (
         (el.getAttribute("title") || "") +
         " " +
-        (el.getAttribute("aria-label") || "")
+        (el.getAttribute("aria-label") || "") +
+        " " +
+        (el.name || "")
       );
     }
 
@@ -1901,6 +1915,33 @@
       return MESSAGING_TEXT_PATTERN.test(accessibleText(el));
     }
 
+    // Recursively collects every <iframe> in `root`, descending into any open
+    // shadow root it finds along the way (this is what actually reaches
+    // Zendesk's widget iframes - see file header). Also starts watching any
+    // newly-discovered shadow root going forward, so content added inside it
+    // later (e.g. the panel iframe appearing after the launcher's shadow root
+    // already exists) is still caught.
+    function collectIframesDeep(root) {
+      var iframes = [];
+      var all = root.querySelectorAll("*");
+      for (var i = 0; i < all.length; i++) {
+        var el = all[i];
+        if (el.tagName === "IFRAME") iframes.push(el);
+        if (el.shadowRoot) {
+          watchShadowRoot(el.shadowRoot);
+          iframes = iframes.concat(collectIframesDeep(el.shadowRoot));
+        }
+      }
+      return iframes;
+    }
+
+    function watchShadowRoot(shadowRoot) {
+      if (watchedShadowRoots.indexOf(shadowRoot) !== -1) return;
+      watchedShadowRoots.push(shadowRoot);
+      var observer = new MutationObserver(handlePotentialPanelChange);
+      observer.observe(shadowRoot, { childList: true, subtree: true });
+    }
+
     function findPanelIframe() {
       for (var i = 0; i < KNOWN_PANEL_IDS.length; i++) {
         var known = document.getElementById(KNOWN_PANEL_IDS[i]);
@@ -1909,9 +1950,9 @@
         }
       }
 
-      var iframes = document.querySelectorAll("iframe");
-      for (var j = 0; j < iframes.length; j++) {
-        var candidate = iframes[j];
+      var candidates = collectIframesDeep(document);
+      for (var j = 0; j < candidates.length; j++) {
+        var candidate = candidates[j];
         if (isLauncherIframe(candidate)) continue;
         if (looksLikeWidgetPanel(candidate)) return candidate;
       }
@@ -1954,6 +1995,9 @@
         // Fires repeatedly while the iframe's box is actively changing size,
         // including mid-way through a CSS transition Zendesk may be running,
         // so the halo tracks smoothly rather than only at the start/end state.
+        // Works the same whether the iframe lives in the light DOM or inside
+        // a shadow root - ResizeObserver operates on the element reference
+        // itself, not on its position in the tree.
         var ro = new ResizeObserver(scheduleUpdate);
         ro.observe(iframe);
       }
@@ -1968,6 +2012,12 @@
       scheduleUpdate();
     }
 
+    function handlePotentialPanelChange() {
+      if (trackedIframe && trackedIframe.isConnected) return;
+      var iframe = findPanelIframe();
+      if (iframe) startTracking(iframe);
+    }
+
     function watchForPanelIframe() {
       var existing = findPanelIframe();
       if (existing) {
@@ -1975,13 +2025,12 @@
         return;
       }
 
-      var bodyObserver = new MutationObserver(function () {
-        var iframe = findPanelIframe();
-        if (iframe) {
-          bodyObserver.disconnect();
-          startTracking(iframe);
-        }
-      });
+      // Catches the widget's outermost host element(s) being added to the
+      // page at all (e.g. before any shadow root exists yet). Once that
+      // happens, the next handlePotentialPanelChange call's findPanelIframe()
+      // walk will discover its shadow root and call watchShadowRoot() on it,
+      // extending coverage into content added later inside that shadow tree.
+      var bodyObserver = new MutationObserver(handlePotentialPanelChange);
       bodyObserver.observe(document.body, { childList: true, subtree: true });
     }
 
@@ -1990,14 +2039,18 @@
     // silently removed/replaced (widget reset, re-init) without our observers
     // firing. A cheap low-frequency poll re-measures the current iframe and
     // re-attaches to a replacement if the original one leaves the document.
+    // `isConnected` (unlike `document.contains()`) correctly reports true for
+    // nodes inside a shadow tree, which is required here since the tracked
+    // iframe lives inside one - see file header.
     window.setInterval(function () {
-      if (trackedIframe && !document.contains(trackedIframe)) {
+      if (trackedIframe && !trackedIframe.isConnected) {
         trackedIframe = null;
         var replacement = findPanelIframe();
         if (replacement) startTracking(replacement);
         else if (haloEl) haloEl.style.display = "none";
         return;
       }
+      if (!trackedIframe) handlePotentialPanelChange();
       if (!window.ResizeObserver) scheduleUpdate();
     }, RECHECK_INTERVAL_MS);
 
