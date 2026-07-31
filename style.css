@@ -7595,6 +7595,29 @@ body > pre, body > code, body > .template-name, body > .editor-label {
    that last gap would require a small script to mirror
    `:user-invalid` into `aria-invalid`, which is intentionally out
    of scope here (SCSS-only fix, per design).
+
+   NOTE on required dropdowns/comboboxes specifically: unlike text
+   inputs, DropDown/MultiSelect/Tagger/LookupField are selection-only
+   (`isEditable={false}`) with a binary value — chosen, or not — so
+   there is no "typed something, still invalid" interaction to dirty
+   them, and `:user-invalid` can never engage there through any real
+   user action. Worse, plain `:invalid` can't be trusted either: some
+   ticket-field setups default these fields to a literal "-"
+   placeholder tag rather than a truly empty value (see
+   useItemFormFields.tsx's getFieldValue), and a non-empty string
+   satisfies HTML's `required` constraint regardless of what it means
+   semantically. So for this field family we key off the rendered
+   `<EmptyValueOption/>` marker (fields/EmptyValueOption.tsx) instead
+   — it appears whenever the current value doesn't resolve to a real
+   Option, whether that value is "", "-", or any other non-matching
+   sentinel — gated to `required` fields and to "isn't currently
+   focused" (see the combobox block below). This trades away the
+   "only after interaction" guarantee for that field type: a required
+   dropdown left unselected will render as invalid as soon as it
+   isn't focused, including at first paint if it's not the
+   initially-focused field. That trade-off is intentional — a
+   chosen/unchosen control has no partial-progress state worth
+   protecting the user from seeing.
    ============================================================ */
 .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio]):user-invalid, .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true],
 .svc-form-panel textarea:user-invalid,
@@ -7643,6 +7666,11 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input:user-invalid), .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
     animation: svcFieldAngryShake 0.4s ease-in-out 1;
   }
+}
+.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input:required):has(span[aria-hidden=true]):not(:focus-within) {
+  border: 2px solid var(--svc-error) !important;
+  background-color: var(--svc-error-bg) !important;
+  box-shadow: 0 0 0 1px var(--svc-error) !important;
 }
 .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input:user-invalid):focus-within, .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]):focus-within {
   box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset, 0 0 3px 1px #0957be !important;
@@ -8128,58 +8156,4 @@ html.svc-home .header .search-wrapper {
   .header > .nav-wrapper-desktop {
     display: none !important;
   }
-}
-/* ---------------------------------------------------------------------------
- * ARPA-Help chat-widget elevation shadow
- * ---------------------------------------------------------------------------
- * The Zendesk messaging launcher button and the conversation panel it opens
- * both render inside Zendesk's own widget - it is NOT part of this theme and
- * cannot be restyled directly (confirmed against Zendesk's full public
- * customization surface for the Messaging Web Widget:
- * https://developer.zendesk.com/api-reference/widget-messaging/web/core/ -
- * it covers theme colors, position/offset, and content toggles, but has no
- * corner-radius or CSS-injection hook).
- *
- * A previous version tried to give the widget some visual separation from
- * the page using a `backdrop-filter: blur()` halo behind it. That approach
- * was removed - a blur only becomes visible where there's contrasting
- * content directly behind it to blur; against this theme's mostly plain
- * white/light backgrounds there's nothing to blur, so it read as invisible
- * at best and, after several attempts to fix its masking, as visible
- * rendering artifacts at worst.
- *
- * This replaces it with a standard, much simpler technique: a plain
- * `box-shadow` "backer" element positioned behind the widget, giving it a
- * sense of depth/altitude over the rest of the page - the same effect any
- * elevated card or modal gets, and one that works identically regardless of
- * what's behind it (a shadow's own color doesn't depend on the background).
- * Shadow values are NEXUS's own elevation tokens (see the design system's
- * Elevation scale): `elevation/shadow-2` for the launcher (matches other
- * small floating/card-level chrome in this theme) and `elevation/shadow-4`
- * for the conversation panel (matches "elevated panels" in the NEXUS scale).
- *
- * Zendesk's own launcher iframe already carries its own inline
- * `box-shadow` (set directly by Zendesk, untouched by this theme) - this is
- * purely additive/complementary, not a replacement for it.
- * ------------------------------------------------------------------------ */
-.widget-elevation-backdrop {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  width: 64px;
-  height: 64px;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0, 3, 52, 0.16);
-  z-index: 999998;
-  pointer-events: none;
-}
-
-.widget-elevation-backdrop-panel {
-  position: fixed;
-  display: none;
-  border-radius: 24px;
-  box-shadow: 0 12px 24px rgba(0, 3, 52, 0.18);
-  z-index: 999998;
-  pointer-events: none;
-  transition: left 0.12s ease-out, top 0.12s ease-out, width 0.12s ease-out, height 0.12s ease-out;
 }

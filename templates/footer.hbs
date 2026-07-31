@@ -23,16 +23,3 @@
     </div>
   </div>
 </footer>
-
-{{!--
-  Decorative, click-through elevation shadow behind the Zendesk ARPA-Help
-  chat launcher (bottom-right corner). See styles/_widget-elevation.scss for
-  details. aria-hidden because it carries no content and must never be
-  reachable by AT or keyboard/mouse (pointer-events: none is also set in CSS
-  as a second guard).
-
-  The matching shadow for the conversation PANEL (once opened) isn't
-  declared here - its size/position varies as the panel grows, so it's
-  created and positioned dynamically by src/widgetElevationTracker.js.
---}}
-<div class="widget-elevation-backdrop" aria-hidden="true"></div>
