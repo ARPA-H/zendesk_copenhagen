@@ -25,18 +25,14 @@
 </footer>
 
 {{!--
-  Decorative, click-through blur backdrop behind the Zendesk ARPA-Help chat
-  launcher (bottom-right corner). See styles/_widget-blur.scss for details
-  on why this exists and how the layered blur works. aria-hidden because
-  it carries no content and must never be reachable by AT or keyboard/mouse
-  (pointer-events: none is also set in CSS as a second guard).
+  Decorative, click-through elevation shadow behind the Zendesk ARPA-Help
+  chat launcher (bottom-right corner). See styles/_widget-elevation.scss for
+  details. aria-hidden because it carries no content and must never be
+  reachable by AT or keyboard/mouse (pointer-events: none is also set in CSS
+  as a second guard).
 
-  The matching halo for the conversation PANEL (once opened) isn't declared
-  here - its size/position varies as the panel grows, so it's created and
-  positioned dynamically by src/widgetBlurTracker.js.
+  The matching shadow for the conversation PANEL (once opened) isn't
+  declared here - its size/position varies as the panel grows, so it's
+  created and positioned dynamically by src/widgetElevationTracker.js.
 --}}
-<div class="widget-blur-backdrop" aria-hidden="true">
-  <div class="widget-blur-backdrop-layer widget-blur-backdrop-layer-3"></div>
-  <div class="widget-blur-backdrop-layer widget-blur-backdrop-layer-2"></div>
-  <div class="widget-blur-backdrop-layer widget-blur-backdrop-layer-1"></div>
-</div>
+<div class="widget-elevation-backdrop" aria-hidden="true"></div>
