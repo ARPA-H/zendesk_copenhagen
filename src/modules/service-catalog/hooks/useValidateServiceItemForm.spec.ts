@@ -338,20 +338,45 @@ describe("useValidateServiceItemForm", () => {
       expect(validationResult.errors.assetType).toBe("Select an asset type");
     });
 
-    it("handles boolean false value as valid", () => {
+    it("treats boolean false as no value, so a required unchecked checkbox is flagged", () => {
+      const { result } = renderHook(() =>
+        useValidateServiceItemForm(undefined)
+      );
+
+      // Checkbox fields store a boolean `value`; `false` (unchecked) must
+      // not be treated the same as having answered the field, or a
+      // required checkbox left unchecked would silently pass validation.
+      const fields = [
+        createTextField({
+          id: 43,
+          type: "checkbox",
+          required: true,
+          value: false,
+          relationship_target_type: undefined,
+        }),
+      ];
+
+      const validationResult = result.current.validate(fields, []);
+
+      expect(validationResult.hasError).toBe(true);
+      expect(validationResult.fieldErrors[43]).toBe("This field is required.");
+    });
+
+    it("treats boolean true as satisfying a required checkbox", () => {
       const { result } = renderHook(() =>
         useValidateServiceItemForm(undefined)
       );
 
       const fields = [
         createTextField({
+          id: 43,
+          type: "checkbox",
           required: true,
-          value: false,
-          relationship_target_type: ASSET_TYPE_KEY,
+          value: true,
+          relationship_target_type: undefined,
         }),
       ];
 
-      // Boolean false is a valid value (not empty)
       const validationResult = result.current.validate(fields, []);
 
       expect(validationResult.hasError).toBe(false);

@@ -7515,7 +7515,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   }
 }
 /* ============================================================
-   ARPA-H custom — "angry" inline validation for the service
+   ARPA-H custom — inline invalid-field styling for the service
    request form (#service-catalog-item inside .svc-form-panel,
    see templates/service_page.hbs).
 
@@ -7526,47 +7526,36 @@ body > pre, body > code, body > .template-name, body > .editor-label {
    highlight the offending control directly, in place, without
    any JS/React changes (CSS only, by design).
 
-   HOW (no JS/monkeypatching required):
-   Every request field already renders a real `required` HTML
-   attribute on its native control — see e.g.
-   src/modules/ticket-fields/fields/Input.tsx (`required={required}`
-   on a Zendesk Garden <Input>, which is a plain <input>), and the
-   same pattern in TextArea.tsx/Checkbox.tsx/DropDown.tsx/
-   MultiSelect.tsx/LookupField.tsx/Tagger.tsx/DatePicker.tsx.
-   ItemRequestForm.tsx sets `noValidate` on the <form>, but
-   `novalidate` only turns off the *browser's own* validation
-   report/submit-blocking step — it does not change a control's
-   underlying constraint-validity, so the standard CSS validity
-   pseudo-classes still reflect it:
-     https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#attr-fs-novalidate
-     https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#constraint-validation
-
-   `:user-invalid` (CSS Selectors Level 4) matches a control that
-   fails its constraints only *after the user has interacted with
-   it* — e.g. tabbing/clicking away from an empty required field —
-   which is exactly the "navigate away from an unfilled field"
-   trigger asked for, with zero JS:
-     https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:user-invalid
-   Support is broad in every evergreen browser as of 2026 (Chrome/
-   Edge 119+, Firefox 88+, Safari 16.5+):
-     https://caniuse.com/mdn-css_selectors_user-invalid
-
-   We additionally key off `[aria-invalid="true"]`, which Zendesk
-   Garden's own <Field>/<Input>/<Combobox> already set whenever a
-   `validation="error"` prop reaches them from React (post-submit
-   server-side field errors mapped in ServiceCatalogItem.tsx, and
-   the asset/asset-type/attachments errors from
-   useValidateServiceItemForm.ts) — so every error path, native or
-   server-driven, renders identically.
+   WHEN it lights up: only after the user actually tries to
+   submit, never before. Every rule below keys off
+   `[aria-invalid="true"]`, which Zendesk Garden's own
+   <Field>/<Input>/<Combobox> set whenever a `validation="error"`
+   prop reaches them from React — and that only ever happens in
+   two places, both submit-triggered:
+     - the asset/asset-type/attachments client-side check in
+       useValidateServiceItemForm.ts, run from validateForm() at
+       the top of handleRequestSubmit in ServiceCatalogItem.tsx;
+     - the server's 422 response mapped back onto fields in
+       handleValidationErrors() in the same file, which is also
+       exactly where the "Service couldn't be submitted" toast
+       fires from (notifySubmitError()).
+   Nothing here reacts to blur, typing, or native HTML validity
+   (no `:invalid`/`:user-invalid`) precisely so a field never
+   turns red just because the user tabbed past it or hasn't
+   filled it in yet — only a real submit attempt can set
+   `aria-invalid`, so that's the only thing that can turn a field
+   red. This is an intentional product decision (an earlier
+   interaction-based version of this file used `:invalid`/
+   `:user-invalid` and lit up before submission; that approach
+   was dropped for this reason).
 
    Zendesk Garden's Combobox (used by DropDown/MultiSelect/
    Tagger/LookupField) puts the visible border on the
-   `dropdowns.combobox.trigger` wrapper, while `aria-invalid`/
-   `:user-invalid` land on the (possibly visually-hidden) real
-   <input> nested inside it — so those need the `:has()`
-   relational selector to reach the wrapper. `:has()` has also
-   been supported in every evergreen browser since late 2023
-   (Firefox 121, Chrome 105, Safari 15.4):
+   `dropdowns.combobox.trigger` wrapper, while `aria-invalid`
+   lands on the (visually-hidden) real <input> nested inside it —
+   so that one needs the `:has()` relational selector to reach
+   the wrapper. `:has()` has been supported in every evergreen
+   browser since late 2023 (Firefox 121, Chrome 105, Safari 15.4):
      https://caniuse.com/css-has
 
    ACCESSIBILITY NOTES:
@@ -7585,94 +7574,63 @@ body > pre, body > code, body > .template-name, body > .editor-label {
      looping, so it can't become a persistent distraction and is
      skipped entirely for users who've asked for reduced motion.
 
-   KNOWN LIMITATION: `aria-invalid` can only be toggled by script,
-   so a field that is merely `required` and empty (and has never
-   been through a submit attempt or the asset/attachment
-   client-side check) is flagged *visually* via `:user-invalid`
-   but is not independently announced as "invalid" to screen
-   reader users the moment they leave it — only the pre-existing,
-   already-accessible toast is announced at that point. Closing
-   that last gap would require a small script to mirror
-   `:user-invalid` into `aria-invalid`, which is intentionally out
-   of scope here (SCSS-only fix, per design).
-
-   NOTE on required dropdowns/comboboxes specifically: unlike text
-   inputs, DropDown/MultiSelect/Tagger/LookupField are selection-only
-   (`isEditable={false}`) with a binary value — chosen, or not — so
-   there is no "typed something, still invalid" interaction to dirty
-   them, and `:user-invalid` can never engage there through any real
-   user action. Worse, plain `:invalid` can't be trusted either: some
-   ticket-field setups default these fields to a literal "-"
-   placeholder tag rather than a truly empty value (see
-   useItemFormFields.tsx's getFieldValue), and a non-empty string
-   satisfies HTML's `required` constraint regardless of what it means
-   semantically. So for this field family we key off the rendered
-   `<EmptyValueOption/>` marker (fields/EmptyValueOption.tsx) instead
-   — it appears whenever the current value doesn't resolve to a real
-   Option, whether that value is "", "-", or any other non-matching
-   sentinel — gated to `required` fields and to "isn't currently
-   focused" (see the combobox block below). This trades away the
-   "only after interaction" guarantee for that field type: a required
-   dropdown left unselected will render as invalid as soon as it
-   isn't focused, including at first paint if it's not the
-   initially-focused field. That trade-off is intentional — a
-   chosen/unchosen control has no partial-progress state worth
-   protecting the user from seeing.
+   KNOWN LIMITATION — required dropdowns defaulted to a "-"
+   sentinel: some ticket-field setups default a required dropdown
+   to a literal "-" placeholder tag rather than a truly empty
+   value (see useItemFormFields.tsx's getFieldValue). Whether that
+   renders red after a submit attempt depends entirely on whether
+   Zendesk's backend treats "-" as satisfying the field's
+   required-ness: if the backend accepts it as a real answer, no
+   422/field error ever comes back, `aria-invalid` never gets set,
+   and this field won't render invalid even though nothing
+   meaningful was chosen. Fixing that would mean changing which
+   value the field defaults to (or how "required" is judged),
+   which is app/data logic, not styling — flag it if that turns
+   out to be happening, rather than have CSS guess at it again.
    ============================================================ */
-.svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio]):user-invalid, .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true],
-.svc-form-panel textarea:user-invalid,
+.svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true],
 .svc-form-panel textarea[aria-invalid=true],
-.svc-form-panel select:user-invalid,
 .svc-form-panel select[aria-invalid=true] {
   border: 2px solid var(--svc-error) !important;
   background-color: var(--svc-error-bg) !important;
   box-shadow: 0 0 0 1px var(--svc-error) !important;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio]):user-invalid, .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true],
-  .svc-form-panel textarea:user-invalid,
+  .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true],
   .svc-form-panel textarea[aria-invalid=true],
-  .svc-form-panel select:user-invalid,
   .svc-form-panel select[aria-invalid=true] {
     animation: svcFieldAngryShake 0.4s ease-in-out 1;
   }
 }
-.svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio]):user-invalid:focus-visible, .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true]:focus-visible,
-.svc-form-panel textarea:user-invalid:focus-visible,
+.svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true]:focus-visible,
 .svc-form-panel textarea[aria-invalid=true]:focus-visible,
-.svc-form-panel select:user-invalid:focus-visible,
 .svc-form-panel select[aria-invalid=true]:focus-visible {
   box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset, 0 0 3px 1px #0957be !important;
 }
-.svc-form-panel input[type=checkbox]:user-invalid, .svc-form-panel input[type=checkbox][aria-invalid=true] {
+.svc-form-panel input[type=checkbox][aria-invalid=true] {
   outline: 2px dashed var(--svc-error) !important;
   outline-offset: 3px !important;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .svc-form-panel input[type=checkbox]:user-invalid, .svc-form-panel input[type=checkbox][aria-invalid=true] {
+  .svc-form-panel input[type=checkbox][aria-invalid=true] {
     animation: svcFieldAngryShake 0.4s ease-in-out 1;
   }
 }
-.svc-form-panel input[type=checkbox]:user-invalid:focus-visible, .svc-form-panel input[type=checkbox][aria-invalid=true]:focus-visible {
+.svc-form-panel input[type=checkbox][aria-invalid=true]:focus-visible {
   outline: 2px dashed var(--svc-error) !important;
   box-shadow: 0 0 0 3px #fff, 0 0 0 5px #0957be !important;
 }
-.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input:user-invalid), .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
+.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
   border: 2px solid var(--svc-error) !important;
   background-color: var(--svc-error-bg) !important;
   box-shadow: 0 0 0 1px var(--svc-error) !important;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input:user-invalid), .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
+  .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
     animation: svcFieldAngryShake 0.4s ease-in-out 1;
   }
 }
-.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input:required):has(span[aria-hidden=true]):not(:focus-within) {
-  border: 2px solid var(--svc-error) !important;
-  background-color: var(--svc-error-bg) !important;
-  box-shadow: 0 0 0 1px var(--svc-error) !important;
-}
-.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input:user-invalid):focus-within, .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]):focus-within {
+.svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]):focus-within {
   box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset, 0 0 3px 1px #0957be !important;
 }
 

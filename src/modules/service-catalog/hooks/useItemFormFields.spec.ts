@@ -525,6 +525,72 @@ describe("useItemFormFields", () => {
     );
   });
 
+  it("should not clear a field's error if handleChange gives it false (an unchecked checkbox)", async () => {
+    const formResponse = {
+      ticket_form: {
+        id: 1,
+        ticket_field_ids: [1, 2],
+        active: true,
+      },
+    };
+
+    const ticketFieldResponse = {
+      ticket_fields: [textField, lookupField],
+    };
+
+    (globalThis.fetch as jest.Mock) = jest.fn((url) => {
+      return url.includes("/api/v2/ticket_forms/1")
+        ? Promise.resolve({
+            json: () => Promise.resolve(formResponse),
+            status: 200,
+            ok: true,
+          })
+        : url.includes("/api/v2/ticket_fields?locale=en-us")
+        ? Promise.resolve({
+            json: () => Promise.resolve(ticketFieldResponse),
+            status: 200,
+            ok: true,
+          })
+        : {};
+    });
+
+    const { result } = renderHook(() =>
+      useItemFormFields(serviceCatalogItem, baseLocale)
+    );
+
+    await waitFor(() => {
+      expect(result.current.requestFields).toEqual([expectedTextField]);
+    });
+
+    act(() => {
+      result.current.setRequestFields([
+        {
+          ...expectedTextField,
+          type: "checkbox",
+          error: "This field is required.",
+        },
+      ]);
+    });
+
+    // Boolean `false` (an unchecked required checkbox) must not be treated
+    // as a value -- otherwise a previously-flagged required error would be
+    // cleared even though the checkbox is still unchecked.
+    act(() => {
+      result.current.handleChange(
+        {
+          ...expectedTextField,
+          type: "checkbox",
+          error: "This field is required.",
+        },
+        false
+      );
+    });
+
+    expect(result.current.requestFields[0].error).toBe(
+      "This field is required."
+    );
+  });
+
   it("should not include fields with type 'subject', type 'description', active false, or editable_in_portal false in requestFields", async () => {
     const formResponse = {
       ticket_form: {

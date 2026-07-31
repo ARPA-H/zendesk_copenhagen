@@ -278,7 +278,7 @@ export function MultiLookupField({
       )}
       <Combobox
         ref={wrapperRef}
-        inputProps={{}}
+        inputProps={{ required }}
         data-test-id="multi-lookup-field-combobox"
         validation={error || isAtLimit ? "error" : undefined}
         inputValue={inputValue}

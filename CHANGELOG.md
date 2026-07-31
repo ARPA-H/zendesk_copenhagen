@@ -5,6 +5,16 @@
 
 * add MultiLookupField for multi-select lookup ticket fields [CD-4026] ([8adcb8b](https://github.com/zendesk/copenhagen_theme/commit/8adcb8b92ba15556e880f8bdd5b1728fa4838e6f))
 * add MultiLookupField translation strings ([b1ba531](https://github.com/zendesk/copenhagen_theme/commit/b1ba531eb83a37749a53917b2902b67e9f5e4762))
+* **service-catalog:** add accessible inline validation styling that highlights required fields left empty on submit ([69f03be](https://github.com/ARPA-H/zendesk_copenhagen/commit/69f03beab1e5f8364fc573c67350aca28be83e30))
+
+
+### Bug Fixes
+
+* **home:** stop aria-label heuristic from hiding the real mobile menu button on service_list_page ([4bb7186](https://github.com/ARPA-H/zendesk_copenhagen/commit/4bb7186df2da5a44cf1271318a6b5ae42b9762e6))
+* **home:** restore visible mobile menu button color on service_list_page ([a2833aa](https://github.com/ARPA-H/zendesk_copenhagen/commit/a2833aa5250f464a47df3360f1b4d04f16e5c45f))
+* **service-catalog:** fix required-dropdown validation for non-empty sentinel default values ([7036670](https://github.com/ARPA-H/zendesk_copenhagen/commit/7036670c282c1110cf9ea3084b1113fc7e2b6632))
+* **service-catalog:** gate invalid-field styling strictly on submit attempt, not interaction ([0f4a1cb](https://github.com/ARPA-H/zendesk_copenhagen/commit/0f4a1cb4a1af6fd88ff70c069c281da57718972f))
+* **service-catalog:** flag any required-and-empty field on submit, not just asset fields ([6e659e4](https://github.com/ARPA-H/zendesk_copenhagen/commit/6e659e4dda52f12e6ce2451ebe5cc4796685aaec))
 
 # [4.48.0](https://github.com/zendesk/copenhagen_theme/compare/v4.47.3...v4.48.0) (2026-07-27)
 

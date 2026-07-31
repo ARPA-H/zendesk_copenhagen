@@ -4,6 +4,7 @@ import type { TicketFieldObject } from "../../ticket-fields/data-types/TicketFie
 import type { Attachment } from "../../ticket-fields/data-types/AttachmentsField";
 import type { AttachmentsOption } from "../data-types/Attachments";
 import { ASSET_TYPE_KEY, ASSET_KEY } from "../constants";
+import { hasFieldValue } from "../../ticket-fields/data-types/hasFieldValue";
 
 export interface ValidationErrors {
   attachments: string | null;
@@ -28,16 +29,6 @@ function isAssetTypeField(field: TicketFieldObject): boolean {
 
 function isAssetField(field: TicketFieldObject): boolean {
   return field.relationship_target_type === ASSET_KEY;
-}
-
-function hasFieldValue(field: TicketFieldObject): boolean {
-  const { value } = field;
-
-  if (Array.isArray(value)) {
-    return value.length > 0;
-  }
-
-  return value !== undefined && value !== null && value !== "";
 }
 
 export function useValidateServiceItemForm(

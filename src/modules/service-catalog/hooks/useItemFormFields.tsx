@@ -5,6 +5,7 @@ import type { TicketFieldObject } from "../../ticket-fields/data-types/TicketFie
 import type { EndUserCondition } from "../../ticket-fields/data-types/EndUserCondition";
 import { getCustomObjectKey } from "../../ticket-fields/fields/LookupField";
 import { getVisibleFields } from "../../ticket-fields/getVisibleFields";
+import { hasFieldValue } from "../../ticket-fields/data-types/hasFieldValue";
 import linkifyStr from "linkify-string";
 import { useAssetDataFetchers } from "./useAssetDataFetchers";
 import type {
@@ -343,9 +344,7 @@ export function useItemFormFields(
 
   const handleChange = useCallback(
     (field: TicketFieldObject, value: TicketFieldObject["value"]) => {
-      const hasValue = Array.isArray(value)
-        ? value.length > 0
-        : value !== undefined && value !== null && value !== "";
+      const hasValue = hasFieldValue({ ...field, value });
 
       const updatedFields = allRequestFields.map((ticketField) =>
         ticketField.name === field.name
