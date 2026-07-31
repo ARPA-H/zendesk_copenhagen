@@ -79,6 +79,20 @@
    that last gap would require a small script to mirror
    `:user-invalid` into `aria-invalid`, which is intentionally out
    of scope here (SCSS-only fix, per design).
+
+   NOTE on required dropdowns/comboboxes specifically: unlike text
+   inputs, DropDown/MultiSelect/Tagger/LookupField are selection-only
+   (`isEditable={false}`) with a binary value — chosen, or sitting on
+   the empty "-" placeholder — so there is no "typed something,
+   still invalid" interaction to dirty them, and `:user-invalid` can
+   never engage there through any real user action. For those we
+   also match plain `:invalid` while not focused (see the combobox
+   block below), which trades away the "only after interaction"
+   guarantee for that field type: a required dropdown left on "-"
+   will render as invalid as soon as it isn't focused, including at
+   first paint if it's not the initially-focused field. That
+   trade-off is intentional — a chosen/unchosen control has no
+   partial-progress state worth protecting the user from seeing.
    ============================================================ */
 
 @mixin svc-invalid-ring($width: 2px) {
@@ -143,6 +157,29 @@
       @media (prefers-reduced-motion: no-preference) {
         animation: svcFieldAngryShake 0.4s ease-in-out 1;
       }
+    }
+
+    // DropDown/MultiSelect/Tagger all render with `isEditable={false}`
+    // (see fields/DropDown.tsx, MultiSelect.tsx, Tagger.tsx) — the
+    // user can only pick from the list, never type into them. Their
+    // value is binary: a real option is selected, or the control
+    // sits on the empty "-" placeholder (EmptyValueOption.tsx / the
+    // renderValue fallback). Picking *anything* on a required field
+    // either fixes it or isn't offered at all — DropDown.tsx only
+    // renders the "-" Option when the field is NOT required — so
+    // there's no "picked something, still invalid" path the way a
+    // text field has, and :user-invalid can structurally never
+    // engage here. We fall back to plain :invalid, gated on "isn't
+    // currently focused" so it doesn't fight the user mid-choice,
+    // to flag a required field still sitting on "-".
+    //
+    // No shake on this one, unlike every rule above: this condition
+    // can already be true at first paint, before any interaction at
+    // all, if the field defaults to unselected — animating on page
+    // load would read as an unearned scold rather than a response
+    // to something the user did, so we keep this one static.
+    &:has(input:required:invalid):not(:focus-within) {
+      @include svc-invalid-ring;
     }
 
     &:has(input:user-invalid):focus-within,
