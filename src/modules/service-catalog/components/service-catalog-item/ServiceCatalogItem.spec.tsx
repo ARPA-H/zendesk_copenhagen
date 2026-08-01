@@ -388,21 +388,22 @@ describe("ServiceCatalogItem", () => {
   describe("client-side required-field validation", () => {
     it("blocks submission and flags a required non-asset field left empty", async () => {
       const setRequestFields = jest.fn();
+      const fields = [
+        {
+          id: 1,
+          name: "custom_fields_1",
+          type: "text",
+          description: "Field 1",
+          label: "Field 1",
+          required: true,
+          options: [],
+          value: null,
+          error: null,
+        },
+      ];
 
       mockUseItemFormFields.mockReturnValue({
-        requestFields: [
-          {
-            id: 1,
-            name: "custom_fields_1",
-            type: "text",
-            description: "Field 1",
-            label: "Field 1",
-            required: true,
-            options: [],
-            value: null,
-            error: null,
-          },
-        ],
+        requestFields: fields,
         associatedLookupField: mockAssociatedLookupField,
         categoryLookupField: null,
         error: null,
@@ -421,19 +422,86 @@ describe("ServiceCatalogItem", () => {
       fireEvent.submit(form);
 
       await waitFor(() => {
-        expect(setRequestFields).toHaveBeenCalledWith([
-          expect.objectContaining({
-            id: 1,
-            error: "This field is required.",
-          }),
-        ]);
+        expect(setRequestFields).toHaveBeenCalledWith(expect.any(Function));
       });
+
+      // setRequestFields is called with a functional updater (merged onto
+      // the full, unfiltered field list) rather than a plain array, so that
+      // fields hidden by conditional logic aren't wiped from state -- apply
+      // it to the full field list here the same way React would.
+      const updater = setRequestFields.mock.calls[0][0];
+      expect(updater(fields)).toEqual([
+        expect.objectContaining({
+          id: 1,
+          error: "This field is required.",
+        }),
+      ]);
 
       // Client-side validation should stop the request before it ever
       // reaches the network -- the field's own red highlight (driven by
       // the `error` set above -> aria-invalid, see _svc-form-validation.scss)
       // is the feedback, not a round trip to the server.
       expect(mockSubmitServiceItemRequest).not.toHaveBeenCalled();
+    });
+
+    it("preserves fields hidden by a conditional rule when merging validation errors", async () => {
+      const setRequestFields = jest.fn();
+      const visibleField = {
+        id: 1,
+        name: "custom_fields_1",
+        type: "text",
+        description: "Field 1",
+        label: "Field 1",
+        required: true,
+        options: [],
+        value: null,
+        error: null,
+      };
+      // Not part of the visible `requestFields` the component sees (as if
+      // hidden by an end-user condition), but present in the full field
+      // list the hook tracks internally.
+      const hiddenField = {
+        id: 2,
+        name: "custom_fields_2",
+        type: "text",
+        description: "Field 2",
+        label: "Field 2",
+        required: false,
+        options: [],
+        value: "hidden value",
+        error: null,
+      };
+
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: [visibleField],
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields,
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(setRequestFields).toHaveBeenCalledWith(expect.any(Function));
+      });
+
+      // Applying the updater to the full field list (visible + hidden)
+      // must not drop the hidden field.
+      const updater = setRequestFields.mock.calls[0][0];
+      expect(updater([visibleField, hiddenField])).toEqual([
+        expect.objectContaining({ id: 1, error: "This field is required." }),
+        hiddenField,
+      ]);
     });
 
     it("submits normally once the required field has a value", async () => {

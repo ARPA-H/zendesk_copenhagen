@@ -1,4 +1,8 @@
 name: Release
+
+permissions:
+  contents: read
+
 on:
   push:
     branches: 
@@ -10,11 +14,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: zendesk/checkout@v3
+        uses: zendesk/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
         with:
           persist-credentials: false
       - name: Setup Node.js
-        uses: zendesk/setup-node@v3
+        uses: zendesk/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610 # v3
         with:
           node-version-file: '.nvmrc'
       - name: Install dependencies
