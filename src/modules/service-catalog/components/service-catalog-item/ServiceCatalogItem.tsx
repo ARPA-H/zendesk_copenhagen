@@ -263,11 +263,22 @@ export function ServiceCatalogItem({
     // server-returned errors -- this is what actually drives aria-invalid
     // (see _svc-form-validation.scss). Runs fresh on every submit attempt,
     // so any field not currently in fieldErrors is reset to no error.
-    setRequestFields(
-      fields.map((field) => ({
-        ...field,
-        error: fieldErrors[field.id] ?? null,
-      }))
+    //
+    // `fields` here is only the currently *visible* subset (conditionally
+    // hidden fields are filtered out upstream by getVisibleFields), but
+    // setRequestFields is the hook's raw setter over the *full* field
+    // list -- calling it with just the visible subset would silently and
+    // permanently drop any field hidden by an end-user condition at this
+    // moment. Merge by id onto the previous full list instead of
+    // replacing it wholesale.
+    setRequestFields((prevFields) =>
+      prevFields.map((field) => {
+        const updatedField = fields.find((f) => f.id === field.id);
+        if (!updatedField) {
+          return field;
+        }
+        return { ...updatedField, error: fieldErrors[field.id] ?? null };
+      })
     );
 
     return hasError;
@@ -324,7 +335,15 @@ export function ServiceCatalogItem({
       );
       return { ...field, error: errorField?.description || null };
     });
-    setRequestFields(updatedFields);
+    // As in validateForm() above, `requestFields` is only the visible
+    // subset -- merge these updates onto the full field list rather than
+    // replacing it, so conditionally hidden fields aren't lost.
+    setRequestFields((prevFields) =>
+      prevFields.map((field) => {
+        const updatedField = updatedFields.find((f) => f.id === field.id);
+        return updatedField ?? field;
+      })
+    );
   }
 
   async function handleSubmitError(response: Response | undefined) {
