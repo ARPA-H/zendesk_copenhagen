@@ -62,3 +62,52 @@
   align-items: center;
   gap: 20px;
 }
+
+// Mobile: stack the categories sidebar above the service list instead of
+// squeezing them side-by-side (the sidebar's fixed SIDEBAR_WIDTH otherwise
+// ate a large chunk of a narrow viewport, halving the grid's usable width).
+// The sidebar itself collapses into a full-width dropdown-style toggle
+// (see ServiceCatalogCategoriesSidebar.tsx) so the grid can follow at full
+// width regardless of whether the category tree is expanded.
+@media (max-width: 768px) {
+  .service-catalog-main-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .service-catalog-sidebar,
+  .service-catalog-list {
+    width: 100%;
+  }
+
+  .svc-cat-sidebar-toggle {
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border: 1px solid #dfe4ee;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+  }
+
+  .svc-cat-sidebar-toggle-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .svc-cat-sidebar-toggle svg {
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  .svc-cat-sidebar-list {
+    margin-top: 8px;
+    border: 1px solid #dfe4ee;
+    border-radius: 8px;
+    padding: 8px;
+  }
+}

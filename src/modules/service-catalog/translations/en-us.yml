@@ -364,3 +364,8 @@ parts:
       title: "Generic error message shown under a required service-catalog request field left empty on submit (any field type without its own dedicated message, e.g. text, dropdown, checkbox, tagger, date)"
       screenshot: ""
       value: "This field is required."
+  - translation:
+      key: "service-catalog-sidebar.categories"
+      title: ""
+      screenshot: ""
+      value: "Categories"
