@@ -38,6 +38,7 @@ export default defineConfig([
       "flash-notifications": "src/modules/flash-notifications/index.ts",
       "service-catalog": "src/modules/service-catalog/index.tsx",
       "approval-requests": "src/modules/approval-requests/index.tsx",
+      "svc-page-utils": "src/modules/svc-page-utils/index.ts",
     },
     output: {
       dir: "assets",
