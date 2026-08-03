@@ -14,6 +14,22 @@ function isValid(account) {
   return account.subdomain && account.email && account.password;
 }
 
+/**
+ * Validates that a subdomain contains only valid hostname characters.
+ * Prevents URL injection when the subdomain originates from a config file.
+ */
+function validateSubdomain(subdomain) {
+  if (
+    typeof subdomain !== "string" ||
+    !/^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(subdomain)
+  ) {
+    throw new Error(
+      `Invalid subdomain: "${subdomain}". Must contain only alphanumeric characters and hyphens.`
+    );
+  }
+  return subdomain;
+}
+
 function getAccount() {
   // Reads account from the env or .a11yrc.json file if present
   let account = {
@@ -29,6 +45,8 @@ function getAccount() {
     );
     process.exit(1);
   }
+
+  account.subdomain = validateSubdomain(account.subdomain);
 
   return account;
 }

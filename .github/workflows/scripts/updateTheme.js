@@ -13,6 +13,14 @@ const brandId = process.env['BRAND_ID'];
 const filePath = path.join(__dirname, 'theme.zip');
 const MAX_WAIT_TIME = 5 * 60 * 1000;
 
+/**
+ * Sanitizes HTTP-sourced content before writing to the GitHub step summary
+ * to prevent markdown injection via untrusted response data.
+ */
+function sanitizeForSummary(content) {
+    return String(content).replace(/\0/g, '').replace(/`{3,}/g, "'''");
+}
+
 async function zendeskFetch(endpoint, options = {}) {
     const url = `${baseURL}${endpoint}`;
     const response = await fetch(url, {
@@ -74,7 +82,7 @@ async function importTheme(brandId) {
         const prettyResponse = JSON.stringify(safeData, null, 2);
         console.log(prettyResponse);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Import Theme Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Import Theme Response\n\`\`\`json\n${sanitizeForSummary(prettyResponse)}\n\`\`\``);
 
         return {
             jobId: data.job.id,
@@ -86,7 +94,7 @@ async function importTheme(brandId) {
         console.log('::group::Action failed with error');
         console.log(error.message);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Import Theme Error\n\`\`\`\n${error.message}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Import Theme Error\n\`\`\`\n${sanitizeForSummary(error.message)}\n\`\`\``);
         process.exit(1);
     }
 }
@@ -120,7 +128,7 @@ async function updateTheme(themeId) {
         const prettyResponse = JSON.stringify(safeData, null, 2);
         console.log(prettyResponse);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Update Theme Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Update Theme Response\n\`\`\`json\n${sanitizeForSummary(prettyResponse)}\n\`\`\``);
 
         return {
             jobId: data.job.id,
@@ -131,7 +139,7 @@ async function updateTheme(themeId) {
         console.log('::group::Action failed with error');
         console.log(error.message);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Update Theme Error\n\`\`\`\n${error.message}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Update Theme Error\n\`\`\`\n${sanitizeForSummary(error.message)}\n\`\`\``);
         process.exit(1);
     }
 }
@@ -145,12 +153,12 @@ async function publishTheme(themeId) {
         const prettyResponse = JSON.stringify(data, null, 2);
         console.log(prettyResponse);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Publish Theme Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Publish Theme Response\n\`\`\`json\n${sanitizeForSummary(prettyResponse)}\n\`\`\``);
     } catch (error) {
         console.log('::group::Publish failed with error');
         console.log(error.message);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Publish Theme Error\n\`\`\`\n${error.message}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Publish Theme Error\n\`\`\`\n${sanitizeForSummary(error.message)}\n\`\`\``);
         process.exit(1);
     }
 }
@@ -176,7 +184,7 @@ async function uploadThemeFile(uploadUrl, uploadParameters, filePath) {
         console.log('::group::Upload Theme File Response');
         console.log(text);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Upload Theme File Response\n\`\`\`\n${text}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Upload Theme File Response\n\`\`\`\n${sanitizeForSummary(text)}\n\`\`\``);
 
         if (!response.ok) {
             throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
@@ -185,7 +193,7 @@ async function uploadThemeFile(uploadUrl, uploadParameters, filePath) {
         console.log('::group::Action failed with error');
         console.log(error.message);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Upload Theme File Error\n\`\`\`\n${error.message}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Upload Theme File Error\n\`\`\`\n${sanitizeForSummary(error.message)}\n\`\`\``);
         process.exit(1);
     }
 }
@@ -199,14 +207,14 @@ async function checkJobStatus(jobId) {
             const prettyResponse = JSON.stringify(data, null, 2);
             console.log(prettyResponse);
             console.log('::endgroup::');
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Check Job Status Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Check Job Status Response\n\`\`\`json\n${sanitizeForSummary(prettyResponse)}\n\`\`\``);
         }
         return data.job;
     } catch (error) {
         console.log('::group::Action failed with error');
         console.log(error.message);
         console.log('::endgroup::');
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Check Job Status Error\n\`\`\`\n${error.message}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Check Job Status Error\n\`\`\`\n${sanitizeForSummary(error.message)}\n\`\`\``);
         process.exit(1);
     }
 }
@@ -237,11 +245,11 @@ async function pruneOldThemes(newThemeId) {
             await zendeskFetch(`/guide/theming/themes/${theme.id}`, { method: 'DELETE' });
             console.log(`Deleted theme ${theme.id} (created ${theme.created_at})`);
         }
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Pruned Themes\nDeleted ${toDelete.length} old theme(s): ${toDelete.map(t => t.id).join(', ')}`);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Pruned Themes\nDeleted ${toDelete.length} old theme(s): ${sanitizeForSummary(toDelete.map(t => t.id).join(', '))}`);
     } catch (error) {
         // Non-fatal — log and continue
         console.warn('Theme pruning warning:', error.message);
-        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Theme Pruning Warning\n\`\`\`\n${error.message}\n\`\`\``);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Theme Pruning Warning\n\`\`\`\n${sanitizeForSummary(error.message)}\n\`\`\``);
     }
 }
 

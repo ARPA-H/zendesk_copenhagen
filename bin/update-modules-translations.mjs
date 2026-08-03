@@ -20,6 +20,12 @@ const { values: args } = parseArgs({
 });
 
 async function writeLocaleFile(name, filePath, outputDir) {
+  // Validate locale name to prevent path traversal from HTTP-sourced data
+  if (typeof name !== "string" || !/^[a-zA-Z0-9_-]+$/.test(name)) {
+    throw new Error(
+      `Invalid locale name "${name}". Expected only alphanumeric characters, hyphens, and underscores.`
+    );
+  }
   const response = await fetch(`${BASE_URL}${filePath}`);
   const { translations } = await response.json();
   const outputPath = resolve(outputDir, `${name.toLocaleLowerCase()}.json`);
