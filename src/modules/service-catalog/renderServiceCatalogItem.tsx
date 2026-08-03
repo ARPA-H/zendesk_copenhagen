@@ -12,18 +12,12 @@ import {
 } from "../shared";
 import type { Settings } from "../shared";
 import { ErrorBoundary } from "../shared/error-boundary/ErrorBoundary";
-import { initIconConfig } from "./utils/iconConfig";
 
 export async function renderServiceCatalogItem(
   container: HTMLElement,
   settings: Settings,
-  props: ServiceCatalogItemProps,
-  iconAssetBase?: string
+  props: ServiceCatalogItemProps
 ) {
-  initIconConfig({
-    assetBase: iconAssetBase,
-    iconApiBase: settings.iconify_api_base,
-  });
   const { baseLocale, helpCenterPath } = props;
   const safeHelpCenterPath = normalizeHelpCenterPath(helpCenterPath);
   initI18next(baseLocale);

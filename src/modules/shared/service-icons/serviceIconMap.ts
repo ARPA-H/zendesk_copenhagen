@@ -8,9 +8,10 @@
  * always takes precedence over an entry here.
  *
  * References use the same syntax as the markers:
- *   - "logos:figma", "mdi:laptop"  -> any Iconify icon
- *                                     (browse at https://icon-sets.iconify.design)
- *   - "arpa-h-logomark.svg"        -> a committed SVG in this theme's assets/ dir
+ *   - "logos:figma", "mdi:laptop"        -> any Iconify icon
+ *                                           (browse at https://icon-sets.iconify.design)
+ *   - "https://cdn.example.com/x.svg"    -> a direct link to a hosted SVG
+ *   - "arpa-h-logomark.svg"              -> a committed SVG in this theme's assets/ dir
  *
  * Keys are compared case-insensitively against the item's exact display name.
  */

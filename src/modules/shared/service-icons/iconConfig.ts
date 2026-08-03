@@ -1,6 +1,8 @@
 /**
- * One-time icon configuration for a Service Catalog view. Called by the render
- * entry points with values the host template supplies.
+ * One-time icon configuration for a Service Catalog view. Called via
+ * svc-page-utils' initIconSupport(), which templates invoke with values the
+ * host template supplies, before the (unmodified, upstream-mirrored)
+ * service-catalog module renders.
  */
 import { addAPIProvider } from "@iconify/react";
 import { setIconAssetBase } from "./iconAssetBase";
@@ -27,8 +29,8 @@ export interface IconConfig {
  * To keep all icon traffic in-house (e.g. for a government/enterprise
  * deployment), either set this to your self-hosted Iconify API
  * (https://iconify.design/docs/api/), or promote it to a Guide theme setting
- * by adding an `iconify_api_base` entry to manifest.json (the render entry
- * points already forward `settings.iconify_api_base` when present).
+ * by adding an `iconify_api_base` entry to manifest.json (svc-page-utils'
+ * initIconSupport() already forwards `settings.iconify_api_base` when present).
  */
 const DEFAULT_ICONIFY_API_BASE = "";
 

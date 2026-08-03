@@ -2,7 +2,7 @@ import type { ServiceCatalogItem } from "../../data-types/ServiceCatalogItem";
 import styled from "styled-components";
 import { getColor } from "@zendeskgarden/react-theming";
 import { ItemThumbnail } from "../item-thumbnail/ItemThumbnail";
-import { stripIconMarker } from "../../utils/serviceIcon";
+import { stripIconMarker } from "../../../shared";
 import { useMemo } from "react";
 import { htmlToText } from "../../utils/sanitize";
 

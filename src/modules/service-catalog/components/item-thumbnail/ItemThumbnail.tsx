@@ -4,7 +4,7 @@ import { getColor } from "@zendeskgarden/react-theming";
 import { Avatar } from "@zendeskgarden/react-avatars";
 import { Icon } from "@iconify/react";
 
-import { resolveItemIcon } from "../../utils/serviceIcon";
+import { resolveItemIcon } from "../../../shared";
 
 const StyledAvatar = styled(Avatar)<{ size: "medium" | "large" }>`
   background-color: ${({ theme }) =>

@@ -4,3 +4,4 @@ export * from "./garden-theme";
 export * from "./error-boundary";
 export * from "./navigation/navigateTo";
 export * from "./navigation/normalizeHelpCenterPath";
+export * from "./service-icons";

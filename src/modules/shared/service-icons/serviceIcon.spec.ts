@@ -59,10 +59,29 @@ describe("serviceIcon", () => {
       expect(classifyIconRef("arpa-h-logomark.svg")).toBeNull();
     });
 
-    it("rejects values that are neither (incl. path traversal / remote urls)", () => {
+    it("recognizes a direct https SVG URL", () => {
+      expect(classifyIconRef("https://cdn.example.com/icons/x.svg")).toEqual({
+        kind: "image",
+        url: "https://cdn.example.com/icons/x.svg",
+      });
+    });
+
+    it("accepts an https SVG URL with a query string", () => {
+      expect(classifyIconRef("https://cdn.example.com/x.svg?v=2")).toEqual({
+        kind: "image",
+        url: "https://cdn.example.com/x.svg?v=2",
+      });
+    });
+
+    it("rejects non-https or non-svg URLs", () => {
+      expect(classifyIconRef("http://cdn.example.com/x.svg")).toBeNull();
+      expect(classifyIconRef("https://cdn.example.com/x.png")).toBeNull();
+      expect(classifyIconRef("javascript:alert(1)")).toBeNull();
+    });
+
+    it("rejects values that are neither (incl. path traversal)", () => {
       setIconAssetBase("https://cdn.example.com/assets/");
       expect(classifyIconRef("../../etc/passwd")).toBeNull();
-      expect(classifyIconRef("https://evil.example/x.svg")).toBeNull();
       expect(classifyIconRef("")).toBeNull();
     });
   });

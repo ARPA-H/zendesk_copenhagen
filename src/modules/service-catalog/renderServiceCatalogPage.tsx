@@ -18,7 +18,6 @@ import {
   PREVIEW_MODE_QUERY_PARAM,
   PREVIEW_MODE_QUERY_PARAM_VALUE,
 } from "./constants";
-import { initIconConfig } from "./utils/iconConfig";
 
 function isPreviewMode(): boolean {
   if (typeof window === "undefined") return false;
@@ -57,13 +56,8 @@ export async function renderServiceCatalogPage(
   container: HTMLElement,
   settings: Settings,
   baseLocale: string,
-  helpCenterPath: string,
-  iconAssetBase?: string
+  helpCenterPath: string
 ) {
-  initIconConfig({
-    assetBase: iconAssetBase,
-    iconApiBase: settings.iconify_api_base,
-  });
   const safeHelpCenterPath = normalizeHelpCenterPath(helpCenterPath);
   initI18next(baseLocale);
   const theme = createTheme(settings);

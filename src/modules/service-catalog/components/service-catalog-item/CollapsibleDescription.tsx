@@ -8,7 +8,7 @@ import { getColor } from "@zendeskgarden/react-theming";
 import { XXXL } from "@zendeskgarden/react-typography";
 import { ItemThumbnail } from "../item-thumbnail/ItemThumbnail";
 import { sanitizeHtml } from "../../utils/sanitize";
-import { stripIconMarker } from "../../utils/serviceIcon";
+import { stripIconMarker } from "../../../shared";
 
 const DescriptionWrapper = styled.div`
   border-bottom: ${(props) => props.theme.borders.sm}
