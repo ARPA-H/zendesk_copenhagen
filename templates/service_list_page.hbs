@@ -24,7 +24,7 @@
 </script>
 
 <!-- ===== HERO (greeting + search) ===== -->
-<section id="hero-content" class="section hero svc-hero">
+<section id="main-content" class="section hero svc-hero">
   <div class="hero-inner svc-hero-inner">
     {{#if signed_in}}
     <div class="svc-hero-greeting">
@@ -165,42 +165,38 @@
       main.replaceChildren(fallback);
     }
   }
+
+  // Swap the skeleton for the real catalog once items have rendered. See
+  // src/modules/svc-page-utils for why this lives in a real module import
+  // rather than a window global.
+  try {
+    const { whenReady } = await import("svc-page-utils");
+    whenReady({
+      targetId: "service-catalog-main-content",
+      skeletonId: "svc-catalog-skeleton",
+      skeletonHideClass: "svc-cat-skel-hide",
+      readyClasses: ["svc-cat-ready"],
+      // "Complete" = the catalog has real service links rendered.
+      isComplete: (main) => !!main.querySelector('a[href*="/services/"]'),
+    });
+  } catch (e) {
+    console.warn("svc-page-utils module unavailable:", e);
+  }
 </script>
 
 <!-- Personalized time-based greeting in the hero. Name-resolution fetch is
-     shared with service_page.hbs via src/svcGreeting.js
-     (window.svcFetchFirstName); the fade-in timing below is page-specific. -->
-<script>
-  (function () {
-    const nameEl = document.getElementById('svc-list-greeting-name');
-    if (!nameEl) return;
-
-    function setGreeting(first) {
-      if (!first) return;
-      const text = `, ${first}`;
-      if ((nameEl.textContent || '') === text && nameEl.classList.contains('svc-name-in')) return;
-      nameEl.textContent = text;
+     shared with service_page.hbs via src/modules/svc-page-utils
+     (fetchDisplayFirstName); the fade-in timing below is page-specific. -->
+<script type="module">
+  const nameEl = document.getElementById('svc-list-greeting-name');
+  if (nameEl) {
+    const { fetchDisplayFirstName } = await import("svc-page-utils");
+    const first = await fetchDisplayFirstName();
+    if (first) {
+      nameEl.textContent = `, ${first}`;
       requestAnimationFrame(() => nameEl.classList.add('svc-name-in'));
     }
-
-    // script.js (which defines window.svcFetchFirstName) is a classic script
-    // whose load order relative to this inline block isn't guaranteed, so
-    // poll briefly instead of assuming it has already run.
-    function tryFetch() {
-      if (typeof window.svcFetchFirstName === 'function') {
-        window.svcFetchFirstName(setGreeting);
-        return true;
-      }
-      return false;
-    }
-    if (!tryFetch()) {
-      let attempts = 0;
-      const iv = setInterval(() => {
-        attempts++;
-        if (tryFetch() || attempts > 100) clearInterval(iv);
-      }, 20);
-    }
-  })();
+  }
 </script>
 
 <!-- Native instant-search wiring: submit the native {{search}} form when the
@@ -227,28 +223,17 @@
   })();
 </script>
 
-<!-- Catalog enhancements (tooltips, category text, search removal) and
-     category-swap skeleton hiding now live in src/svcCatalogEnhancements.js
-     (bundled into script.js) since neither depends on server-rendered
-     Curlybars data. Do not re-add them inline. -->
+<!-- Catalog enhancements (tooltips, category text, search removal) now live
+     in src/svcCatalogEnhancements.js (bundled into script.js) since they
+     don't depend on server-rendered Curlybars data. Do not re-add inline. -->
 
-<!-- Catalog reveal controller. The hero is static, fully-styled markup and is
-     visible immediately (no hide-by-default guard); only the async service
-     catalog is gated. This swaps the skeleton for the real catalog
-     (.svc-cat-ready) once it is complete. (.svc-ready is now a harmless no-op,
-     kept only so existing callers don't need touching.)
-     Shared reveal-on-complete controller lives in src/svcReveal.js
-     (window.initSvcRevealOnComplete), consistent with service_page.hbs's
-     form-skeleton reveal. SAFETY: 6s JS hard cap + 6.5s CSS failsafe +
-     instant reveal on bfcache. -->
+<!-- Hero reveal. The hero is static, fully-styled markup and is visible
+     immediately (no hide-by-default guard) — this only exists so pages that
+     bfcache-restore re-run the reveal. The async service catalog's own
+     skeleton is gated separately, above, via svc-page-utils' whenReady(). -->
 <script>
   (function () {
     var root = document.documentElement;
-
-    // Reveal the hero immediately once the page is interactive — the hero is
-    // our own fully-styled markup, so there's no reason to hold it for the
-    // catalog. Holding only the catalog behind its skeleton avoids the flash
-    // while keeping the greeting snappy.
     function revealHero() { root.classList.add('svc-ready'); }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', revealHero);
@@ -256,34 +241,6 @@
       revealHero();
     }
     window.addEventListener('pageshow', function (e) { if (e.persisted) revealHero(); });
-
-    var config = {
-      targetId: 'service-catalog-main-content',
-      skeletonId: 'svc-catalog-skeleton',
-      skeletonHideClass: 'svc-cat-skel-hide',
-      readyClasses: ['svc-cat-ready'],
-      // "Complete" = the catalog has real service links rendered.
-      isComplete: function (main) {
-        return !!main.querySelector('a[href*="/services/"]');
-      }
-    };
-    // script.js (which defines window.initSvcRevealOnComplete) is a classic
-    // script whose load order relative to this inline block isn't
-    // guaranteed, so poll briefly instead of assuming it has already run.
-    function tryInit() {
-      if (typeof window.initSvcRevealOnComplete === 'function') {
-        window.initSvcRevealOnComplete(config);
-        return true;
-      }
-      return false;
-    }
-    if (!tryInit()) {
-      var attempts = 0;
-      var iv = setInterval(function () {
-        attempts++;
-        if (tryInit() || attempts > 100) clearInterval(iv);
-      }, 20);
-    }
   })();
 </script>
 {{/if}}

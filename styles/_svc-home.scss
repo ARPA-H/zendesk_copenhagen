@@ -575,12 +575,14 @@ a.svc-help-btn:hover,
   .svc-cardwrap { padding: 18px 10px 40px; max-width: 100%; overflow-x: hidden; }
   .svc-list-shell { margin-top: -24px; padding: 16px 12px 24px; border-radius: 16px; overflow: visible; }
 
+  // Was horizontally scrollable (overflow-x: auto) as a workaround for the
+  // fixed-width sidebar squeezing the grid; the sidebar now collapses into a
+  // full-width dropdown (styles/_service_catalog.scss) and the grid wraps
+  // full-width below it, so scrolling is no longer needed.
   .service-catalog-main-content {
     max-width: 100% !important;
-    overflow-x: auto !important;
+    overflow-x: hidden !important;
     overflow-y: visible !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: thin;
   }
 
   .service-catalog-main-content a[href*="/services/"],
@@ -623,6 +625,12 @@ a.svc-help-btn:hover,
   .svc-help-banner a.svc-help-btn { width: 100%; padding: 13px 22px; }
 
   .svc-tooltip { display: none !important; }
+
+  // Match the real sidebar/grid stacking below (styles/_service_catalog.scss)
+  // so the loading skeleton doesn't flash a halved-width grid before swapping in.
+  .svc-cat-skeleton { grid-template-columns: 1fr; gap: 16px; }
+  .svc-cat-skel-side { flex-direction: row; flex-wrap: wrap; }
+  .svc-cat-skel-row { flex: 1 1 45%; }
 }
 
 @media (max-width: 430px) {

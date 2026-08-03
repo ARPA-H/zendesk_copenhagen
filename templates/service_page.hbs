@@ -196,86 +196,48 @@
 </script>
 
 {{!-- Personalized greeting. Name-resolution fetch is shared with
-     service_list_page.hbs via src/svcGreeting.js (window.svcFetchFirstName);
-     the reveal timing/text-formatting below is specific to this page. --}}
-<script>
-  (function () {
-    var title = document.getElementById('svc-greeting');
-    if (!title) return;
-
-    function reveal() { title.classList.add('svc-greeting-ready'); }
-
-    function setGreeting(first) {
+     service_list_page.hbs via src/modules/svc-page-utils
+     (fetchDisplayFirstName); the reveal timing/text-formatting below is
+     specific to this page. --}}
+<script type="module">
+  const title = document.getElementById('svc-greeting');
+  if (title) {
+    const reveal = () => title.classList.add('svc-greeting-ready');
+    const setGreeting = (first) => {
       title.textContent = first ? ('How can we help, ' + first + '?') : 'How can we help?';
-    }
+    };
 
-    var revealed = false;
-    var revealTimer = setTimeout(function () {
+    let revealed = false;
+    const revealTimer = setTimeout(() => {
       if (revealed) return;
       revealed = true;
       setGreeting('');
       reveal();
     }, 2400);
 
-    function finish(first) {
-      if (revealed) return;
+    const { fetchDisplayFirstName } = await import("svc-page-utils");
+    const first = await fetchDisplayFirstName();
+    if (!revealed) {
       revealed = true;
       clearTimeout(revealTimer);
-      setGreeting(first || '');
+      setGreeting(first);
       reveal();
     }
-
-    // script.js (which defines window.svcFetchFirstName) is a classic script
-    // whose load order relative to this inline block isn't guaranteed, so
-    // poll briefly instead of assuming it has already run.
-    function tryFetch() {
-      if (typeof window.svcFetchFirstName === 'function') {
-        window.svcFetchFirstName(finish);
-        return true;
-      }
-      return false;
-    }
-    if (!tryFetch()) {
-      var attempts = 0;
-      var iv = setInterval(function () {
-        attempts++;
-        if (tryFetch() || attempts > 100) clearInterval(iv);
-      }, 20);
-    }
-  })();
+  }
 </script>
 
 {{!-- Swap skeleton -> real form once complete. Shared reveal-on-complete
-     controller lives in src/svcReveal.js (window.initSvcRevealOnComplete),
-     consistent with service_list_page.hbs's catalog reveal. --}}
-<script>
-  (function () {
-    var config = {
-      targetId: 'service-catalog-item',
-      skeletonId: 'svc-form-skeleton',
-      readyClasses: ['svc-form-ready'],
-      isComplete: function (form) {
-        return !!form.querySelector('input, textarea, select, button[type="submit"], [role="textbox"]');
-      }
-    };
-    // script.js (which defines window.initSvcRevealOnComplete) is a classic
-    // script whose load order relative to this inline block isn't
-    // guaranteed, so poll briefly instead of assuming it has already run.
-    function tryInit() {
-      if (typeof window.initSvcRevealOnComplete === 'function') {
-        window.initSvcRevealOnComplete(config);
-        return true;
-      }
-      return false;
-    }
-    if (!tryInit()) {
-      var attempts = 0;
-      var iv = setInterval(function () {
-        attempts++;
-        if (tryInit() || attempts > 100) clearInterval(iv);
-      }, 20);
-    }
-  })();
+     controller lives in src/modules/svc-page-utils (whenReady), consistent
+     with service_list_page.hbs's catalog reveal. --}}
+<script type="module">
+  const { whenReady } = await import("svc-page-utils");
+  whenReady({
+    targetId: 'service-catalog-item',
+    skeletonId: 'svc-form-skeleton',
+    readyClasses: ['svc-form-ready'],
+    isComplete: (form) =>
+      !!form.querySelector('input, textarea, select, button[type="submit"], [role="textbox"]'),
+  });
 </script>
 
 {{!-- Floating training button. Hidden by default: only rendered when an
