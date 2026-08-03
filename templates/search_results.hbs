@@ -250,9 +250,11 @@
                         {{/each}}
                       </ol>
                     </nav>
-                    {{#unless is_external}}
-                      <span class="meta-data">{{author.name}}</span>
-                    {{/unless}}
+                    {{#if settings.show_article_author}}
+                      {{#unless is_external}}
+                        <span class="meta-data">{{author.name}}</span>
+                      {{/unless}}
+                    {{/if}}
                     <span class="meta-data">{{date created_at}}</span>
                   </div>
                 </header>
