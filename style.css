@@ -5445,9 +5445,7 @@ html body .header .search-wrapper {
 }
 
 .svc-home .header .logo span,
-.svc-home .header .ask-ai span,
-.svc-home .header .user-nav a,
-.svc-home .header .sign-in {
+.svc-home .header .ask-ai span {
   color: #ffffff !important;
 }
 

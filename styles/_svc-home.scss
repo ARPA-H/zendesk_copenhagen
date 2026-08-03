@@ -24,9 +24,7 @@
 .svc-home .header form[role="search"],
 .svc-home .header .search-full { display: none !important; }
 .svc-home .header .logo span,
-.svc-home .header .ask-ai span,
-.svc-home .header .user-nav a,
-.svc-home .header .sign-in {
+.svc-home .header .ask-ai span {
   color: #ffffff !important;
 }
 .svc-home .header .user-info span,
@@ -42,13 +40,13 @@
 .svc-home .header .ask-ai-icon { color: #ffffff !important; }
 // NOTE: unlike .ask-ai-icon (which sits inside the .ask-ai pill's own
 // rgba(255,255,255,0.12) background, so white always has contrast), the
-// mobile hamburger has no background of its own — it sits directly on
-// .svc-home .header, which is transparent (see top of this file) and is
-// NOT visually overlapping the hero image; the header and hero are
-// separate, stacked, non-overlapping elements. Forcing white here made the
-// hamburger icon and button invisible (white-on-white) against the plain
-// page background. Removed so it falls back to the same default (dark,
-// inherited) color every other page already uses successfully.
+// mobile hamburger and the "Sign In" link have no background of their own —
+// they sit directly on .svc-home .header, which is transparent (see top of
+// this file) and is NOT visually overlapping the hero image; the header and
+// hero are separate, stacked, non-overlapping elements. Forcing white here
+// made them invisible (white-on-white) against the plain page background.
+// Removed so they fall back to the same default (dark, inherited) color
+// every other page already uses successfully.
 
 /* ---------- HERO ---------- */
 .svc-hero { position: relative; }
