@@ -28,7 +28,7 @@
   <div class="hero-inner svc-hero-inner">
     {{#if signed_in}}
     <div class="svc-hero-greeting">
-      <h2 class="svc-hero-title"><span id="svc-list-greeting">&nbsp;</span><span id="svc-list-greeting-name" class="svc-greeting-name"></span></h2>
+      <h2 class="svc-hero-title"><span id="svc-list-greeting">&nbsp;</span><span id="svc-list-greeting-name"></span></h2>
       <p class="svc-hero-subtitle" id="svc-list-subtitle">What do you need help with today?</p>
 
       {{!-- Native Zendesk instant search (articles), skinned into the hero
@@ -63,16 +63,6 @@
     {{/if}}
   </div>
 </section>
-
-<script>
-  /* Time-based greeting set synchronously, before first paint. */
-  (function () {
-    var el = document.getElementById('svc-list-greeting');
-    if (!el) return;
-    var h = new Date().getHours();
-    el.textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
-  })();
-</script>
 
 {{#unless signed_in}}
 <div class="container banner-container">
@@ -191,18 +181,32 @@
   }
 </script>
 
-<!-- Personalized time-based greeting in the hero. Name-resolution fetch is
-     shared with service_page.hbs via src/modules/svc-page-utils
-     (fetchDisplayFirstName); the fade-in timing below is page-specific. -->
+<!-- Time-based greeting word + personalized name, revealed together so
+     "Good evening" never appears before the name does. Name-resolution
+     fetch is shared with service_page.hbs via src/modules/svc-page-utils
+     (fetchDisplayFirstName); a failsafe timer guards against a slow/failed
+     fetch leaving the greeting hidden. -->
 <script type="module">
+  const wordEl = document.getElementById('svc-list-greeting');
   const nameEl = document.getElementById('svc-list-greeting-name');
-  if (nameEl) {
+  const title = wordEl?.closest('.svc-hero-title');
+  if (wordEl) {
+    var h = new Date().getHours();
+    wordEl.textContent = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+
+    let revealed = false;
+    const reveal = () => {
+      if (revealed) return;
+      revealed = true;
+      title?.classList.add('svc-greeting-ready');
+    };
+    const revealTimer = setTimeout(reveal, 2400);
+
     const { fetchDisplayFirstName } = await import("svc-page-utils");
     const first = await fetchDisplayFirstName();
-    if (first) {
-      nameEl.textContent = `, ${first}`;
-      requestAnimationFrame(() => nameEl.classList.add('svc-name-in'));
-    }
+    if (first && nameEl) nameEl.textContent = `, ${first}`;
+    clearTimeout(revealTimer);
+    reveal();
   }
 </script>
 
