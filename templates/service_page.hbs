@@ -155,6 +155,7 @@
 {{!-- Render the embedded service catalog item form --}}
 <script type="module">
   import { renderServiceCatalogItem } from "service-catalog";
+  import { initIconSupport } from "svc-page-utils";
   const settings  = {{json settings}};
   const container = document.getElementById("service-catalog-item");
   const id = window.location.pathname.split("/").pop();
@@ -169,6 +170,11 @@
     serviceCatalogItemId:  id,
     helpCenterPath:        {{json (page_path 'help_center')}},
   };
+  // Derive the theme's assets/ base URL from a dedicated committed asset (the
+  // module can't use the {{asset}} helper) so icon support can resolve
+  // [icon: file.svg] refs.
+  const iconAssetBase = "{{asset 'service-catalog-icon-base.svg'}}".replace(/service-catalog-icon-base\.svg.*$/, "");
+  initIconSupport(iconAssetBase, settings.iconify_api_base);
   renderServiceCatalogItem(container, settings, props);
 </script>
 

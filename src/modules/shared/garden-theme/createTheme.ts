@@ -11,6 +11,11 @@ export interface Settings {
   link_color: string;
   hover_link_color: string;
   visited_link_color: string;
+  /**
+   * Optional base URL of a self-hosted Iconify API used to resolve
+   * service-catalog icon references. Empty -> Iconify's public API.
+   */
+  iconify_api_base?: string;
 }
 
 const createAccessibleFormControlStyle = (isWrapper: boolean) => {

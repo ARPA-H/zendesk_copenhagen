@@ -51,6 +51,13 @@ export default defineConfig([
           return "wysiwyg";
         }
 
+        // Keep Iconify in the service-catalog bundle (the only module that
+        // uses it) rather than the shared chunk, so non-catalog pages don't
+        // download an icon library they never render.
+        if (id.includes("node_modules/@iconify")) {
+          return undefined;
+        }
+
         if (id.includes("node_modules") || id.includes("src/modules/shared")) {
           return "shared";
         }
