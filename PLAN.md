@@ -4,6 +4,39 @@ Tracks stack decisions, in-flight work, and non-obvious findings for this
 repo. Prefer adding to this file over agent memory for anything that should
 survive a Codespace rebuild or be visible in review/merge.
 
+## Session: 2026-08-04 — service-catalog icon stuck at 16x16
+
+### Root cause
+
+`styles/_svc-home.scss`'s "SERVICE ICONS — NEVER CLIP" block (originally
+added to stop uploaded logo images from being clipped/stretched inside the
+circular Avatar) applied `width: auto !important; height: auto !important;`
+to **both** `img` and `svg` under any
+`.service-catalog-main-content [data-garden-id="avatars.avatar"] ...`
+selector. This has the *exact same CSS specificity* as
+`ItemThumbnail.tsx`'s own `&& > svg { width/height: ...px !important }`
+sizing rule, so source order decided the winner — and `auto` on an inline
+`<svg>` falls back to its own `width="1em"`/`height="1em"` presentation
+attributes (1em ≈ 16px), which is why the icons looked stuck at 16x16 no
+matter what was changed in the React component.
+
+**Fix** (commit `24531212`): split that block's selectors into a separate
+`img` ruleset (keeps `width/height:auto` — needed so non-square uploaded
+thumbnails don't stretch) and a separate `svg` ruleset (drops
+`width/height:auto`, keeps `max-width/max-height:100%` + `object-fit:contain`
++ `overflow:visible` as a clip safety net only). Also bumped
+`ItemThumbnail.tsx`'s own `&& > svg` sizing to `!important` (commit
+`6925ada6`) — necessary but not sufficient on its own; the `_svc-home.scss`
+override was the real blocker.
+
+**Lesson:** when a plain global CSS `!important` rule and a styled-components
+`!important` rule have equal specificity, don't assume injection/source order
+— check `styles/_svc-home.scss` (loaded in `<head>`, has several broad
+`.service-catalog-main-content ...` resets) for conflicting selectors before
+chasing specificity in the React component alone. Ask for the DevTools
+**Styles** panel (not just Computed) to see every competing rule and its
+source when a CSS fix doesn't take effect after a rebuild+redeploy.
+
 ## Session: 2026-08-04 — `update_theme` CI failure
 
 ### Completed
