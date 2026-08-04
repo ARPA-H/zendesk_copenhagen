@@ -3,13 +3,16 @@ import{r as e,p as t,ar as n,T as s,x as r,N as a,as as o,j as i,at as l,au as c
   width: ${e=>"large"===e.size?72:40}px !important;
   height: ${e=>"large"===e.size?72:40}px !important;
 
-  /* ~60% of the avatar's diameter, matching how uploaded/image icons already
-     fill the circle (Garden's default "& > img { width/height: 100% }").
+  /* Iconify sets (uil, mdi, etc.) bake their own padding into the 24x24
+     viewBox, so shrinking the svg box further on top of that made icons look
+     much smaller than uploaded PNGs, which are full-bleed. Fill the avatar
+     the same way img does (Garden's default "& > img { width/height: 100% }")
+     instead of applying an extra size reduction.
      !important needed: Garden's own "&& > svg { width: 1em; height: 1em }"
      rule has identical specificity, so cascade order alone can't be trusted. */
   && > svg {
-    width: ${e=>"large"===e.size?44:24}px !important;
-    height: ${e=>"large"===e.size?44:24}px !important;
+    width: 100% !important;
+    height: 100% !important;
     color: ${({theme:e})=>r({theme:e,hue:"grey",shade:600})};
   }
 `,Ae=({size:e,name:t,description:n,url:s})=>{const r=o({name:t,description:n,thumbnailUrl:s}),a=s&&s.trim()?i.jsx("img",{src:s,alt:""}):i.jsx(l,{"aria-hidden":"true"});return i.jsx(ze,{size:e,isSystem:!0,children:"iconify"===r.kind?i.jsx(c,{icon:r.name,"aria-hidden":"true",fallback:a}):"image"===r.kind?i.jsx("img",{src:r.url,alt:""}):i.jsx(l,{"aria-hidden":"true"})})},Re=s.div`

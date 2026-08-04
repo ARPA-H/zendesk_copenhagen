@@ -12,13 +12,16 @@ const StyledAvatar = styled(Avatar)<{ size: "medium" | "large" }>`
   width: ${(props) => (props.size === "large" ? 72 : 40)}px !important;
   height: ${(props) => (props.size === "large" ? 72 : 40)}px !important;
 
-  /* ~60% of the avatar's diameter, matching how uploaded/image icons already
-     fill the circle (Garden's default "& > img { width/height: 100% }").
+  /* Iconify sets (uil, mdi, etc.) bake their own padding into the 24x24
+     viewBox, so shrinking the svg box further on top of that made icons look
+     much smaller than uploaded PNGs, which are full-bleed. Fill the avatar
+     the same way img does (Garden's default "& > img { width/height: 100% }")
+     instead of applying an extra size reduction.
      !important needed: Garden's own "&& > svg { width: 1em; height: 1em }"
      rule has identical specificity, so cascade order alone can't be trusted. */
   && > svg {
-    width: ${(props) => (props.size === "large" ? 44 : 24)}px !important;
-    height: ${(props) => (props.size === "large" ? 44 : 24)}px !important;
+    width: 100% !important;
+    height: 100% !important;
     color: ${({ theme }) => getColor({ theme, hue: "grey", shade: 600 })};
   }
 `;
