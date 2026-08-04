@@ -294,17 +294,26 @@
   overflow: visible !important;
 }
 .service-catalog-main-content figure img,
-.service-catalog-main-content figure svg,
 .service-catalog-main-content [class*="Avatar"] img,
-.service-catalog-main-content [class*="Avatar"] svg,
 .service-catalog-main-content [data-garden-id="avatars.avatar"] img,
-.service-catalog-main-content [data-garden-id="avatars.avatar"] svg,
-.service-catalog-main-content a[href*="/services/"] img,
-.service-catalog-main-content a[href*="/services/"] svg {
+.service-catalog-main-content a[href*="/services/"] img {
   max-width: 100% !important;
   max-height: 100% !important;
   width: auto !important;
   height: auto !important;
+  object-fit: contain !important;
+  overflow: visible !important;
+  display: block;
+}
+/* svg icons keep their own explicit size (e.g. ItemThumbnail's 24px/44px) —
+   forcing width/height:auto here would fall back to the SVG's own "1em"
+   attribute and re-introduce the 16x16 bug. */
+.service-catalog-main-content figure svg,
+.service-catalog-main-content [class*="Avatar"] svg,
+.service-catalog-main-content [data-garden-id="avatars.avatar"] svg,
+.service-catalog-main-content a[href*="/services/"] svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
   object-fit: contain !important;
   overflow: visible !important;
   display: block;
