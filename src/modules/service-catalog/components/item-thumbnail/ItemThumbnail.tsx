@@ -12,9 +12,11 @@ const StyledAvatar = styled(Avatar)<{ size: "medium" | "large" }>`
   width: ${(props) => (props.size === "large" ? 72 : 40)}px !important;
   height: ${(props) => (props.size === "large" ? 72 : 40)}px !important;
 
+  /* ~60% of the avatar's diameter, matching how uploaded/image icons already
+     fill the circle (Garden's default "& > img { width/height: 100% }"). */
   && > svg {
-    width: ${(props) => (props.size === "large" ? 28 : 16)}px;
-    height: ${(props) => (props.size === "large" ? 28 : 16)}px;
+    width: ${(props) => (props.size === "large" ? 44 : 24)}px;
+    height: ${(props) => (props.size === "large" ? 44 : 24)}px;
     color: ${({ theme }) => getColor({ theme, hue: "grey", shade: 600 })};
   }
 `;
@@ -37,10 +39,24 @@ export const ItemThumbnail = ({
 }: ItemThumbnailProps) => {
   const icon = resolveItemIcon({ name, description, thumbnailUrl: url });
 
+  // Rendered when an iconify reference can't actually be resolved (typo'd
+  // name, icon doesn't exist, API unreachable) — otherwise @iconify/react
+  // silently renders nothing, which looks like no icon was set at all.
+  const unresolvedIconFallback =
+    url && url.trim() ? (
+      <img src={url} alt="" />
+    ) : (
+      <ShapesIcon aria-hidden="true" />
+    );
+
   return (
     <StyledAvatar size={size} isSystem>
       {icon.kind === "iconify" ? (
-        <Icon icon={icon.name} aria-hidden="true" />
+        <Icon
+          icon={icon.name}
+          aria-hidden="true"
+          fallback={unresolvedIconFallback}
+        />
       ) : icon.kind === "image" ? (
         <img src={icon.url} alt="" />
       ) : (
