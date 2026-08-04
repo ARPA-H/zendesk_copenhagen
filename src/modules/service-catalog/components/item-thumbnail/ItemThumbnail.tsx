@@ -13,10 +13,12 @@ const StyledAvatar = styled(Avatar)<{ size: "medium" | "large" }>`
   height: ${(props) => (props.size === "large" ? 72 : 40)}px !important;
 
   /* ~60% of the avatar's diameter, matching how uploaded/image icons already
-     fill the circle (Garden's default "& > img { width/height: 100% }"). */
+     fill the circle (Garden's default "& > img { width/height: 100% }").
+     !important needed: Garden's own "&& > svg { width: 1em; height: 1em }"
+     rule has identical specificity, so cascade order alone can't be trusted. */
   && > svg {
-    width: ${(props) => (props.size === "large" ? 44 : 24)}px;
-    height: ${(props) => (props.size === "large" ? 44 : 24)}px;
+    width: ${(props) => (props.size === "large" ? 44 : 24)}px !important;
+    height: ${(props) => (props.size === "large" ? 44 : 24)}px !important;
     color: ${({ theme }) => getColor({ theme, hue: "grey", shade: 600 })};
   }
 `;
