@@ -1,0 +1,58 @@
+{
+  "name": "Copenhagen Theme",
+  // Bare ":24" tag tracks the current Node 24.x image-major and matches .nvmrc (v24.18.0).
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+
+  "features": {
+    // gh CLI — used by the tool-refresh script below and for PR/CI workflows.
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // Runs once, at first container creation only. Secret-free so it can be baked
+  // into a Codespaces prebuild image (Settings -> Codespaces -> Prebuild configuration).
+  // Global CLI installs live here so prebuilds cache them instead of paying the
+  // cost on every fresh Codespace.
+  "onCreateCommand": "npm install -g @github/copilot@latest",
+
+  // Runs after onCreateCommand, and again whenever a prebuild refreshes against
+  // new repo content. This repo pins Yarn via .yarnrc.yml (yarnPath -> the
+  // committed .yarn/releases binary), so no package-manager feature/install is
+  // needed - `yarn` already resolves to the pinned version out of the box.
+  "updateContentCommand": "yarn install --immutable",
+
+  // Runs once per new Codespace (not on resume), after the commands above.
+  // Codespaces secrets/env vars are available here.
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  // Runs on every start AND every resume. A Codespace can live up to 30 days,
+  // during which onCreateCommand never runs again - so fast-moving global
+  // tools (like the Copilot CLI) only get refreshed here. Backgrounded so it
+  // never adds to perceived boot time.
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+
+  "forwardPorts": [4567],
+  "portsAttributes": {
+    "4567": {
+      "label": "zcli theme preview",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "github.copilot-chat",
+        "github.vscode-pull-request-github",
+        "github.vscode-github-actions"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "git.autofetch": true,
+        "git.autofetchPeriod": 180
+      }
+    }
+  }
+}
