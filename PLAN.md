@@ -37,6 +37,13 @@ chasing specificity in the React component alone. Ask for the DevTools
 **Styles** panel (not just Computed) to see every competing rule and its
 source when a CSS fix doesn't take effect after a rebuild+redeploy.
 
+**Follow-up (commit `692f64df`):** once unblocked, icons still looked much
+smaller than uploaded PNGs at the same avatar size. Cause: `ItemThumbnail.tsx`
+additionally shrunk the svg to ~60% of the avatar box on top of the padding
+Iconify sets (uil, mdi, etc.) already bake into their 24x24 viewBox — double
+shrinkage. Fixed by sizing the svg to `width/height: 100% !important` (same
+as Garden's own `img` fill rule) instead of a fixed px fraction.
+
 ## Session: 2026-08-04 — `update_theme` CI failure
 
 ### Completed
