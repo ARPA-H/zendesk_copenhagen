@@ -488,6 +488,13 @@
           "description": "other_request_service_id_description",
           "label": "other_request_service_id_label",
           "value": ""
+        },
+        {
+          "identifier": "iconify_api_base",
+          "type": "text",
+          "description": "iconify_api_base_description",
+          "label": "iconify_api_base_label",
+          "value": ""
         }
       ]
     }

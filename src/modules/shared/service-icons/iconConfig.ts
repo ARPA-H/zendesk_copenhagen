@@ -23,14 +23,15 @@ export interface IconConfig {
 }
 
 /**
- * Default Iconify API base. Empty string -> Iconify's public API
- * (https://api.iconify.design).
+ * Default Iconify API base. Empty string -> Iconify's own default resource
+ * list (https://api.iconify.design, with https://api.simplesvg.com and
+ * https://api.unisvg.com as automatic load-balanced fallback hosts), applied
+ * by @iconify/react itself with no `addAPIProvider` call needed.
  *
  * To keep all icon traffic in-house (e.g. for a government/enterprise
- * deployment), either set this to your self-hosted Iconify API
- * (https://iconify.design/docs/api/), or promote it to a Guide theme setting
- * by adding an `iconify_api_base` entry to manifest.json (svc-page-utils'
- * initIconSupport() already forwards `settings.iconify_api_base` when present).
+ * deployment), set the `iconify_api_base` Guide theme setting to your
+ * self-hosted Iconify API (https://iconify.design/docs/api/) — forwarded here
+ * as `iconApiBase` by svc-page-utils' initIconSupport().
  */
 const DEFAULT_ICONIFY_API_BASE = "";
 
