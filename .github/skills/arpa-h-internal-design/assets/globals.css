@@ -1,38 +1,48 @@
+/*
+ * ARPA-H Internal App Design System - dark-mode alias layer
+ *
+ * This file only maps internal-app aliases onto the shared NEXUS primitives.
+ * It must be loaded AFTER the NEXUS `globals.css` (from the `arpa-h-web-design`
+ * skill), which defines every --color-*, --font-*, --space-*, --radius-*, and
+ * --shadow-* primitive referenced below. Hex fallbacks are provided as comments
+ * only - do not hardcode them; if NEXUS globals.css isn't loaded, load it.
+ */
+
 :root {
   color-scheme: dark;
-  font-family: "Segoe UI", system-ui, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+  font-family: var(--font-secondary, "Public Sans", sans-serif);
+  font-size: var(--font-size-xs, 16px);
+  line-height: var(--line-height-4, 1.5);
 
-  /* ── Neutral scale ───────────────────────────────────────── */
-  --color-near-black: #131314;
-  --color-bg-page: #4a4d52;
-  --color-bg-card: #6f747a;
-  --color-bg-elevated: #959ba3;
-  --color-muted-3: #bac2cc;
-  --color-muted-2: #ccd5e1;
-  --color-muted-1: #d7dee8;
-  --color-subtle: #e5eaf0;
-  --color-faint: #f3f5f8;
-  --color-white: #ffffff;
+  /* --- Neutral scale (aliases onto NEXUS Cool Grey / --color-ui-*) --- */
+  --color-near-black: var(--color-ui-90); /* #131314 */
+  --color-bg-page: var(--color-ui-70); /* #4a4d52 */
+  --color-bg-card: var(--color-ui-60); /* #6f747a */
+  --color-bg-elevated: var(--color-ui-50); /* #959ba3 */
+  --color-muted-3: var(--color-ui-40); /* #bac2cc */
+  --color-muted-2: var(--color-ui-30); /* #ccd5e1 */
+  --color-muted-1: var(--color-ui-20); /* #d7dee8 */
+  --color-subtle: var(--color-ui-10); /* #e5eaf0 */
+  --color-faint: var(--color-ui-5); /* #f3f5f8 */
+  --color-white: var(--color-white); /* #ffffff - re-exported for clarity */
 
-  /* ── Semantic accents ────────────────────────────────────── */
-  --color-status-warning: #fd4497; /* collision / duplicate / warning */
-  --color-status-warning-soft: #fcc1dc; /* secondary warning text */
-  --color-active: #adece5; /* active record / active filter */
-  --color-inactive: #b8b2e4; /* inactive / departed record */
+  /* --- Semantic accents (aliases onto NEXUS accent families) --- */
+  --color-status-warning: var(--color-accent-warmer); /* collision / duplicate / warning - #fd4497 */
+  --color-status-warning-soft: var(--color-accent-warmer-light); /* secondary warning text - #fcc1dc */
+  --color-active: var(--color-accent-warm-light); /* active record / active filter - #adece5 */
+  --color-inactive: var(--color-accent-cooler-light); /* inactive / departed record - #b8b2e4 */
 
-  /* ── Header (intentionally inverted) ────────────────────── */
-  --color-header-bg: #ffffff;
-  --color-header-fg: #000334;
+  /* --- Header (intentionally inverted) --- */
+  --color-header-bg: var(--color-white); /* #ffffff */
+  --color-header-fg: var(--color-brand-primary); /* #000334 */
 
-  /* ── Spacing scale (4px base) ────────────────────────────── */
-  --space-xs: 4px;
-  --space-s: 8px;
-  --space-m: 12px;
-  --space-l: 16px;
-  --space-xl: 24px;
-  --space-xxl: 32px;
+  /* --- Spacing (aliases onto shared NEXUS 8px-grid scale) --- */
+  --space-xs: var(--space-05); /* 4px */
+  --space-s: var(--space-1); /* 8px */
+  --space-m: var(--space-105); /* 12px */
+  --space-l: var(--space-2); /* 16px */
+  --space-xl: var(--space-3); /* 24px */
+  --space-xxl: var(--space-4); /* 32px */
 }
 
 *,
