@@ -1,49 +1,115 @@
 /*
- * ARPA-H Internal App Design System - dark-mode alias layer
+ * ARPA-H Internal App Design System — starter stylesheet
  *
- * This file only maps internal-app aliases onto the shared NEXUS primitives.
- * It must be loaded AFTER the NEXUS `globals.css` (from the `arpa-h-web-design`
- * skill), which defines every --color-*, --font-*, --space-*, --radius-*, and
- * --shadow-* primitive referenced below. Hex fallbacks are provided as comments
- * only - do not hardcode them; if NEXUS globals.css isn't loaded, load it.
+ * Self-contained: defines every color, spacing, radius, and type primitive
+ * this design system uses. Does not @import or depend on any other skill's
+ * stylesheet. Copy this file into your app and load it once, near the top
+ * of your global styles.
+ *
+ * Hex values are the source of truth here — reference the custom
+ * properties in app code, never hardcode a hex value inline.
  */
 
 :root {
   color-scheme: dark;
-  font-family: var(--font-secondary, "Public Sans", sans-serif);
-  font-size: var(--font-size-xs, 16px);
-  line-height: var(--line-height-4, 1.5);
+  font-family: 'Public Sans', 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
 
-  /* --- Neutral scale (aliases onto NEXUS Cool Grey / --color-ui-*) --- */
-  --color-near-black: var(--color-ui-90); /* #131314 */
-  --color-bg-page: var(--color-ui-70); /* #4a4d52 */
-  --color-bg-card: var(--color-ui-60); /* #6f747a */
-  --color-bg-elevated: var(--color-ui-50); /* #959ba3 */
-  --color-muted-3: var(--color-ui-40); /* #bac2cc */
-  --color-muted-2: var(--color-ui-30); /* #ccd5e1 */
-  --color-muted-1: var(--color-ui-20); /* #d7dee8 */
-  --color-subtle: var(--color-ui-10); /* #e5eaf0 */
-  --color-faint: var(--color-ui-5); /* #f3f5f8 */
-  --color-white: var(--color-white); /* #ffffff - re-exported for clarity */
+  /* ─────────────────────────────────────────────────────────────
+   * BRAND
+   * ───────────────────────────────────────────────────────────── */
+  --color-brand-primary: #000334; /* indigo */
+  --color-brand-primary-light: #2a2d56;
+  --color-brand-primary-dark: #00022b;
+  --color-brand-secondary: #52daf2; /* cyan */
+  --color-brand-secondary-light: #6fe0f4;
+  --color-brand-secondary-dark: #44b6ca;
+  --color-brand-tertiary: #001b5e; /* navy */
+  --color-brand-tertiary-light: #2a4179;
+  --color-brand-tertiary-dark: #00164e;
 
-  /* --- Semantic accents (aliases onto NEXUS accent families) --- */
-  --color-status-warning: var(--color-accent-warmer); /* collision / duplicate / warning - #fd4497 */
-  --color-status-warning-soft: var(--color-accent-warmer-light); /* secondary warning text - #fcc1dc */
-  --color-active: var(--color-accent-warm-light); /* active record / active filter - #adece5 */
-  --color-inactive: var(--color-accent-cooler-light); /* inactive / departed record - #b8b2e4 */
+  /* ─────────────────────────────────────────────────────────────
+   * NEUTRAL SCALE — "dark chrome" reading
+   * Apply on the page/chrome layer directly on the gradient canvas
+   * (nav, page-level text). Only steps 5-40 are hue-shifted to an
+   * indigo cast; 50 and above stay plain grey (see glass reading
+   * below) since adding saturation to light text/chrome tones would
+   * hurt legibility rather than help brand cohesion.
+   * ───────────────────────────────────────────────────────────── */
+  --color-ui-5: #0d0e1a; /* page background */
+  --color-ui-10: #191b35; /* card / surface */
+  --color-ui-20: #333669; /* elevated surface */
+  --color-ui-30: #4c519d;
+  --color-ui-40: #797ebf;
+  --color-ui-50: #959ba3;
+  --color-ui-60: #6f747a;
+  --color-ui-70: #4a4d52;
+  --color-ui-80: #252729;
+  --color-ui-90: #131314;
+  --color-black: #000000;
+  --color-white: #ffffff;
 
-  /* --- Header (intentionally inverted) --- */
-  --color-header-bg: var(--color-white); /* #ffffff */
-  --color-header-fg: var(--color-brand-primary); /* #000334 */
+  /* ─────────────────────────────────────────────────────────────
+   * SEMANTIC ACCENTS
+   * ───────────────────────────────────────────────────────────── */
+  --color-status-warning: #fd4497; /* collision / duplicate / data-integrity warning */
+  --color-status-warning-soft: #fcc1dc; /* secondary warning text */
+  --color-status-warning-fill: #c93678; /* filled warning badge bg (base hue fails WCAG AA w/ white text) */
+  --color-active: #adece5; /* active record / active filter */
+  --color-inactive: #b8b2e4; /* inactive / departed record */
+  --color-error: #bf2d1d; /* real destructive actions, validation errors — never warmer pink */
+  --color-success: #3c690e;
 
-  /* --- Spacing (aliases onto shared NEXUS 8px-grid scale) --- */
-  --space-xs: var(--space-05); /* 4px */
-  --space-s: var(--space-1); /* 8px */
-  --space-m: var(--space-105); /* 12px */
-  --space-l: var(--space-2); /* 16px */
-  --space-xl: var(--space-3); /* 24px */
-  --space-xxl: var(--space-4); /* 32px */
+  /* Links — indigo on glass, brighter cyan on dark chrome (indigo is too dark to read there) */
+  --color-link: var(--color-brand-primary-light);
+  --color-link-hover: var(--color-brand-primary-dark);
+  --color-link-dark-chrome: #8ce6f6;
+  --color-link-dark-chrome-hover: #c5f3fb;
+
+  /* Focus ring */
+  --color-focus-ring: var(--color-brand-secondary);
+  --color-focus-ring-dark-chrome: #52daf2;
+
+  /* Header (intentionally inverted — same on every surface) */
+  --color-header-bg: var(--color-white);
+  --color-header-fg: var(--color-brand-primary);
+
+  /* ─────────────────────────────────────────────────────────────
+   * SPACING — 4px base unit
+   * ───────────────────────────────────────────────────────────── */
+  --space-xs: 4px;
+  --space-s: 8px;
+  --space-m: 12px;
+  --space-l: 16px;
+  --space-xl: 24px;
+  --space-xxl: 32px;
+
+  /* ─────────────────────────────────────────────────────────────
+   * RADIUS
+   * ───────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-round: 1000px; /* pill */
+
+  /* ─────────────────────────────────────────────────────────────
+   * GLASS CONTENT-SURFACE CONSTANTS
+   * ───────────────────────────────────────────────────────────── */
+  --glass-surface-bg: rgba(255, 255, 255, 0.5);
+  --glass-chip-bg: rgba(255, 255, 255, 0.75); /* standalone controls with no surrounding card */
+  --glass-surface-blur: blur(16px);
+
+  /* Glass-reading foreground tokens (for content inside glass surfaces) */
+  --color-glass-foreground-1: var(--color-brand-primary); /* primary text */
+  --color-glass-foreground-2: #2c2e38; /* secondary text */
+  --color-glass-foreground-3: #3e4149; /* tertiary text */
+  --color-glass-foreground-disabled: var(--color-ui-70);
 }
+
+/* ─────────────────────────────────────────────────────────────
+ * RESET & BASE
+ * ───────────────────────────────────────────────────────────── */
 
 *,
 *::before,
@@ -54,6 +120,134 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: var(--color-bg-page);
+  background-color: var(--color-ui-5);
   color: var(--color-white);
+}
+
+a {
+  color: var(--color-link-dark-chrome);
+}
+
+a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-focus-ring-dark-chrome), 0 0 3px 1px var(--color-focus-ring-dark-chrome);
+  border-radius: var(--radius-sm);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * APP SHELL — layered brand gradient canvas
+ *
+ * Paint the gradient on a `position: fixed` pseudo-element sized to
+ * the viewport (`inset: 0`), NOT via `background-attachment: fixed`
+ * on the scrolling shell element itself. Mobile browsers (iOS Safari
+ * especially, Android Chrome for scroll-perf reasons) don't reliably
+ * honor `background-attachment: fixed` on a non-<body> element — they
+ * fall back to `scroll`, which sizes the background to the ELEMENT's
+ * full content box instead of the viewport, stretching/misplacing the
+ * gradient's percentage-based stops as the page grows taller than one
+ * screen.
+ *
+ * `.app-shell` needs `position: relative` + `z-index: 0` so it forms
+ * its own stacking context — otherwise the pseudo-element's
+ * `z-index: -1` paints behind `body`'s opaque background instead of
+ * just behind `.app-shell`'s own (in-flow) header/main children.
+ * ───────────────────────────────────────────────────────────── */
+
+.app-shell {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--color-brand-primary) 0%, rgba(0, 3, 52, 0) 69%),
+    linear-gradient(
+      0deg,
+      rgb(255, 255, 255) 0%,
+      rgba(255, 255, 255, 0.11) 40%,
+      rgba(255, 255, 255, 0) 97%
+    ),
+    radial-gradient(50% 80% at 75% 70%, rgba(253, 68, 151, 0.71) 21%, rgba(253, 68, 151, 0) 100%),
+    linear-gradient(
+      0deg,
+      var(--color-brand-secondary) 1%,
+      #5842d2 27%,
+      var(--color-brand-primary) 100%
+    );
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * HEADER / MAIN — shell structure
+ * ───────────────────────────────────────────────────────────── */
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  height: 48px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-xl);
+  background-color: var(--color-header-bg);
+  color: var(--color-header-fg);
+}
+
+.app-header a {
+  color: var(--color-header-fg);
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 48px auto 0; /* offset for the fixed 48px header */
+  padding: var(--space-xl);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * GLASS CONTENT SURFACES
+ * Apply to cards and data grids directly. For portaled elements
+ * (popovers, dialogs, menus) apply to the portaled surface node
+ * itself, in addition to scoping the glass-reading foreground
+ * tokens to that subtree via your component library's own theming
+ * mechanism (portals don't inherit CSS custom properties from a
+ * parent element in the normal DOM tree).
+ * ───────────────────────────────────────────────────────────── */
+
+.glass-surface {
+  background-color: var(--glass-surface-bg);
+  backdrop-filter: var(--glass-surface-blur);
+  border-radius: var(--radius-lg);
+  color: var(--color-glass-foreground-1);
+}
+
+.glass-surface a {
+  color: var(--color-link);
+}
+
+.glass-popover-surface {
+  background-color: var(--glass-surface-bg);
+  backdrop-filter: var(--glass-surface-blur);
+  color: var(--color-glass-foreground-1);
+}
+
+/* Small standalone controls sitting directly on the gradient with no
+ * surrounding card — a higher, near-opaque fill, since there's no
+ * larger surface to anchor contrast against. */
+.glass-chip {
+  background-color: var(--glass-chip-bg);
+  backdrop-filter: var(--glass-surface-blur);
+  border-radius: var(--radius-lg);
+  color: var(--color-glass-foreground-1);
 }
