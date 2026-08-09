@@ -22,7 +22,7 @@
     "@zendeskgarden/container-utilities": "^2.0.5",
     "@zendeskgarden/react-accordions": "9.15.6",
     "@zendeskgarden/react-avatars": "9.15.6",
-    "@zendeskgarden/react-breadcrumbs": "9.15.6",
+    "@zendeskgarden/react-breadcrumbs": "9.15.7",
     "@zendeskgarden/react-buttons": "9.15.6",
     "@zendeskgarden/react-datepickers": "9.15.6",
     "@zendeskgarden/react-dropdowns": "9.15.6",
@@ -48,7 +48,7 @@
     "node-fetch": "2.7.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
-    "react-dropzone": "^15.0.0",
+    "react-dropzone": "^20.0.0",
     "react-i18next": "^17.0.10",
     "react-is": "^19.2.7",
     "styled-components": "^6.4.3"
@@ -102,14 +102,14 @@
     "rollup": "3.30.0",
     "rollup-jest": "^3.1.0",
     "rollup-plugin-sass": "1.15.3",
-    "sass": "1.101.0",
-    "semantic-release": "25.0.5",
+    "sass": "1.102.0",
+    "semantic-release": "25.0.9",
     "ts-jest": "^29.4.11",
     "typescript": "^5.9.3",
     "url-pattern": "1.0.3",
     "vinyl": "^3.0.1",
     "vinyl-fs": "^4.0.2",
-    "wait-on": "8.0.5"
+    "wait-on": "9.1.0"
   },
   "resolutions": {
     "nwsapi": "^2.2.20",

@@ -1,3 +1,22 @@
+## [4.50.1](https://github.com/zendesk/copenhagen_theme/compare/v4.50.0...v4.50.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* adjust to new backend ([69aa09b](https://github.com/zendesk/copenhagen_theme/commit/69aa09b5047475a1d06b3d162fde9be3948cefee))
+* explain why validation error is logged to console ([2c12978](https://github.com/zendesk/copenhagen_theme/commit/2c12978d727700778382ea831ed226668375b24e))
+* remove unnecessary code ([188cbcd](https://github.com/zendesk/copenhagen_theme/commit/188cbcd68c8d4b621d69a75d4cf2639b950f4a22))
+* remove unnecessary console.error in handleValidationErrors ([320d340](https://github.com/zendesk/copenhagen_theme/commit/320d3405ac8a6be23d6d16ccb7ce3e84f5248816))
+* surface underlying service request submission errors ([e7dad3e](https://github.com/zendesk/copenhagen_theme/commit/e7dad3e4c38cf6e26d12fa8f2b405b74411e8100))
+
+# [4.50.0](https://github.com/zendesk/copenhagen_theme/compare/v4.49.0...v4.50.0) (2026-08-05)
+
+
+### Features
+
+* **templates:** add Applications nav link to header ([3e96418](https://github.com/zendesk/copenhagen_theme/commit/3e96418d05651ae0ad73f034dbb0c8d69e0e6190))
+* **templates:** add applications_page with application_catalog helper ([6cc60de](https://github.com/zendesk/copenhagen_theme/commit/6cc60de6203b2ee3371220093b0521f6f11604f4))
+
 # [4.49.0](https://github.com/zendesk/copenhagen_theme/compare/v4.48.0...v4.49.0) (2026-07-30)
 
 

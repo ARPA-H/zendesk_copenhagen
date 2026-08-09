@@ -90,6 +90,7 @@ describe("useValidateServiceItemForm", () => {
         attachments: null,
         assetType: null,
         asset: null,
+        fields: {},
       });
       expect(validationResult.fieldErrors).toEqual({});
     });
@@ -295,6 +296,7 @@ describe("useValidateServiceItemForm", () => {
         attachments: "Upload a file to continue.",
         assetType: "Select an asset type",
         asset: "Select an asset",
+        fields: {},
       });
     });
 
@@ -318,6 +320,7 @@ describe("useValidateServiceItemForm", () => {
         attachments: null,
         assetType: null,
         asset: "Select an asset",
+        fields: {},
       });
     });
   });
@@ -426,6 +429,66 @@ describe("useValidateServiceItemForm", () => {
 
       expect(validationResult.hasError).toBe(false);
       expect(validationResult.fieldErrors).toEqual({});
+    });
+
+    it("does not flag a required regular field that has a value", () => {
+      const { result } = renderHook(() =>
+        useValidateServiceItemForm(undefined)
+      );
+
+      const fields = [
+        createTextField({
+          id: 42,
+          required: true,
+          value: "provided",
+          relationship_target_type: undefined,
+        }),
+      ];
+
+      const validationResult = result.current.validate(fields, []);
+
+      expect(validationResult.hasError).toBe(false);
+      expect(validationResult.errors.fields).toEqual({});
+    });
+
+    it("does not flag an optional blank regular field", () => {
+      const { result } = renderHook(() =>
+        useValidateServiceItemForm(undefined)
+      );
+
+      const fields = [
+        createTextField({
+          id: 42,
+          required: false,
+          value: null,
+          relationship_target_type: undefined,
+        }),
+      ];
+
+      const validationResult = result.current.validate(fields, []);
+
+      expect(validationResult.hasError).toBe(false);
+      expect(validationResult.errors.fields).toEqual({});
+    });
+
+    it("flags multiple blank required regular fields", () => {
+      const { result } = renderHook(() =>
+        useValidateServiceItemForm(undefined)
+      );
+
+      const fields = [
+        createTextField({ id: 1, required: true, value: null }),
+        createTextField({ id: 2, required: true, value: "" }),
+        createTextField({ id: 3, required: true, value: "ok" }),
+      ];
+
+      const validationResult = result.current.validate(fields, []);
+
+      expect(validationResult.hasError).toBe(true);
+      expect(validationResult.fieldErrors).toEqual({
+        1: "This field is required.",
+        2: "This field is required.",
+      });
     });
   });
 });
