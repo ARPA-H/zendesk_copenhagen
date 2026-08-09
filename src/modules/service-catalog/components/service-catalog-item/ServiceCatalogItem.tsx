@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { useItemFormFields } from "../../hooks/useItemFormFields";
 import { ItemRequestForm } from "./ItemRequestForm";
 import type { UserOption } from "../../data-types/UserOption";
@@ -401,15 +401,27 @@ export function ServiceCatalogItem({
       return field;
     });
 
+    // Disable the real submit button for the whole attempt -- including
+    // synchronous client-side validation below -- rather than only once an
+    // async request is actually in flight. service_page.hbs's static
+    // "custom submit" proxy button mirrors this button's `disabled`
+    // attribute via a MutationObserver so its own disabled state tracks
+    // reality; flushSync forces this update to actually commit to the DOM
+    // immediately instead of being batched away (a same-tick true-then-
+    // false toggle would otherwise never touch the DOM at all), so the
+    // observer can see it even on a validation failure that never reaches
+    // a network request.
+    flushSync(() => setIsSubmitting(true));
+
     if (validateForm(requestFieldsWithFormData, attachments)) {
+      flushSync(() => setIsSubmitting(false));
       return;
     }
 
     if (!serviceCatalogItem || !associatedLookupField) {
+      flushSync(() => setIsSubmitting(false));
       return;
     }
-
-    setIsSubmitting(true);
 
     try {
       const isRequestingOnBehalf =
@@ -521,6 +533,7 @@ export function ServiceCatalogItem({
           onAttachmentUploadingChange={setIsUploadingAttachments}
           isFormInitializing={isFormInitializing}
           isPreviewMode={isPreviewMode}
+          isSubmitting={isSubmitting}
         />
       )}
     </Container>

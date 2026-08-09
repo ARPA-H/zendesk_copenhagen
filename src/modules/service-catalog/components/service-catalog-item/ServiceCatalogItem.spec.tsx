@@ -44,10 +44,12 @@ jest.mock("./ItemRequestForm", () => ({
   ItemRequestForm: ({
     onSubmit,
     isPreviewMode,
+    isSubmitting,
     setSelectedUser,
   }: {
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     isPreviewMode?: boolean;
+    isSubmitting?: boolean;
     setSelectedUser: (user: {
       id: string;
       name: string;
@@ -72,7 +74,11 @@ jest.mock("./ItemRequestForm", () => ({
       >
         Select beneficiary
       </button>
-      <button type="submit" disabled={isPreviewMode}>
+      <button
+        type="submit"
+        data-testid="submit-button"
+        disabled={isPreviewMode || isSubmitting}
+      >
         Submit
       </button>
     </form>
@@ -442,6 +448,13 @@ describe("ServiceCatalogItem", () => {
       // the `error` set above -> aria-invalid, see _svc-form-validation.scss)
       // is the feedback, not a round trip to the server.
       expect(mockSubmitServiceItemRequest).not.toHaveBeenCalled();
+
+      // The submit button must not be left stuck disabled after a
+      // synchronous client-side validation failure -- service_page.hbs's
+      // custom-submit proxy button mirrors this attribute and would
+      // otherwise sit on "Submitting…" until its failsafe timeout, even
+      // though the validation error appeared instantly.
+      expect(screen.getByTestId("submit-button")).not.toBeDisabled();
     });
 
     it("preserves fields hidden by a conditional rule when merging validation errors", async () => {
@@ -969,6 +982,41 @@ describe("ServiceCatalogItem", () => {
             message: "Give it a moment and try it again",
           })
         );
+      });
+    });
+
+    it("disables the submit button while a request is in flight and re-enables it once it settles", async () => {
+      // service_page.hbs's static "custom submit" proxy button mirrors this
+      // button's `disabled` attribute via a MutationObserver, instead of
+      // guessing with a blind timeout -- so this attribute must accurately
+      // reflect "a submission is in progress" for that mirroring to work.
+      let resolveRequest!: (response: Response) => void;
+      mockSubmitServiceItemRequest.mockReturnValue(
+        new Promise<Response>((resolve) => {
+          resolveRequest = resolve;
+        })
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      const submitButton = screen.getByTestId("submit-button");
+
+      expect(submitButton).not.toBeDisabled();
+
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(submitButton).toBeDisabled();
+      });
+
+      resolveRequest({
+        ok: false,
+        status: 500,
+      } as unknown as Response);
+
+      await waitFor(() => {
+        expect(submitButton).not.toBeDisabled();
       });
     });
   });
