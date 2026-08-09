@@ -22,7 +22,7 @@
     "@zendeskgarden/container-utilities": "^2.0.5",
     "@zendeskgarden/react-accordions": "9.15.6",
     "@zendeskgarden/react-avatars": "9.15.6",
-    "@zendeskgarden/react-breadcrumbs": "9.15.6",
+    "@zendeskgarden/react-breadcrumbs": "9.15.7",
     "@zendeskgarden/react-buttons": "9.15.6",
     "@zendeskgarden/react-datepickers": "9.15.6",
     "@zendeskgarden/react-dropdowns": "9.15.6",

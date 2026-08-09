@@ -7803,9 +7803,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-breadcrumbs@npm:9.15.6":
-  version: 9.15.6
-  resolution: "@zendeskgarden/react-breadcrumbs@npm:9.15.6"
+"@zendeskgarden/react-breadcrumbs@npm:9.15.7":
+  version: 9.15.7
+  resolution: "@zendeskgarden/react-breadcrumbs@npm:9.15.7"
   dependencies:
     "@zendeskgarden/container-breadcrumb": "npm:^1.0.8"
     polished: "npm:^4.3.1"
@@ -7815,7 +7815,7 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^5.3.1 || ^6.0.0
-  checksum: 10c0/e32d70cb45936571ebe756d24adb07f5921ed8dc40803de8bbcdb4442f2b19720e80262efdb9bf00b55fbf61c1d985611bc64d9fceb659355f5c16709957ef8c
+  checksum: 10c0/d329acd12a930701ae3ba8ef9e8e62ed8f69a909f28a86d6b555a180392cfd309ca8c1af6ad7c4e1a71e04383ab6454ffd664b4c5da838b3d0105301b63117bd
   languageName: node
   linkType: hard
 
@@ -10288,7 +10288,7 @@ __metadata:
     "@zendeskgarden/container-utilities": "npm:^2.0.5"
     "@zendeskgarden/react-accordions": "npm:9.15.6"
     "@zendeskgarden/react-avatars": "npm:9.15.6"
-    "@zendeskgarden/react-breadcrumbs": "npm:9.15.6"
+    "@zendeskgarden/react-breadcrumbs": "npm:9.15.7"
     "@zendeskgarden/react-buttons": "npm:9.15.6"
     "@zendeskgarden/react-datepickers": "npm:9.15.6"
     "@zendeskgarden/react-dropdowns": "npm:9.15.6"
