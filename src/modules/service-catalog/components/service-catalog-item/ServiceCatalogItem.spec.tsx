@@ -536,7 +536,7 @@ describe("ServiceCatalogItem", () => {
                 {
                   description: "Field is required",
                   error: "BlankValue",
-                  field_key: 999, // Field not in the form
+                  field_id: 999, // Field not in the form
                 },
               ],
             },
@@ -575,7 +575,7 @@ describe("ServiceCatalogItem", () => {
                 {
                   description: "Field is required",
                   error: "BlankValue",
-                  field_key: 1, // Field IS in the form
+                  field_id: 1, // Field IS in the form
                 },
               ],
             },
@@ -600,6 +600,278 @@ describe("ServiceCatalogItem", () => {
           })
         );
       });
+    });
+
+    it("lights up the matching field with the backend error when field_id is present", async () => {
+      const setRequestFields = jest.fn();
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: mockRequestFields,
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields,
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      const errorResponse = {
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "RecordInvalid",
+            description: "Record validation errors",
+            details: {
+              base: [
+                {
+                  description: "Product name: cannot be blank",
+                  error: "cannot be blank",
+                  field_id: 1,
+                },
+              ],
+            },
+          }),
+      };
+
+      mockSubmitServiceItemRequest.mockResolvedValue(
+        errorResponse as unknown as Response
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        // validateForm() also calls setRequestFields synchronously before
+        // submission (clearing/leaving fieldErrors), so wait for the
+        // second call -- the one from handleValidationErrors() after the
+        // mocked 422 response resolves -- before asserting on it.
+        expect(setRequestFields.mock.calls.length).toBeGreaterThanOrEqual(2);
+      });
+
+      // setRequestFields is called with a functional updater (merged onto
+      // the full, unfiltered field list) rather than a plain array, so that
+      // fields hidden by conditional logic aren't wiped from state -- apply
+      // it to the full field list here the same way React would.
+      const updater = setRequestFields.mock.calls.at(-1)![0];
+      expect(updater(mockRequestFields)).toEqual([
+        expect.objectContaining({
+          id: 1,
+          error: "Product name: cannot be blank",
+        }),
+      ]);
+    });
+
+    const renderLastNotifyMessage = () => {
+      const lastCall =
+        mockNotify.mock.calls[mockNotify.mock.calls.length - 1]?.[0];
+      return renderWithTheme(<>{lastCall?.message}</>);
+    };
+
+    it("should surface the underlying description when a 422 error has no field_id", async () => {
+      const errorResponse = {
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "RecordInvalid",
+            description: "Record validation errors",
+            details: {
+              base: [
+                {
+                  description: "What are you looking for? cannot be blank",
+                  error: "cannot be blank",
+                },
+              ],
+            },
+          }),
+      };
+
+      mockSubmitServiceItemRequest.mockResolvedValue(
+        errorResponse as unknown as Response
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(mockNotify).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "error",
+            title: "Service couldn't be submitted",
+          })
+        );
+      });
+
+      renderLastNotifyMessage();
+      expect(
+        screen.getByText("What are you looking for? cannot be blank")
+      ).toBeInTheDocument();
+    });
+
+    it("should not show the refresh message when a 422 error has no field_id", async () => {
+      const errorResponse = {
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "RecordInvalid",
+            description: "Record validation errors",
+            details: {
+              base: [
+                {
+                  description: "Subject cannot be blank",
+                  error: "cannot be blank",
+                },
+              ],
+            },
+          }),
+      };
+
+      mockSubmitServiceItemRequest.mockResolvedValue(
+        errorResponse as unknown as Response
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(mockNotify).toHaveBeenCalled();
+      });
+
+      renderLastNotifyMessage();
+      expect(
+        screen.queryByText(/Refresh the page and try again/i)
+      ).not.toBeInTheDocument();
+    });
+
+    it("should show the refresh message when a 422 error references a field id not in the form", async () => {
+      const errorResponse = {
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "RecordInvalid",
+            description: "Record validation errors",
+            details: {
+              base: [
+                {
+                  description: "Field is required",
+                  error: "BlankValue",
+                  field_id: 999,
+                },
+              ],
+            },
+          }),
+      };
+
+      mockSubmitServiceItemRequest.mockResolvedValue(
+        errorResponse as unknown as Response
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(mockNotify).toHaveBeenCalled();
+      });
+
+      renderLastNotifyMessage();
+      expect(
+        screen.getByText(/Refresh the page and try again/i)
+      ).toBeInTheDocument();
+    });
+
+    it("should merge field errors onto the full field list via a functional update, preserving fields hidden by end-user conditions", async () => {
+      const mockSetRequestFields = jest.fn();
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: mockRequestFields,
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields: mockSetRequestFields,
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      const errorResponse = {
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "RecordInvalid",
+            description: "Record validation errors",
+            details: {
+              base: [
+                {
+                  description: "Field is required",
+                  error: "BlankValue",
+                  field_id: 1, // matches mockRequestFields[0]
+                },
+              ],
+            },
+          }),
+      };
+
+      mockSubmitServiceItemRequest.mockResolvedValue(
+        errorResponse as unknown as Response
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        // validateForm's client-side check calls setRequestFields first
+        // (clearing stale errors); handleValidationErrors's merge is the
+        // subsequent call once the mocked 422 response resolves.
+        expect(mockSetRequestFields.mock.calls.length).toBeGreaterThanOrEqual(
+          2
+        );
+      });
+
+      // A field hidden by an end-user condition would be absent from the
+      // (visible-only) `requestFields` passed to the component, but must
+      // still exist in the full underlying list the functional update
+      // operates on.
+      const hiddenField: TicketFieldObject = {
+        id: 42,
+        name: "custom_fields_42",
+        type: "text",
+        description: "Hidden field",
+        label: "Hidden field",
+        required: false,
+        options: [],
+        value: "should be preserved",
+        error: null,
+      };
+      const fullFieldList = [...mockRequestFields, hiddenField];
+
+      const calls = mockSetRequestFields.mock.calls;
+      const updateFn = calls[calls.length - 1][0];
+      const result = updateFn(fullFieldList);
+
+      expect(result).toContainEqual(hiddenField);
+      expect(result).toHaveLength(fullFieldList.length);
+      expect(result.find((f: TicketFieldObject) => f.id === 1)?.error).toBe(
+        "Field is required"
+      );
     });
 
     it("should show error notification when 422 response JSON parsing fails", async () => {
