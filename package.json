@@ -109,7 +109,7 @@
     "url-pattern": "1.0.3",
     "vinyl": "^3.0.1",
     "vinyl-fs": "^4.0.2",
-    "wait-on": "8.0.5"
+    "wait-on": "9.1.0"
   },
   "resolutions": {
     "nwsapi": "^2.2.20",
