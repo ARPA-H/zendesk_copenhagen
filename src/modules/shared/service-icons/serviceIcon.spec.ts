@@ -117,5 +117,19 @@ describe("serviceIcon", () => {
         kind: "default",
       });
     });
+
+    it("does not crash or reflect the name back on an unterminated angle-bracket sequence", () => {
+      // Regression test: a single-pass `<[^>]*>` strip on a name like
+      // "Figma<script" would leave a literal "<script" substring behind
+      // uneaten (no closing '>' for the regex to match against), which is
+      // exactly the js/incomplete-multi-character-sanitization pattern.
+      // normalizeName's output is only ever used as a SERVICE_ICON_MAP
+      // lookup key here, so this was never renderable as HTML, but the
+      // lookup itself must still miss cleanly (falling through to the
+      // default icon) rather than accidentally matching a curated entry.
+      expect(resolveItemIcon({ name: "Figma<script" })).toEqual({
+        kind: "default",
+      });
+    });
   });
 });

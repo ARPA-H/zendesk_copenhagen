@@ -76,8 +76,18 @@ export function stripIconMarker(text: string | null | undefined): string {
 }
 
 function normalizeName(name: string | null | undefined): string {
+  // Strip angle brackets one character at a time rather than matching whole
+  // `<...>` spans: a multi-character span regex is only a single replace
+  // pass, so an unterminated `<script` (or a `<scr<script>ipt>`-style
+  // construction) can leave a literal "<script" substring behind uneaten
+  // (CodeQL js/incomplete-multi-character-sanitization). This function's
+  // output is only ever used as a plain object key into the static,
+  // maintainer-curated SERVICE_ICON_MAP below -- never rendered as HTML --
+  // so that was not actually exploitable here, but removing single
+  // characters instead is just as correct for this normalize-for-lookup
+  // purpose and can't be bypassed the same way.
   return (name || "")
-    .replace(/<[^>]*>/g, "")
+    .replace(/[<>]/g, "")
     .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
