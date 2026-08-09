@@ -81,7 +81,7 @@
     "@typescript-eslint/parser": "^8.62.1",
     "@zendesk/zcli": "1.1.0",
     "concurrently": "10.0.3",
-    "dotenv": "16.6.1",
+    "dotenv": "17.4.2",
     "eslint": "8.57.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
