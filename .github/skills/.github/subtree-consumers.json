@@ -103,5 +103,10 @@
     "repo": "ARPA-H/sentinel-connectors-logitech-sync",
     "prefix": ".github/skills",
     "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/arpah-plurri2",
+    "prefix": ".github/skills",
+    "branch": "main"
   }
 ]
