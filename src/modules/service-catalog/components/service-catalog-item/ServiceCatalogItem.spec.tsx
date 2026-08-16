@@ -660,19 +660,16 @@ describe("ServiceCatalogItem", () => {
       fireEvent.submit(form);
 
       await waitFor(() => {
-        // validateForm() also calls setRequestFields synchronously before
-        // submission (clearing/leaving fieldErrors), so wait for the
-        // second call -- the one from handleValidationErrors() after the
-        // mocked 422 response resolves -- before asserting on it.
-        expect(setRequestFields.mock.calls.length).toBeGreaterThanOrEqual(2);
+        expect(setRequestFields).toHaveBeenCalledWith(expect.any(Function));
       });
 
-      // setRequestFields is called with a functional updater (merged onto
-      // the full, unfiltered field list) rather than a plain array, so that
-      // fields hidden by conditional logic aren't wiped from state -- apply
-      // it to the full field list here the same way React would.
-      const updater = setRequestFields.mock.calls.at(-1)![0];
-      expect(updater(mockRequestFields)).toEqual([
+      // validateForm's client-side check also calls setRequestFields
+      // (clearing stale errors) before handleValidationErrors does, so we
+      // need the last call, not the first.
+      const calls = setRequestFields.mock.calls;
+      const updateFn = calls[calls.length - 1][0];
+      const result = updateFn(mockRequestFields);
+      expect(result).toEqual([
         expect.objectContaining({
           id: 1,
           error: "Product name: cannot be blank",
@@ -806,6 +803,59 @@ describe("ServiceCatalogItem", () => {
       ).toBeInTheDocument();
     });
 
+    it("should show error notification when 422 response JSON parsing fails", async () => {
+      const errorResponse = {
+        ok: false,
+        status: 422,
+        json: () => Promise.reject(new Error("Invalid JSON")),
+      };
+
+      mockSubmitServiceItemRequest.mockResolvedValue(
+        errorResponse as unknown as Response
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() => {
+        expect(mockNotify).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "error",
+            title: "Service couldn't be submitted",
+            message: "Give it a moment and try it again",
+          })
+        );
+      });
+    });
+
+    it("should handle 422 response with unexpected structure gracefully", async () => {
+      const errorResponse = {
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "SomeError",
+            // Missing details.base - should use fallback to empty array
+          }),
+      };
+
+      mockSubmitServiceItemRequest.mockResolvedValue(
+        errorResponse as unknown as Response
+      );
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      // Should not throw and should handle gracefully (no notification when no errors in base array)
+      await waitFor(() => {
+        expect(mockNotify).not.toHaveBeenCalled();
+      });
+    });
+
     it("should merge field errors onto the full field list via a functional update, preserving fields hidden by end-user conditions", async () => {
       const mockSetRequestFields = jest.fn();
       mockUseItemFormFields.mockReturnValue({
@@ -885,59 +935,6 @@ describe("ServiceCatalogItem", () => {
       expect(result.find((f: TicketFieldObject) => f.id === 1)?.error).toBe(
         "Field is required"
       );
-    });
-
-    it("should show error notification when 422 response JSON parsing fails", async () => {
-      const errorResponse = {
-        ok: false,
-        status: 422,
-        json: () => Promise.reject(new Error("Invalid JSON")),
-      };
-
-      mockSubmitServiceItemRequest.mockResolvedValue(
-        errorResponse as unknown as Response
-      );
-
-      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
-
-      const form = screen.getByTestId("item-request-form");
-      fireEvent.submit(form);
-
-      await waitFor(() => {
-        expect(mockNotify).toHaveBeenCalledWith(
-          expect.objectContaining({
-            type: "error",
-            title: "Service couldn't be submitted",
-            message: "Give it a moment and try it again",
-          })
-        );
-      });
-    });
-
-    it("should handle 422 response with unexpected structure gracefully", async () => {
-      const errorResponse = {
-        ok: false,
-        status: 422,
-        json: () =>
-          Promise.resolve({
-            error: "SomeError",
-            // Missing details.base - should use fallback to empty array
-          }),
-      };
-
-      mockSubmitServiceItemRequest.mockResolvedValue(
-        errorResponse as unknown as Response
-      );
-
-      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
-
-      const form = screen.getByTestId("item-request-form");
-      fireEvent.submit(form);
-
-      // Should not throw and should handle gracefully (no notification when no errors in base array)
-      await waitFor(() => {
-        expect(mockNotify).not.toHaveBeenCalled();
-      });
     });
 
     it("should show error notification for non-422 error responses", async () => {

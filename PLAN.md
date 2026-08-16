@@ -170,6 +170,12 @@ inside `service-catalog` — ~520 extra lines of upstream diff).
   `useItemFormFields` entirely in `ServiceCatalogItem.spec.tsx`, so this class
   of bug isn't caught unless the test explicitly includes a field absent from
   the mocked `requestFields` array.
+  **The `handleValidationErrors()` half of this is now upstream-owned** —
+  contributed back as zendesk/copenhagen_theme#851 and released in v4.50.3.
+  On future upstream merges, take *upstream's* side for that block and drop
+  the fork's duplicate copy (including the duplicated
+  `"should merge field errors onto the full field list…"` spec). Only the
+  `validateForm()` merge remains an ARPA-H-only customization.
 - **Build/test tooling**: Yarn 4 via Corepack; `yarn jest` needs `yarn install`
   first if `node_modules` state file is missing. `yarn build` (rollup) has
   been observed both to exit 129 on the ES-module/assets bundling step and to

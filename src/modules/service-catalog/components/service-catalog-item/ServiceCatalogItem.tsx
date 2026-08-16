@@ -343,19 +343,16 @@ export function ServiceCatalogItem({
       notifySubmitError();
     }
 
-    const updatedFields = requestFields.map((field) => {
-      const errorField = invalidFieldErrors.find(
-        (errorField) => errorField.field_id === field.id
-      );
-      return { ...field, error: errorField?.description || null };
-    });
-    // As in validateForm() above, `requestFields` is only the visible
-    // subset -- merge these updates onto the full field list rather than
-    // replacing it, so conditionally hidden fields aren't lost.
+    // setRequestFields is backed by the full (not just visible) field list,
+    // so we must merge via a functional update rather than replacing it with
+    // a mapped copy of `requestFields` (the visible subset) — otherwise any
+    // field currently hidden by an end-user condition would be dropped.
     setRequestFields((prevFields) =>
       prevFields.map((field) => {
-        const updatedField = updatedFields.find((f) => f.id === field.id);
-        return updatedField ?? field;
+        const errorField = invalidFieldErrors.find(
+          (errorField) => errorField.field_id === field.id
+        );
+        return { ...field, error: errorField?.description || null };
       })
     );
   }
