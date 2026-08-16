@@ -1,3 +1,17 @@
+## [4.50.3](https://github.com/zendesk/copenhagen_theme/compare/v4.50.2...v4.50.3) (2026-08-13)
+
+
+### Bug Fixes
+
+* **service-catalog:** preserve conditionally hidden fields on submission errors ([c36554d](https://github.com/zendesk/copenhagen_theme/commit/c36554dc6566d1492ef588303c5bf94c03d761a8))
+
+## [4.50.2](https://github.com/zendesk/copenhagen_theme/compare/v4.50.1...v4.50.2) (2026-08-10)
+
+
+### Bug Fixes
+
+* show more filters button hidden in search sidebar ([91c2a80](https://github.com/zendesk/copenhagen_theme/commit/91c2a8027fb4242488114086669b6ac35178556f))
+
 ## [4.50.1](https://github.com/zendesk/copenhagen_theme/compare/v4.50.0...v4.50.1) (2026-08-06)
 
 
