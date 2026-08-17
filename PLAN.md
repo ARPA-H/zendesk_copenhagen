@@ -182,6 +182,17 @@ inside `service-catalog` — ~520 extra lines of upstream diff).
   succeed cleanly on the same unmodified checkout across different sessions —
   treat exit 129 as environment-flaky, not proof of a broken change. If it
   fails, fall back to `yarn eslint` + `tsc --noEmit` + targeted `yarn test`.
+- **Dependency updates**: keep each dep's existing range style — many are
+  pinned exactly on purpose (all `@zendeskgarden/react-*`, `dompurify`,
+  `lighthouse`, `@zendesk/zcli`, `concurrently`), so don't blanket-caret them.
+  Transitive CVEs are pinned via scoped `resolutions` entries
+  (`"<parent>/<dep>": "^x.y.z"`); prefer a scoped entry over a blanket one so
+  a fix for one consumer can't downgrade another. Two known traps:
+  `@testing-library/jest-dom@6.10.0` is a bad release (ships breaking changes
+  in a minor — requires Node >=22 and a `@testing-library/dom` >=10 peer) and
+  carries its own advisory, so stay on 6.9.1 for the 6.x line; and
+  `extract-zip@2.0.1` (dev-only, via puppeteer) has a HIGH advisory with no
+  patched version published, so it can't be resolved away.
 - **Sidebar layout**: `ServiceCatalogCategoriesSidebar.tsx` renders a fixed
   `SIDEBAR_WIDTH` (250px, in `utils/categoryTreeUtils.ts`) styled-components
   `Container` next to `.service-catalog-list` inside
