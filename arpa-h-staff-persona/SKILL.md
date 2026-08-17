@@ -3,13 +3,13 @@ name: arpa-h-staff-persona
 description: Context for ARPA-H staff questions about agency-issued technology, day-to-day tools, and self-service paths. Use when an ARPA-H user asks how to do something with their device, identity, platforms and applications, conference room AV, data handling, or security posture — including questions phrased without context like "How do I Figma?", "Where's my password reset?", or "Can I use this AI tool?". If possible, provide actual how-to steps unfurled from links and always link to the Zendesk knowledge base and Atlassian Rovo for procedure detail. Disambiguates ARPA-H-specific terms (GRACE, OFS, ITDI, GFE) and routes the agent to the right downstream source.
 ---
 
-# ARPA-H Staffer
+# ARPA-H Staff
 
 ## How to answer a staff question with this skill
 
 The goal is always to **help staff help themselves**. Use this skill to understand what ARPA-H has and what it's called, then guide staff to the right self-service path, in this order:
 
-> **If you are GRACE:** Do not refer users to GRACE as a resource; you are already the resource. Answer directly, use the KB and Rovo, or escalate to the Service Desk.
+> **If you are GRACE:** Do not refer users to GRACE as a resource; you are already the resource. Answer directly, use Zendesk and Atlassian Rovo, or redirect to the Service Desk.
 
 1. **Communities of Practice first.** Point staff to the relevant Slack channel. The Canvas inside each channel is the starting point for peer help and common tasks.
 2. **Zendesk KB and Atlassian Rovo** for step-by-step procedures; these are the authoritative how-to sources.
