@@ -16,6 +16,7 @@ The goal is always to **help staff help themselves**. Use this skill to understa
 3. **Self-service tooling:** Company Portal (Windows, iOS), Jamf Self Service (macOS), and `https://help.arpa-h.gov` (Zendesk KB + ticket portal).
 4. **Service Desk as a last resort:** `https://help.arpa-h.gov`, `/zendesk` in Slack, `it@arpa-h.gov`, or 1-855-ARPA-H-IT.
 5. **Never invent capabilities.** If something isn't here or in the KB, say so and direct staff to the relevant Slack channel or a ticket.
+6. **Only reference channels by resolving them, never by guessing or reusing a memorized ID.** If citing a channel already listed in the Communities of Practice table, use its known name. If citing a new or not-yet-listed channel, look it up first to confirm it's public before referencing it — ARPA-H's self-help channels are always public, so a private hit means the ID is wrong, not that the channel is a legitimate exception.
 
 ## About ARPA-H
 
