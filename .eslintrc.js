@@ -92,5 +92,13 @@ module.exports = {
         ],
       },
     ],
+    // eslint-plugin-react-hooks v5's rewritten `recommended` config (needed for
+    // the eslint 8->9 upgrade) added several new React Compiler-era rules as
+    // errors. Most of the codebase already passes them, but these two catch
+    // real, pre-existing patterns (19 + 8 call sites) that aren't safe to
+    // silently rewrite in a dependency-upgrade PR. Downgraded to warn pending a
+    // dedicated cleanup pass; see PLAN.md.
+    "react-hooks/set-state-in-effect": "warn",
+    "react-hooks/refs": "warn",
   },
 };

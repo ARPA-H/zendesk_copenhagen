@@ -193,6 +193,38 @@ inside `service-catalog` — ~520 extra lines of upstream diff).
   carries its own advisory, so stay on 6.9.1 for the 6.x line; and
   `extract-zip@2.0.1` (dev-only, via puppeteer) has a HIGH advisory with no
   patched version published, so it can't be resolved away.
+- **eslint 9 major bump (2026-08-17)**: `.eslintrc.js` (legacy eslintrc
+  format) still works under eslint 9 — flat config is only the *default*,
+  not mandatory yet — but requires `ESLINT_USE_FLAT_CONFIG=false` on every
+  invocation (set in the `yarn eslint` script). eslint 10 has none of this
+  compatibility shim and is a dead end regardless: `@shopify/eslint-plugin`
+  (even at its latest major, 50.0.0) caps out at `eslint@^9.27.0`, so eslint
+  10 isn't reachable until Shopify's plugin catches up. Bumping also required
+  `eslint-plugin-react-hooks` 4.6.2 -> 7.1.1 (its old major doesn't declare
+  eslint 9 in its peer range), whose rewritten `recommended` config added new
+  React-Compiler-era rules as errors. Two of them fire on real, pre-existing
+  patterns: `react-hooks/set-state-in-effect` (19 call sites) and
+  `react-hooks/refs` (8 call sites) are downgraded to `warn` in
+  `.eslintrc.js` pending a dedicated cleanup pass — don't re-enable as
+  `error` without fixing those call sites first.
+- **i18next-parser -> i18next-cli migration (deferred, own PR)**: worth doing
+  eventually (i18next-parser is unmaintained and drags in the old
+  `broccoli-plugin`/`quick-temp`/`rimraf@2.7.1` chain — see the dependency
+  security-update session below), but **not a drop-in swap**. Node version
+  isn't a blocker (i18next-cli needs >=22; `.nvmrc`/CI are already on 24).
+  What actually blocks it:
+  - `bin/extract-strings.mjs` imports i18next-parser's `transform` and pipes
+    it through a custom `vinyl-fs`/`Vinyl` stream into a bespoke YAML shape
+    (`- translation: {key, title, screenshot, value}`) for Zendesk's internal
+    translation review tool. i18next-cli has no equivalent composable stream
+    — its programmatic API (`runExtractor(config)`) owns file I/O end-to-end
+    against its own config, so this needs an `onEnd` plugin hook rewrite, not
+    a config swap.
+  - `--mark-obsolete`, `--module`, and warn-on-value-mismatch are custom
+    behavior in the current script with no 1:1 i18next-cli equivalent
+    (closest are `removeUnusedKeys`/`ignoreNamespaces`, not identical).
+  Scope this as its own branch/PR — don't fold it into dependency-update
+  work.
 - **Sidebar layout**: `ServiceCatalogCategoriesSidebar.tsx` renders a fixed
   `SIDEBAR_WIDTH` (250px, in `utils/categoryTreeUtils.ts`) styled-components
   `Container` next to `.service-catalog-list` inside
