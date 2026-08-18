@@ -163,7 +163,7 @@ describe("FilterTags", () => {
 
     fireEvent.click(within(openFilterContainer).getByRole("button"));
 
-    expect(onFiltersChangedMock).toBeCalledWith({
+    expect(onFiltersChangedMock).toHaveBeenCalledWith({
       custom_field_420: [":first", ":second"],
     });
   });
@@ -180,7 +180,7 @@ describe("FilterTags", () => {
 
     fireEvent.keyDown(openFilterContainer, { code: "Backspace" });
 
-    expect(onFiltersChangedMock).toBeCalledWith({
+    expect(onFiltersChangedMock).toHaveBeenCalledWith({
       custom_field_420: [":first", ":second"],
     });
   });
@@ -193,6 +193,6 @@ describe("FilterTags", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Clear filters" }));
 
-    expect(onFiltersChangedMock).toBeCalledWith({});
+    expect(onFiltersChangedMock).toHaveBeenCalledWith({});
   });
 });

@@ -44,6 +44,8 @@
   "homepage_background_image_label": "Home hero image",
   "hover_link_color_description": "Text color for the hover state of link elements",
   "hover_link_color_label": "Hover link color",
+  "iconify_api_base_description": "Base URL of a self-hosted Iconify API used to resolve [icon: prefix:name] references in service catalog item descriptions. Leave blank to use Iconify's public API, which already load-balances across multiple hosts.",
+  "iconify_api_base_label": "Iconify API base URL",
   "images_group_label": "Images",
   "instant_search_description": "Show suggested articles on search",
   "instant_search_label": "Instant search",

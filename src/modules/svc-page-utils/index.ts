@@ -18,3 +18,4 @@
  */
 export { whenReady } from "./whenReady";
 export { fetchDisplayFirstName } from "./fetchDisplayFirstName";
+export { initIconSupport } from "./initIconSupport";

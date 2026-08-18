@@ -162,6 +162,7 @@ interface ItemRequestFormProps {
   onAttachmentUploadingChange: (isUploading: boolean) => void;
   isFormInitializing: boolean;
   isPreviewMode?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function ItemRequestForm({
@@ -193,6 +194,7 @@ export function ItemRequestForm({
   onAttachmentUploadingChange,
   isFormInitializing,
   isPreviewMode = false,
+  isSubmitting = false,
 }: ItemRequestFormProps) {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -427,7 +429,13 @@ export function ItemRequestForm({
                 // previously matched first, causing the proxy to open the
                 // file picker instead of submitting the form.
                 data-svc-native-submit
-                disabled={isPreviewMode}
+                // Disabled for the whole submit attempt (not just preview
+                // mode) so this attribute is an accurate, observable signal
+                // of "a submission is in flight" -- service_page.hbs's
+                // custom-submit proxy button mirrors it via a
+                // MutationObserver to keep its own disabled state in sync
+                // instead of guessing with a blind timeout.
+                disabled={isPreviewMode || isSubmitting}
                 title={
                   isPreviewMode
                     ? t(

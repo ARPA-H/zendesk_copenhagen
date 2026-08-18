@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { useItemFormFields } from "../../hooks/useItemFormFields";
 import { ItemRequestForm } from "./ItemRequestForm";
 import type { UserOption } from "../../data-types/UserOption";
@@ -303,12 +303,18 @@ export function ServiceCatalogItem({
   async function handleValidationErrors(response: Response) {
     const errorData: ServiceRequestResponse = await response.json();
     const invalidFieldErrors = errorData?.details?.base ?? [];
-    const missingErrorFields = invalidFieldErrors.filter(
+
+    const staleFieldErrors = invalidFieldErrors.filter(
       (errorField) =>
-        !requestFields.some((field) => field.id === errorField.field_key)
+        errorField.field_id != null &&
+        !requestFields.some((field) => field.id === errorField.field_id)
     );
 
-    if (missingErrorFields.length > 0) {
+    const unmappableErrors = invalidFieldErrors.filter(
+      (errorField) => errorField.field_id == null
+    );
+
+    if (staleFieldErrors.length > 0) {
       notifySubmitError(
         <>
           {t(
@@ -325,23 +331,28 @@ export function ServiceCatalogItem({
           </StyledNotificationLink>
         </>
       );
+    } else if (unmappableErrors.length > 0) {
+      notifySubmitError(
+        <>
+          {unmappableErrors.map((errorField, index) => (
+            <div key={index}>{errorField.description}</div>
+          ))}
+        </>
+      );
     } else if (invalidFieldErrors.length > 0) {
       notifySubmitError();
     }
 
-    const updatedFields = requestFields.map((field) => {
-      const errorField = invalidFieldErrors.find(
-        (errorField) => errorField.field_key === field.id
-      );
-      return { ...field, error: errorField?.description || null };
-    });
-    // As in validateForm() above, `requestFields` is only the visible
-    // subset -- merge these updates onto the full field list rather than
-    // replacing it, so conditionally hidden fields aren't lost.
+    // setRequestFields is backed by the full (not just visible) field list,
+    // so we must merge via a functional update rather than replacing it with
+    // a mapped copy of `requestFields` (the visible subset) — otherwise any
+    // field currently hidden by an end-user condition would be dropped.
     setRequestFields((prevFields) =>
       prevFields.map((field) => {
-        const updatedField = updatedFields.find((f) => f.id === field.id);
-        return updatedField ?? field;
+        const errorField = invalidFieldErrors.find(
+          (errorField) => errorField.field_id === field.id
+        );
+        return { ...field, error: errorField?.description || null };
       })
     );
   }
@@ -387,15 +398,27 @@ export function ServiceCatalogItem({
       return field;
     });
 
+    // Disable the real submit button for the whole attempt -- including
+    // synchronous client-side validation below -- rather than only once an
+    // async request is actually in flight. service_page.hbs's static
+    // "custom submit" proxy button mirrors this button's `disabled`
+    // attribute via a MutationObserver so its own disabled state tracks
+    // reality; flushSync forces this update to actually commit to the DOM
+    // immediately instead of being batched away (a same-tick true-then-
+    // false toggle would otherwise never touch the DOM at all), so the
+    // observer can see it even on a validation failure that never reaches
+    // a network request.
+    flushSync(() => setIsSubmitting(true));
+
     if (validateForm(requestFieldsWithFormData, attachments)) {
+      flushSync(() => setIsSubmitting(false));
       return;
     }
 
     if (!serviceCatalogItem || !associatedLookupField) {
+      flushSync(() => setIsSubmitting(false));
       return;
     }
-
-    setIsSubmitting(true);
 
     try {
       const isRequestingOnBehalf =
@@ -507,6 +530,7 @@ export function ServiceCatalogItem({
           onAttachmentUploadingChange={setIsUploadingAttachments}
           isFormInitializing={isFormInitializing}
           isPreviewMode={isPreviewMode}
+          isSubmitting={isSubmitting}
         />
       )}
     </Container>

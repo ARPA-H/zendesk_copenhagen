@@ -10,6 +10,7 @@ export interface ValidationErrors {
   attachments: string | null;
   assetType: string | null;
   asset: string | null;
+  fields: Record<number, string>;
 }
 
 export interface ValidationResult {
@@ -45,6 +46,7 @@ export function useValidateServiceItemForm(
         attachments: null,
         assetType: null,
         asset: null,
+        fields: {},
       };
       const fieldErrors: Record<string, string> = {};
 

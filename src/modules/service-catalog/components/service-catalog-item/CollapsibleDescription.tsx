@@ -8,6 +8,7 @@ import { getColor } from "@zendeskgarden/react-theming";
 import { XXXL } from "@zendeskgarden/react-typography";
 import { ItemThumbnail } from "../item-thumbnail/ItemThumbnail";
 import { sanitizeHtml } from "../../utils/sanitize";
+import { stripIconMarker } from "../../../shared";
 
 const DescriptionWrapper = styled.div`
   border-bottom: ${(props) => props.theme.borders.sm}
@@ -73,8 +74,10 @@ export const CollapsibleDescription = ({
   const { t } = useTranslation();
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const sanitizedDescription = useMemo(
-    () => sanitizeHtml(description ?? ""),
+  // Strip any [icon: ...] marker (consumed by ItemThumbnail to choose the
+  // icon) before sanitizing, so it never renders in the description text.
+  const displayDescription = useMemo(
+    () => sanitizeHtml(stripIconMarker(description)),
     [description]
   );
 
@@ -92,7 +95,7 @@ export const CollapsibleDescription = ({
       };
       requestAnimationFrame(checkClamped);
     }
-  }, [sanitizedDescription]);
+  }, [displayDescription]);
 
   const toggleDescription = () => {
     setIsCollapsed(!isCollapsed);
@@ -101,15 +104,20 @@ export const CollapsibleDescription = ({
   return (
     <DescriptionWrapper>
       <HeaderContainer>
-        <ItemThumbnail size="large" url={thumbnailUrl} />
+        <ItemThumbnail
+          size="large"
+          name={title}
+          description={description}
+          url={thumbnailUrl}
+        />
         <ItemTitle tag="h1">{title}</ItemTitle>
       </HeaderContainer>
-      {sanitizedDescription && (
+      {displayDescription && (
         <CollapsibleText
           ref={contentRef}
           className="service-catalog-description"
           isCollapsed={isCollapsed}
-          dangerouslySetInnerHTML={{ __html: sanitizedDescription }}
+          dangerouslySetInnerHTML={{ __html: displayDescription }}
         ></CollapsibleText>
       )}
       {isClamped && (

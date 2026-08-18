@@ -4,7 +4,10 @@
    Design tokens live in _svc-tokens.scss.
 
    FOUC/reveal note: the hero is static, fully-styled markup and is
-   shown immediately (no hide-by-default guard). Only the catalog is
+   shown immediately (no hide-by-default guard), except the greeting
+   title (.svc-hero-title), which stays hidden until the name-resolution
+   fetch resolves so "Good evening" and the name reveal together — see
+   the failsafe below so it can never stay hidden. Only the catalog is
    async — it renders a skeleton placeholder and fades in real content
    once the module has staged it (.svc-cat-ready), with a CSS failsafe
    so it can never stay hidden. This replaces the old inline
@@ -80,10 +83,14 @@
   letter-spacing: -0.5px;
   color: #fff;
 }
-.svc-greeting-name { opacity: 0; transition: opacity 0.45s ease; }
-.svc-greeting-name.svc-name-in { opacity: 1; }
+/* Greeting word + name reveal together (avoids "Good evening" flashing
+   before the name-resolution fetch finishes), with a failsafe so the
+   line can never stay hidden if the fetch stalls or JS is unavailable. */
+.svc-hero-title { opacity: 0; transition: opacity 0.45s ease; }
+.svc-hero-title.svc-greeting-ready { opacity: 1; }
+.svc-hero-title { animation: svcFormFailsafe 0s linear 2.5s forwards; }
 @media (prefers-reduced-motion: reduce) {
-  .svc-greeting-name { transition: none; }
+  .svc-hero-title { transition: none; }
 }
 .svc-hero-subtitle {
   margin: 10px auto 0;
@@ -287,17 +294,26 @@
   overflow: visible !important;
 }
 .service-catalog-main-content figure img,
-.service-catalog-main-content figure svg,
 .service-catalog-main-content [class*="Avatar"] img,
-.service-catalog-main-content [class*="Avatar"] svg,
 .service-catalog-main-content [data-garden-id="avatars.avatar"] img,
-.service-catalog-main-content [data-garden-id="avatars.avatar"] svg,
-.service-catalog-main-content a[href*="/services/"] img,
-.service-catalog-main-content a[href*="/services/"] svg {
+.service-catalog-main-content a[href*="/services/"] img {
   max-width: 100% !important;
   max-height: 100% !important;
   width: auto !important;
   height: auto !important;
+  object-fit: contain !important;
+  overflow: visible !important;
+  display: block;
+}
+/* svg icons keep their own explicit size (e.g. ItemThumbnail's 24px/44px) —
+   forcing width/height:auto here would fall back to the SVG's own "1em"
+   attribute and re-introduce the 16x16 bug. */
+.service-catalog-main-content figure svg,
+.service-catalog-main-content [class*="Avatar"] svg,
+.service-catalog-main-content [data-garden-id="avatars.avatar"] svg,
+.service-catalog-main-content a[href*="/services/"] svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
   object-fit: contain !important;
   overflow: visible !important;
   display: block;

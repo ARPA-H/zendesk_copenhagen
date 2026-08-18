@@ -9,6 +9,7 @@ const config = {
   setupFilesAfterEnv: ["@testing-library/jest-dom", "<rootDir>/jest.setup.js"],
   moduleNameMapper: {
     "\\.svg$": "<rootDir>/__mocks__/svg.mock.js",
+    "^@iconify/react$": "<rootDir>/__mocks__/iconify-react.js",
   },
 };
 
