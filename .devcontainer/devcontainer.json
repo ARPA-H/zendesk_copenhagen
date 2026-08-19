@@ -12,7 +12,10 @@
   // into a Codespaces prebuild image (Settings -> Codespaces -> Prebuild configuration).
   // Global CLI installs live here so prebuilds cache them instead of paying the
   // cost on every fresh Codespace.
-  "onCreateCommand": "npm install -g @github/copilot@latest",
+  // ripgrep/bubblewrap/socat: the Copilot coding agent's terminal sandbox shells
+  // out to `rg`/`bwrap`/`socat` and fails "Sandbox dependencies not available"
+  // without them - the base image doesn't ship any of the three.
+  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y ripgrep bubblewrap socat && npm install -g @github/copilot@latest",
 
   // Runs after onCreateCommand, and again whenever a prebuild refreshes against
   // new repo content. This repo pins Yarn via .yarnrc.yml (yarnPath -> the
