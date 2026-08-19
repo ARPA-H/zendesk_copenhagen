@@ -45,7 +45,6 @@
     "linkify-string": "^4.3.3",
     "linkifyjs": "^4.3.3",
     "lodash.debounce": "^4.0.8",
-    "node-fetch": "2.7.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-dropzone": "^20.1.0",
