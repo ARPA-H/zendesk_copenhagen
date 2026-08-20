@@ -24,6 +24,10 @@ yarn test path/to/file.test.tsx
 # Lint
 yarn eslint src
 
+# Lint markdown docs (PLAN.md, AGENTS.md, CLAUDE.md — README.md/CHANGELOG.md
+# are intentionally excluded, see .markdownlint-cli2.jsonc)
+yarn lint:md
+
 # Extract i18n strings from source code
 yarn i18n:extract
 yarn i18n:extract --module=module-name
@@ -38,11 +42,13 @@ yarn i18n:update-translations --module=module-name
 ## Architecture
 
 ### Build System
+
 - **Rollup** compiles everything - outputs `script.js`, `style.css`, and ES module bundles in `assets/`
 - **Do not edit** `script.js`, `style.css`, or files in `assets/` directly - they are generated
 - ES2015 only for `script.js` (no Babel) - avoid newer JavaScript features in `src/*.js` files
 
 ### Directory Structure
+
 - `templates/` - Curlybars templates (`.hbs`) for Help Center pages. Curlybars is a subset of Handlebars and may not support all Handlebars features.
 - `src/` - JavaScript source
   - `src/*.js` - Legacy vanilla JS (bundled into `script.js` as IIFE)
@@ -51,7 +57,9 @@ yarn i18n:update-translations --module=module-name
 - `manifest.json` - Theme settings configuration
 
 ### React Modules
+
 Located in `src/modules/`, bundled to `assets/*-bundle.js`:
+
 - `new-request-form` - Ticket submission form
 - `request-list` - User's requests page
 - `service-catalog` - Service catalog pages
@@ -63,17 +71,22 @@ Located in `src/modules/`, bundled to `assets/*-bundle.js`:
 Modules are isolated - ESLint enforces that modules only import from `shared/`, `test/`, `ticket-fields/`, or `flash-notifications/`.
 
 ### Import Maps
+
 React modules are loaded via import maps generated during build. The `document_head.hbs` template contains the import map mapping module names to asset URLs.
 
 ### i18n in React
+
 Uses react-i18next with `.` separator for plurals (not `_`). Translation strings use:
+
 ```ts
 const { t } = useTranslation();
 t("key", "Default English value");
 ```
+
 Translations stored in `src/modules/[module]/translations/`.
 
 ### Translations: what goes where
+
 - `translations.yml` (repo root) is only for strings referenced by `manifest.json` (theme settings labels/descriptions shown in the Settings panel). Don't add template or React strings here.
 - In Curlybars templates (`templates/*.hbs`), the `{{t "key"}}` helper only resolves keys that Help Center exposes to the theme's `t` helper. A new key must be added there first; defining it in `translations.yml` or a module's `translations/` folder does not make it available to `{{t}}`.
 - `manifest.json` `label`/`description` fields hold translation *keys*, not literal text. The actual strings shown in the Settings panel live in `translations/en-us.json` — edit that file directly for new/changed setting labels and descriptions.
@@ -87,7 +100,7 @@ Translations stored in `src/modules/[module]/translations/`.
 
 ## APIs
 
-Use only public REST APIs documented at https://developer.zendesk.com/api-reference/
+Use only public REST APIs documented at <https://developer.zendesk.com/api-reference/>
 
 ## Agent Skills
 

@@ -47,6 +47,8 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: ESlint
         run: yarn eslint
+      - name: Markdownlint
+        run: yarn lint:md
   test:
     name: Test
     runs-on: ubuntu-latest
