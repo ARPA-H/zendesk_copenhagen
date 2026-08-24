@@ -1,3 +1,10 @@
+## [4.50.5](https://github.com/zendesk/copenhagen_theme/compare/v4.50.4...v4.50.5) (2026-08-24)
+
+
+### Bug Fixes
+
+* cloudflare blocking lighthouse audits ([0c80608](https://github.com/zendesk/copenhagen_theme/commit/0c80608d51063af9afbaf81c191d86a888bab866))
+
 ## [4.50.4](https://github.com/zendesk/copenhagen_theme/compare/v4.50.3...v4.50.4) (2026-08-18)
 
 
