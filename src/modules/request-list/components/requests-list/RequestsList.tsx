@@ -1,6 +1,6 @@
 import { CursorPagination } from "@zendeskgarden/react-pagination";
 import { useTranslation } from "react-i18next";
-import { useRequestListParams } from "../../hooks/useRequestListParams";
+import { useParams } from "../../hooks/useParams";
 import RequestsToolbar from "../requests-toolbar/RequestsToolbar";
 import { RequestsTable } from "../requests-table/RequestsTable";
 import RequestsTabs from "../requests-tabs/RequestsTabs";
@@ -29,7 +29,7 @@ export function RequestsList({
 }: RequestsListProps): JSX.Element {
   const { t } = useTranslation();
 
-  const { params, push } = useRequestListParams();
+  const { params, push } = useParams();
 
   const { query, page, sort, selectedTab, filters } = params;
 

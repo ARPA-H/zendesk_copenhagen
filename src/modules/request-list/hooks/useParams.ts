@@ -1,21 +1,72 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import type { FilterValuesMap, FilterValue } from "../data-types/FilterValue";
+import type { RequestListParams } from "../data-types/request-list-params";
+import { MY_REQUESTS_TAB_NAME } from "../data-types/request-list-params";
+import localStorage from "../utils/localStorage";
+import { serializeRequestListParams } from "../utils/serializeRequestListParams";
+import {
+  deserializeRequestListParams,
+  hasRequestListParams,
+} from "../utils/deserializeRequestListParams";
 
-/* Merge URL-derived params over defaults. Defaults to { ...defaultParams, ...urlParams }
-   Writes resolved params back to the URL once on mount via replaceState
-   Re-resolves params from the URL on Back/Forward navigation */
-export interface UseParamsOptions<Params> {
-  resolve?: (
-    defaultParams: Params,
-    urlParams: Partial<Params>,
-    searchParams: URLSearchParams
-  ) => Params;
-  replaceUrlOnMount?: boolean;
-  syncOnPopState?: boolean;
+export const FILTERS_LOCAL_STORAGE_KEY = "REQUEST_LIST_FILTERS";
+export const FILTERS_LOCAL_STORAGE_VERSION = "v1";
+
+export const DEFAULT_REQUEST_LIST_PARAMS: RequestListParams = {
+  query: "",
+  page: 1,
+  sort: { order: "desc", by: "updated_at" },
+  selectedTab: { name: MY_REQUESTS_TAB_NAME },
+  filters: {},
+};
+
+export interface UseParamsResult {
+  params: RequestListParams;
+  push: (newParams: Partial<RequestListParams>) => void;
 }
 
-export interface UseParamsResult<Params> {
-  params: Params;
-  push: (newParams: Partial<Params>, options?: { replace?: boolean }) => void;
+function isFilterValue(value: unknown): value is FilterValue {
+  return (
+    typeof value === "string" &&
+    (value.startsWith(":") || value.startsWith("<") || value.startsWith(">"))
+  );
+}
+
+function isFilterValuesMap(value: unknown): value is FilterValuesMap {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false;
+  }
+
+  return Object.values(value).every(
+    (filterValues) =>
+      Array.isArray(filterValues) && filterValues.every(isFilterValue)
+  );
+}
+
+function readStoredFilters(): FilterValuesMap {
+  try {
+    const item = localStorage.getItem(FILTERS_LOCAL_STORAGE_KEY);
+    if (!item) return {};
+
+    const [version, value] = JSON.parse(item);
+
+    return version === FILTERS_LOCAL_STORAGE_VERSION && isFilterValuesMap(value)
+      ? value
+      : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function writeStoredFilters(filters: FilterValuesMap): void {
+  try {
+    localStorage.setItem(
+      FILTERS_LOCAL_STORAGE_KEY,
+      JSON.stringify([FILTERS_LOCAL_STORAGE_VERSION, filters])
+    );
+  } catch (error) {
+    // ignore
+  }
 }
 
 function writeUrl(searchParams: URLSearchParams, replace: boolean): void {
@@ -30,87 +81,60 @@ function writeUrl(searchParams: URLSearchParams, replace: boolean): void {
   }
 }
 
-function resolveParamsFromUrl<Params>(
-  defaultParams: Params,
-  deserialize: (searchParams: URLSearchParams) => Partial<Params>,
-  resolve: UseParamsOptions<Params>["resolve"]
-): Params {
+function resolveParamsFromUrl(): RequestListParams {
   const searchParams = new URLSearchParams(window.location.search);
-  const urlParams = deserialize(searchParams);
+  const urlParams = deserializeRequestListParams(searchParams);
 
-  return resolve
-    ? resolve(defaultParams, urlParams, searchParams)
-    : { ...defaultParams, ...urlParams };
+  // When the URL carries recognized params it is authoritative — its filters
+  // win and are persisted. Otherwise the stored filters are the starting point.
+  if (!hasRequestListParams(searchParams)) {
+    return {
+      ...DEFAULT_REQUEST_LIST_PARAMS,
+      filters: readStoredFilters(),
+    };
+  }
+
+  const filters = urlParams.filters ?? {};
+  writeStoredFilters(filters);
+
+  return { ...DEFAULT_REQUEST_LIST_PARAMS, ...urlParams, filters };
 }
 
-export function useParams<Params>(
-  defaultParams: Params,
-  serialize: (params: Params) => URLSearchParams,
-  deserialize: (searchParams: URLSearchParams) => Partial<Params>,
-  options?: UseParamsOptions<Params>
-): UseParamsResult<Params> {
-  const [params, setParams] = useState<Params>(() =>
-    resolveParamsFromUrl(defaultParams, deserialize, options?.resolve)
-  );
+/* Manages the request list params, keeping them in sync with the URL while
+   persisting the filters to localStorage so they stick across reloads and tabs.
+   - Params are resolved from the URL on mount and on back/forward navigation
+   - The resolved params are written back to the URL once on mount (replaceState)
+   - Every push updates the URL (pushState) and persists the current filters */
+export function useParams(): UseParamsResult {
+  const [params, setParams] = useState<RequestListParams>(resolveParamsFromUrl);
 
-  // Mirror the latest render values so `push` and the popstate handler can stay stable.
-  const latest = useRef({
-    defaultParams,
-    serialize,
-    deserialize,
-    params,
-    resolve: options?.resolve,
-  });
+  // Mirror the latest params so `push` and the popstate handler can stay stable.
+  const latestParams = useRef(params);
+  latestParams.current = params;
 
-  latest.current = {
-    defaultParams,
-    serialize,
-    deserialize,
-    params,
-    resolve: options?.resolve,
-  };
+  const push = useCallback((newParams: Partial<RequestListParams>) => {
+    const mergedParams = { ...latestParams.current, ...newParams };
 
-  const push = useCallback(
-    (newParams: Partial<Params>, pushOptions?: { replace?: boolean }) => {
-      const mergedParams = { ...latest.current.params, ...newParams };
-
-      latest.current.params = mergedParams;
-      setParams(mergedParams);
-      writeUrl(
-        latest.current.serialize(mergedParams),
-        pushOptions?.replace === true
-      );
-    },
-    []
-  );
-
-  const replaceUrlOnMount = options?.replaceUrlOnMount ?? false;
-  const syncOnPopState = options?.syncOnPopState ?? false;
+    latestParams.current = mergedParams;
+    setParams(mergedParams);
+    writeUrl(serializeRequestListParams(mergedParams), false);
+    writeStoredFilters(mergedParams.filters);
+  }, []);
 
   useEffect(() => {
-    if (replaceUrlOnMount) {
-      writeUrl(latest.current.serialize(latest.current.params), true);
-    }
-
-    if (!syncOnPopState) {
-      return undefined;
-    }
+    writeUrl(serializeRequestListParams(latestParams.current), true);
 
     function handlePopState() {
-      const nextParams = resolveParamsFromUrl(
-        latest.current.defaultParams,
-        latest.current.deserialize,
-        latest.current.resolve
-      );
+      const nextParams = resolveParamsFromUrl();
 
-      latest.current.params = nextParams;
+      latestParams.current = nextParams;
       setParams(nextParams);
     }
 
     window.addEventListener("popstate", handlePopState);
 
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [replaceUrlOnMount, syncOnPopState]);
+  }, []);
 
   return { params, push };
 }

@@ -106,7 +106,7 @@ function getFiltersFromSearchParams(
   return res;
 }
 
-export function isFilterValue(value: unknown): value is FilterValue {
+function isFilterValue(value: unknown): value is FilterValue {
   return (
     typeof value === "string" &&
     (value.startsWith(":") || value.startsWith("<") || value.startsWith(">"))

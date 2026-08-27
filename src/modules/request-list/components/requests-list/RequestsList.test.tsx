@@ -2,13 +2,13 @@ jest.mock("../../hooks/useUser");
 jest.mock("../../hooks/useOrganizations");
 jest.mock("../../hooks/useTicketFields");
 jest.mock("../../hooks/useRequests");
-jest.mock("../../hooks/useRequestListParams");
+jest.mock("../../hooks/useParams");
 jest.mock("../../hooks/useShowManyUsers");
 
 import { render } from "../../../test/render";
 import { screen, act, fireEvent } from "@testing-library/react";
 import { RequestsList } from "./RequestsList";
-import { useRequestListParams } from "../../hooks/useRequestListParams";
+import { useParams } from "../../hooks/useParams";
 import { useUser } from "../../hooks/useUser";
 import { useOrganizations } from "../../hooks/useOrganizations";
 import { useRequests } from "../../hooks/useRequests";
@@ -41,7 +41,7 @@ const defaultParams: RequestListParams = {
 const push = jest.fn();
 
 const renderComponent = async (params?: Partial<RequestListParams>) => {
-  (useRequestListParams as jest.Mock).mockReturnValue({
+  (useParams as jest.Mock).mockReturnValue({
     params: { ...defaultParams, ...params },
     push,
   });
