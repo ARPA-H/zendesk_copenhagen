@@ -48,7 +48,7 @@
     "lodash.debounce": "^4.0.8",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-dropzone": "^20.1.0",
+    "react-dropzone": "^20.1.1",
     "react-i18next": "^17.0.11",
     "react-is": "^19.2.8",
     "styled-components": "^6.5.3"
