@@ -7263,9 +7263,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-datepickers@npm:9.15.7":
-  version: 9.15.7
-  resolution: "@zendeskgarden/react-datepickers@npm:9.15.7"
+"@zendeskgarden/react-datepickers@npm:9.15.8":
+  version: 9.15.8
+  resolution: "@zendeskgarden/react-datepickers@npm:9.15.8"
   dependencies:
     "@floating-ui/react-dom": "npm:^2.0.0"
     "@zendeskgarden/container-utilities": "npm:^2.0.4"
@@ -7277,7 +7277,7 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^5.3.1 || ^6.0.0
-  checksum: 10c0/6d750cd2e5514216d8ab13a9344a3103d70fa19de3a15bcbcd8d0dee5ed065a8471a42dfec2a630533ab164d24e3e4c6825d6fef29f0728e511621ac8410359a
+  checksum: 10c0/8ef900ab5399131216aaa5792d914f4f6ba6c2d415efd3947c8d027aadf30d4af427b095d0ab26086122842da3d9574555dd4743124fbac7bc3f2f1917e9f057
   languageName: node
   linkType: hard
 
@@ -9562,7 +9562,7 @@ __metadata:
     "@zendeskgarden/react-avatars": "npm:9.15.7"
     "@zendeskgarden/react-breadcrumbs": "npm:9.15.7"
     "@zendeskgarden/react-buttons": "npm:9.15.7"
-    "@zendeskgarden/react-datepickers": "npm:9.15.7"
+    "@zendeskgarden/react-datepickers": "npm:9.15.8"
     "@zendeskgarden/react-dropdowns": "npm:9.15.7"
     "@zendeskgarden/react-forms": "npm:9.15.7"
     "@zendeskgarden/react-grid": "npm:9.15.7"
