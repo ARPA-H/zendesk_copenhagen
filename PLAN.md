@@ -142,9 +142,20 @@ hand-merged). Also fixed a stale `@testing-library/react-hooks` import in
 `useParams.test.ts` (package removed fork-wide, see dependency table above) and
 two unused `catch (error)` bindings in `useParams.ts`.
 
-**Copilot automated review on #147 flagged 4 moderate findings, all in #146's
-own new `useParams.ts`/translations code (not upstream-sourced, so not
-upstream-contributable) — assessed and left as-is, logged here for optional
+**Correction:** #146 is not new ARPA-H code — every file it touched
+(`useParams.ts`/`.test.ts`, `deserializeRequestListParams.ts`, the
+translations) is byte-for-byte identical to `upstream/master` (verified via
+`diff`), and `git log upstream/master -- .../useParams.ts` shows the same
+commit hashes (`5cf15ea3 feat: sticky filters across reloads and tabs`,
+`ef69058d chore: address review, unify useParams`) as this branch — it's
+upstream's own `4.51.0`/`4.51.1` "sticky filters" feature, ported into sandbox
+verbatim. So the findings below are genuinely upstream bugs and **can** be
+filed as issues/PRs against `zendesk/copenhagen_theme`, not just local
+follow-ups.
+
+**Copilot automated review on #147 flagged 4 moderate findings, all in this
+upstream-authored `useParams.ts`/translations code — assessed as low-impact
+for our usage today and left as-is, logged here for optional upstream
 follow-up:**
 
 - `writeUrl()` rebuilds the URL from only the request-list's own serialized
