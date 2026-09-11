@@ -5,7 +5,9 @@ import type { TicketFieldObject } from "../ticket-fields/data-types/TicketFieldO
 const MAX_URL_LENGTH = 2048;
 const TICKET_FIELD_PREFIX = "tf_";
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const ULID_REGEX = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
+// A 26-char ULID encodes 128 bits; the first char only carries the top 2 bits
+// of that range, so it must be 0-7 (8-Z would overflow the valid ULID space).
+const ULID_REGEX = /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/i;
 
 const ALLOWED_BOOLEAN_VALUES = ["true", "false"];
 const ALLOWED_HTML_TAGS = [

@@ -346,6 +346,16 @@ describe("lookup", () => {
       fieldByName(result.current, "request[custom_fields][999]")?.value
     ).toBeNull();
   });
+
+  test("ignores a 26-char value whose first character overflows the ULID range", () => {
+    mockLocation("?tf_999=Z0000000000000000000000000");
+
+    const { result } = renderHook(() => usePrefilledTicketFields(baseFields()));
+
+    expect(
+      fieldByName(result.current, "request[custom_fields][999]")?.value
+    ).toBeNull();
+  });
 });
 
 describe("multi_lookup", () => {
