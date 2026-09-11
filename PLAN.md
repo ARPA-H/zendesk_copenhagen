@@ -128,6 +128,58 @@ Not a version bump: `@iconify/react` is a genuinely new dependency (for the
 icon-support feature, see "What diverges from upstream" above), not present in
 upstream at all.
 
+## Session: 2026-09-11 — resolve-pr-146-conflicts ([PR #147](https://github.com/ARPA-H/zendesk_copenhagen/pull/147), supersedes [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146))
+
+Merged [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146)'s sticky
+request-list filters (`useParams` hook, URL <-> `localStorage` sync) plus
+`upstream/master` through `4.51.1` into a fresh branch (#146's head branch was
+named `master` on the contributor's fork, so conflict-resolution commits
+couldn't be pushed to it directly). Conflicts were in `templates/header.hbs`
+(kept this fork's nav structure, adopted upstream's `{{t 'ask_ai'}}` i18n fix
+and added the previously-missing mobile Ask AI link — CSS for it already
+existed) and the generated `assets/request-list-bundle.js` (rebuilt, not
+hand-merged). Also fixed a stale `@testing-library/react-hooks` import in
+`useParams.test.ts` (package removed fork-wide, see dependency table above) and
+two unused `catch (error)` bindings in `useParams.ts`.
+
+**Correction:** #146 is not new ARPA-H code — every file it touched
+(`useParams.ts`/`.test.ts`, `deserializeRequestListParams.ts`, the
+translations) is byte-for-byte identical to `upstream/master` (verified via
+`diff`), and `git log upstream/master -- .../useParams.ts` shows the same
+commit hashes (`5cf15ea3 feat: sticky filters across reloads and tabs`,
+`ef69058d chore: address review, unify useParams`) as this branch — it's
+upstream's own `4.51.0`/`4.51.1` "sticky filters" feature, ported into sandbox
+verbatim. So the findings below are genuinely upstream bugs and **can** be
+filed as issues/PRs against `zendesk/copenhagen_theme`, not just local
+follow-ups.
+
+**Copilot automated review on #147 flagged 4 moderate findings, all in this
+upstream-authored `useParams.ts`/translations code — assessed as low-impact
+for our usage today and left as-is, logged here for optional upstream
+follow-up:**
+
+- `writeUrl()` rebuilds the URL from only the request-list's own serialized
+  keys, so any unrelated query param (e.g. a UTM tag) would be silently
+  dropped on mount/push. No code path in this app currently links to
+  `/requests` with extra params, so low real-world impact today, but fragile
+  if that ever changes.
+- `FILTERS_LOCAL_STORAGE_KEY` isn't scoped by user/locale/brand — filters
+  persist per-browser-origin, not per-user, so a shared browser profile could
+  show the previous user's tab/sort/filter selection. Only affects filter UI
+  state (which tab/sort is preselected), not which tickets are fetched
+  (server-side auth still scopes that), so low severity.
+- No `storage` event listener, so filter changes don't live-sync to an
+  already-open second tab (only picked up on that tab's next
+  reload/navigation). Persistence itself still works; this is a "not truly
+  live" nice-to-have gap, not a correctness bug.
+- The new `requestCount.two`/`few`/`many` plural keys were only added to the
+  source `translations/en-us.yml`; the runtime-loaded
+  `translations/locales/*.json` files (regenerated separately via
+  `yarn i18n:update-translations`, per normal translation workflow) don't have
+  them yet, so non-English locales with those plural categories fall back to
+  `other` until that sync happens. English itself has no `two`/`few`/`many`
+  plural category, so unaffected.
+
 ## Session: 2026-08-17 — dependency/security sweep ([PR #130](https://github.com/ARPA-H/zendesk_copenhagen/pull/130))
 
 `chore/dependency-security-updates`
