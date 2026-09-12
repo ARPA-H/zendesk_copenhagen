@@ -23,12 +23,14 @@ const SORT_ORDER_DESC = "desc" as const;
 
 // parseInt() parses a numeric prefix (e.g. "2abc" -> 2), so a plain
 // Number.isNaN check after parsing isn't enough to reject malformed values --
-// this requires the entire string to be digits first. isSafeInteger then
-// rejects overflow to Infinity for huge digit strings.
-const INTEGER_REGEX = /^\d+$/;
+// this requires the entire string to be digits first, and excludes a leading
+// "0" so "0" itself is rejected (page and organization_id are both 1-indexed
+// identifiers; 0 is never valid for either). isSafeInteger then rejects
+// overflow to Infinity for huge digit strings.
+const POSITIVE_INTEGER_REGEX = /^[1-9]\d*$/;
 
 function parseStrictInteger(value: string): number | null {
-  if (!INTEGER_REGEX.test(value)) {
+  if (!POSITIVE_INTEGER_REGEX.test(value)) {
     return null;
   }
 

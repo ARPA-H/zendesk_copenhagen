@@ -171,6 +171,24 @@ describe("resolving params from the URL", () => {
 
     expect(result.current.params.filters).toEqual({ status: [":open"] });
   });
+
+  test("a URL with only a zero page falls back to stored filters instead of clearing them", () => {
+    setUrl("?page=0");
+    storeFilters({ status: [":open"] });
+
+    const { result } = renderHook(() => useParams());
+
+    expect(result.current.params.filters).toEqual({ status: [":open"] });
+  });
+
+  test("a URL with only a zero organization_id falls back to stored filters instead of clearing them", () => {
+    setUrl("?selected_tab_name=org-requests&organization_id=0");
+    storeFilters({ status: [":open"] });
+
+    const { result } = renderHook(() => useParams());
+
+    expect(result.current.params.filters).toEqual({ status: [":open"] });
+  });
 });
 
 describe("URL synchronization", () => {
