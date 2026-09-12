@@ -85,13 +85,15 @@ describe("RequestListParams", () => {
     "ignores a %s filter key instead of writing it onto the result object",
     (unsafeField) => {
       const searchParams = new URLSearchParams(
-        `filter_${unsafeField}=${encodeURIComponent(":open")}`
+        `filter_${unsafeField}=${encodeURIComponent(
+          ":open"
+        )}&filter_status=${encodeURIComponent(":open")}`
       );
 
       const deserialized = deserializeRequestListParams(searchParams);
 
-      expect(deserialized.filters).toBeUndefined();
-      expect(Object.prototype.hasOwnProperty.call({}, unsafeField)).toBe(false);
+      expect(deserialized.filters).toEqual({ status: [":open"] });
+      expect(Object.getPrototypeOf(deserialized.filters)).toBeNull();
     }
   );
 });
