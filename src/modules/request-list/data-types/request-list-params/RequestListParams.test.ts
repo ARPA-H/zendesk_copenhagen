@@ -124,4 +124,10 @@ describe("hasRequestListParams", () => {
       expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
     }
   );
+
+  it("returns false for a filter key whose only value fails validation", () => {
+    const search = "filter_status=not-a-filter";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
 });

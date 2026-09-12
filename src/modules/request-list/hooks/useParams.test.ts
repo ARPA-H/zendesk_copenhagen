@@ -99,6 +99,15 @@ describe("resolving params from the URL", () => {
 
     expect(result.current.params.filters).toEqual({ status: [":open"] });
   });
+
+  test("a URL with only a filter key whose value fails validation falls back to stored filters instead of clearing them", () => {
+    setUrl("?filter_status=not-a-filter");
+    storeFilters({ status: [":open"] });
+
+    const { result } = renderHook(() => useParams());
+
+    expect(result.current.params.filters).toEqual({ status: [":open"] });
+  });
 });
 
 describe("URL synchronization", () => {

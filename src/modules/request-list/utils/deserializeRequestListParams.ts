@@ -110,7 +110,11 @@ function getFiltersFromSearchParams(
     }
 
     seenFields.add(field);
-    entries.push([field, searchParams.getAll(key).filter(isFilterValue)]);
+
+    const values = searchParams.getAll(key).filter(isFilterValue);
+    if (values.length > 0) {
+      entries.push([field, values]);
+    }
   }
 
   // Object.fromEntries defines properties directly rather than assigning
