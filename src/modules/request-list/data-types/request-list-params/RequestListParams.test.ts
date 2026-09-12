@@ -179,4 +179,16 @@ describe("hasRequestListParams", () => {
 
     expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
   });
+
+  it("returns false for a zero page", () => {
+    const search = "page=0";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for a zero organization_id", () => {
+    const search = "selected_tab_name=org-requests&organization_id=0";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
 });
