@@ -90,7 +90,8 @@ const UNSAFE_FIELD_NAMES = new Set(["__proto__", "constructor", "prototype"]);
 function getFiltersFromSearchParams(
   searchParams: URLSearchParams
 ): FilterValuesMap {
-  const res: FilterValuesMap = Object.create(null);
+  const seenFields = new Set<string>();
+  const entries: Array<[string, FilterValue[]]> = [];
 
   for (const [key] of searchParams) {
     if (!key.startsWith(FILTER_PREFIX)) {
@@ -99,15 +100,18 @@ function getFiltersFromSearchParams(
 
     const field = key.replace(FILTER_PREFIX, "");
 
-    if (UNSAFE_FIELD_NAMES.has(field) || res[field] != null) {
+    if (UNSAFE_FIELD_NAMES.has(field) || seenFields.has(field)) {
       continue;
     }
 
-    const values = searchParams.getAll(key).filter(isFilterValue);
-    res[field] = values;
+    seenFields.add(field);
+    entries.push([field, searchParams.getAll(key).filter(isFilterValue)]);
   }
 
-  return res;
+  // Object.fromEntries defines properties directly rather than assigning
+  // through bracket notation, so a tainted key (e.g. "__proto__") can never
+  // reach the prototype chain here, unlike `res[field] = values`.
+  return Object.fromEntries(entries);
 }
 
 function isFilterValue(value: unknown): value is FilterValue {

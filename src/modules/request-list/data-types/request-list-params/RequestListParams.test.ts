@@ -93,7 +93,9 @@ describe("RequestListParams", () => {
       const deserialized = deserializeRequestListParams(searchParams);
 
       expect(deserialized.filters).toEqual({ status: [":open"] });
-      expect(Object.getPrototypeOf(deserialized.filters)).toBeNull();
+      expect(Object.getPrototypeOf(deserialized.filters)).toBe(
+        Object.prototype
+      );
     }
   );
 });
