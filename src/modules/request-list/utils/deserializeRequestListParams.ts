@@ -21,6 +21,15 @@ const SERIALIZED_KEYS = {
 const SORT_ORDER_ASC = "asc" as const;
 const SORT_ORDER_DESC = "desc" as const;
 
+// parseInt() parses a numeric prefix (e.g. "2abc" -> 2), so a plain
+// Number.isNaN check after parsing isn't enough to reject malformed values --
+// this requires the entire string to be digits first.
+const INTEGER_REGEX = /^\d+$/;
+
+function parseStrictInteger(value: string): number | null {
+  return INTEGER_REGEX.test(value) ? parseInt(value, 10) : null;
+}
+
 export function deserializeRequestListParams(
   searchParams: URLSearchParams
 ): Partial<RequestListParams> {
@@ -38,8 +47,8 @@ export function deserializeRequestListParams(
   }
 
   if (pageParam != null) {
-    const page = parseInt(pageParam, 10);
-    if (!Number.isNaN(page)) {
+    const page = parseStrictInteger(pageParam);
+    if (page != null) {
       res.page = page;
     }
   }
@@ -54,8 +63,8 @@ export function deserializeRequestListParams(
 
   if (selectedTabName !== null) {
     if (selectedTabName === ORG_REQUESTS_TAB_NAME && organizationId != null) {
-      const parsedOrganizationId = parseInt(organizationId, 10);
-      if (!Number.isNaN(parsedOrganizationId)) {
+      const parsedOrganizationId = parseStrictInteger(organizationId);
+      if (parsedOrganizationId != null) {
         res.selectedTab = {
           name: ORG_REQUESTS_TAB_NAME,
           organizationId: parsedOrganizationId,

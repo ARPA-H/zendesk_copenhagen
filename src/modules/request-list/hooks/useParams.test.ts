@@ -153,6 +153,24 @@ describe("resolving params from the URL", () => {
 
     expect(result.current.params.filters).toEqual({ status: [":open"] });
   });
+
+  test("a URL with only a page with trailing garbage after a numeric prefix falls back to stored filters instead of clearing them", () => {
+    setUrl("?page=2abc");
+    storeFilters({ status: [":open"] });
+
+    const { result } = renderHook(() => useParams());
+
+    expect(result.current.params.filters).toEqual({ status: [":open"] });
+  });
+
+  test("a URL with only an organization_id with trailing garbage after a numeric prefix falls back to stored filters instead of clearing them", () => {
+    setUrl("?selected_tab_name=org-requests&organization_id=1abc");
+    storeFilters({ status: [":open"] });
+
+    const { result } = renderHook(() => useParams());
+
+    expect(result.current.params.filters).toEqual({ status: [":open"] });
+  });
 });
 
 describe("URL synchronization", () => {

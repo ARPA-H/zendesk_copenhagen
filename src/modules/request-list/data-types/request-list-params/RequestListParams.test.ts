@@ -153,4 +153,16 @@ describe("hasRequestListParams", () => {
 
     expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
   });
+
+  it("returns false for a page with a numeric prefix but trailing garbage", () => {
+    const search = "page=2abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for an organization_id with a numeric prefix but trailing garbage", () => {
+    const search = "selected_tab_name=org-requests&organization_id=1abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
 });
