@@ -71,21 +71,13 @@ export function deserializeRequestListParams(
   return res;
 }
 
-const RECOGNIZED_KEYS: string[] = Object.values(SERIALIZED_KEYS);
-
-// Recognizes a URL as authoritative only when it carries a param that
-// actually survives deserialization -- a rejected/malformed filter (e.g.
-// `?filter___proto__=...`) must not count, or resolveParamsFromUrl() would
-// treat the URL as authoritative and overwrite the user's stored filters
-// with an empty object.
+// Recognizes a URL as authoritative only when it actually produced some
+// deserialized state -- a bare/malformed recognized key on its own (e.g.
+// `?sort_by=created_at` with no `sort_order`, or an invalid
+// `selected_tab_name`) must not count, or resolveParamsFromUrl() would treat
+// the URL as authoritative and clear the user's stored filters for nothing.
 export function hasRequestListParams(searchParams: URLSearchParams): boolean {
-  for (const key of searchParams.keys()) {
-    if (RECOGNIZED_KEYS.includes(key)) {
-      return true;
-    }
-  }
-
-  return Object.keys(getFiltersFromSearchParams(searchParams)).length > 0;
+  return Object.keys(deserializeRequestListParams(searchParams)).length > 0;
 }
 
 // Rejects prototype-chain property names so a crafted `filter___proto__=`

@@ -108,6 +108,15 @@ describe("resolving params from the URL", () => {
 
     expect(result.current.params.filters).toEqual({ status: [":open"] });
   });
+
+  test("a URL with only a bare sort_by (no sort_order) falls back to stored filters instead of clearing them", () => {
+    setUrl("?sort_by=created_at");
+    storeFilters({ status: [":open"] });
+
+    const { result } = renderHook(() => useParams());
+
+    expect(result.current.params.filters).toEqual({ status: [":open"] });
+  });
 });
 
 describe("URL synchronization", () => {

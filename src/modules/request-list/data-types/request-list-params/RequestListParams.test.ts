@@ -130,4 +130,15 @@ describe("hasRequestListParams", () => {
 
     expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
   });
+
+  it.each([
+    ["sort_by=created_at"],
+    ["organization_id=1"],
+    ["selected_tab_name=not-a-real-tab"],
+  ])(
+    "returns false for a bare recognized key that produces no deserialized state (%s)",
+    (search) => {
+      expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+    }
+  );
 });
