@@ -141,4 +141,16 @@ describe("hasRequestListParams", () => {
       expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
     }
   );
+
+  it("returns false for a non-numeric page", () => {
+    const search = "page=abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for a non-numeric organization_id", () => {
+    const search = "selected_tab_name=org-requests&organization_id=abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
 });

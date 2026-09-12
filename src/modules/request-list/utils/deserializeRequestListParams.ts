@@ -38,7 +38,10 @@ export function deserializeRequestListParams(
   }
 
   if (pageParam != null) {
-    res.page = parseInt(pageParam, 10);
+    const page = parseInt(pageParam, 10);
+    if (!Number.isNaN(page)) {
+      res.page = page;
+    }
   }
 
   if (
@@ -51,10 +54,13 @@ export function deserializeRequestListParams(
 
   if (selectedTabName !== null) {
     if (selectedTabName === ORG_REQUESTS_TAB_NAME && organizationId != null) {
-      res.selectedTab = {
-        name: ORG_REQUESTS_TAB_NAME,
-        organizationId: parseInt(organizationId, 10),
-      };
+      const parsedOrganizationId = parseInt(organizationId, 10);
+      if (!Number.isNaN(parsedOrganizationId)) {
+        res.selectedTab = {
+          name: ORG_REQUESTS_TAB_NAME,
+          organizationId: parsedOrganizationId,
+        };
+      }
     } else if (
       selectedTabName === MY_REQUESTS_TAB_NAME ||
       selectedTabName === CCD_REQUESTS_TAB_NAME
