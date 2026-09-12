@@ -80,6 +80,20 @@ describe("RequestListParams", () => {
 
     expect(deserialized).toEqual(expected);
   });
+
+  it.each(["__proto__", "constructor", "prototype"])(
+    "ignores a %s filter key instead of writing it onto the result object",
+    (unsafeField) => {
+      const searchParams = new URLSearchParams(
+        `filter_${unsafeField}=${encodeURIComponent(":open")}`
+      );
+
+      const deserialized = deserializeRequestListParams(searchParams);
+
+      expect(deserialized.filters).toBeUndefined();
+      expect(Object.prototype.hasOwnProperty.call({}, unsafeField)).toBe(false);
+    }
+  );
 });
 
 describe("hasRequestListParams", () => {

@@ -83,10 +83,14 @@ export function hasRequestListParams(searchParams: URLSearchParams): boolean {
   return false;
 }
 
+// Rejects prototype-chain property names so a crafted `filter___proto__=`
+// (etc.) query param can't be used for prototype pollution below.
+const UNSAFE_FIELD_NAMES = new Set(["__proto__", "constructor", "prototype"]);
+
 function getFiltersFromSearchParams(
   searchParams: URLSearchParams
 ): FilterValuesMap {
-  const res: FilterValuesMap = {};
+  const res: FilterValuesMap = Object.create(null);
 
   for (const [key] of searchParams) {
     if (!key.startsWith(FILTER_PREFIX)) {
@@ -95,7 +99,7 @@ function getFiltersFromSearchParams(
 
     const field = key.replace(FILTER_PREFIX, "");
 
-    if (res[field] != null) {
+    if (UNSAFE_FIELD_NAMES.has(field) || res[field] != null) {
       continue;
     }
 
