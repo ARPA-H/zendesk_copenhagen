@@ -165,9 +165,10 @@ follow-up:**
   if that ever changes.
 - `FILTERS_LOCAL_STORAGE_KEY` isn't scoped by user/locale/brand — filters
   persist per-browser-origin, not per-user, so a shared browser profile could
-  show the previous user's tab/sort/filter selection. Only affects filter UI
-  state (which tab/sort is preselected), not which tickets are fetched
-  (server-side auth still scopes that), so low severity.
+  show the previous user's filter selection (tab and sort are URL-only state
+  and are never written to or restored from `localStorage`). Only affects
+  filter UI state, not which tickets are fetched (server-side auth still
+  scopes that), so low severity.
 - No `storage` event listener, so filter changes don't live-sync to an
   already-open second tab (only picked up on that tab's next
   reload/navigation). Persistence itself still works; this is a "not truly
