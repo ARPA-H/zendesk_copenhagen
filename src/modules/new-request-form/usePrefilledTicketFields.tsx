@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import DOMPurify from "dompurify";
 import type { TicketFieldObject } from "../ticket-fields/data-types/TicketFieldObject";
+import { DEFAULT_MAX_SELECTIONS } from "../ticket-fields/fields/MultiLookupField";
 
 const MAX_URL_LENGTH = 2048;
 const TICKET_FIELD_PREFIX = "tf_";
@@ -136,7 +137,10 @@ function getPrefilledTicketFields(fields: Fields): Fields {
         }
         break;
       case "multi_lookup":
-        field.value = sanitizedValue.split(",").filter(isValidUlid);
+        field.value = sanitizedValue
+          .split(",")
+          .filter(isValidUlid)
+          .slice(0, field.max_selections ?? DEFAULT_MAX_SELECTIONS);
         break;
       default:
         field.value = sanitizedValue;

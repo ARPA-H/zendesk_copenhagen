@@ -14,7 +14,7 @@ import {
 } from "./LookupField";
 import type { CustomObjectRecord } from "../data-types/CustomObjectRecord";
 
-const DEFAULT_MAX_SELECTIONS = 20;
+export const DEFAULT_MAX_SELECTIONS = 20;
 const COLLAPSED_MAX_TAGS = 4;
 
 interface MultiLookupFieldProps {

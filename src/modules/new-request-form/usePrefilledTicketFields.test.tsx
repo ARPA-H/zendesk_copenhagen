@@ -388,4 +388,29 @@ describe("multi_lookup", () => {
       fieldByName(result.current, "request[custom_fields][1000]")?.value
     ).toEqual([]);
   });
+
+  test("caps prefilled values at the field's max_selections", () => {
+    mockLocation(`?tf_1000=${Array(3).fill(VALID_ULID_1).join(",")}`);
+
+    const fields = baseFields();
+    const field = fieldByName(fields, "request[custom_fields][1000]");
+    if (field) field.max_selections = 2;
+
+    const { result } = renderHook(() => usePrefilledTicketFields(fields));
+
+    expect(
+      fieldByName(result.current, "request[custom_fields][1000]")?.value
+    ).toEqual([VALID_ULID_1, VALID_ULID_1]);
+  });
+
+  test("caps prefilled values at the default max selections when the field has none set", () => {
+    mockLocation(`?tf_1000=${Array(25).fill(VALID_ULID_1).join(",")}`);
+
+    const { result } = renderHook(() => usePrefilledTicketFields(baseFields()));
+
+    expect(
+      fieldByName(result.current, "request[custom_fields][1000]")
+        ?.value as string[]
+    ).toHaveLength(20);
+  });
 });
