@@ -130,4 +130,53 @@ describe("hasRequestListParams", () => {
 
     expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
   });
+
+  it.each([
+    ["sort_by=created_at"],
+    ["organization_id=1"],
+    ["selected_tab_name=not-a-real-tab"],
+  ])(
+    "returns false for a bare recognized key that produces no deserialized state (%s)",
+    (search) => {
+      expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+    }
+  );
+
+  it("returns false for a non-numeric page", () => {
+    const search = "page=abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for a non-numeric organization_id", () => {
+    const search = "selected_tab_name=org-requests&organization_id=abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for a page with a numeric prefix but trailing garbage", () => {
+    const search = "page=2abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for an organization_id with a numeric prefix but trailing garbage", () => {
+    const search = "selected_tab_name=org-requests&organization_id=1abc";
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for a page value that overflows to Infinity", () => {
+    const search = `page=${"9".repeat(400)}`;
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for an organization_id value that overflows to Infinity", () => {
+    const search = `selected_tab_name=org-requests&organization_id=${"9".repeat(
+      400
+    )}`;
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
 });

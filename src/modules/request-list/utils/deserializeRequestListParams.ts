@@ -21,6 +21,21 @@ const SERIALIZED_KEYS = {
 const SORT_ORDER_ASC = "asc" as const;
 const SORT_ORDER_DESC = "desc" as const;
 
+// parseInt() parses a numeric prefix (e.g. "2abc" -> 2), so a plain
+// Number.isNaN check after parsing isn't enough to reject malformed values --
+// this requires the entire string to be digits first. isSafeInteger then
+// rejects overflow to Infinity for huge digit strings.
+const INTEGER_REGEX = /^\d+$/;
+
+function parseStrictInteger(value: string): number | null {
+  if (!INTEGER_REGEX.test(value)) {
+    return null;
+  }
+
+  const parsed = parseInt(value, 10);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
 export function deserializeRequestListParams(
   searchParams: URLSearchParams
 ): Partial<RequestListParams> {
@@ -38,7 +53,10 @@ export function deserializeRequestListParams(
   }
 
   if (pageParam != null) {
-    res.page = parseInt(pageParam, 10);
+    const page = parseStrictInteger(pageParam);
+    if (page != null) {
+      res.page = page;
+    }
   }
 
   if (
@@ -51,10 +69,13 @@ export function deserializeRequestListParams(
 
   if (selectedTabName !== null) {
     if (selectedTabName === ORG_REQUESTS_TAB_NAME && organizationId != null) {
-      res.selectedTab = {
-        name: ORG_REQUESTS_TAB_NAME,
-        organizationId: parseInt(organizationId, 10),
-      };
+      const parsedOrganizationId = parseStrictInteger(organizationId);
+      if (parsedOrganizationId != null) {
+        res.selectedTab = {
+          name: ORG_REQUESTS_TAB_NAME,
+          organizationId: parsedOrganizationId,
+        };
+      }
     } else if (
       selectedTabName === MY_REQUESTS_TAB_NAME ||
       selectedTabName === CCD_REQUESTS_TAB_NAME
@@ -71,21 +92,13 @@ export function deserializeRequestListParams(
   return res;
 }
 
-const RECOGNIZED_KEYS: string[] = Object.values(SERIALIZED_KEYS);
-
-// Recognizes a URL as authoritative only when it carries a param that
-// actually survives deserialization -- a rejected/malformed filter (e.g.
-// `?filter___proto__=...`) must not count, or resolveParamsFromUrl() would
-// treat the URL as authoritative and overwrite the user's stored filters
-// with an empty object.
+// Recognizes a URL as authoritative only when it actually produced some
+// deserialized state -- a bare/malformed recognized key on its own (e.g.
+// `?sort_by=created_at` with no `sort_order`, or an invalid
+// `selected_tab_name`) must not count, or resolveParamsFromUrl() would treat
+// the URL as authoritative and clear the user's stored filters for nothing.
 export function hasRequestListParams(searchParams: URLSearchParams): boolean {
-  for (const key of searchParams.keys()) {
-    if (RECOGNIZED_KEYS.includes(key)) {
-      return true;
-    }
-  }
-
-  return Object.keys(getFiltersFromSearchParams(searchParams)).length > 0;
+  return Object.keys(deserializeRequestListParams(searchParams)).length > 0;
 }
 
 // Rejects prototype-chain property names so a crafted `filter___proto__=`
