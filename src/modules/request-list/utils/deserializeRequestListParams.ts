@@ -23,11 +23,17 @@ const SORT_ORDER_DESC = "desc" as const;
 
 // parseInt() parses a numeric prefix (e.g. "2abc" -> 2), so a plain
 // Number.isNaN check after parsing isn't enough to reject malformed values --
-// this requires the entire string to be digits first.
+// this requires the entire string to be digits first. isSafeInteger then
+// rejects overflow to Infinity for huge digit strings.
 const INTEGER_REGEX = /^\d+$/;
 
 function parseStrictInteger(value: string): number | null {
-  return INTEGER_REGEX.test(value) ? parseInt(value, 10) : null;
+  if (!INTEGER_REGEX.test(value)) {
+    return null;
+  }
+
+  const parsed = parseInt(value, 10);
+  return Number.isSafeInteger(parsed) ? parsed : null;
 }
 
 export function deserializeRequestListParams(

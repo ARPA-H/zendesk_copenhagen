@@ -165,4 +165,18 @@ describe("hasRequestListParams", () => {
 
     expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
   });
+
+  it("returns false for a page value that overflows to Infinity", () => {
+    const search = `page=${"9".repeat(400)}`;
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
+
+  it("returns false for an organization_id value that overflows to Infinity", () => {
+    const search = `selected_tab_name=org-requests&organization_id=${"9".repeat(
+      400
+    )}`;
+
+    expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+  });
 });
