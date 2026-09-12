@@ -90,6 +90,15 @@ describe("resolving params from the URL", () => {
 
     expect(result.current.params.filters).toEqual({});
   });
+
+  test("a URL with only a rejected filter key falls back to stored filters instead of clearing them", () => {
+    setUrl(`?filter___proto__=${encodeURIComponent(":open")}`);
+    storeFilters({ status: [":open"] });
+
+    const { result } = renderHook(() => useParams());
+
+    expect(result.current.params.filters).toEqual({ status: [":open"] });
+  });
 });
 
 describe("URL synchronization", () => {

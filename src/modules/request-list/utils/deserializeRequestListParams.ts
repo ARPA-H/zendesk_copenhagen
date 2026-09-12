@@ -73,14 +73,19 @@ export function deserializeRequestListParams(
 
 const RECOGNIZED_KEYS: string[] = Object.values(SERIALIZED_KEYS);
 
+// Recognizes a URL as authoritative only when it carries a param that
+// actually survives deserialization -- a rejected/malformed filter (e.g.
+// `?filter___proto__=...`) must not count, or resolveParamsFromUrl() would
+// treat the URL as authoritative and overwrite the user's stored filters
+// with an empty object.
 export function hasRequestListParams(searchParams: URLSearchParams): boolean {
   for (const key of searchParams.keys()) {
-    if (RECOGNIZED_KEYS.includes(key) || key.startsWith(FILTER_PREFIX)) {
+    if (RECOGNIZED_KEYS.includes(key)) {
       return true;
     }
   }
 
-  return false;
+  return Object.keys(getFiltersFromSearchParams(searchParams)).length > 0;
 }
 
 // Rejects prototype-chain property names so a crafted `filter___proto__=`

@@ -115,4 +115,13 @@ describe("hasRequestListParams", () => {
       expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
     }
   );
+
+  it.each(["__proto__", "constructor", "prototype"])(
+    "returns false for a %s-only filter key that gets rejected during deserialization",
+    (unsafeField) => {
+      const search = `filter_${unsafeField}=${encodeURIComponent(":open")}`;
+
+      expect(hasRequestListParams(new URLSearchParams(search))).toBe(false);
+    }
+  );
 });
