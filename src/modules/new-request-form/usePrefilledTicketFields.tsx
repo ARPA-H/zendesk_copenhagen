@@ -138,7 +138,12 @@ function getPrefilledTicketFields(fields: Fields): Fields {
         break;
       case "multi_lookup":
         field.value = [
-          ...new Set(sanitizedValue.split(",").filter(isValidUlid)),
+          ...new Set(
+            sanitizedValue
+              .split(",")
+              .filter(isValidUlid)
+              .map((value) => value.toUpperCase())
+          ),
         ].slice(0, field.max_selections ?? DEFAULT_MAX_SELECTIONS);
         break;
       default:

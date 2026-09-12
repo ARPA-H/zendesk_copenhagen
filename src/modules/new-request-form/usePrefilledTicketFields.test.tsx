@@ -426,6 +426,22 @@ describe("multi_lookup", () => {
     ).toEqual([VALID_ULID_1, VALID_ULID_2]);
   });
 
+  test("deduplicates values that only differ by case", () => {
+    mockLocation(
+      `?tf_1000=${VALID_ULID_1},${VALID_ULID_1.toLowerCase()},${VALID_ULID_2}`
+    );
+
+    const fields = baseFields();
+    const field = fieldByName(fields, "request[custom_fields][1000]");
+    if (field) field.max_selections = 2;
+
+    const { result } = renderHook(() => usePrefilledTicketFields(fields));
+
+    expect(
+      fieldByName(result.current, "request[custom_fields][1000]")?.value
+    ).toEqual([VALID_ULID_1, VALID_ULID_2]);
+  });
+
   test("caps prefilled values at the default max selections when the field has none set", () => {
     mockLocation(`?tf_1000=${distinctUlids(25).join(",")}`);
 
