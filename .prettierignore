@@ -1,5 +1,7 @@
 node_modules
 assets
+script.js
+style.css
 CHANGELOG.md
 README.md
 .github/skills
