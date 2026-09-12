@@ -12,18 +12,16 @@ const query = {
 };
 
 export const media = {
-  mobile: (template: TemplateStringsArray): FlattenSimpleInterpolation =>
-    css`
-      @media screen and ${query.mobile} {
-        ${css(template)}
-      }
-    `,
-  desktop: (template: TemplateStringsArray): FlattenSimpleInterpolation =>
-    css`
-      @media screen and ${query.desktop} {
-        ${css(template)}
-      }
-    `,
+  mobile: (template: TemplateStringsArray): FlattenSimpleInterpolation => css`
+    @media screen and ${query.mobile} {
+      ${css(template)}
+    }
+  `,
+  desktop: (template: TemplateStringsArray): FlattenSimpleInterpolation => css`
+    @media screen and ${query.desktop} {
+      ${css(template)}
+    }
+  `,
 };
 
 export const Mobile = styled.div`

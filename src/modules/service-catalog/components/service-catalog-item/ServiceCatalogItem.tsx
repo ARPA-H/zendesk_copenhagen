@@ -104,7 +104,9 @@ export function ServiceCatalogItem({
     );
 
     setSelectedCategoryId(
-      matchesUrl ? matchesUrl.id : serviceCatalogItem.categories[0]?.id ?? null
+      matchesUrl
+        ? matchesUrl.id
+        : (serviceCatalogItem.categories[0]?.id ?? null)
     );
   }, [serviceCatalogItem]);
 

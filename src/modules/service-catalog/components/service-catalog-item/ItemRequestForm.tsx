@@ -348,8 +348,8 @@ export function ItemRequestForm({
         error: isAssetField(field)
           ? assetError || field.error
           : isAssetTypeField(field)
-          ? assetTypeError || field.error
-          : field.error,
+            ? assetTypeError || field.error
+            : field.error,
       };
 
       elements.push(

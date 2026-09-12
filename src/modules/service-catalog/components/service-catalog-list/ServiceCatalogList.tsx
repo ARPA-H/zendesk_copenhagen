@@ -222,8 +222,8 @@ export function ServiceCatalogList({
     selectedCategoryName === ALL_SERVICES_ID
       ? t("service-catalog-sidebar.all-services", "All services")
       : selectedCategoryName === UNCATEGORIZED_ID
-      ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
-      : selectedCategoryName;
+        ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
+        : selectedCategoryName;
 
   return (
     <Container>
