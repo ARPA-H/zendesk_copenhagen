@@ -120,8 +120,8 @@ function getPrefilledTicketFields(fields: Fields): Fields {
             sanitizedValue === "true"
               ? "on"
               : sanitizedValue === "false"
-              ? "off"
-              : "";
+                ? "off"
+                : "";
         }
         break;
       case "due_at":
