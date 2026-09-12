@@ -7,14 +7,14 @@ import{r as e,u as t,j as s,e as n,M as r,m as a,T as i,F as o,C as l,O as u,ag 
 `,ze=i(h)`
   margin-bottom: ${e=>e.theme.space.sm};
 `;function $e(r){const{t:a}=t(),{organizations:i,user:o,onClose:l}=r,[u,g]=e.useState(ke),[x,v]=e.useState([]),[q,y]=e.useState(!1),S=c(),w=async()=>{const e=x.map((e=>({...e,isError:!1})));if(!e.some((e=>e.subscribed!==e.isChecked)))return void l();y(!0);const t=e.filter((e=>e.subscribed!==e.isChecked)).map((async e=>{let t;try{if(t=e.subscribed?await fetch(`/api/v2/organization_subscriptions/${e.subscriptionId}.json`,{method:"DELETE",headers:{"X-CSRF-Token":o.authenticity_token}}):await fetch("/api/v2/organization_subscriptions.json",{body:JSON.stringify({organization_subscription:{user_id:o.id,organization_id:e.organizationId}}),method:"POST",headers:{"X-CSRF-Token":o.authenticity_token,"Content-Type":"application/json"}}),!t.ok)throw Error(t.statusText);e.subscribed=!e.subscribed,e.isError=!1}catch{e.isError=!0}finally{e.isChecked=e.subscribed}}));await Promise.all(t),v(e),y(!1),e.some((e=>e.isError))||(b({type:"success",message:a("guide-requests-app.organizationSubscriptionUpdated","Organization subscription updated")}),l())};e.useEffect((()=>{(async(e,t)=>{let s=[],n=`/api/v2/users/${t}/organization_subscriptions.json?page[size]=100`,r=!0;for(;r;){const e=await fetch(n);if(!e.ok)throw new Error("Failed to fetch organization subscriptions");const{organization_subscriptions:t,meta:{has_more:a},links:{next:i}}=await e.json();r=a,n=i,s=s.concat(t)}const a={};s.forEach((e=>{a[`${e.organization_id}`]=e})),v(e.map((e=>({organizationId:e.id,name:e.name,subscriptionId:a[`${e.id}`]?.id,subscribed:void 0!==a[`${e.id}`],isError:!1,isChecked:void 0!==a[`${e.id}`]}))))})(i,o.id)}),[]);const _=()=>{v(x.map((e=>({...e,isError:!1}))))};return s.jsxs(d,{onClose:l,appendToNode:S,children:[s.jsx(d.Header,{children:a("guide-requests-app.followOrganization","Follow organization")}),s.jsxs(d.Body,{children:[s.jsx(Fe,{children:a("guide-requests-app.receiveEmailUpdatesOrganizationsTickets","Receive email updates about tickets within these organizations:")}),x.some((e=>e.isError))&&s.jsxs(ze,{type:"error",children:[s.jsx(h.Title,{children:a("guide-requests-app.organizationSubscriptionCouldNotBeSaved","Organization subscription could not be saved")}),a("guide-requests-app.giveItAMomentAndTryAgain","Give it a moment and try again"),s.jsx(d.Close,{"aria-label":"Close Alert",onClick:e=>{e.preventDefault(),_()}})]}),x.slice(0,u).map((e=>s.jsxs(Ee,{children:[s.jsx(p,{"data-test-id":`checkbox_${e.organizationId}`,checked:e.isChecked,onChange:()=>{return t=e.organizationId,void v(x.map((e=>e.organizationId===t?{...e,isChecked:!e.isChecked}:e)));var t},children:s.jsx(n.Label,{children:e.name})}),e.isError&&s.jsx(n.Message,{validation:"error",children:a("guide-requests-app.organizationSubscriptionCouldNotBeSaved","Organization subscription could not be saved")})]},e.organizationId))),i.length>ke&&u<i.length&&s.jsx(j,{onClick:()=>{g(u+Ce)},children:a("guide-requests-app.showMore","Show more")})]}),s.jsxs(d.Footer,{children:[s.jsx(d.FooterItem,{children:s.jsx(m,{onClick:l,isBasic:!0,children:a("guide-requests-app.cancel","Cancel")})}),s.jsx(d.FooterItem,{children:s.jsx(m,{isPrimary:!0,onClick:()=>{_(),w()},"data-test-id":"saveOrganizationButton",children:q?s.jsx(f,{size:20,delayMS:0}):a("guide-requests-app.save","Save")})})]}),s.jsx(d.Close,{"aria-label":a("guide-requests-app.closeModal","Close modal"),onClick:l})]})}function Ie({organizations:n,user:r}){const{t:a}=t(),[i,o]=e.useState(!1);return s.jsxs(s.Fragment,{children:[s.jsx(m,{onClick:()=>{o(!0)},"data-test-id":"followOrganizationButton",children:a("guide-requests-app.followOrganization","Follow organization")}),i&&s.jsx($e,{organizations:n,user:r,onClose:()=>o(!1)})]})}const Te=768,De={mobile:`(max-width: ${Te}px)`,desktop:`(min-width: ${Te+1}px)`},Ve=e=>x`
-      @media screen and ${De.mobile} {
-        ${x(e)}
-      }
-    `,Oe=e=>x`
-      @media screen and ${De.desktop} {
-        ${x(e)}
-      }
-    `,Re=i.div`
+    @media screen and ${De.mobile} {
+      ${x(e)}
+    }
+  `,Oe=e=>x`
+    @media screen and ${De.desktop} {
+      ${x(e)}
+    }
+  `,Re=i.div`
   ${Oe`display: none;`}
 `,Ne=i.div`
   ${Ve`display: none;`}

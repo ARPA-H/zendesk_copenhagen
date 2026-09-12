@@ -167,6 +167,15 @@ const dueDateField: TicketFieldObject = {
 
 const VALID_ULID_1 = "01ARZ3NDEKTSV4RRFFQ69G5FAV";
 const VALID_ULID_2 = "01BX5ZZKBKACTAV9WEVGEMMVRZ";
+const VALID_ULID_3 = "01BX5ZZKBKACTAV9WEVGEMMVRX";
+
+// Crockford's base32 alphabet (already excludes I, L, O, U).
+const CROCKFORD_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+const distinctUlids = (count: number) =>
+  Array.from(
+    { length: count },
+    (_, i) => `01ARZ3NDEKTSV4RRFFQ69G5FA${CROCKFORD_ALPHABET[i]}`
+  );
 
 const baseFields = () => ({
   ticketFields: [
@@ -390,7 +399,7 @@ describe("multi_lookup", () => {
   });
 
   test("caps prefilled values at the field's max_selections", () => {
-    mockLocation(`?tf_1000=${Array(3).fill(VALID_ULID_1).join(",")}`);
+    mockLocation(`?tf_1000=${VALID_ULID_1},${VALID_ULID_2},${VALID_ULID_3}`);
 
     const fields = baseFields();
     const field = fieldByName(fields, "request[custom_fields][1000]");
@@ -400,11 +409,25 @@ describe("multi_lookup", () => {
 
     expect(
       fieldByName(result.current, "request[custom_fields][1000]")?.value
-    ).toEqual([VALID_ULID_1, VALID_ULID_1]);
+    ).toEqual([VALID_ULID_1, VALID_ULID_2]);
+  });
+
+  test("deduplicates values before applying max_selections, instead of letting duplicates consume the cap", () => {
+    mockLocation(`?tf_1000=${VALID_ULID_1},${VALID_ULID_1},${VALID_ULID_2}`);
+
+    const fields = baseFields();
+    const field = fieldByName(fields, "request[custom_fields][1000]");
+    if (field) field.max_selections = 2;
+
+    const { result } = renderHook(() => usePrefilledTicketFields(fields));
+
+    expect(
+      fieldByName(result.current, "request[custom_fields][1000]")?.value
+    ).toEqual([VALID_ULID_1, VALID_ULID_2]);
   });
 
   test("caps prefilled values at the default max selections when the field has none set", () => {
-    mockLocation(`?tf_1000=${Array(25).fill(VALID_ULID_1).join(",")}`);
+    mockLocation(`?tf_1000=${distinctUlids(25).join(",")}`);
 
     const { result } = renderHook(() => usePrefilledTicketFields(baseFields()));
 
