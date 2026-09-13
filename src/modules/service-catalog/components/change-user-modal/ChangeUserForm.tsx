@@ -216,8 +216,8 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
   const displayOptions = isLoadingOptions
     ? [loadingOption]
     : options.length === 0
-    ? [noResultsOption] // Show "No results" when no options (whether typed or not)
-    : options;
+      ? [noResultsOption] // Show "No results" when no options (whether typed or not)
+      : options;
 
   return (
     <>

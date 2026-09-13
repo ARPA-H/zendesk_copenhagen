@@ -1,3 +1,31 @@
+## [4.51.1](https://github.com/zendesk/copenhagen_theme/compare/v4.51.0...v4.51.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* localize the Ask AI button text ([7165316](https://github.com/zendesk/copenhagen_theme/commit/716531608d890e2d72fdf6e7f565a88a162341f3)), closes [chaseappio/ruta-40#21395](https://github.com/chaseappio/ruta-40/issues/21395)
+
+# [4.51.0](https://github.com/zendesk/copenhagen_theme/compare/v4.50.5...v4.51.0) (2026-08-31)
+
+
+### Features
+
+* sticky filters across reloads and tabs ([5cf15ea](https://github.com/zendesk/copenhagen_theme/commit/5cf15ea304b13dd964af1f7d2acab234d451d83b))
+
+## [4.50.5](https://github.com/zendesk/copenhagen_theme/compare/v4.50.4...v4.50.5) (2026-08-24)
+
+
+### Bug Fixes
+
+* cloudflare blocking lighthouse audits ([0c80608](https://github.com/zendesk/copenhagen_theme/commit/0c80608d51063af9afbaf81c191d86a888bab866))
+
+## [4.50.4](https://github.com/zendesk/copenhagen_theme/compare/v4.50.3...v4.50.4) (2026-08-18)
+
+
+### Bug Fixes
+
+* **new-request-form:** support lookup and multi_lookup field prefill via URL params ([5ff6b07](https://github.com/zendesk/copenhagen_theme/commit/5ff6b07b0368bd8d0fb22c1ed9aaef4adf931dd1))
+
 ## [4.50.3](https://github.com/zendesk/copenhagen_theme/compare/v4.50.2...v4.50.3) (2026-08-13)
 
 

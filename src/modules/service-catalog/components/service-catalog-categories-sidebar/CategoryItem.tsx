@@ -142,8 +142,8 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
   const displayName = isAllServices
     ? t("service-catalog-sidebar.all-services", "All services")
     : isUncategorized
-    ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
-    : category.name;
+      ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
+      : category.name;
 
   const handleExpandClick = (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -1,10 +1,14 @@
 import { useMemo } from "react";
 import DOMPurify from "dompurify";
 import type { TicketFieldObject } from "../ticket-fields/data-types/TicketFieldObject";
+import { DEFAULT_MAX_SELECTIONS } from "../ticket-fields/fields/MultiLookupField";
 
 const MAX_URL_LENGTH = 2048;
 const TICKET_FIELD_PREFIX = "tf_";
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+// A 26-char ULID encodes 128 bits; the first char only carries the top 2 bits
+// of that range, so it must be 0-7 (8-Z would overflow the valid ULID space).
+const ULID_REGEX = /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/i;
 
 const ALLOWED_BOOLEAN_VALUES = ["true", "false"];
 const ALLOWED_HTML_TAGS = [
@@ -56,6 +60,10 @@ function getFieldFromId(id: string, prefilledTicketFields: Fields) {
         (field) => field.name === `request[${id}]`
       );
   }
+}
+
+function isValidUlid(value: string) {
+  return ULID_REGEX.test(value);
 }
 
 function isValidDate(dateString: string) {
@@ -113,8 +121,8 @@ function getPrefilledTicketFields(fields: Fields): Fields {
             sanitizedValue === "true"
               ? "on"
               : sanitizedValue === "false"
-              ? "off"
-              : "";
+                ? "off"
+                : "";
         }
         break;
       case "due_at":
@@ -122,6 +130,21 @@ function getPrefilledTicketFields(fields: Fields): Fields {
         if (isValidDate(sanitizedValue)) {
           field.value = sanitizedValue;
         }
+        break;
+      case "lookup":
+        if (isValidUlid(sanitizedValue)) {
+          field.value = sanitizedValue;
+        }
+        break;
+      case "multi_lookup":
+        field.value = [
+          ...new Set(
+            sanitizedValue
+              .split(",")
+              .filter(isValidUlid)
+              .map((value) => value.toUpperCase())
+          ),
+        ].slice(0, field.max_selections ?? DEFAULT_MAX_SELECTIONS);
         break;
       default:
         field.value = sanitizedValue;
