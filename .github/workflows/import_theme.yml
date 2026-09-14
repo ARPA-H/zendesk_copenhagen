@@ -23,6 +23,11 @@ concurrency:
 
 jobs:
   import_theme:
+    # SECURITY: fail closed at runtime. `type: choice` constrains the web UI,
+    # but the input value must never be trusted to be one of the options when
+    # it is about to select a checkout ref and a credential set - so only the
+    # two reviewed deploy branches are accepted here.
+    if: github.event.inputs.branchName == 'main' || github.event.inputs.branchName == 'sandbox'
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
