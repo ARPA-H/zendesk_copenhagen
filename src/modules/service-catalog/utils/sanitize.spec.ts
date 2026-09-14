@@ -92,14 +92,15 @@ describe("sanitize utils", () => {
       expect(result).toContain('rel="noopener noreferrer"');
     });
 
-    it("preserves video iframes", () => {
-      const input =
-        '<iframe src="https://www.youtube.com/embed/abc123" allowfullscreen></iframe>';
-
-      const result = sanitizeHtml(input);
+    it.each([
+      "https://www.youtube.com/embed/abc123",
+      "https://www.youtube-nocookie.com/embed/abc123",
+      "https://player.vimeo.com/video/123456",
+    ])("preserves video iframes from every trusted host (%s)", (src) => {
+      const result = sanitizeHtml(`<iframe src="${src}" allowfullscreen></iframe>`);
 
       expect(result).toContain("<iframe");
-      expect(result).toContain('src="https://www.youtube.com/embed/abc123"');
+      expect(result).toContain(`src="${src}"`);
     });
 
     it("removes iframes pointing at untrusted hosts", () => {
@@ -133,11 +134,13 @@ describe("sanitize utils", () => {
       ).not.toContain("<iframe");
     });
 
-    it("strips iframe srcdoc payloads", () => {
+    it("strips srcdoc payloads while keeping a trusted iframe", () => {
       const result = sanitizeHtml(
-        '<iframe srcdoc="<script>alert(1)</script>"></iframe>'
+        '<iframe src="https://www.youtube.com/embed/abc123" srcdoc="<script>alert(1)</script>"></iframe>'
       );
 
+      expect(result).toContain("<iframe");
+      expect(result).toContain('src="https://www.youtube.com/embed/abc123"');
       expect(result).not.toContain("srcdoc");
       expect(result).not.toContain("alert(1)");
     });
