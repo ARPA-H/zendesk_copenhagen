@@ -13,8 +13,12 @@ export async function submitApprovalDecision(
     }
     const currentUser = await currentUserRequest.json();
 
+    // encodeURIComponent: the ids originate from the page URL, so encode
+    // them to keep path metacharacters out of the API route.
     const response = await fetch(
-      `/api/v2/approval_workflow_instances/${approvalWorkflowInstanceId}/approval_requests/${approvalRequestId}/decision`,
+      `/api/v2/approval_workflow_instances/${encodeURIComponent(
+        approvalWorkflowInstanceId
+      )}/approval_requests/${encodeURIComponent(approvalRequestId)}/decision`,
       {
         method: "PATCH",
         headers: {

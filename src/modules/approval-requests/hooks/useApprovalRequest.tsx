@@ -36,8 +36,12 @@ export function useApprovalRequest({
     }
 
     try {
+      // encodeURIComponent: the ids originate from the page URL, so encode
+      // them to keep path metacharacters out of the API route.
       const response = await fetch(
-        `/api/v2/approval_workflow_instances/${approvalWorkflowInstanceId}/approval_requests/${approvalRequestId}`
+        `/api/v2/approval_workflow_instances/${encodeURIComponent(
+          approvalWorkflowInstanceId
+        )}/approval_requests/${encodeURIComponent(approvalRequestId)}`
       );
 
       if (response.ok) {
