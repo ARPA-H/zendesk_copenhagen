@@ -52,7 +52,11 @@ export function TextArea({
         {required && <Span aria-hidden="true">*</Span>}
       </StyledField.Label>
       {description && (
-        <StyledField.Hint dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }} />
+        <StyledField.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <Textarea
         ref={ref}

@@ -45,7 +45,11 @@ export function CreditCard({ field, onChange }: CreditCardProps): JSX.Element {
         </DigitsHintSpan>
       </GardenField.Label>
       {description && (
-        <GardenField.Hint dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }} />
+        <GardenField.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <MediaInput
         start={<CreditCardIcon />}

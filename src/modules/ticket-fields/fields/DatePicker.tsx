@@ -82,7 +82,11 @@ export function DatePicker({
         {required && <Span aria-hidden="true">*</Span>}
       </GardenField.Label>
       {description && (
-        <GardenField.Hint dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }} />
+        <GardenField.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <GardenDatePicker
         value={date}

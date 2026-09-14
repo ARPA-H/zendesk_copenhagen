@@ -30,7 +30,11 @@ export function Input({ field, onChange }: InputProps): JSX.Element {
         {required && <Span aria-hidden="true">*</Span>}
       </GardenField.Label>
       {description && (
-        <GardenField.Hint dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }} />
+        <GardenField.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <GardenInput
         name={name}

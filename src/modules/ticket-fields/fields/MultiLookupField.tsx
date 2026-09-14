@@ -275,7 +275,11 @@ export function MultiLookupField({
         {required && <Span aria-hidden="true">*</Span>}
       </Field.Label>
       {description && (
-        <Field.Hint dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }} />
+        <Field.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <Combobox
         ref={wrapperRef}

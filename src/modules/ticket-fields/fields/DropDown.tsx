@@ -30,7 +30,11 @@ export function DropDown({ field, onChange }: DropDownProps): JSX.Element {
         {required && <Span aria-hidden="true">*</Span>}
       </Field.Label>
       {description && (
-        <Field.Hint dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }} />
+        <Field.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <Combobox
         ref={wrapperRef}
