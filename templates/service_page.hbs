@@ -428,9 +428,12 @@
       return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
     function stripHtml(str) {
-      var div = document.createElement('div');
-      div.innerHTML = str || '';
-      return (div.textContent || div.innerText || '').trim();
+      // Inert DOMParser parse: detached-element innerHTML still fires
+      // handlers like <img onerror>, and this receives raw article body
+      // HTML from the search API, so it must never touch a live element.
+      if (!str) return '';
+      var doc = new DOMParser().parseFromString(String(str), 'text/html');
+      return ((doc.body && doc.body.textContent) || '').trim();
     }
     function truncate(str, max) {
       var text = String(str || '').trim();

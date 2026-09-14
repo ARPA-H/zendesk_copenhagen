@@ -64,10 +64,15 @@ function esc(s) {
     .replace(/'/g, "&#39;");
 }
 
-function stripTags(s) {
-  var d = document.createElement("div");
-  d.innerHTML = s || "";
-  return (d.textContent || "").trim();
+export function stripTags(s) {
+  // Parse with an inert DOMParser document instead of assigning to a live
+  // element's innerHTML: even on a detached element, innerHTML fetches
+  // resources and fires handlers (e.g. <img src=x onerror=...>), so
+  // untrusted API HTML must never be reinterpreted as live markup. Same
+  // idiom as htmlToText in src/modules/service-catalog/utils/sanitize.ts.
+  if (!s) return "";
+  var doc = new DOMParser().parseFromString(String(s), "text/html");
+  return ((doc.body && doc.body.textContent) || "").trim();
 }
 
 /**
