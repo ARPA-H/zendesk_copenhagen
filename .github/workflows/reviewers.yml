@@ -1,5 +1,19 @@
 name: Enforce Required Reviewers
 
+# SECURITY NOTE: this job intentionally performs NO checkout. The reviewer
+# allowlist is fetched from the PR *base* branch via the API, so a pull
+# request can never ship its own .github/allowed-reviewers.txt to satisfy the
+# gate, and the file content is handled as data (never interpolated into the
+# script with ${{ }}).
+#
+# Residual risk (cannot be fixed inside this file): a plain `pull_request`
+# workflow definition executes from the PR merge ref, so a collaborator PR
+# could still rewrite this workflow itself. The check is only trustworthy if
+# a branch-protection Ruleset on `main` (a) requires the "Authorized Reviewer
+# Check" from this repository's GitHub App specifically and (b) restricts who
+# can approve/merge. Prefer GitHub's native required-reviewers/CODEOWNERS
+# enforcement where possible.
+
 permissions:
   contents: read
 
@@ -21,56 +35,64 @@ jobs:
         client-id: ${{ vars.GH_APP_ID }}
         private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        token: ${{ steps.app-token.outputs.token }}
-      
-    - name: Read allowed reviewers
-      id: reviewers
-      run: |
-        # we might move this to a .github/allowed-reviewers.txt file
-        if [ -f .github/allowed-reviewers.txt ]; then
-          REVIEWERS=$(cat .github/allowed-reviewers.txt | tr '\n' ' ')
-          echo "reviewers=$REVIEWERS" >> $GITHUB_OUTPUT
-        else
-          echo "reviewers=ksavilaNIH petersonjdNIH" >> $GITHUB_OUTPUT
-        fi
-        
     - name: Check if approved by authorized reviewer
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{ steps.app-token.outputs.token }}
         script: |
-          const allowedReviewers = '${{ steps.reviewers.outputs.reviewers }}'.split(' ').filter(r => r);
-          
+          const FALLBACK_REVIEWERS = ["ksavilaNIH", "petersonjdNIH"];
+          const ALLOWLIST_PATH = ".github/allowed-reviewers.txt";
+
+          // Read the allowlist from the base branch of the PR (the protected
+          // target), never from the PR head, so PR authors cannot edit it.
+          let allowedReviewers = FALLBACK_REVIEWERS;
+          try {
+            const { data } = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: ALLOWLIST_PATH,
+              ref: context.payload.pull_request.base.ref,
+            });
+            const content = Buffer.from(data.content, "base64").toString("utf8");
+            const parsed = content.split(/\s+/).filter(Boolean);
+            if (parsed.length > 0) {
+              allowedReviewers = parsed;
+            }
+          } catch (error) {
+            // Missing allowlist file falls back to the hardcoded list above.
+            if (error.status !== 404) {
+              throw error;
+            }
+          }
+
           const reviews = await github.rest.pulls.listReviews({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: context.issue.number
+            pull_number: context.issue.number,
           });
-          
-          const hasValidApproval = reviews.data.some(review => 
-            review.state === 'APPROVED' && 
-            allowedReviewers.includes(review.user.login)
+
+          const hasValidApproval = reviews.data.some(
+            (review) =>
+              review.state === "APPROVED" &&
+              allowedReviewers.includes(review.user.login)
           );
-          
+
           // Create a check run
-          const checkName = 'Authorized Reviewer Check';
-          const conclusion = hasValidApproval ? 'success' : 'failure';
+          const checkName = "Authorized Reviewer Check";
+          const conclusion = hasValidApproval ? "success" : "failure";
           const output = {
             title: checkName,
-            summary: hasValidApproval 
-              ? '✅ Approved by authorized reviewer' 
-              : '❌ Requires approval from: ' + allowedReviewers.join(', ')
+            summary: hasValidApproval
+              ? "✅ Approved by authorized reviewer"
+              : "❌ Requires approval from: " + allowedReviewers.join(", "),
           };
-          
+
           await github.rest.checks.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             name: checkName,
             head_sha: context.payload.pull_request?.head.sha || context.sha,
-            status: 'completed',
+            status: "completed",
             conclusion: conclusion,
-            output: output
+            output: output,
           });
