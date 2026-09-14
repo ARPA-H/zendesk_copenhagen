@@ -16,7 +16,10 @@ LOG=/tmp/devcontainer-tool-updates.log
 {
   echo "=== $(date -u +%FT%TZ) tool refresh ==="
   if [ -n "${COPILOT_CLI_VERSION:-}" ]; then
-    npm install -g "@github/copilot@${COPILOT_CLI_VERSION}"
+    # --ignore-scripts: the CLI ships platform binaries as optionalDependencies
+    # (no lifecycle scripts required to function), so package install scripts
+    # never execute under the Codespace's credentials.
+    npm install -g --ignore-scripts "@github/copilot@${COPILOT_CLI_VERSION}"
   else
     echo "COPILOT_CLI_VERSION unset; skipping Copilot CLI install"
   fi
