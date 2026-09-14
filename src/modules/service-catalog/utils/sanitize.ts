@@ -1,8 +1,8 @@
 import DOMPurify from "dompurify";
 
 /**
- * Hosts an embedded `<iframe>` may load from, beyond the help center's own
- * origin. Item descriptions embed videos, so the known video players are
+ * Hosts that an embedded `<iframe>` may load from, beyond the help center's
+ * own origin. Item descriptions embed videos, so the known video players are
  * allowed; anything else could frame an arbitrary external site inside the
  * trusted help-center chrome (a credential-phishing frame). Extend this list
  * deliberately when a new embed provider is actually needed.
@@ -19,10 +19,11 @@ function isTrustedIframeSrc(src: string | null): boolean {
   }
   try {
     const url = new URL(src, window.location.origin);
-    // Same-origin embeds inherit the page protocol (HSTS enforces https in
-    // production); external embeds must be https from a trusted host.
+    // Full-origin comparison for same-origin embeds (a hostname-only check
+    // would accept scheme or port mismatches); external embeds must be https
+    // from a trusted host.
     return (
-      url.hostname === window.location.hostname ||
+      url.origin === window.location.origin ||
       (url.protocol === "https:" && TRUSTED_IFRAME_HOSTS.includes(url.hostname))
     );
   } catch {

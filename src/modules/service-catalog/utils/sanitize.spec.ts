@@ -125,6 +125,14 @@ describe("sanitize utils", () => {
       expect(result).toContain('src="/hc/embed/thing"');
     });
 
+    it("removes same-host iframes with a different port or scheme", () => {
+      const host = window.location.hostname;
+
+      expect(
+        sanitizeHtml(`<iframe src="https://${host}:8443/x"></iframe>`)
+      ).not.toContain("<iframe");
+    });
+
     it("strips iframe srcdoc payloads", () => {
       const result = sanitizeHtml(
         '<iframe srcdoc="<script>alert(1)</script>"></iframe>'
