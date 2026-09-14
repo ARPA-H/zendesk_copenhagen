@@ -102,6 +102,29 @@ describe("sanitize utils", () => {
       expect(result).toContain('src="https://www.youtube.com/embed/abc123"');
     });
 
+    it("removes iframes pointing at untrusted hosts", () => {
+      const result = sanitizeHtml(
+        '<p>keep me</p><iframe src="https://evil.example.com/phish"></iframe>'
+      );
+
+      expect(result).toContain("<p>keep me</p>");
+      expect(result).not.toContain("<iframe");
+    });
+
+    it("removes iframes with non-https or missing src", () => {
+      expect(sanitizeHtml('<iframe src="http://www.youtube.com/embed/x"></iframe>')).not.toContain(
+        "<iframe"
+      );
+      expect(sanitizeHtml("<iframe></iframe>")).not.toContain("<iframe");
+    });
+
+    it("preserves same-origin iframes", () => {
+      const result = sanitizeHtml('<iframe src="/hc/embed/thing"></iframe>');
+
+      expect(result).toContain("<iframe");
+      expect(result).toContain('src="/hc/embed/thing"');
+    });
+
     it("strips iframe srcdoc payloads", () => {
       const result = sanitizeHtml(
         '<iframe srcdoc="<script>alert(1)</script>"></iframe>'
