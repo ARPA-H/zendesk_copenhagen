@@ -1,3 +1,5 @@
+import { safePathSegment } from "./safePathSegment";
+
 export type ApprovalDecision = "approved" | "rejected";
 
 export async function submitApprovalDecision(
@@ -13,12 +15,13 @@ export async function submitApprovalDecision(
     }
     const currentUser = await currentUserRequest.json();
 
-    // encodeURIComponent: the ids originate from the page URL, so encode
-    // them to keep path metacharacters out of the API route.
+    // The ids originate from the page URL; safePathSegment throws on
+    // anything but a plain opaque id token (see its doc for why
+    // encodeURIComponent alone would not stop dot-segment smuggling).
     const response = await fetch(
-      `/api/v2/approval_workflow_instances/${encodeURIComponent(
+      `/api/v2/approval_workflow_instances/${safePathSegment(
         approvalWorkflowInstanceId
-      )}/approval_requests/${encodeURIComponent(approvalRequestId)}/decision`,
+      )}/approval_requests/${safePathSegment(approvalRequestId)}/decision`,
       {
         method: "PATCH",
         headers: {
