@@ -21,10 +21,14 @@ function isTrustedIframeSrc(src: string | null): boolean {
     const url = new URL(src, window.location.origin);
     // Full-origin comparison for same-origin embeds (a hostname-only check
     // would accept scheme or port mismatches); external embeds must be https
-    // from a trusted host.
+    // on the default port (url.port is "" when the port is the scheme
+    // default) from a trusted host - a non-default port on a trusted host
+    // is a different origin/service.
     return (
       url.origin === window.location.origin ||
-      (url.protocol === "https:" && TRUSTED_IFRAME_HOSTS.includes(url.hostname))
+      (url.protocol === "https:" &&
+        url.port === "" &&
+        TRUSTED_IFRAME_HOSTS.includes(url.hostname))
     );
   } catch {
     return false;
