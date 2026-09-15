@@ -105,6 +105,25 @@ describe("sanitize utils", () => {
       expect(result).toContain(`src="${src}"`);
     });
 
+    it("removes iframes with a whitespace-only src", () => {
+      expect(sanitizeHtml('<iframe src="   "></iframe>')).not.toContain(
+        "<iframe"
+      );
+    });
+
+    it("removes trusted-host iframes outside the provider's embed path", () => {
+      expect(
+        sanitizeHtml(
+          '<iframe src="https://www.youtube.com/redirect?q=https%3A%2F%2Fevil.example"></iframe>'
+        )
+      ).not.toContain("<iframe");
+      expect(
+        sanitizeHtml(
+          '<iframe src="https://player.vimeo.com/anything"></iframe>'
+        )
+      ).not.toContain("<iframe");
+    });
+
     it("removes trusted-host iframes on a non-default port", () => {
       expect(
         sanitizeHtml(
