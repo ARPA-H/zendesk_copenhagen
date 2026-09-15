@@ -5,7 +5,10 @@
  * leaves `.` unescaped, so a value like ".." would survive encoding and be
  * normalized away by the browser, shifting the request to another route.
  */
-const SAFE_PATH_SEGMENT = /^[A-Za-z0-9_-]+$/;
+// Deliberately a negated character class with no anchors: a `$`-anchored
+// positive match would also accept a trailing line terminator ("abc\n"),
+// because `$` matches before a final newline in JavaScript regexes.
+const UNSAFE_PATH_SEGMENT_CHAR = /[^A-Za-z0-9_-]/;
 
 /**
  * Returns `value` unchanged when it is a plain opaque id token, otherwise
@@ -13,7 +16,7 @@ const SAFE_PATH_SEGMENT = /^[A-Za-z0-9_-]+$/;
  * (e.g. ids extracted from `window.location`).
  */
 export function safePathSegment(value: string): string {
-  if (!SAFE_PATH_SEGMENT.test(value)) {
+  if (value.length === 0 || UNSAFE_PATH_SEGMENT_CHAR.test(value)) {
     throw new Error(`Refusing to build an API path from unsafe id: ${value}`);
   }
   return value;
