@@ -1,3 +1,5 @@
+import { safePathSegment } from "./safePathSegment";
+
 export type ApprovalDecision = "approved" | "rejected";
 
 export async function submitApprovalDecision(
@@ -6,6 +8,13 @@ export async function submitApprovalDecision(
   decision: ApprovalDecision,
   decisionNote: string
 ) {
+  // Validate before any network activity: the ids originate from the page
+  // URL, and safePathSegment throws on anything but a plain opaque id token
+  // (see its doc for why encodeURIComponent alone would not stop dot-segment
+  // smuggling).
+  const safeWorkflowInstanceId = safePathSegment(approvalWorkflowInstanceId);
+  const safeRequestId = safePathSegment(approvalRequestId);
+
   try {
     const currentUserRequest = await fetch("/api/v2/users/me.json");
     if (!currentUserRequest.ok) {
@@ -14,7 +23,9 @@ export async function submitApprovalDecision(
     const currentUser = await currentUserRequest.json();
 
     const response = await fetch(
-      `/api/v2/approval_workflow_instances/${approvalWorkflowInstanceId}/approval_requests/${approvalRequestId}/decision`,
+      `/api/v2/approval_workflow_instances/${encodeURIComponent(
+        safeWorkflowInstanceId
+      )}/approval_requests/${encodeURIComponent(safeRequestId)}/decision`,
       {
         method: "PATCH",
         headers: {

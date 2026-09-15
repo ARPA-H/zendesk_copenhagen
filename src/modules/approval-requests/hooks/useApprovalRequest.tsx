@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ApprovalRequest } from "../types";
+import { safePathSegment } from "../safePathSegment";
 
 export function useApprovalRequest({
   approvalWorkflowInstanceId,
@@ -36,8 +37,15 @@ export function useApprovalRequest({
     }
 
     try {
+      // The ids originate from the page URL; safePathSegment throws on
+      // anything but a plain opaque id token (see its doc for why
+      // encodeURIComponent alone would not stop dot-segment smuggling).
       const response = await fetch(
-        `/api/v2/approval_workflow_instances/${approvalWorkflowInstanceId}/approval_requests/${approvalRequestId}`
+        `/api/v2/approval_workflow_instances/${encodeURIComponent(
+          safePathSegment(approvalWorkflowInstanceId)
+        )}/approval_requests/${encodeURIComponent(
+          safePathSegment(approvalRequestId)
+        )}`
       );
 
       if (response.ok) {
