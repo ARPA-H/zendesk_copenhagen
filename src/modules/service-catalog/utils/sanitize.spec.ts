@@ -97,7 +97,9 @@ describe("sanitize utils", () => {
       "https://www.youtube-nocookie.com/embed/abc123",
       "https://player.vimeo.com/video/123456",
     ])("preserves video iframes from every trusted host (%s)", (src) => {
-      const result = sanitizeHtml(`<iframe src="${src}" allowfullscreen></iframe>`);
+      const result = sanitizeHtml(
+        `<iframe src="${src}" allowfullscreen></iframe>`
+      );
 
       expect(result).toContain("<iframe");
       expect(result).toContain(`src="${src}"`);
@@ -121,9 +123,9 @@ describe("sanitize utils", () => {
     });
 
     it("removes iframes with non-https or missing src", () => {
-      expect(sanitizeHtml('<iframe src="http://www.youtube.com/embed/x"></iframe>')).not.toContain(
-        "<iframe"
-      );
+      expect(
+        sanitizeHtml('<iframe src="http://www.youtube.com/embed/x"></iframe>')
+      ).not.toContain("<iframe");
       expect(sanitizeHtml("<iframe></iframe>")).not.toContain("<iframe");
     });
 
