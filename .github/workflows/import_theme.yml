@@ -26,8 +26,13 @@ jobs:
     # SECURITY: fail closed at runtime. `type: choice` constrains the web UI,
     # but the input value must never be trusted to be one of the options when
     # it is about to select a checkout ref and a credential set - so only the
-    # two reviewed deploy branches are accepted here.
-    if: github.event.inputs.branchName == 'main' || github.event.inputs.branchName == 'sandbox'
+    # two reviewed deploy branches are accepted. The dispatch ref (the branch
+    # whose copy of this workflow definition runs) is restricted to the same
+    # protected branches, so a modified copy of this YAML on an unprotected
+    # branch never executes with the Zendesk secrets.
+    if: >-
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox') &&
+      (github.event.inputs.branchName == 'main' || github.event.inputs.branchName == 'sandbox')
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
