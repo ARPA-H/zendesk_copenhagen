@@ -33,9 +33,9 @@ describe("submitApprovalDecision", () => {
     ["dot segment", "..", "1234"],
     ["path separator", "workflow123", "1234/decision"],
     ["percent encoding", "workflow%2F123", "1234"],
-    ["empty id", "", "1234"],
+    ["missing value", "", "1234"],
   ])(
-    "rejects and issues no request when an id contains a %s",
+    "rejects and issues no request for an id with a %s",
     async (_label, workflowId, requestId) => {
       await expect(
         submitApprovalDecision(workflowId, requestId, "approved", "note")
