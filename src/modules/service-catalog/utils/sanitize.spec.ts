@@ -103,6 +103,14 @@ describe("sanitize utils", () => {
       expect(result).toContain(`src="${src}"`);
     });
 
+    it("removes trusted-host iframes on a non-default port", () => {
+      expect(
+        sanitizeHtml(
+          '<iframe src="https://www.youtube.com:8443/embed/abc123"></iframe>'
+        )
+      ).not.toContain("<iframe");
+    });
+
     it("removes iframes pointing at untrusted hosts", () => {
       const result = sanitizeHtml(
         '<p>keep me</p><iframe src="https://evil.example.com/phish"></iframe>'
