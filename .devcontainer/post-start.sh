@@ -23,13 +23,16 @@ LOG=/tmp/devcontainer-tool-updates.log
   COPILOT_PIN=$(sed -n 's/.*"COPILOT_CLI_VERSION": *"\([^"]*\)".*/\1/p' \
     "$(dirname "${BASH_SOURCE[0]}")/devcontainer.json" | head -n 1)
   COPILOT_PIN="${COPILOT_PIN:-${COPILOT_CLI_VERSION:-}}"
-  if [ -n "${COPILOT_PIN}" ]; then
+  # Fail closed unless the pin is an exact semver version: a config typo or a
+  # dist-tag ("latest") or range ("^1.0.0") would silently reintroduce the
+  # mutable resolution this script exists to prevent.
+  if [[ "${COPILOT_PIN}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     # --ignore-scripts: the CLI ships platform binaries as optionalDependencies
     # (no lifecycle scripts required to function), so package install scripts
     # never execute under the Codespace's credentials.
     npm install -g --ignore-scripts "@github/copilot@${COPILOT_PIN}"
   else
-    echo "No Copilot CLI pin found in devcontainer.json or env; skipping install"
+    echo "Refusing to install @github/copilot: pin '${COPILOT_PIN}' is not an exact version"
   fi
   command -v gh >/dev/null 2>&1 && gh extension upgrade --all
 } >>"$LOG" 2>&1 &
