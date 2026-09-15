@@ -129,8 +129,16 @@ describe("sanitize utils", () => {
     it("removes same-host iframes with a different port or scheme", () => {
       const host = window.location.hostname;
 
+      // Different port (and scheme) on the same host.
       expect(
         sanitizeHtml(`<iframe src="https://${host}:8443/x"></iframe>`)
+      ).not.toContain("<iframe");
+
+      // Same default port, opposite scheme only (jsdom serves http://localhost,
+      // so https://<host>/ differs from window.location.origin purely by
+      // scheme) - catches a hostname+port-only implementation.
+      expect(
+        sanitizeHtml(`<iframe src="https://${host}/x"></iframe>`)
       ).not.toContain("<iframe");
     });
 
