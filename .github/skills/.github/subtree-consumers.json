@@ -118,5 +118,10 @@
     "repo": "ARPA-H/sentinel-connectors-docusign",
     "prefix": ".github/skills",
     "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/sentinel-connectors-github",
+    "prefix": ".github/skills",
+    "branch": "main"
   }
 ]
