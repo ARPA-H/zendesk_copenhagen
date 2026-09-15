@@ -28,6 +28,12 @@ describe("safePathSegment", () => {
     expect(() => safePathSegment("a#b")).toThrow();
   });
 
+  it("rejects trailing line terminators ($-anchor pitfall)", () => {
+    expect(() => safePathSegment("workflow123\n")).toThrow();
+    expect(() => safePathSegment("workflow123\r\n")).toThrow();
+    expect(() => safePathSegment("\n")).toThrow();
+  });
+
   it("rejects the empty string", () => {
     expect(() => safePathSegment("")).toThrow();
   });
