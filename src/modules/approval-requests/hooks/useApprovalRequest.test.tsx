@@ -44,7 +44,7 @@ describe("useApprovalRequest", () => {
     ["path separator", "workflow123", "1234/decision"],
     ["percent encoding", "workflow%2F123", "1234"],
   ])(
-    "issues no API request when an id contains a %s",
+    "issues no API request for an id with a %s",
     async (_label, workflowId, requestId) => {
       const { result } = renderHook(() =>
         useApprovalRequest({
