@@ -41,9 +41,11 @@ export function useApprovalRequest({
       // anything but a plain opaque id token (see its doc for why
       // encodeURIComponent alone would not stop dot-segment smuggling).
       const response = await fetch(
-        `/api/v2/approval_workflow_instances/${safePathSegment(
-          approvalWorkflowInstanceId
-        )}/approval_requests/${safePathSegment(approvalRequestId)}`
+        `/api/v2/approval_workflow_instances/${encodeURIComponent(
+          safePathSegment(approvalWorkflowInstanceId)
+        )}/approval_requests/${encodeURIComponent(
+          safePathSegment(approvalRequestId)
+        )}`
       );
 
       if (response.ok) {

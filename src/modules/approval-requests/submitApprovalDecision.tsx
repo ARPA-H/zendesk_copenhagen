@@ -23,7 +23,9 @@ export async function submitApprovalDecision(
     const currentUser = await currentUserRequest.json();
 
     const response = await fetch(
-      `/api/v2/approval_workflow_instances/${safeWorkflowInstanceId}/approval_requests/${safeRequestId}/decision`,
+      `/api/v2/approval_workflow_instances/${encodeURIComponent(
+        safeWorkflowInstanceId
+      )}/approval_requests/${encodeURIComponent(safeRequestId)}/decision`,
       {
         method: "PATCH",
         headers: {
