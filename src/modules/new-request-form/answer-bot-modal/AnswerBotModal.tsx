@@ -177,9 +177,9 @@ export function AnswerBotModal({
                 <Accordion.Label>{title}</Accordion.Label>
               </Accordion.Header>
               <Accordion.Panel>
-                {/* Defense in depth: snippets are produced server-side from
-                    article content, but no client-side check guaranteed their
-                    safety until now. Sanitize before the
+                {/* Defense in depth: snippets are produced server-side
+                    from article content, and this client-side sanitization
+                    guarantees script-bearing markup never reaches the
                     dangerouslySetInnerHTML sink. */}
                 <Paragraph
                   dangerouslySetInnerHTML={{
