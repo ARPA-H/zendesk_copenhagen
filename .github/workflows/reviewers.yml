@@ -19,6 +19,12 @@ name: Enforce Required Reviewers
 #   - a half-hourly schedule re-evaluates all open PRs, so dismissed or
 #     superseded approvals converge to failure without manual action
 #
+# Known residual: check runs are per-commit, so a head force-pushed BACK to
+# a previously green SHA briefly re-exposes that old result until the
+# synchronize-triggered sweep replaces it (a seconds-scale window). Enable
+# "dismiss stale pull request approvals" and "require approval of the most
+# recent reviewable push" in the Ruleset to close it natively.
+#
 # Companion repo settings (required for the check to be meaningful): a
 # branch-protection Ruleset on `main` that requires the "Authorized Reviewer
 # Check" from this repository's GitHub App and restricts who can merge.
@@ -289,7 +295,7 @@ jobs:
             const summary = aggregate.allApproved
               ? "✅ Approved by authorized reviewer" + sharedSuffix
               : aggregate.anyError
-                ? "❌ Evaluation could not complete (transient API error); failing closed until the next sweep succeeds"
+                ? "❌ Evaluation could not complete (API error - see the workflow run log); failing closed until a sweep succeeds"
                 : policyReadFailed
                   ? "❌ Reviewer allowlist could not be read; failing closed until policy is readable"
                   : allowedReviewers.length === 0
@@ -300,15 +306,19 @@ jobs:
                       " (comment /recheck after approving to refresh)";
 
             try {
-              await github.rest.checks.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                name: CHECK_NAME,
-                head_sha: headSha,
-                status: "completed",
-                conclusion: conclusion,
-                output: { title: CHECK_NAME, summary: summary },
-              });
+              // Retried like every other API call: a dropped write here could
+              // leave an older success standing on this head.
+              await withRetries(`checks.create ${headSha.slice(0, 7)}`, () =>
+                github.rest.checks.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: CHECK_NAME,
+                  head_sha: headSha,
+                  status: "completed",
+                  conclusion: conclusion,
+                  output: { title: CHECK_NAME, summary: summary },
+                })
+              );
               core.info(
                 `${headSha.slice(0, 7)} (PR ${aggregate.prNumbers.join(", ")}): ${conclusion}`
               );
