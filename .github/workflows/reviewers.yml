@@ -29,7 +29,10 @@ permissions:
 
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened, ready_for_review]
+    # `edited` covers base-branch changes: a PR retargeted away from main and
+    # back must be re-evaluated (the script skips non-main bases, so the
+    # extra events are cheap no-ops).
+    types: [opened, synchronize, reopened, ready_for_review, edited]
     branches:
       - main
   issue_comment:
@@ -38,15 +41,14 @@ on:
     branches:
       - main
     paths:
+      # Policy change: re-evaluate all open PRs.
       - '.github/allowed-reviewers.txt'
+      # Gate change (including the rollout of this very fix): sweep
+      # immediately so checks minted by the previous gate version are
+      # recomputed instead of lingering until the next scheduled run.
+      - '.github/workflows/reviewers.yml'
   schedule:
     - cron: '23,53 * * * *'
-
-# Bound concurrent privileged runs: one active evaluation per PR (or per
-# fleet-wide sweep), newest wins. Limits comment-triggered amplification.
-concurrency:
-  group: reviewer-check-${{ github.event.pull_request.number || github.event.issue.number || github.event_name }}
-  cancel-in-progress: true
 
 jobs:
   launch-reviewer-check:
@@ -55,6 +57,15 @@ jobs:
     # author must additionally be on the allowlist, verified in-script; the
     # body is only ever compared for equality, never interpolated).
     if: github.event_name != 'issue_comment' || (github.event.issue.pull_request && github.event.comment.body == '/recheck')
+    # Serialize ALL check writers in one group, at the JOB level so runs
+    # filtered out by the `if` above (e.g. arbitrary comments) never enter
+    # the group and cannot displace privileged runs. cancel-in-progress is
+    # false: an in-flight evaluation always finishes, later runs queue (the
+    # newest queued run subsumes displaced ones since every run re-reads all
+    # state), so two writers can never publish checks out of order.
+    concurrency:
+      group: reviewer-check
+      cancel-in-progress: false
     steps:
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-token
@@ -82,6 +93,7 @@ jobs:
           // Read the allowlist from the protected base branch, never from a
           // PR head, so PR authors cannot edit it.
           let allowedReviewers = FALLBACK_REVIEWERS;
+          let policyReadFailed = false;
           try {
             const { data } = await github.rest.repos.getContent({
               owner: context.repo.owner,
@@ -96,8 +108,14 @@ jobs:
             allowedReviewers = content.split(/\s+/).filter(Boolean);
           } catch (error) {
             // Only a missing allowlist file falls back to the hardcoded list.
+            // Any other read failure fails CLOSED: evaluate with an empty
+            // allowlist so a failure check replaces any previously green
+            // result, instead of aborting and leaving a stale success
+            // satisfying branch protection.
             if (error.status !== 404) {
-              throw error;
+              core.warning(`Allowlist read failed (${error.status}); failing closed.`);
+              policyReadFailed = true;
+              allowedReviewers = [];
             }
           }
 
@@ -109,10 +127,12 @@ jobs:
             prNumbers = [context.payload.pull_request.number];
           } else if (context.eventName === "issue_comment") {
             // Only allowlisted reviewers may trigger a privileged
-            // re-evaluation from a comment.
+            // re-evaluation from a comment; with unreadable policy the
+            // commenter cannot be verified, so comment triggers are ignored
+            // (trusted-source events below still publish fail-closed checks).
             const commenter = context.payload.comment?.user?.login;
-            if (!commenter || !allowedReviewers.includes(commenter)) {
-              core.info("Commenter is not an allowlisted reviewer; skipping.");
+            if (policyReadFailed || !commenter || !allowedReviewers.includes(commenter)) {
+              core.info("Commenter not verifiable against the allowlist; skipping.");
               return;
             }
             prNumbers = [context.payload.issue.number];
@@ -203,9 +223,11 @@ jobs:
                 title: checkName,
                 summary: hasValidApproval
                   ? "✅ Approved by authorized reviewer"
-                  : "❌ Requires approval of the current head commit from: " +
-                    allowedReviewers.join(", ") +
-                    " (an allowlisted reviewer can comment /recheck to refresh)",
+                  : policyReadFailed
+                    ? "❌ Reviewer allowlist could not be read; failing closed until policy is readable"
+                    : "❌ Requires approval of the current head commit from: " +
+                      allowedReviewers.join(", ") +
+                      " (an allowlisted reviewer can comment /recheck to refresh)",
               },
             });
             core.info(`PR #${prNumber}: ${conclusion}`);
