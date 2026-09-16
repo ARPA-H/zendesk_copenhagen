@@ -1,3 +1,5 @@
+import DOMPurify from "dompurify";
+
 import { sanitizeDescription } from "./sanitizeDescription";
 
 describe("sanitizeDescription", () => {
@@ -40,6 +42,20 @@ describe("sanitizeDescription", () => {
     const input = "<em>same description</em>";
 
     expect(sanitizeDescription(input)).toBe(sanitizeDescription(input));
+  });
+
+  it("serves repeated input from the cache without re-invoking DOMPurify", () => {
+    const spy = jest.spyOn(DOMPurify, "sanitize");
+    const input = "<em>unique cache-spy description</em>";
+
+    const first = sanitizeDescription(input);
+    const callsAfterFirstRender = spy.mock.calls.length;
+    const second = sanitizeDescription(input);
+
+    expect(second).toBe(first);
+    expect(spy.mock.calls.length).toBe(callsAfterFirstRender);
+
+    spy.mockRestore();
   });
 
   it("handles the empty string", () => {
