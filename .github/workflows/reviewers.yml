@@ -11,8 +11,10 @@ name: Enforce Required Reviewers
 # identifiers, which is what makes pull_request_target safe to use here.
 #
 # Re-evaluation paths (pull_request_target has no review activity types):
-#   - an allowlisted reviewer comments exactly "/recheck" on the PR
-#     (immediate; author is verified against the allowlist in-script)
+#   - anyone comments exactly "/recheck" on a PR (immediate; safe because
+#     every run performs the same deterministic full sweep - trigger
+#     identity grants no privilege, and volume is bounded by the exact-body
+#     filter plus the serialized single-slot writer queue)
 #   - a push to main that changes the allowlist re-evaluates all open PRs
 #   - a half-hourly schedule re-evaluates all open PRs, so dismissed or
 #     superseded approvals converge to failure without manual action
@@ -53,9 +55,12 @@ on:
 jobs:
   launch-reviewer-check:
     runs-on: ubuntu-latest
-    # Comments: only PR comments spelling exactly "/recheck" proceed (the
-    # author must additionally be on the allowlist, verified in-script; the
-    # body is only ever compared for equality, never interpolated).
+    # Comments: only PR comments spelling exactly "/recheck" proceed. The
+    # body is only ever compared for equality, never interpolated, and the
+    # commenter's identity is deliberately NOT a privilege: every run performs
+    # the same deterministic full sweep, so who triggered it cannot change
+    # what is written, and rejected-then-skipped runs never sit in the writer
+    # queue where they would displace a pending sweep without doing its work.
     if: github.event_name != 'issue_comment' || (github.event.issue.pull_request && github.event.comment.body == '/recheck')
     # Serialize ALL check writers in one group, at the JOB level so runs
     # filtered out by the `if` above (e.g. arbitrary comments) never enter
@@ -119,19 +124,6 @@ jobs:
             }
           }
 
-          // Gate comment-triggered runs: only allowlisted reviewers may
-          // trigger a privileged re-evaluation from a comment; with
-          // unreadable policy the commenter cannot be verified, so comment
-          // triggers are ignored (trusted-source events still run and publish
-          // fail-closed checks).
-          if (context.eventName === "issue_comment") {
-            const commenter = context.payload.comment?.user?.login;
-            if (policyReadFailed || !commenter || !allowedReviewers.includes(commenter)) {
-              core.info("Commenter not verifiable against the allowlist; skipping.");
-              return;
-            }
-          }
-
           // EVERY run evaluates EVERY open PR targeting the protected base.
           // Runs in the shared concurrency group displace each other's single
           // pending slot, so per-event scoping could drop a queued sweep;
@@ -150,10 +142,20 @@ jobs:
           const STATE_CHANGING = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
           const checkName = "Authorized Reviewer Check";
 
+          let sweepErrors = 0;
           for (const prNumber of prNumbers) {
             if (!Number.isInteger(prNumber)) {
               continue;
             }
+
+            // Per-PR fail-closed error handling: a transient API error on one
+            // PR must not abort the sweep for the rest, and where the head is
+            // known a failure check replaces any previously green result so
+            // branch protection never keeps trusting a check the gate could
+            // not recompute. The run is marked failed at the end so the error
+            // is visible and the next sweep retries.
+            let headShaForFailClose = null;
+            try {
 
             // Fetch the PR from the API so the base ref and head SHA are
             // server-provided values, not event-payload values.
@@ -162,6 +164,7 @@ jobs:
               repo: context.repo.repo,
               pull_number: prNumber,
             });
+            headShaForFailClose = pr.head.sha;
 
             if (pr.base.ref !== PROTECTED_BASE) {
               core.info(`PR #${prNumber} targets ${pr.base.ref}; skipping.`);
@@ -222,10 +225,42 @@ jobs:
                   ? "✅ Approved by authorized reviewer"
                   : policyReadFailed
                     ? "❌ Reviewer allowlist could not be read; failing closed until policy is readable"
-                    : "❌ Requires approval of the current head commit from: " +
-                      allowedReviewers.join(", ") +
-                      " (an allowlisted reviewer can comment /recheck to refresh)",
+                    : allowedReviewers.length === 0
+                      ? "❌ The reviewer allowlist is intentionally empty: current policy permits no one to approve"
+                      : "❌ Requires approval of the current head commit from: " +
+                        allowedReviewers.join(", ") +
+                        " (comment /recheck after approving to refresh)",
               },
             });
             core.info(`PR #${prNumber}: ${conclusion}`);
+
+            } catch (error) {
+              sweepErrors += 1;
+              core.warning(`PR #${prNumber}: evaluation failed: ${error.message}`);
+              if (headShaForFailClose) {
+                try {
+                  await github.rest.checks.create({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: checkName,
+                    head_sha: headShaForFailClose,
+                    status: "completed",
+                    conclusion: "failure",
+                    output: {
+                      title: checkName,
+                      summary:
+                        "❌ Evaluation could not complete (transient API error); failing closed until the next sweep succeeds",
+                    },
+                  });
+                } catch (failCloseError) {
+                  core.warning(
+                    `PR #${prNumber}: fail-closed check could not be written: ${failCloseError.message}`
+                  );
+                }
+              }
+            }
+          }
+
+          if (sweepErrors > 0) {
+            core.setFailed(`${sweepErrors} PR evaluation(s) failed; see warnings.`);
           }
