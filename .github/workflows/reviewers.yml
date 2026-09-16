@@ -233,11 +233,18 @@ jobs:
                   if (!review.user || !STATE_CHANGING.includes(review.state)) {
                     continue;
                   }
+                  // Order-independent reduction with a deterministic
+                  // tie-breaker: submitted_at has second precision, so two
+                  // state changes by the same reviewer can share a
+                  // timestamp - the higher (later-created) review id wins.
                   const previous = latestByReviewer.get(review.user.login);
-                  if (
+                  const later =
                     !previous ||
-                    new Date(review.submitted_at) > new Date(previous.submitted_at)
-                  ) {
+                    new Date(review.submitted_at) > new Date(previous.submitted_at) ||
+                    (Number(new Date(review.submitted_at)) ===
+                      Number(new Date(previous.submitted_at)) &&
+                      review.id > previous.id);
+                  if (later) {
                     latestByReviewer.set(review.user.login, review);
                   }
                 }
