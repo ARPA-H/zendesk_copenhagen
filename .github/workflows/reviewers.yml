@@ -1,40 +1,44 @@
 name: Enforce Required Reviewers
 
-# SECURITY NOTE: this job intentionally performs NO checkout. The reviewer
-# allowlist is fetched from the PR *base* branch via the API, so a pull
-# request can never ship its own .github/allowed-reviewers.txt to satisfy the
-# gate, and the file content is handled as data (never interpolated into the
-# script with ${{ }}).
+# SECURITY DESIGN
 #
-# Residual risk (cannot be fixed inside this file): a plain `pull_request`
-# workflow definition executes from the PR merge ref, so a collaborator PR
-# could still rewrite this workflow itself. The check is only trustworthy if
-# a branch-protection Ruleset on `main` (a) requires the "Authorized Reviewer
-# Check" from this repository's GitHub App specifically and (b) restricts who
-# can approve/merge. Prefer GitHub's native required-reviewers/CODEOWNERS
-# enforcement where possible.
+# This gate runs ONLY from triggers whose workflow definition is taken from
+# the repository's DEFAULT BRANCH (pull_request_target and issue_comment),
+# never from the pull request merge ref. A PR therefore cannot rewrite this
+# workflow to forge its own passing check, and it never sees the GitHub App
+# credentials. The job performs NO checkout at all - every input (allowlist,
+# reviews, head SHA) is fetched from the API using trusted identifiers, which
+# is what makes pull_request_target safe to use here.
+#
+# Because pull_request_target has no "review submitted" activity type, the
+# gate re-evaluates when anyone comments on the PR (issue_comment also runs
+# from the default branch). Reviewer flow after approving: leave any comment
+# (e.g. "/recheck") to refresh the check. The comment body is never read.
+#
+# Companion repo settings (required for the check to be meaningful): a
+# branch-protection Ruleset on `main` that requires the "Authorized Reviewer
+# Check" from this repository's GitHub App and restricts who can merge.
+# Prefer GitHub's native required-reviewers/CODEOWNERS enforcement where
+# possible - this workflow exists to enforce a named allowlist without
+# CODEOWNERS.
 
 permissions:
   contents: read
 
 on:
-  pull_request_review:
-    # `dismissed` re-runs the gate when an approval is dismissed, so the
-    # check flips back to failure instead of keeping the stale green state.
-    types: [submitted, dismissed]
-  pull_request:
-    types: [opened, synchronize, reopened]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - main
+  issue_comment:
+    types: [created]
 
 jobs:
   launch-reviewer-check:
     runs-on: ubuntu-latest
-    # SECURITY: pull_request_review carries no `branches` filter, so without
-    # this guard the job would also run for PRs targeting unprotected
-    # branches, where the base-branch allowlist is attacker-editable. The
-    # gate only protects main, so only evaluate it there.
-    if: github.event.pull_request.base.ref == 'main'
+    # For comments, only PR comments are relevant; base-ref filtering for the
+    # comment path happens in-script (the issue_comment payload has no base).
+    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
     steps:
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-token
@@ -57,16 +61,38 @@ jobs:
         script: |
           const FALLBACK_REVIEWERS = ["ksavilaNIH", "petersonjdNIH"];
           const ALLOWLIST_PATH = ".github/allowed-reviewers.txt";
+          const PROTECTED_BASE = "main";
 
-          // Read the allowlist from the base branch of the PR (the protected
-          // target), never from the PR head, so PR authors cannot edit it.
+          const prNumber =
+            context.payload.pull_request?.number ?? context.payload.issue?.number;
+          if (!Number.isInteger(prNumber)) {
+            core.info("No pull request associated with this event; skipping.");
+            return;
+          }
+
+          // Fetch the PR from the API so the base ref and head SHA are
+          // server-provided values, not event-payload values a caller could
+          // influence.
+          const { data: pr } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+          });
+
+          if (pr.base.ref !== PROTECTED_BASE) {
+            core.info(`Base ${pr.base.ref} is not ${PROTECTED_BASE}; skipping.`);
+            return;
+          }
+
+          // Read the allowlist from the protected base branch, never from the
+          // PR head, so PR authors cannot edit it.
           let allowedReviewers = FALLBACK_REVIEWERS;
           try {
             const { data } = await github.rest.repos.getContent({
               owner: context.repo.owner,
               repo: context.repo.repo,
               path: ALLOWLIST_PATH,
-              ref: context.payload.pull_request.base.ref,
+              ref: PROTECTED_BASE,
             });
             const content = Buffer.from(data.content, "base64").toString("utf8");
             // An existing file is authoritative even when empty: an
@@ -88,37 +114,47 @@ jobs:
           const reviews = await github.paginate(github.rest.pulls.listReviews, {
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: context.issue.number,
+            pull_number: prNumber,
             per_page: 100,
           });
 
           const STATE_CHANGING = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
-          const latestStateByReviewer = new Map();
+          const latestByReviewer = new Map();
           for (const review of reviews) {
             if (review.user && STATE_CHANGING.includes(review.state)) {
-              latestStateByReviewer.set(review.user.login, review.state);
+              latestByReviewer.set(review.user.login, review);
             }
           }
 
-          const hasValidApproval = allowedReviewers.some(
-            (login) => latestStateByReviewer.get(login) === "APPROVED"
-          );
+          // An approval only counts when it is the reviewer's latest
+          // state-changing review AND it reviewed the current head SHA, so a
+          // push after approval invalidates it (stale-approval semantics).
+          const hasValidApproval = allowedReviewers.some((login) => {
+            const review = latestByReviewer.get(login);
+            return (
+              review !== undefined &&
+              review.state === "APPROVED" &&
+              review.commit_id === pr.head.sha
+            );
+          });
 
-          // Create a check run
+          // Create a check run on the current head
           const checkName = "Authorized Reviewer Check";
           const conclusion = hasValidApproval ? "success" : "failure";
           const output = {
             title: checkName,
             summary: hasValidApproval
               ? "✅ Approved by authorized reviewer"
-              : "❌ Requires approval from: " + allowedReviewers.join(", "),
+              : "❌ Requires approval of the current head commit from: " +
+                allowedReviewers.join(", ") +
+                " (after approving, comment on the PR to refresh this check)",
           };
 
           await github.rest.checks.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             name: checkName,
-            head_sha: context.payload.pull_request?.head.sha || context.sha,
+            head_sha: pr.head.sha,
             status: "completed",
             conclusion: conclusion,
             output: output,
