@@ -119,36 +119,33 @@ jobs:
             }
           }
 
-          // Determine which PRs to evaluate. The only event-payload values
-          // used are PR numbers and (for comments) the commenter login; all
-          // security-relevant data is re-fetched server-side below.
-          let prNumbers = [];
-          if (context.eventName === "pull_request_target") {
-            prNumbers = [context.payload.pull_request.number];
-          } else if (context.eventName === "issue_comment") {
-            // Only allowlisted reviewers may trigger a privileged
-            // re-evaluation from a comment; with unreadable policy the
-            // commenter cannot be verified, so comment triggers are ignored
-            // (trusted-source events below still publish fail-closed checks).
+          // Gate comment-triggered runs: only allowlisted reviewers may
+          // trigger a privileged re-evaluation from a comment; with
+          // unreadable policy the commenter cannot be verified, so comment
+          // triggers are ignored (trusted-source events still run and publish
+          // fail-closed checks).
+          if (context.eventName === "issue_comment") {
             const commenter = context.payload.comment?.user?.login;
             if (policyReadFailed || !commenter || !allowedReviewers.includes(commenter)) {
               core.info("Commenter not verifiable against the allowlist; skipping.");
               return;
             }
-            prNumbers = [context.payload.issue.number];
-          } else {
-            // push (allowlist changed) or schedule: re-evaluate every open PR
-            // targeting the protected base so policy changes and dismissed
-            // approvals converge without manual action.
-            const openPrs = await github.paginate(github.rest.pulls.list, {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: "open",
-              base: PROTECTED_BASE,
-              per_page: 100,
-            });
-            prNumbers = openPrs.map((pr) => pr.number);
           }
+
+          // EVERY run evaluates EVERY open PR targeting the protected base.
+          // Runs in the shared concurrency group displace each other's single
+          // pending slot, so per-event scoping could drop a queued sweep;
+          // making all runs full sweeps means any displaced run is completely
+          // subsumed by the newer one. No event-payload value influences
+          // which PRs are examined or what is written.
+          const openPrs = await github.paginate(github.rest.pulls.list, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: "open",
+            base: PROTECTED_BASE,
+            per_page: 100,
+          });
+          const prNumbers = openPrs.map((pr) => pr.number);
 
           const STATE_CHANGING = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
           const checkName = "Authorized Reviewer Check";
