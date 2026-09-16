@@ -1,76 +1,161 @@
 name: Enforce Required Reviewers
 
+# SECURITY DESIGN
+#
+# This gate runs ONLY from triggers whose workflow definition is taken from
+# the repository's DEFAULT BRANCH (pull_request_target and issue_comment),
+# never from the pull request merge ref. A PR therefore cannot rewrite this
+# workflow to forge its own passing check, and it never sees the GitHub App
+# credentials. The job performs NO checkout at all - every input (allowlist,
+# reviews, head SHA) is fetched from the API using trusted identifiers, which
+# is what makes pull_request_target safe to use here.
+#
+# Because pull_request_target has no "review submitted" activity type, the
+# gate re-evaluates when anyone comments on the PR (issue_comment also runs
+# from the default branch). Reviewer flow after approving: leave any comment
+# (e.g. "/recheck") to refresh the check. The comment body is never read.
+#
+# Companion repo settings (required for the check to be meaningful): a
+# branch-protection Ruleset on `main` that requires the "Authorized Reviewer
+# Check" from this repository's GitHub App and restricts who can merge.
+# Prefer GitHub's native required-reviewers/CODEOWNERS enforcement where
+# possible - this workflow exists to enforce a named allowlist without
+# CODEOWNERS.
+
 permissions:
   contents: read
 
 on:
-  pull_request_review:
-    types: [submitted]
-  pull_request:
-    types: [opened, synchronize, reopened]
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - main
+  issue_comment:
+    types: [created]
 
 jobs:
   launch-reviewer-check:
     runs-on: ubuntu-latest
+    # For comments, only PR comments are relevant; base-ref filtering for the
+    # comment path happens in-script (the issue_comment payload has no base).
+    if: github.event_name == 'pull_request_target' || github.event.issue.pull_request
     steps:
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-token
       with:
         client-id: ${{ vars.GH_APP_ID }}
         private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+        # SECURITY: least-privilege token. This job only reads the allowlist
+        # file and PR reviews and writes a check run; without these inputs the
+        # token would inherit every permission granted to the App
+        # installation.
+        repositories: ${{ github.event.repository.name }}
+        permission-contents: read
+        permission-pull-requests: read
+        permission-checks: write
 
-    - name: Checkout code
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      with:
-        token: ${{ steps.app-token.outputs.token }}
-      
-    - name: Read allowed reviewers
-      id: reviewers
-      run: |
-        # we might move this to a .github/allowed-reviewers.txt file
-        if [ -f .github/allowed-reviewers.txt ]; then
-          REVIEWERS=$(cat .github/allowed-reviewers.txt | tr '\n' ' ')
-          echo "reviewers=$REVIEWERS" >> $GITHUB_OUTPUT
-        else
-          echo "reviewers=ksavilaNIH petersonjdNIH" >> $GITHUB_OUTPUT
-        fi
-        
     - name: Check if approved by authorized reviewer
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{ steps.app-token.outputs.token }}
         script: |
-          const allowedReviewers = '${{ steps.reviewers.outputs.reviewers }}'.split(' ').filter(r => r);
-          
-          const reviews = await github.rest.pulls.listReviews({
+          const FALLBACK_REVIEWERS = ["ksavilaNIH", "petersonjdNIH"];
+          const ALLOWLIST_PATH = ".github/allowed-reviewers.txt";
+          const PROTECTED_BASE = "main";
+
+          const prNumber =
+            context.payload.pull_request?.number ?? context.payload.issue?.number;
+          if (!Number.isInteger(prNumber)) {
+            core.info("No pull request associated with this event; skipping.");
+            return;
+          }
+
+          // Fetch the PR from the API so the base ref and head SHA are
+          // server-provided values, not event-payload values a caller could
+          // influence.
+          const { data: pr } = await github.rest.pulls.get({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: context.issue.number
+            pull_number: prNumber,
           });
-          
-          const hasValidApproval = reviews.data.some(review => 
-            review.state === 'APPROVED' && 
-            allowedReviewers.includes(review.user.login)
-          );
-          
-          // Create a check run
-          const checkName = 'Authorized Reviewer Check';
-          const conclusion = hasValidApproval ? 'success' : 'failure';
+
+          if (pr.base.ref !== PROTECTED_BASE) {
+            core.info(`Base ${pr.base.ref} is not ${PROTECTED_BASE}; skipping.`);
+            return;
+          }
+
+          // Read the allowlist from the protected base branch, never from the
+          // PR head, so PR authors cannot edit it.
+          let allowedReviewers = FALLBACK_REVIEWERS;
+          try {
+            const { data } = await github.rest.repos.getContent({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: ALLOWLIST_PATH,
+              ref: PROTECTED_BASE,
+            });
+            const content = Buffer.from(data.content, "base64").toString("utf8");
+            // An existing file is authoritative even when empty: an
+            // intentionally emptied allowlist means "nobody may approve",
+            // and must not silently re-enable the hardcoded fallback.
+            allowedReviewers = content.split(/\s+/).filter(Boolean);
+          } catch (error) {
+            // Only a missing allowlist file falls back to the hardcoded list.
+            if (error.status !== 404) {
+              throw error;
+            }
+          }
+
+          // Fetch ALL reviews (paginated) and reduce to each reviewer's
+          // latest effective state: an APPROVED entry in the history must not
+          // count once that reviewer later requested changes or had the
+          // approval dismissed. COMMENTED reviews do not change the effective
+          // state (matching GitHub's own review semantics).
+          const reviews = await github.paginate(github.rest.pulls.listReviews, {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNumber,
+            per_page: 100,
+          });
+
+          const STATE_CHANGING = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
+          const latestByReviewer = new Map();
+          for (const review of reviews) {
+            if (review.user && STATE_CHANGING.includes(review.state)) {
+              latestByReviewer.set(review.user.login, review);
+            }
+          }
+
+          // An approval only counts when it is the reviewer's latest
+          // state-changing review AND it reviewed the current head SHA, so a
+          // push after approval invalidates it (stale-approval semantics).
+          const hasValidApproval = allowedReviewers.some((login) => {
+            const review = latestByReviewer.get(login);
+            return (
+              review !== undefined &&
+              review.state === "APPROVED" &&
+              review.commit_id === pr.head.sha
+            );
+          });
+
+          // Create a check run on the current head
+          const checkName = "Authorized Reviewer Check";
+          const conclusion = hasValidApproval ? "success" : "failure";
           const output = {
             title: checkName,
-            summary: hasValidApproval 
-              ? '✅ Approved by authorized reviewer' 
-              : '❌ Requires approval from: ' + allowedReviewers.join(', ')
+            summary: hasValidApproval
+              ? "✅ Approved by authorized reviewer"
+              : "❌ Requires approval of the current head commit from: " +
+                allowedReviewers.join(", ") +
+                " (after approving, comment on the PR to refresh this check)",
           };
-          
+
           await github.rest.checks.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
             name: checkName,
-            head_sha: context.payload.pull_request?.head.sha || context.sha,
-            status: 'completed',
+            head_sha: pr.head.sha,
+            status: "completed",
             conclusion: conclusion,
-            output: output
+            output: output,
           });
