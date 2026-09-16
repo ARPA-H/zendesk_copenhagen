@@ -28,12 +28,25 @@ on:
 jobs:
   launch-reviewer-check:
     runs-on: ubuntu-latest
+    # SECURITY: pull_request_review carries no `branches` filter, so without
+    # this guard the job would also run for PRs targeting unprotected
+    # branches, where the base-branch allowlist is attacker-editable. The
+    # gate only protects main, so only evaluate it there.
+    if: github.event.pull_request.base.ref == 'main'
     steps:
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-token
       with:
         client-id: ${{ vars.GH_APP_ID }}
         private-key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+        # SECURITY: least-privilege token. This job only reads the allowlist
+        # file and PR reviews and writes a check run; without these inputs the
+        # token would inherit every permission granted to the App
+        # installation.
+        repositories: ${{ github.event.repository.name }}
+        permission-contents: read
+        permission-pull-requests: read
+        permission-checks: write
 
     - name: Check if approved by authorized reviewer
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -54,12 +67,12 @@ jobs:
               ref: context.payload.pull_request.base.ref,
             });
             const content = Buffer.from(data.content, "base64").toString("utf8");
-            const parsed = content.split(/\s+/).filter(Boolean);
-            if (parsed.length > 0) {
-              allowedReviewers = parsed;
-            }
+            // An existing file is authoritative even when empty: an
+            // intentionally emptied allowlist means "nobody may approve",
+            // and must not silently re-enable the hardcoded fallback.
+            allowedReviewers = content.split(/\s+/).filter(Boolean);
           } catch (error) {
-            // Missing allowlist file falls back to the hardcoded list above.
+            // Only a missing allowlist file falls back to the hardcoded list.
             if (error.status !== 404) {
               throw error;
             }
