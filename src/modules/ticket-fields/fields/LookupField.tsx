@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import { EmptyValueOption } from "./EmptyValueOption";
 import type { LookupRelationshipFieldFilter } from "../data-types/BaseTicketField";
 import type { CustomObjectRecord } from "../data-types/CustomObjectRecord";
+import { sanitizeDescription } from "../sanitizeDescription";
 
 export function buildAdvancedDynamicFilterParams(
   filter?: LookupRelationshipFieldFilter,
@@ -274,7 +275,11 @@ export function LookupField({
         {required && <Span aria-hidden="true">*</Span>}
       </Field.Label>
       {description && (
-        <Field.Hint dangerouslySetInnerHTML={{ __html: description }} />
+        <Field.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <Combobox
         inputProps={{ required }}
