@@ -67,7 +67,14 @@ jobs:
     # the same deterministic full sweep, so who triggered it cannot change
     # what is written, and rejected-then-skipped runs never sit in the writer
     # queue where they would displace a pending sweep without doing its work.
-    if: github.event_name != 'issue_comment' || (github.event.issue.pull_request && github.event.comment.body == '/recheck')
+    # pull_request_target `edited` events are additionally filtered to real
+    # base-branch changes so title/body edits cannot repeatedly force
+    # privileged sweeps.
+    if: >-
+      (github.event_name == 'pull_request_target' && (github.event.action != 'edited' || github.event.changes.base)) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request && github.event.comment.body == '/recheck') ||
+      github.event_name == 'push' ||
+      github.event_name == 'schedule'
     # Serialize ALL check writers in one group, at the JOB level so runs
     # filtered out by the `if` above (e.g. arbitrary comments) never enter
     # the group and cannot displace privileged runs. cancel-in-progress is
@@ -212,6 +219,14 @@ jobs:
                 })
               );
               headSha = pr.head.sha;
+
+              if (pr.state !== "open") {
+                // Closed after enumeration: it no longer gates anything and
+                // must not drag a shared-head live PR to failure.
+                core.info(`PR #${prNumber} closed mid-sweep; excluded.`);
+                headSha = null;
+                continue;
+              }
 
               if (pr.base.ref !== PROTECTED_BASE) {
                 // Retargeted mid-sweep: contribute a fail-closed verdict for
