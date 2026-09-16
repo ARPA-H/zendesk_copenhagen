@@ -30,6 +30,7 @@ function makeField(overrides: Partial<TicketFieldObject>): TicketFieldObject {
 
 const baseProps = {
   baseLocale: "en-us",
+  defaultOrganizationId: null,
   hasAtMentions: false,
   userRole: "end_user",
   userId: 1,
