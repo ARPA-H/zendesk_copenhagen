@@ -19,7 +19,9 @@ permissions:
 
 on:
   pull_request_review:
-    types: [submitted]
+    # `dismissed` re-runs the gate when an approval is dismissed, so the
+    # check flips back to failure instead of keeping the stale green state.
+    types: [submitted, dismissed]
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
@@ -78,16 +80,28 @@ jobs:
             }
           }
 
-          const reviews = await github.rest.pulls.listReviews({
+          // Fetch ALL reviews (paginated) and reduce to each reviewer's
+          // latest effective state: an APPROVED entry in the history must not
+          // count once that reviewer later requested changes or had the
+          // approval dismissed. COMMENTED reviews do not change the effective
+          // state (matching GitHub's own review semantics).
+          const reviews = await github.paginate(github.rest.pulls.listReviews, {
             owner: context.repo.owner,
             repo: context.repo.repo,
             pull_number: context.issue.number,
+            per_page: 100,
           });
 
-          const hasValidApproval = reviews.data.some(
-            (review) =>
-              review.state === "APPROVED" &&
-              allowedReviewers.includes(review.user.login)
+          const STATE_CHANGING = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
+          const latestStateByReviewer = new Map();
+          for (const review of reviews) {
+            if (review.user && STATE_CHANGING.includes(review.state)) {
+              latestStateByReviewer.set(review.user.login, review.state);
+            }
+          }
+
+          const hasValidApproval = allowedReviewers.some(
+            (login) => latestStateByReviewer.get(login) === "APPROVED"
           );
 
           // Create a check run
