@@ -137,13 +137,12 @@ jobs:
             base: PROTECTED_BASE,
             per_page: 100,
           });
-          const prNumbers = openPrs.map((pr) => pr.number);
-
           const STATE_CHANGING = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
           const checkName = "Authorized Reviewer Check";
 
           let sweepErrors = 0;
-          for (const prNumber of prNumbers) {
+          for (const listedPr of openPrs) {
+            const prNumber = listedPr.number;
             if (!Number.isInteger(prNumber)) {
               continue;
             }
@@ -154,7 +153,9 @@ jobs:
             // branch protection never keeps trusting a check the gate could
             // not recompute. The run is marked failed at the end so the error
             // is visible and the next sweep retries.
-            let headShaForFailClose = null;
+            // Seeded from the list response so a failing pulls.get still
+            // lets the catch block replace a previously green check.
+            let headShaForFailClose = listedPr.head?.sha ?? null;
             try {
 
             // Fetch the PR from the API so the base ref and head SHA are
