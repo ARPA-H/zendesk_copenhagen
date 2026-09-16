@@ -75,8 +75,7 @@ describe("RequestFormField description sanitization at each render sink", () => 
 
   afterEach(() => {
     jest.clearAllMocks();
-    delete (window as unknown as Record<string, unknown>)
-      .__fieldDescriptionXss;
+    delete (window as unknown as Record<string, unknown>).__fieldDescriptionXss;
   });
 
   test.each(FIELD_CASES)(
