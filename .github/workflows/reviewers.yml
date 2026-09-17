@@ -19,18 +19,31 @@ name: Enforce Required Reviewers
 #   - a half-hourly schedule re-evaluates all open PRs, so dismissed or
 #     superseded approvals converge to failure without manual action
 #
-# Known residual: check runs are per-commit, so a head force-pushed BACK to
-# a previously green SHA briefly re-exposes that old result until the
-# synchronize-triggered sweep replaces it (a seconds-scale window). Enable
-# "dismiss stale pull request approvals" and "require approval of the most
-# recent reviewable push" in the Ruleset to close it natively.
+# Known residuals - each is inherent to a commit-scoped Checks-API gate and
+# each is closed natively by the companion Ruleset settings below:
+#   - a head force-pushed BACK to a previously green SHA briefly re-exposes
+#     that old check until the synchronize-triggered sweep replaces it (a
+#     queue-latency window; approvals that predate the PR's latest
+#     force-push are also rejected in-script, so the stale result can never
+#     be RENEWED by a sweep)
+#   - check runs attach to commits, not PRs: a newly opened/reopened PR
+#     whose head SHA some other PR (possibly since closed) already turned
+#     green can present that check until its own opened-event sweep
+#     publishes the aggregated fail-closed result (again queue-latency)
+#   - if the App token cannot be minted at all (revoked key, token-service
+#     outage), no run can publish or replace App-owned checks; the Ruleset
+#     must therefore ALSO require this workflow's own job check
+#     ("launch-reviewer-check"), which fails whenever minting fails, so a
+#     mint outage fails the PR's required checks instead of failing open
 #
 # Companion repo settings (required for the check to be meaningful): a
-# branch-protection Ruleset on `main` that requires the "Authorized Reviewer
-# Check" from this repository's GitHub App and restricts who can merge.
-# Prefer GitHub's native required-reviewers/CODEOWNERS enforcement where
-# possible - this workflow exists to enforce a named allowlist without
-# CODEOWNERS.
+# branch-protection Ruleset on `main` that (a) requires the "Authorized
+# Reviewer Check" from this repository's GitHub App, (b) requires the
+# "launch-reviewer-check" job check, (c) enables "dismiss stale pull request
+# approvals" and "require approval of the most recent reviewable push", and
+# (d) restricts who can merge. Prefer GitHub's native
+# required-reviewers/CODEOWNERS enforcement where possible - this workflow
+# exists to enforce a named allowlist without CODEOWNERS.
 
 permissions:
   contents: read
@@ -109,6 +122,11 @@ jobs:
           const PROTECTED_BASE = "main";
           const CHECK_NAME = "Authorized Reviewer Check";
           const STATE_CHANGING = ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"];
+          // The Checks API rejects output.summary beyond 65535 characters; a
+          // rejected write would leave an older check standing, so displayed
+          // text is bounded (the full allowlist is still used for matching).
+          const MAX_LISTED_REVIEWERS = 15;
+          const MAX_SUMMARY_CHARS = 60000;
 
           // Retry transient API failures (rate limits, 5xx) so one blip does
           // not leave stale check results standing; 404s are semantic and
@@ -149,16 +167,163 @@ jobs:
             // and must not silently re-enable the hardcoded fallback.
             allowedReviewers = content.split(/\s+/).filter(Boolean);
           } catch (error) {
-            // Only a missing allowlist file falls back to the hardcoded list.
-            // Any other read failure fails CLOSED: evaluate with an empty
-            // allowlist so a failure check replaces any previously green
-            // result, instead of aborting and leaving a stale success
-            // satisfying branch protection.
-            if (error.status !== 404) {
+            if (error.status === 404) {
+              // A 404 does not by itself prove the file is absent: an
+              // unreadable/missing protected ref surfaces the same way. Only
+              // fall back to the hardcoded list when the protected ref is
+              // provably readable (so the 404 really means "no policy file");
+              // otherwise fail closed like any other policy-read failure.
+              try {
+                await withRetries("protected ref probe", () =>
+                  github.rest.git.getRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: `heads/${PROTECTED_BASE}`,
+                  })
+                );
+                core.info("Allowlist file absent; using hardcoded fallback.");
+              } catch (probeError) {
+                core.warning(
+                  `Allowlist 404 with unreadable ${PROTECTED_BASE} ref; failing closed.`
+                );
+                policyReadFailed = true;
+                allowedReviewers = [];
+              }
+            } else {
+              // Fail CLOSED: evaluate with an empty allowlist so a failure
+              // check replaces any previously green result, instead of
+              // aborting and leaving a stale success satisfying branch
+              // protection.
               core.warning(`Allowlist read failed (${error.status}); failing closed.`);
               policyReadFailed = true;
               allowedReviewers = [];
             }
+          }
+
+          let sweepErrors = 0;
+
+          // Evaluate one PR from live API state. `seedSha` (from the sweep's
+          // enumeration) keeps a fail-closed head attribution when pulls.get
+          // itself fails. Used both for the sweep and for the pre-publish
+          // freshness re-read.
+          async function evaluatePr(prNumber, seedSha) {
+            const result = {
+              headSha: seedSha ?? null,
+              approved: false,
+              evalError: false,
+              excluded: false,
+            };
+            try {
+              // Fetch the PR so base ref and head SHA are current
+              // server-provided values.
+              const { data: pr } = await withRetries(`pulls.get #${prNumber}`, () =>
+                github.rest.pulls.get({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                })
+              );
+              result.headSha = pr.head.sha;
+
+              if (pr.state !== "open") {
+                // Closed after enumeration: it no longer gates anything and
+                // must not drag a shared-head live PR to failure.
+                core.info(`PR #${prNumber} closed mid-sweep; excluded.`);
+                result.excluded = true;
+                result.headSha = null;
+                return result;
+              }
+
+              if (pr.base.ref !== PROTECTED_BASE) {
+                // Retargeted mid-sweep: contribute a fail-closed verdict for
+                // aggregation (a shared-head main PR must not inherit green)
+                // rather than skipping.
+                core.info(`PR #${prNumber} now targets ${pr.base.ref}; fail-closed.`);
+                return result;
+              }
+
+              // An approval must postdate the PR's latest force-push:
+              // review.commit_id alone cannot invalidate an approval after an
+              // A -> B -> A force-push, because the stale approval of A
+              // matches again once the head returns to A. Returning to a
+              // previous SHA always requires a force-push, so the latest
+              // head_ref_force_pushed timeline event is a sufficient cutoff
+              // (ordinary pushes always produce a new SHA, which the
+              // commit_id comparison already rejects).
+              const events = await withRetries(`events #${prNumber}`, () =>
+                github.paginate(github.rest.issues.listEvents, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  per_page: 100,
+                })
+              );
+              let lastForcePushAt = 0;
+              for (const event of events) {
+                if (event.event === "head_ref_force_pushed" && event.created_at) {
+                  lastForcePushAt = Math.max(
+                    lastForcePushAt,
+                    Number(new Date(event.created_at))
+                  );
+                }
+              }
+
+              // Fetch ALL reviews (paginated) and reduce to each reviewer's
+              // latest state-changing entry by submitted_at, independent of
+              // API ordering: an APPROVED entry must not count once that
+              // reviewer later requested changes or had the approval
+              // dismissed. COMMENTED reviews do not change the effective
+              // state (matching GitHub's own semantics).
+              const reviews = await withRetries(`reviews #${prNumber}`, () =>
+                github.paginate(github.rest.pulls.listReviews, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: prNumber,
+                  per_page: 100,
+                })
+              );
+
+              const latestByReviewer = new Map();
+              for (const review of reviews) {
+                if (!review.user || !STATE_CHANGING.includes(review.state)) {
+                  continue;
+                }
+                // Order-independent reduction with a deterministic
+                // tie-breaker: submitted_at has second precision, so two
+                // state changes by the same reviewer can share a timestamp -
+                // the higher (later-created) review id wins.
+                const previous = latestByReviewer.get(review.user.login);
+                const later =
+                  !previous ||
+                  new Date(review.submitted_at) > new Date(previous.submitted_at) ||
+                  (Number(new Date(review.submitted_at)) ===
+                    Number(new Date(previous.submitted_at)) &&
+                    review.id > previous.id);
+                if (later) {
+                  latestByReviewer.set(review.user.login, review);
+                }
+              }
+
+              // An approval only counts when it is the reviewer's latest
+              // state-changing review, it reviewed the current head SHA, and
+              // it postdates the latest force-push - so a push after
+              // approval invalidates it and a force-push round-trip cannot
+              // resurrect it.
+              result.approved = allowedReviewers.some((login) => {
+                const review = latestByReviewer.get(login);
+                return (
+                  review !== undefined &&
+                  review.state === "APPROVED" &&
+                  review.commit_id === result.headSha &&
+                  Number(new Date(review.submitted_at)) > lastForcePushAt
+                );
+              });
+            } catch (error) {
+              sweepErrors += 1;
+              result.evalError = true;
+              core.warning(`PR #${prNumber}: evaluation failed: ${error.message}`);
+            }
+            return result;
           }
 
           // EVERY run evaluates EVERY open PR targeting the protected base.
@@ -193,7 +358,6 @@ jobs:
           // PRs, so when two open PRs share a head SHA the shared check may
           // only be a success if EVERY sharing PR holds a valid approval
           // (otherwise one PR's approval would leak to the other).
-          let sweepErrors = 0;
           const aggregateBySha = new Map();
 
           for (const listedPr of openPrs) {
@@ -204,121 +368,76 @@ jobs:
 
             // Seeded from the list response so a failing pulls.get still
             // contributes a fail-closed aggregate for this head.
-            let headSha = listedPr.head?.sha ?? null;
-            let approved = false;
-            let evalError = false;
-
-            try {
-              // Fetch the PR so base ref and head SHA are current
-              // server-provided values.
-              const { data: pr } = await withRetries(`pulls.get #${prNumber}`, () =>
-                github.rest.pulls.get({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  pull_number: prNumber,
-                })
-              );
-              headSha = pr.head.sha;
-
-              if (pr.state !== "open") {
-                // Closed after enumeration: it no longer gates anything and
-                // must not drag a shared-head live PR to failure.
-                core.info(`PR #${prNumber} closed mid-sweep; excluded.`);
-                headSha = null;
-                continue;
-              }
-
-              if (pr.base.ref !== PROTECTED_BASE) {
-                // Retargeted mid-sweep: contribute a fail-closed verdict for
-                // aggregation (a shared-head main PR must not inherit green)
-                // rather than skipping.
-                core.info(`PR #${prNumber} now targets ${pr.base.ref}; fail-closed.`);
-              } else {
-                // Fetch ALL reviews (paginated) and reduce to each
-                // reviewer's latest state-changing entry by submitted_at,
-                // independent of API ordering: an APPROVED entry must not
-                // count once that reviewer later requested changes or had
-                // the approval dismissed. COMMENTED reviews do not change
-                // the effective state (matching GitHub's own semantics).
-                const reviews = await withRetries(`reviews #${prNumber}`, () =>
-                  github.paginate(github.rest.pulls.listReviews, {
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    pull_number: prNumber,
-                    per_page: 100,
-                  })
-                );
-
-                const latestByReviewer = new Map();
-                for (const review of reviews) {
-                  if (!review.user || !STATE_CHANGING.includes(review.state)) {
-                    continue;
-                  }
-                  // Order-independent reduction with a deterministic
-                  // tie-breaker: submitted_at has second precision, so two
-                  // state changes by the same reviewer can share a
-                  // timestamp - the higher (later-created) review id wins.
-                  const previous = latestByReviewer.get(review.user.login);
-                  const later =
-                    !previous ||
-                    new Date(review.submitted_at) > new Date(previous.submitted_at) ||
-                    (Number(new Date(review.submitted_at)) ===
-                      Number(new Date(previous.submitted_at)) &&
-                      review.id > previous.id);
-                  if (later) {
-                    latestByReviewer.set(review.user.login, review);
-                  }
-                }
-
-                // An approval only counts when it is the reviewer's latest
-                // state-changing review AND it reviewed the current head
-                // SHA, so a push after approval invalidates it.
-                approved = allowedReviewers.some((login) => {
-                  const review = latestByReviewer.get(login);
-                  return (
-                    review !== undefined &&
-                    review.state === "APPROVED" &&
-                    review.commit_id === headSha
-                  );
-                });
-              }
-            } catch (error) {
-              sweepErrors += 1;
-              evalError = true;
-              core.warning(`PR #${prNumber}: evaluation failed: ${error.message}`);
+            const outcome = await evaluatePr(prNumber, listedPr.head?.sha ?? null);
+            if (outcome.excluded || !outcome.headSha) {
+              continue;
             }
 
-            if (headSha) {
-              const aggregate = aggregateBySha.get(headSha) ?? {
-                prNumbers: [],
-                allApproved: true,
-                anyError: false,
-              };
-              aggregate.prNumbers.push(prNumber);
-              aggregate.allApproved = aggregate.allApproved && approved && !evalError;
-              aggregate.anyError = aggregate.anyError || evalError;
-              aggregateBySha.set(headSha, aggregate);
-            }
+            const aggregate = aggregateBySha.get(outcome.headSha) ?? {
+              prNumbers: [],
+              allApproved: true,
+              anyError: false,
+            };
+            aggregate.prNumbers.push(prNumber);
+            aggregate.allApproved =
+              aggregate.allApproved && outcome.approved && !outcome.evalError;
+            aggregate.anyError = aggregate.anyError || outcome.evalError;
+            aggregateBySha.set(outcome.headSha, aggregate);
           }
 
+          const displayedReviewers =
+            allowedReviewers.length > MAX_LISTED_REVIEWERS
+              ? allowedReviewers.slice(0, MAX_LISTED_REVIEWERS).join(", ") +
+                `, and ${allowedReviewers.length - MAX_LISTED_REVIEWERS} more`
+              : allowedReviewers.join(", ");
+
           for (const [headSha, aggregate] of aggregateBySha) {
-            const conclusion = aggregate.allApproved ? "success" : "failure";
+            let conclusion = aggregate.allApproved ? "success" : "failure";
+            let staleDowngrade = false;
+
+            // Pre-publish freshness re-read: the verdict above was computed
+            // from reads taken earlier in the sweep, and review or policy
+            // state may have changed while other PRs were being evaluated.
+            // Re-evaluate each sharing PR immediately before publishing a
+            // SUCCESS; any divergence (new head, lost approval, read error)
+            // downgrades to failure - fail-closed - and the next queued or
+            // scheduled sweep recomputes from scratch. (Failure verdicts
+            // need no re-read: publishing a failure is already the
+            // conservative outcome.)
+            if (conclusion === "success") {
+              for (const prNumber of aggregate.prNumbers) {
+                const fresh = await evaluatePr(prNumber, headSha);
+                if (fresh.excluded) {
+                  continue;
+                }
+                if (fresh.evalError || !fresh.approved || fresh.headSha !== headSha) {
+                  conclusion = "failure";
+                  staleDowngrade = true;
+                  break;
+                }
+              }
+            }
+
             const sharedSuffix =
               aggregate.prNumbers.length > 1
                 ? ` [aggregated across PRs ${aggregate.prNumbers.join(", ")} sharing this head commit]`
                 : "";
-            const summary = aggregate.allApproved
-              ? "✅ Approved by authorized reviewer" + sharedSuffix
-              : aggregate.anyError
-                ? "❌ Evaluation could not complete (API error - see the workflow run log); failing closed until a sweep succeeds"
-                : policyReadFailed
-                  ? "❌ Reviewer allowlist could not be read; failing closed until policy is readable"
-                  : allowedReviewers.length === 0
-                    ? "❌ The reviewer allowlist is intentionally empty: current policy permits no one to approve"
-                    : "❌ Requires approval of the current head commit from: " +
-                      allowedReviewers.join(", ") +
-                      sharedSuffix +
-                      " (comment /recheck after approving to refresh)";
+            const summary = (
+              conclusion === "success"
+                ? "✅ Approved by authorized reviewer" + sharedSuffix
+                : staleDowngrade
+                  ? "❌ Review or policy state changed while this sweep was evaluating; failing closed pending the already-queued re-evaluation"
+                  : aggregate.anyError
+                    ? "❌ Evaluation could not complete (API error - see the workflow run log); failing closed until a sweep succeeds"
+                    : policyReadFailed
+                      ? "❌ Reviewer allowlist could not be read; failing closed until policy is readable"
+                      : allowedReviewers.length === 0
+                        ? "❌ The reviewer allowlist is intentionally empty: current policy permits no one to approve"
+                        : "❌ Requires approval of the current head commit from: " +
+                          displayedReviewers +
+                          sharedSuffix +
+                          " (comment /recheck after approving to refresh)"
+            ).slice(0, MAX_SUMMARY_CHARS);
 
             try {
               // Retried like every other API call: a dropped write here could
