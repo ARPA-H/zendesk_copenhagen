@@ -41,6 +41,13 @@ name: Enforce Required Reviewers
 #     heads). The mirror is a LIVENESS fail-safe, not an authorization
 #     signal - authorization always comes from the App-owned check, so a
 #     forged mirror alone can never satisfy the gate.
+#   - a sustained GitHub API outage freezes ALL previously published checks
+#     (App and mirror alike) for its duration: no API-driven writer can
+#     replace a check it cannot reach. Every read/write is retried, failed
+#     runs are visible, and the half-hourly schedule retries within <=30
+#     minutes; the merge-time backstops are the Ruleset's dismiss-stale /
+#     most-recent-push rules, which GitHub enforces server-side without this
+#     workflow.
 #
 # Companion repo settings (required for the check to be meaningful):
 #   1. A "reviewer-gate" ENVIRONMENT whose deployment branches are restricted
