@@ -6,6 +6,14 @@ name: CODEOWNERS validity
 # API for the ref under test and fails on ANY error, so the review gate can
 # never be silently disabled by a typo, a renamed team, or a departed
 # account. Require this check in the `main` Ruleset.
+#
+# Scope: this is an ACCIDENT guard, not an authorization boundary. GitHub
+# determines code owners from the CODEOWNERS on the PR's BASE branch, so a
+# PR shipping a broken CODEOWNERS cannot weaken its own review requirement -
+# breakage only bites AFTER merge, and the push trigger below re-validates
+# main/sandbox from the trusted branch definition the moment that happens.
+# A forged same-name Actions check could only mask the advisory PR-time
+# signal, never bypass the native code-owner review itself.
 
 permissions:
   contents: read
