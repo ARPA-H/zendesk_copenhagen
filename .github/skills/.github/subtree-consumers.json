@@ -123,5 +123,10 @@
     "repo": "ARPA-H/sentinel-connectors-github",
     "prefix": ".github/skills",
     "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/care-et",
+    "prefix": ".github/skills",
+    "branch": "main"
   }
 ]
