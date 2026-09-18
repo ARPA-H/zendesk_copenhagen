@@ -140,13 +140,6 @@ jobs:
       group: reviewer-check
       cancel-in-progress: false
     steps:
-    # Recorded before anything that can fail: the mirror step uses this to
-    # decide which App-published checks are FRESH (written by this run) vs
-    # stale leftovers from an earlier run.
-    - name: Record run start
-      id: stamp
-      run: echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-token
       with:
@@ -532,7 +525,9 @@ jobs:
 
             try {
               // Retried like every other API call: a dropped write here could
-              // leave an older success standing on this head.
+              // leave an older success standing on this head. external_id
+              // carries this run's id so the mirror step can identify checks
+              // published by THIS run exactly (no clock comparisons).
               await withRetries(`checks.create ${headSha.slice(0, 7)}`, () =>
                 github.rest.checks.create({
                   owner: context.repo.owner,
@@ -541,6 +536,7 @@ jobs:
                   head_sha: headSha,
                   status: "completed",
                   conclusion: conclusion,
+                  external_id: String(context.runId),
                   output: { title: CHECK_NAME, summary: summary },
                 })
               );
@@ -566,10 +562,11 @@ jobs:
       # Per-head freshness is derived from the App's own checks rather than
       # from a serialized verdict hand-off (which would be unbounded on large
       # sweeps and would discard healthy heads on a partial gate failure):
-      # for every open PR head, the latest non-Actions-authored "Authorized
-      # Reviewer Check" is FRESH if it completed after this run started -
-      # the serialized concurrency group guarantees no other writer ran in
-      # between - and its conclusion is mirrored; heads WITHOUT a fresh App
+      # for every open PR head, a gate check counts only when BOTH its
+      # authoring app slug equals this run's minted App (exported by the
+      # token step; empty when minting failed) AND its external_id equals
+      # THIS run's id - an exact, per-run marker with no clock precision to
+      # race and no acceptance of other installed Apps. Heads WITHOUT such a
       # check (token mint failed, enumeration failed, or that head's publish
       # failed) receive a FAILURE mirror. Requiring "Reviewer Gate (Actions)"
       # in the Ruleset therefore makes gate outages fail closed PER HEAD -
@@ -580,7 +577,7 @@ jobs:
       if: always()
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
-        RUN_STARTED_AT: ${{ steps.stamp.outputs.started }}
+        GATE_APP_SLUG: ${{ steps.app-token.outputs.app-slug }}
       with:
         script: |
           const MIRROR_CHECK_NAME = "Reviewer Gate (Actions)";
@@ -604,11 +601,10 @@ jobs:
             }
           }
 
-          const runStartedAt = Date.parse(process.env.RUN_STARTED_AT || "");
-          if (!Number.isFinite(runStartedAt)) {
-            core.setFailed("Mirror has no run-start timestamp; cannot assess freshness.");
-            return;
-          }
+          // Empty when App-token minting failed: no check can then match,
+          // so every head fail-closes below - exactly the desired outcome.
+          const gateAppSlug = process.env.GATE_APP_SLUG || "";
+          const runId = String(context.runId);
 
           let openPrs = [];
           try {
@@ -647,31 +643,22 @@ jobs:
                   per_page: 100,
                 })
               );
-              // Only App-authored checks count: a check with this name minted
-              // by another workflow via GITHUB_TOKEN belongs to the
-              // github-actions app and is excluded, so it can neither forge
-              // freshness nor a verdict.
-              const appChecks = (data.check_runs || []).filter(
+              // A gate check counts only when authored by THIS run's minted
+              // App (slug match; github-actions and every other installed
+              // App are excluded) AND stamped with THIS run's id via
+              // external_id - an exact per-run marker immune to
+              // second-precision clock races with the preceding serialized
+              // run.
+              const fresh = (data.check_runs || []).find(
                 (check) =>
                   check.name === GATE_CHECK_NAME &&
                   check.app &&
-                  check.app.slug !== "github-actions"
+                  gateAppSlug !== "" &&
+                  check.app.slug === gateAppSlug &&
+                  check.external_id === runId &&
+                  check.status === "completed"
               );
-              let latest = null;
-              for (const check of appChecks) {
-                const completed = Date.parse(check.completed_at || "");
-                if (
-                  Number.isFinite(completed) &&
-                  (!latest || completed > Date.parse(latest.completed_at))
-                ) {
-                  latest = check;
-                }
-              }
-              const fresh =
-                latest &&
-                latest.status === "completed" &&
-                Date.parse(latest.completed_at) >= runStartedAt;
-              if (fresh && latest.conclusion === "success") {
+              if (fresh && fresh.conclusion === "success") {
                 conclusion = "success";
               }
             } catch (error) {
