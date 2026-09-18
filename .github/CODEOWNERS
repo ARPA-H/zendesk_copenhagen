@@ -1,10 +1,10 @@
-* @zendesk/vikings
+# CODEOWNERS — zendesk_copenhagen
+#
+# Each line is a file pattern followed by one or more owners.
+# The last matching pattern takes precedence.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Owners must have Triage or above on the repo; GitHub silently ignores entries for users
+# without write access.
 
-# LOCALIZATION
-**/translations/en-us.yml   @zendesk/localization
-translations.yml            @zendesk/localization
-
-# SERVICE_CATALOG
-src/modules/service-catalog       @zendesk/butlers
-templates/service_page.hbs        @zendesk/butlers
-templates/service_list_page.hbs   @zendesk/butlers
+* @petersonjdNIH @ksavilaNIH
