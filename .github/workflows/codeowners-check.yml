@@ -20,11 +20,17 @@ permissions:
 
 on:
   # pull_request_target, NOT pull_request: this executes the workflow
-  # definition from the DEFAULT BRANCH, so a PR cannot edit this file to
-  # skip the check or force success. Safe here because the job performs no
-  # checkout and only makes one read-only API call against the PR's head
-  # SHA (a server-provided value, never interpolated).
+  # definition from the PR's BASE branch (a protected branch here), so a PR
+  # cannot edit this file to skip the check or force success. Safe because
+  # the job performs no checkout and only makes one read-only API call
+  # against the PR's head SHA (a server-provided value, never interpolated).
+  # `edited` covers base-branch retargeting so a commit-scoped success from
+  # an earlier base cannot go stale unnoticed after a retarget round-trip.
   pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+    branches:
+      - main
+      - sandbox
   push:
     branches:
       - main
@@ -39,11 +45,15 @@ jobs:
         with:
           script: |
             const ref = context.payload.pull_request?.head?.sha || context.sha;
-            const { data } = await github.rest.repos.codeownersErrors({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: ref,
-            });
+            // Raw endpoint call: immune to Octokit generated-method naming.
+            const { data } = await github.request(
+              "GET /repos/{owner}/{repo}/codeowners/errors",
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: ref,
+              }
+            );
             const errors = data.errors || [];
             if (errors.length > 0) {
               for (const error of errors) {
