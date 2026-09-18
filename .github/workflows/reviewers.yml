@@ -42,14 +42,21 @@ name: Enforce Required Reviewers
 #     signal - authorization always comes from the App-owned check, so a
 #     forged mirror alone can never satisfy the gate.
 #
-# Companion repo settings (required for the check to be meaningful): a
-# branch-protection Ruleset on `main` that (a) requires the "Authorized
-# Reviewer Check" from this repository's GitHub App, (b) requires the
-# "Reviewer Gate (Actions)" check from GitHub Actions, (c) enables "dismiss
-# stale pull request approvals" and "require approval of the most recent
-# reviewable push", and (d) restricts who can merge. Prefer GitHub's native
-# required-reviewers/CODEOWNERS enforcement where possible - this workflow
-# exists to enforce a named allowlist without CODEOWNERS.
+# Companion repo settings (required for the check to be meaningful):
+#   1. A "reviewer-gate" ENVIRONMENT whose deployment branches are restricted
+#      to `main`, holding GH_APP_PRIVATE_KEY as an environment secret (and
+#      the repository-level copy of the secret DELETED). Without this, any
+#      same-repo PR can add its own workflow, read the repo-level secret,
+#      mint the same App token, and forge this gate's check.
+#   2. A branch-protection Ruleset on `main` that (a) requires the
+#      "Authorized Reviewer Check" from this repository's GitHub App,
+#      (b) requires the "Reviewer Gate (Actions)" check from GitHub Actions,
+#      (c) enables "dismiss stale pull request approvals" and "require
+#      approval of the most recent reviewable push", and (d) restricts who
+#      can merge.
+# Prefer GitHub's native required-reviewers/CODEOWNERS enforcement where
+# possible - this workflow exists to enforce a named allowlist without
+# CODEOWNERS.
 
 permissions:
   contents: read
@@ -80,6 +87,15 @@ on:
 jobs:
   launch-reviewer-check:
     runs-on: ubuntu-latest
+    # SECURITY: the App private key must live in this environment's secrets
+    # (NOT as a repository-level secret) with the environment's deployment
+    # branches restricted to `main`. Repository-level secrets are readable by
+    # any same-repo pull_request workflow a PR author adds, letting them mint
+    # the same App token and forge this gate's check under the same App
+    # identity. Environment scoping closes that: every trigger of this
+    # workflow runs on refs/heads/main and passes the branch policy, while a
+    # PR-added workflow runs on refs/pull/N/merge and is refused the secret.
+    environment: reviewer-gate
     # GITHUB_TOKEN scopes for the fail-safe mirror step (the gate itself uses
     # the least-privilege App token). This workflow only ever executes from
     # the default branch, so a PR cannot repurpose these grants.
