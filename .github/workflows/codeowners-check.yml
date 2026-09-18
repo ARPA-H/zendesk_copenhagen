@@ -62,6 +62,46 @@ jobs:
                 ]
               : [context.sha];
 
+            // Syntax errors alone do not prove coverage: an empty or
+            // comment-only CODEOWNERS is valid to the errors API yet leaves
+            // the native owner rule with nobody to require (fail-open). So
+            // each ref must ALSO contain at least one non-comment catch-all
+            // rule (a line whose pattern is `*`); unknown/invalid owners on
+            // that line are still caught by the errors API above.
+            async function hasCatchAllRule(ref) {
+              for (const path of [".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS"]) {
+                let content;
+                try {
+                  const { data } = await github.request(
+                    "GET /repos/{owner}/{repo}/contents/{path}",
+                    {
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      path: path,
+                      ref: ref,
+                    }
+                  );
+                  content = Buffer.from(data.content, "base64").toString("utf8");
+                } catch (error) {
+                  if (error.status === 404) {
+                    continue;
+                  }
+                  throw error;
+                }
+                // GitHub uses the first CODEOWNERS it finds in precedence
+                // order; judge coverage on that same file.
+                return content.split("\n").some((line) => {
+                  const trimmed = line.trim();
+                  if (trimmed === "" || trimmed.startsWith("#")) {
+                    return false;
+                  }
+                  const fields = trimmed.split(/\s+/);
+                  return fields[0] === "*" && fields.length >= 2;
+                });
+              }
+              return false;
+            }
+
             let totalErrors = 0;
             for (const ref of refs) {
               // Raw endpoint call: immune to Octokit generated-method naming.
@@ -77,6 +117,12 @@ jobs:
                 totalErrors += 1;
                 core.error(
                   `[${ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
+                );
+              }
+              if (!(await hasCatchAllRule(ref))) {
+                totalErrors += 1;
+                core.error(
+                  `[${ref}] CODEOWNERS has no catch-all (\`* @owner\`) rule - native code-owner review would have no owner to require for most paths (fail-open).`
                 );
               }
             }
