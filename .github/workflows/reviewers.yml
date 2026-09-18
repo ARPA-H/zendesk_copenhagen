@@ -31,17 +31,23 @@ name: Enforce Required Reviewers
 #     green can present that check until its own opened-event sweep
 #     publishes the aggregated fail-closed result (again queue-latency)
 #   - if the App token cannot be minted at all (revoked key, token-service
-#     outage), no run can publish or replace App-owned checks; the Ruleset
-#     must therefore ALSO require this workflow's own job check
-#     ("launch-reviewer-check"), which fails whenever minting fails, so a
-#     mint outage fails the PR's required checks instead of failing open
+#     outage), no run can publish or replace App-owned checks. That is why a
+#     second, always() step mirrors every verdict PER PR HEAD as the
+#     "Reviewer Gate (Actions)" check using the workflow's own GITHUB_TOKEN:
+#     when minting or the sweep fails, the mirror writes per-head FAILURE
+#     checks instead, so requiring the mirror in the Ruleset makes a mint
+#     outage fail closed on every PR head (a plain job check cannot do this:
+#     on push/schedule runs it attaches to the default-branch SHA, not to PR
+#     heads). The mirror is a LIVENESS fail-safe, not an authorization
+#     signal - authorization always comes from the App-owned check, so a
+#     forged mirror alone can never satisfy the gate.
 #
 # Companion repo settings (required for the check to be meaningful): a
 # branch-protection Ruleset on `main` that (a) requires the "Authorized
 # Reviewer Check" from this repository's GitHub App, (b) requires the
-# "launch-reviewer-check" job check, (c) enables "dismiss stale pull request
-# approvals" and "require approval of the most recent reviewable push", and
-# (d) restricts who can merge. Prefer GitHub's native
+# "Reviewer Gate (Actions)" check from GitHub Actions, (c) enables "dismiss
+# stale pull request approvals" and "require approval of the most recent
+# reviewable push", and (d) restricts who can merge. Prefer GitHub's native
 # required-reviewers/CODEOWNERS enforcement where possible - this workflow
 # exists to enforce a named allowlist without CODEOWNERS.
 
@@ -74,6 +80,13 @@ on:
 jobs:
   launch-reviewer-check:
     runs-on: ubuntu-latest
+    # GITHUB_TOKEN scopes for the fail-safe mirror step (the gate itself uses
+    # the least-privilege App token). This workflow only ever executes from
+    # the default branch, so a PR cannot repurpose these grants.
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
     # Comments: only PR comments spelling exactly "/recheck" proceed. The
     # body is only ever compared for equality, never interpolated, and the
     # commenter's identity is deliberately NOT a privilege: every run performs
@@ -117,6 +130,7 @@ jobs:
         permission-checks: write
 
     - name: Check if approved by authorized reviewer
+      id: gate
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         github-token: ${{ steps.app-token.outputs.token }}
@@ -153,56 +167,61 @@ jobs:
           }
 
           // Read the allowlist from the protected base branch, never from a
-          // PR head, so PR authors cannot edit it.
-          let allowedReviewers = FALLBACK_REVIEWERS;
-          let policyReadFailed = false;
-          try {
-            const { data } = await withRetries("allowlist read", () =>
-              github.rest.repos.getContent({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                path: ALLOWLIST_PATH,
-                ref: PROTECTED_BASE,
-              })
-            );
-            const content = Buffer.from(data.content, "base64").toString("utf8");
-            // An existing file is authoritative even when empty: an
-            // intentionally emptied allowlist means "nobody may approve",
-            // and must not silently re-enable the hardcoded fallback.
-            allowedReviewers = content.split(/\s+/).filter(Boolean);
-          } catch (error) {
-            if (error.status === 404) {
-              // A 404 does not by itself prove the file is absent: an
-              // unreadable/missing protected ref surfaces the same way. Only
-              // fall back to the hardcoded list when the protected ref is
-              // provably readable (so the 404 really means "no policy file");
-              // otherwise fail closed like any other policy-read failure.
-              try {
-                await withRetries("protected ref probe", () =>
-                  github.rest.git.getRef({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    ref: `heads/${PROTECTED_BASE}`,
-                  })
-                );
-                core.info("Allowlist file absent; using hardcoded fallback.");
-              } catch (probeError) {
-                core.warning(
-                  `Allowlist 404 with unreadable ${PROTECTED_BASE} ref; failing closed.`
-                );
-                policyReadFailed = true;
-                allowedReviewers = [];
+          // PR head, so PR authors cannot edit it. Extracted to a function
+          // because the publish phase re-reads policy before any success is
+          // published (a mid-sweep policy change must not ship on old policy).
+          async function readAllowlist() {
+            try {
+              const { data } = await withRetries("allowlist read", () =>
+                github.rest.repos.getContent({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  path: ALLOWLIST_PATH,
+                  ref: PROTECTED_BASE,
+                })
+              );
+              const content = Buffer.from(data.content, "base64").toString("utf8");
+              // An existing file is authoritative even when empty: an
+              // intentionally emptied allowlist means "nobody may approve",
+              // and must not silently re-enable the hardcoded fallback.
+              return { list: content.split(/\s+/).filter(Boolean), failed: false };
+            } catch (error) {
+              if (error.status === 404) {
+                // A 404 does not by itself prove the file is absent: an
+                // unreadable/missing protected ref surfaces the same way.
+                // Only fall back to the hardcoded list when the protected ref
+                // is provably readable (so the 404 really means "no policy
+                // file"); otherwise fail closed like any other policy-read
+                // failure.
+                try {
+                  await withRetries("protected ref probe", () =>
+                    github.rest.git.getRef({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      ref: `heads/${PROTECTED_BASE}`,
+                    })
+                  );
+                  core.info("Allowlist file absent; using hardcoded fallback.");
+                  return { list: FALLBACK_REVIEWERS, failed: false };
+                } catch (probeError) {
+                  core.warning(
+                    `Allowlist 404 with unreadable ${PROTECTED_BASE} ref; failing closed.`
+                  );
+                  return { list: [], failed: true };
+                }
               }
-            } else {
               // Fail CLOSED: evaluate with an empty allowlist so a failure
               // check replaces any previously green result, instead of
               // aborting and leaving a stale success satisfying branch
               // protection.
               core.warning(`Allowlist read failed (${error.status}); failing closed.`);
-              policyReadFailed = true;
-              allowedReviewers = [];
+              return { list: [], failed: true };
             }
           }
+
+          const initialPolicy = await readAllowlist();
+          let allowedReviewers = initialPolicy.list;
+          let policyReadFailed = initialPolicy.failed;
 
           let sweepErrors = 0;
 
@@ -397,9 +416,36 @@ jobs:
                 `, and ${allowedReviewers.length - MAX_LISTED_REVIEWERS} more`
               : allowedReviewers.join(", ");
 
+          // Policy freshness: the sweep evaluated against the allowlist read
+          // at run start. If the protected allowlist changed (or became
+          // unreadable) while PRs were being evaluated, no SUCCESS computed
+          // from the old policy may be published - the queued push-triggered
+          // sweep will recompute from the new policy.
+          let policyChangedDuringSweep = false;
+          if ([...aggregateBySha.values()].some((a) => a.allApproved)) {
+            const freshPolicy = await readAllowlist();
+            const sameList =
+              !freshPolicy.failed &&
+              !policyReadFailed &&
+              JSON.stringify([...allowedReviewers].sort()) ===
+                JSON.stringify([...freshPolicy.list].sort());
+            if (!sameList) {
+              core.warning("Allowlist changed mid-sweep; downgrading successes.");
+              policyChangedDuringSweep = true;
+            }
+          }
+
+          // Every published verdict is exported for the fail-safe mirror step
+          // (which re-publishes them per head with the workflow's own token).
+          const publishedVerdicts = [];
+
           for (const [headSha, aggregate] of aggregateBySha) {
             let conclusion = aggregate.allApproved ? "success" : "failure";
             let staleDowngrade = false;
+            if (conclusion === "success" && policyChangedDuringSweep) {
+              conclusion = "failure";
+              staleDowngrade = true;
+            }
 
             // Pre-publish freshness re-read: the verdict above was computed
             // from reads taken earlier in the sweep, and review or policy
@@ -423,6 +469,7 @@ jobs:
                 }
               }
             }
+            publishedVerdicts.push({ headSha, conclusion });
 
             const sharedSuffix =
               aggregate.prNumbers.length > 1
@@ -470,6 +517,124 @@ jobs:
             }
           }
 
+          core.setOutput("verdicts", JSON.stringify(publishedVerdicts));
+
           if (sweepErrors > 0) {
             core.setFailed(`${sweepErrors} evaluation step(s) failed; see warnings.`);
+          }
+
+    - name: Publish fail-safe mirror check
+      # Runs even when App-token minting or the sweep fails (if: always()).
+      # The mirror is written with the workflow's own GITHUB_TOKEN, so an
+      # App-token outage cannot leave PR heads without a current verdict:
+      # when the gate step did not complete successfully, every open PR head
+      # receives a FAILURE mirror check. Requiring "Reviewer Gate (Actions)"
+      # in the Ruleset therefore makes mint/sweep outages fail closed PER
+      # HEAD - something the job's own check cannot provide, since on
+      # push/schedule runs that attaches to the default-branch commit, not to
+      # PR heads. The mirror is a liveness fail-safe only: authorization is
+      # always carried by the App-owned "Authorized Reviewer Check".
+      if: always()
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        GATE_OUTCOME: ${{ steps.gate.outcome }}
+        GATE_VERDICTS: ${{ steps.gate.outputs.verdicts }}
+      with:
+        script: |
+          const MIRROR_CHECK_NAME = "Reviewer Gate (Actions)";
+          const PROTECTED_BASE = "main";
+
+          async function withRetries(label, fn) {
+            const MAX_ATTEMPTS = 3;
+            for (let attempt = 1; ; attempt++) {
+              try {
+                return await fn();
+              } catch (error) {
+                if (attempt >= MAX_ATTEMPTS || error.status === 404) {
+                  throw error;
+                }
+                core.warning(
+                  `${label}: attempt ${attempt} failed (${error.message}); retrying`
+                );
+                await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+              }
+            }
+          }
+
+          const gateSucceeded = process.env.GATE_OUTCOME === "success";
+          let verdicts = [];
+          try {
+            verdicts = JSON.parse(process.env.GATE_VERDICTS || "[]");
+          } catch (error) {
+            verdicts = [];
+          }
+
+          const byHead = new Map();
+          if (gateSucceeded) {
+            for (const verdict of verdicts) {
+              if (verdict && typeof verdict.headSha === "string") {
+                byHead.set(
+                  verdict.headSha,
+                  verdict.conclusion === "success" ? "success" : "failure"
+                );
+              }
+            }
+          }
+
+          if (!gateSucceeded) {
+            // The gate could not complete (token mint failure, enumeration
+            // failure, or per-PR errors): fail closed on every open PR head
+            // this token can see, replacing any previously green mirror.
+            let openPrs = [];
+            try {
+              openPrs = await withRetries("pulls.list (mirror)", () =>
+                github.paginate(github.rest.pulls.list, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: "open",
+                  base: PROTECTED_BASE,
+                  per_page: 100,
+                })
+              );
+            } catch (error) {
+              core.setFailed(
+                `Mirror could not enumerate open PRs: ${error.message}`
+              );
+              return;
+            }
+            for (const pr of openPrs) {
+              if (pr.head && pr.head.sha) {
+                byHead.set(pr.head.sha, "failure");
+              }
+            }
+          }
+
+          let mirrorErrors = 0;
+          for (const [headSha, conclusion] of byHead) {
+            const summary =
+              conclusion === "success"
+                ? "Liveness mirror of the App-published Authorized Reviewer Check for this head. Authorization is carried by the App check; this check only proves the gate's latest sweep completed."
+                : "Fail-safe: the reviewer gate could not complete its sweep for this head (or the head failed evaluation); failing closed until a sweep succeeds.";
+            try {
+              await withRetries(`mirror ${headSha.slice(0, 7)}`, () =>
+                github.rest.checks.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: MIRROR_CHECK_NAME,
+                  head_sha: headSha,
+                  status: "completed",
+                  conclusion: conclusion,
+                  output: { title: MIRROR_CHECK_NAME, summary: summary },
+                })
+              );
+            } catch (error) {
+              mirrorErrors += 1;
+              core.warning(
+                `Mirror check for ${headSha} could not be written: ${error.message}`
+              );
+            }
+          }
+
+          if (mirrorErrors > 0) {
+            core.setFailed(`${mirrorErrors} mirror check(s) could not be written.`);
           }
