@@ -233,13 +233,25 @@ jobs:
                     per_page: 100,
                   })
                 );
-                const { data: pr } = await withRetries(`pulls.get #${prNumber}`, () =>
-                  github.rest.pulls.get({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    pull_number: prNumber,
-                  })
-                );
+                // mergeable is computed lazily: null means "still
+                // computing", during which merge_commit_sha may be a STALE
+                // previous test merge. Poll briefly for a definitive answer;
+                // anything short of mergeable === true fails closed below.
+                let pr = null;
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                  const { data } = await withRetries(`pulls.get #${prNumber}`, () =>
+                    github.rest.pulls.get({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      pull_number: prNumber,
+                    })
+                  );
+                  pr = data;
+                  if (pr.mergeable !== null) {
+                    break;
+                  }
+                  await new Promise((resolve) => setTimeout(resolve, 5000));
+                }
                 // The files endpoint is capped at 3,000 entries; a truncated
                 // list could hide a CODEOWNERS change, so an incomplete scan
                 // forces merge-result validation (fail-closed direction).
@@ -253,7 +265,7 @@ jobs:
                         CODEOWNERS_PATHS.includes(file.previous_filename))
                   );
                 if (touchesCodeowners) {
-                  if (pr.merge_commit_sha && pr.mergeable !== false) {
+                  if (pr.merge_commit_sha && pr.mergeable === true) {
                     totalErrors += await validateRef(pr.merge_commit_sha);
                   } else {
                     // No computable merge result (conflict or still being
@@ -262,7 +274,7 @@ jobs:
                     // test-merge ready.
                     totalErrors += 1;
                     core.error(
-                      "PR modifies CODEOWNERS but no merge result is available to validate (conflict or merge still computing); failing closed - re-run once resolved."
+                      "PR modifies CODEOWNERS but no FRESH merge result is available (conflict, or mergeability still computing); failing closed - re-run once resolved."
                     );
                   }
                 }
