@@ -17,6 +17,12 @@ name: CODEOWNERS validity
 
 permissions:
   contents: read
+  # checks/pull-requests: on branch pushes the verdict is propagated as an
+  # explicit check run onto every open PR head targeting that branch (see
+  # the script), so a push that breaks CODEOWNERS immediately flips the
+  # validity check on already-open PRs instead of leaving stale successes.
+  checks: write
+  pull-requests: read
 
 on:
   # pull_request_target, NOT pull_request: this executes the workflow
@@ -80,4 +86,42 @@ jobs:
               );
             } else {
               core.info("CODEOWNERS is valid on all checked refs.");
+            }
+
+            // Branch pushes: propagate the verdict onto every open PR head
+            // targeting this branch. Their earlier validity checks were
+            // computed against the previous base state; a push that breaks
+            // (or fixes) the branch's CODEOWNERS must be reflected on those
+            // heads immediately, not at their next PR event.
+            if (!context.payload.pull_request) {
+              const branch = context.ref.replace("refs/heads/", "");
+              const conclusion = totalErrors > 0 ? "failure" : "success";
+              const prs = await github.paginate(github.rest.pulls.list, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: "open",
+                base: branch,
+                per_page: 100,
+              });
+              for (const pr of prs) {
+                if (!pr.head || typeof pr.head.sha !== "string") {
+                  continue;
+                }
+                await github.request("POST /repos/{owner}/{repo}/check-runs", {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: "codeowners-errors",
+                  head_sha: pr.head.sha,
+                  status: "completed",
+                  conclusion: conclusion,
+                  output: {
+                    title: "CODEOWNERS validity",
+                    summary:
+                      conclusion === "success"
+                        ? `Base branch ${branch} has a valid CODEOWNERS.`
+                        : `Base branch ${branch} now has ${totalErrors} CODEOWNERS error(s) - the native owner rule is fail-open until it is fixed on ${branch}.`,
+                  },
+                });
+                core.info(`Propagated ${conclusion} to PR #${pr.number} head.`);
+              }
             }
