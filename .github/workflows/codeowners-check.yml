@@ -11,7 +11,12 @@ permissions:
   contents: read
 
 on:
-  pull_request:
+  # pull_request_target, NOT pull_request: this executes the workflow
+  # definition from the DEFAULT BRANCH, so a PR cannot edit this file to
+  # skip the check or force success. Safe here because the job performs no
+  # checkout and only makes one read-only API call against the PR's head
+  # SHA (a server-provided value, never interpolated).
+  pull_request_target:
   push:
     branches:
       - main
