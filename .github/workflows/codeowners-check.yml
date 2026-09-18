@@ -28,11 +28,13 @@ permissions:
 on:
   # pull_request_target, NOT pull_request: this executes the workflow
   # definition from the PR's BASE branch (a protected branch here), so a PR
-  # cannot edit this file to skip the check or force success. Safe because
-  # the job performs no checkout and only makes one read-only API call
-  # against the PR's head SHA (a server-provided value, never interpolated).
-  # `edited` covers base-branch retargeting so a commit-scoped success from
-  # an earlier base cannot go stale unnoticed after a retarget round-trip.
+  # cannot edit this file to skip the check or force success. Safe usage:
+  # the job performs NO checkout and never executes or interpolates PR
+  # content - it only makes read-only contents/errors/PR-list API reads
+  # using server-provided identifiers, and writes codeowners-errors check
+  # runs (the checks: write scope above). `edited` covers base-branch
+  # retargeting so a commit-scoped success from an earlier base cannot go
+  # stale unnoticed after a retarget round-trip.
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review, edited]
     branches:
@@ -57,17 +59,53 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            // On PR events validate BOTH refs: the base branch holds the
+            // On PR events validate BOTH targets: the base branch holds the
             // CODEOWNERS GitHub actually enforces for this PR's review
             // requirement (its live state, hence the branch name), and the
             // head holds what this PR would make the enforced file for
             // every subsequent PR. On push events, the pushed commit.
-            const refs = context.payload.pull_request
-              ? [
-                  context.payload.pull_request.base.ref,
-                  context.payload.pull_request.head.sha,
-                ]
-              : [context.sha];
+            // {owner, repo, ref} triples: fork PR heads live in the HEAD
+            // repository, so head validation must address that repo - the
+            // base repo cannot resolve fork-only branches for the contents
+            // API. A deleted head repo yields no target and fails closed.
+            const baseTarget = context.payload.pull_request
+              ? {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: context.payload.pull_request.base.ref,
+                }
+              : null;
+            const headRepo = context.payload.pull_request?.head?.repo;
+            const headTarget = context.payload.pull_request
+              ? headRepo
+                ? {
+                    owner: headRepo.owner.login,
+                    repo: headRepo.name,
+                    ref: context.payload.pull_request.head.sha,
+                  }
+                : null
+              : {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: context.sha,
+                };
+
+            // Retry transient API failures so one blip cannot strand a stale
+            // check verdict; 404s are semantic and never retried.
+            async function withRetries(label, fn) {
+              const MAX_ATTEMPTS = 3;
+              for (let attempt = 1; ; attempt++) {
+                try {
+                  return await fn();
+                } catch (error) {
+                  if (attempt >= MAX_ATTEMPTS || error.status === 404) {
+                    throw error;
+                  }
+                  core.warning(`${label}: attempt ${attempt} failed; retrying`);
+                  await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+                }
+              }
+            }
 
             // Syntax errors alone do not prove coverage: an empty or
             // comment-only CODEOWNERS is valid to the errors API yet leaves
@@ -75,18 +113,17 @@ jobs:
             // each ref must ALSO contain at least one non-comment catch-all
             // rule (a line whose pattern is `*`); unknown/invalid owners on
             // that line are still caught by the errors API above.
-            async function hasCatchAllRule(ref) {
+            async function hasCatchAllRule(target) {
               for (const path of [".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS"]) {
                 let content;
                 try {
-                  const { data } = await github.request(
-                    "GET /repos/{owner}/{repo}/contents/{path}",
-                    {
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
+                  const { data } = await withRetries(`contents ${path}`, () =>
+                    github.request("GET /repos/{owner}/{repo}/contents/{path}", {
+                      owner: target.owner,
+                      repo: target.repo,
                       path: path,
-                      ref: ref,
-                    }
+                      ref: target.ref,
+                    })
                   );
                   content = Buffer.from(data.content, "base64").toString("utf8");
                 } catch (error) {
@@ -109,28 +146,27 @@ jobs:
               return false;
             }
 
-            // Validate one ref: API-reported errors plus catch-all coverage.
-            async function validateRef(ref) {
+            // Validate one target: API-reported errors plus catch-all coverage.
+            async function validateRef(target) {
               let errors = 0;
               // Raw endpoint call: immune to Octokit generated-method naming.
-              const { data } = await github.request(
-                "GET /repos/{owner}/{repo}/codeowners/errors",
-                {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: ref,
-                }
+              const { data } = await withRetries("codeowners/errors", () =>
+                github.request("GET /repos/{owner}/{repo}/codeowners/errors", {
+                  owner: target.owner,
+                  repo: target.repo,
+                  ref: target.ref,
+                })
               );
               for (const error of data.errors || []) {
                 errors += 1;
                 core.error(
-                  `[${ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
+                  `[${target.ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
                 );
               }
-              if (!(await hasCatchAllRule(ref))) {
+              if (!(await hasCatchAllRule(target))) {
                 errors += 1;
                 core.error(
-                  `[${ref}] CODEOWNERS has no catch-all (\`* @owner\`) rule - native code-owner review would have no owner to require for most paths (fail-open).`
+                  `[${target.ref}] CODEOWNERS has no catch-all (\`* @owner\`) rule - native code-owner review would have no owner to require for most paths (fail-open).`
                 );
               }
               return errors;
@@ -139,8 +175,16 @@ jobs:
             let totalErrors = 0;
             let validationError = false;
             try {
-              for (const ref of refs) {
-                totalErrors += await validateRef(ref);
+              for (const target of [baseTarget, headTarget]) {
+                if (target === null) {
+                  continue;
+                }
+                totalErrors += await validateRef(target);
+              }
+              if (context.payload.pull_request && headTarget === null) {
+                // Deleted head repository: nothing to validate - fail closed.
+                totalErrors += 1;
+                core.error("PR head repository is gone; cannot validate its CODEOWNERS.");
               }
             } catch (error) {
               // Fail CLOSED on both paths: the verdict becomes failure and is
@@ -163,9 +207,7 @@ jobs:
                 // in its own run), which is the corrective backstop for any
                 // residual interleaving.
                 try {
-                  const baseErrors = await validateRef(
-                    context.payload.pull_request.base.ref
-                  );
+                  const baseErrors = await validateRef(baseTarget);
                   if (baseErrors > 0) {
                     totalErrors += baseErrors;
                     conclusion = "failure";
@@ -177,7 +219,8 @@ jobs:
                 }
               }
               try {
-                await github.request("POST /repos/{owner}/{repo}/check-runs", {
+                await withRetries("publish PR-head check", () =>
+                  github.request("POST /repos/{owner}/{repo}/check-runs", {
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   name: "codeowners-errors",
@@ -191,7 +234,8 @@ jobs:
                         ? "CODEOWNERS is valid on the base branch and on this PR's proposed head."
                         : "CODEOWNERS is invalid or could not be validated on the base branch or this PR's head - invalid entries fail OPEN; fix before merging.",
                   },
-                });
+                  })
+                );
               } catch (error) {
                 validationError = true;
                 core.error(`Could not publish PR-head check: ${error.message}`);
@@ -232,18 +276,20 @@ jobs:
                   continue;
                 }
                 try {
-                  await github.request("POST /repos/{owner}/{repo}/check-runs", {
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    name: "codeowners-errors",
-                    head_sha: pr.head.sha,
-                    status: "completed",
-                    conclusion: "failure",
-                    output: {
-                      title: "CODEOWNERS validity",
-                      summary: `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. Re-run this check (or push to the PR) after the fix to go green.`,
-                    },
-                  });
+                  await withRetries(`propagate PR #${pr.number}`, () =>
+                    github.request("POST /repos/{owner}/{repo}/check-runs", {
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      name: "codeowners-errors",
+                      head_sha: pr.head.sha,
+                      status: "completed",
+                      conclusion: "failure",
+                      output: {
+                        title: "CODEOWNERS validity",
+                        summary: `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. Re-run this check (or push to the PR) after the fix to go green.`,
+                      },
+                    })
+                  );
                   core.info(`Propagated failure to PR #${pr.number} head.`);
                 } catch (error) {
                   // One head's write must not block the rest; the job still
