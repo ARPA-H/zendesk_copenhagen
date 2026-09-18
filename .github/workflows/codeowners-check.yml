@@ -109,10 +109,9 @@ jobs:
               return false;
             }
 
-            let totalErrors = 0;
-            let validationError = false;
-            try {
-            for (const ref of refs) {
+            // Validate one ref: API-reported errors plus catch-all coverage.
+            async function validateRef(ref) {
+              let errors = 0;
               // Raw endpoint call: immune to Octokit generated-method naming.
               const { data } = await github.request(
                 "GET /repos/{owner}/{repo}/codeowners/errors",
@@ -123,28 +122,80 @@ jobs:
                 }
               );
               for (const error of data.errors || []) {
-                totalErrors += 1;
+                errors += 1;
                 core.error(
                   `[${ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
                 );
               }
               if (!(await hasCatchAllRule(ref))) {
-                totalErrors += 1;
+                errors += 1;
                 core.error(
                   `[${ref}] CODEOWNERS has no catch-all (\`* @owner\`) rule - native code-owner review would have no owner to require for most paths (fail-open).`
                 );
               }
+              return errors;
             }
-            } catch (error) {
-              // PR events: throwing fails this PR's own required check -
-              // already fail-closed. Push events: fall through so the
-              // fail-closed FAILURE verdict still propagates to open PR
-              // heads instead of exiting with their stale successes intact.
-              if (context.payload.pull_request) {
-                throw error;
+
+            let totalErrors = 0;
+            let validationError = false;
+            try {
+              for (const ref of refs) {
+                totalErrors += await validateRef(ref);
               }
+            } catch (error) {
+              // Fail CLOSED on both paths: the verdict becomes failure and is
+              // still published explicitly below (never an early exit that
+              // would leave a previous success standing).
               validationError = true;
               core.error(`Validation could not complete: ${error.message}`);
+            }
+
+            // PR events: publish the verdict EXPLICITLY on the PR head SHA,
+            // so the required check is present on the commit being merged
+            // independent of how the event's implicit job check associates.
+            if (context.payload.pull_request) {
+              let conclusion =
+                totalErrors > 0 || validationError ? "failure" : "success";
+              if (conclusion === "success") {
+                // Revalidate the LIVE base immediately before publishing: the
+                // base may have changed while this run validated the head. A
+                // base-breaking push also propagates failures itself (below,
+                // in its own run), which is the corrective backstop for any
+                // residual interleaving.
+                try {
+                  const baseErrors = await validateRef(
+                    context.payload.pull_request.base.ref
+                  );
+                  if (baseErrors > 0) {
+                    totalErrors += baseErrors;
+                    conclusion = "failure";
+                  }
+                } catch (error) {
+                  validationError = true;
+                  conclusion = "failure";
+                  core.error(`Base revalidation failed: ${error.message}`);
+                }
+              }
+              try {
+                await github.request("POST /repos/{owner}/{repo}/check-runs", {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: "codeowners-errors",
+                  head_sha: context.payload.pull_request.head.sha,
+                  status: "completed",
+                  conclusion: conclusion,
+                  output: {
+                    title: "CODEOWNERS validity",
+                    summary:
+                      conclusion === "success"
+                        ? "CODEOWNERS is valid on the base branch and on this PR's proposed head."
+                        : "CODEOWNERS is invalid or could not be validated on the base branch or this PR's head - invalid entries fail OPEN; fix before merging.",
+                  },
+                });
+              } catch (error) {
+                validationError = true;
+                core.error(`Could not publish PR-head check: ${error.message}`);
+              }
             }
 
             // Branch pushes: propagate the verdict onto every open PR head
