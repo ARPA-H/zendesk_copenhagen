@@ -2,26 +2,35 @@ name: CODEOWNERS validity
 
 # CODEOWNERS fails OPEN when entries are invalid: GitHub silently ignores
 # unknown owners, and a file with no valid owners vacuously satisfies a
-# "require code owner review" rule. This check calls the codeowners/errors
-# API for the ref under test and fails on ANY error, so the review gate can
-# never be silently disabled by a typo, a renamed team, or a departed
-# account. Require this check in the `main` Ruleset.
+# "require code owner review" rule. This check validates CODEOWNERS via the
+# codeowners/errors API and fails on ANY error, so the review gate can never
+# be silently disabled by a typo, a renamed team, or a departed account.
+# Require this check ("codeowners-errors") in the `main` Ruleset.
 #
-# Scope: this is an ACCIDENT guard, not an authorization boundary. GitHub
-# determines code owners from the CODEOWNERS on the PR's BASE branch, so a
-# PR shipping a broken CODEOWNERS cannot weaken its own review requirement -
-# breakage only bites AFTER merge, and the push trigger below re-validates
-# main/sandbox from the trusted branch definition the moment that happens.
-# A forged same-name Actions check could only mask the advisory PR-time
-# signal, never bypass the native code-owner review itself.
+# What is validated, and in which repository context:
+#   - PR events: the LIVE base branch (the CODEOWNERS GitHub actually
+#     enforces for the PR), and - only when the PR modifies a CODEOWNERS
+#     path - the PR's MERGE RESULT (merge_commit_sha), both in the BASE
+#     repository context. Fork snapshots are never validated directly:
+#     owner validity is repository-scoped, so a fork context would produce
+#     wrong verdicts, and when the PR does not touch CODEOWNERS the merged
+#     file is the base file anyway.
+#   - Push events on main/sandbox: the pushed commit.
+#
+# Scope: this is an ACCIDENT guard, not an authorization boundary. A PR
+# shipping a broken CODEOWNERS cannot weaken its own review requirement
+# (GitHub reads the BASE branch's file); breakage bites only AFTER merge,
+# and the push trigger re-validates the branch the moment that happens. A
+# forged same-name Actions check could only mask this advisory signal,
+# never bypass native code-owner review itself.
 
 permissions:
   contents: read
-  # checks/pull-requests: on branch pushes a FAILURE verdict is propagated
-  # as an explicit check run onto every open PR head targeting that branch,
-  # so a push that breaks CODEOWNERS immediately flips already-open PRs.
-  # Successes are never pushed to heads (each PR re-earns green via its own
-  # run), making stale-success races impossible by construction.
+  # checks/pull-requests: PR runs publish/update the verdict explicitly on
+  # the PR head; on branch pushes a FAILURE verdict is propagated onto every
+  # open PR head targeting that branch. Successes are never pushed to heads
+  # from the push path (each PR re-earns green via its own run), making
+  # stale-success races impossible by construction.
   checks: write
   pull-requests: read
 
@@ -30,9 +39,9 @@ on:
   # definition from the PR's BASE branch (a protected branch here), so a PR
   # cannot edit this file to skip the check or force success. Safe usage:
   # the job performs NO checkout and never executes or interpolates PR
-  # content - it only makes read-only contents/errors/PR-list API reads
-  # using server-provided identifiers, and writes codeowners-errors check
-  # runs (the checks: write scope above). `edited` covers base-branch
+  # content - it only makes read-only contents/errors/PR API reads using
+  # server-provided identifiers, and writes codeowners-errors check runs
+  # (the checks: write scope above). `edited` covers base-branch
   # retargeting so a commit-scoped success from an earlier base cannot go
   # stale unnoticed after a retarget round-trip.
   pull_request_target:
@@ -59,36 +68,13 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            // On PR events validate BOTH targets: the base branch holds the
-            // CODEOWNERS GitHub actually enforces for this PR's review
-            // requirement (its live state, hence the branch name), and the
-            // head holds what this PR would make the enforced file for
-            // every subsequent PR. On push events, the pushed commit.
-            // {owner, repo, ref} triples: fork PR heads live in the HEAD
-            // repository, so head validation must address that repo - the
-            // base repo cannot resolve fork-only branches for the contents
-            // API. A deleted head repo yields no target and fails closed.
-            const baseTarget = context.payload.pull_request
-              ? {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: context.payload.pull_request.base.ref,
-                }
-              : null;
-            const headRepo = context.payload.pull_request?.head?.repo;
-            const headTarget = context.payload.pull_request
-              ? headRepo
-                ? {
-                    owner: headRepo.owner.login,
-                    repo: headRepo.name,
-                    ref: context.payload.pull_request.head.sha,
-                  }
-                : null
-              : {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: context.sha,
-                };
+            const CHECK_NAME = "codeowners-errors";
+            const CHECK_TITLE = "CODEOWNERS validity";
+            const CODEOWNERS_PATHS = [
+              ".github/CODEOWNERS",
+              "CODEOWNERS",
+              "docs/CODEOWNERS",
+            ];
 
             // Retry transient API failures so one blip cannot strand a stale
             // check verdict; 404s are semantic and never retried.
@@ -112,17 +98,17 @@ jobs:
             // the native owner rule with nobody to require (fail-open). So
             // each ref must ALSO contain at least one non-comment catch-all
             // rule (a line whose pattern is `*`); unknown/invalid owners on
-            // that line are still caught by the errors API above.
-            async function hasCatchAllRule(target) {
-              for (const path of [".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS"]) {
+            // that line are still caught by the errors API.
+            async function hasCatchAllRule(ref) {
+              for (const path of CODEOWNERS_PATHS) {
                 let content;
                 try {
                   const { data } = await withRetries(`contents ${path}`, () =>
                     github.request("GET /repos/{owner}/{repo}/contents/{path}", {
-                      owner: target.owner,
-                      repo: target.repo,
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
                       path: path,
-                      ref: target.ref,
+                      ref: ref,
                     })
                   );
                   content = Buffer.from(data.content, "base64").toString("utf8");
@@ -146,68 +132,148 @@ jobs:
               return false;
             }
 
-            // Validate one target: API-reported errors plus catch-all coverage.
-            async function validateRef(target) {
+            // Validate one ref in the BASE repository context: API-reported
+            // errors plus catch-all coverage.
+            async function validateRef(ref) {
               let errors = 0;
               // Raw endpoint call: immune to Octokit generated-method naming.
               const { data } = await withRetries("codeowners/errors", () =>
                 github.request("GET /repos/{owner}/{repo}/codeowners/errors", {
-                  owner: target.owner,
-                  repo: target.repo,
-                  ref: target.ref,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: ref,
                 })
               );
               for (const error of data.errors || []) {
                 errors += 1;
                 core.error(
-                  `[${target.ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
+                  `[${ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
                 );
               }
-              if (!(await hasCatchAllRule(target))) {
+              if (!(await hasCatchAllRule(ref))) {
                 errors += 1;
                 core.error(
-                  `[${target.ref}] CODEOWNERS has no catch-all (\`* @owner\`) rule - native code-owner review would have no owner to require for most paths (fail-open).`
+                  `[${ref}] CODEOWNERS has no catch-all (\`* @owner\`) rule - native code-owner review would have no owner to require for most paths (fail-open).`
                 );
               }
               return errors;
             }
 
-            let totalErrors = 0;
-            let validationError = false;
-            try {
-              for (const target of [baseTarget, headTarget]) {
-                if (target === null) {
-                  continue;
-                }
-                totalErrors += await validateRef(target);
+            // Publish the verdict as ONE mutable check run per head: update
+            // the existing explicit run when present (matched by our output
+            // title so the workflow job's own implicit check is never
+            // touched), otherwise create it.
+            async function publishCheck(headSha, conclusion, summary) {
+              const { data } = await withRetries(`checks.list ${headSha.slice(0, 7)}`, () =>
+                github.request("GET /repos/{owner}/{repo}/commits/{ref}/check-runs", {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: headSha,
+                  check_name: CHECK_NAME,
+                  filter: "latest",
+                  per_page: 50,
+                })
+              );
+              const existing = (data.check_runs || []).find(
+                (check) =>
+                  check.app &&
+                  check.app.slug === "github-actions" &&
+                  check.output &&
+                  check.output.title === CHECK_TITLE
+              );
+              const body = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                status: "completed",
+                conclusion: conclusion,
+                output: { title: CHECK_TITLE, summary: summary },
+              };
+              if (existing) {
+                await withRetries(`checks.update ${headSha.slice(0, 7)}`, () =>
+                  github.request(
+                    "PATCH /repos/{owner}/{repo}/check-runs/{check_run_id}",
+                    { ...body, check_run_id: existing.id }
+                  )
+                );
+              } else {
+                await withRetries(`checks.create ${headSha.slice(0, 7)}`, () =>
+                  github.request("POST /repos/{owner}/{repo}/check-runs", {
+                    ...body,
+                    name: CHECK_NAME,
+                    head_sha: headSha,
+                  })
+                );
               }
-              if (context.payload.pull_request && headTarget === null) {
-                // Deleted head repository: nothing to validate - fail closed.
-                totalErrors += 1;
-                core.error("PR head repository is gone; cannot validate its CODEOWNERS.");
-              }
-            } catch (error) {
-              // Fail CLOSED on both paths: the verdict becomes failure and is
-              // still published explicitly below (never an early exit that
-              // would leave a previous success standing).
-              validationError = true;
-              core.error(`Validation could not complete: ${error.message}`);
             }
 
-            // PR events: publish the verdict EXPLICITLY on the PR head SHA,
-            // so the required check is present on the commit being merged
-            // independent of how the event's implicit job check associates.
+            let totalErrors = 0;
+            let validationError = false;
+
             if (context.payload.pull_request) {
+              const prNumber = context.payload.pull_request.number;
+              const headSha = context.payload.pull_request.head.sha;
+              const baseRef = context.payload.pull_request.base.ref;
+
+              try {
+                // Always validate the LIVE base branch: it holds the
+                // CODEOWNERS GitHub enforces for this PR's review rule.
+                totalErrors += await validateRef(baseRef);
+
+                // Only when the PR modifies a CODEOWNERS path does its
+                // content change what will be enforced after merge - and the
+                // correct object to validate is the MERGE RESULT, in the
+                // base repository context (owner validity is repo-scoped, so
+                // a fork snapshot would be validated against the wrong
+                // collaborator set).
+                const files = await withRetries("pulls.listFiles", () =>
+                  github.paginate(github.rest.pulls.listFiles, {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prNumber,
+                    per_page: 100,
+                  })
+                );
+                const touchesCodeowners = files.some(
+                  (file) =>
+                    CODEOWNERS_PATHS.includes(file.filename) ||
+                    (file.previous_filename &&
+                      CODEOWNERS_PATHS.includes(file.previous_filename))
+                );
+                if (touchesCodeowners) {
+                  const { data: pr } = await withRetries(`pulls.get #${prNumber}`, () =>
+                    github.rest.pulls.get({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      pull_number: prNumber,
+                    })
+                  );
+                  if (pr.merge_commit_sha && pr.mergeable !== false) {
+                    totalErrors += await validateRef(pr.merge_commit_sha);
+                  } else {
+                    // No computable merge result (conflict or still being
+                    // computed): fail closed - conflicts block merge natively
+                    // anyway, and a re-run validates once GitHub has the
+                    // test-merge ready.
+                    totalErrors += 1;
+                    core.error(
+                      "PR modifies CODEOWNERS but no merge result is available to validate (conflict or merge still computing); failing closed - re-run once resolved."
+                    );
+                  }
+                }
+              } catch (error) {
+                validationError = true;
+                core.error(`Validation could not complete: ${error.message}`);
+              }
+
               let conclusion =
                 totalErrors > 0 || validationError ? "failure" : "success";
               if (conclusion === "success") {
                 // Revalidate the LIVE base immediately before publishing: the
-                // base may have changed while this run validated the head. A
-                // base-breaking push also propagates failures itself (below,
-                // in its own run), which is the corrective backstop for any
-                // residual interleaving.
+                // base may have changed while this run worked. A base-breaking
+                // push also propagates failures from its own run, which is the
+                // corrective backstop for any residual interleaving.
                 try {
-                  const baseErrors = await validateRef(baseTarget);
+                  const baseErrors = await validateRef(baseRef);
                   if (baseErrors > 0) {
                     totalErrors += baseErrors;
                     conclusion = "failure";
@@ -218,86 +284,78 @@ jobs:
                   core.error(`Base revalidation failed: ${error.message}`);
                 }
               }
+
               try {
-                await withRetries("publish PR-head check", () =>
-                  github.request("POST /repos/{owner}/{repo}/check-runs", {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: "codeowners-errors",
-                  head_sha: context.payload.pull_request.head.sha,
-                  status: "completed",
-                  conclusion: conclusion,
-                  output: {
-                    title: "CODEOWNERS validity",
-                    summary:
-                      conclusion === "success"
-                        ? "CODEOWNERS is valid on the base branch and on this PR's proposed head."
-                        : "CODEOWNERS is invalid or could not be validated on the base branch or this PR's head - invalid entries fail OPEN; fix before merging.",
-                  },
-                  })
+                await publishCheck(
+                  headSha,
+                  conclusion,
+                  conclusion === "success"
+                    ? "CODEOWNERS is valid on the base branch (and in this PR's merge result, when the PR modifies it)."
+                    : "CODEOWNERS is invalid or could not be validated on the base branch or in this PR's merge result - invalid entries fail OPEN; fix before merging."
                 );
               } catch (error) {
                 validationError = true;
                 core.error(`Could not publish PR-head check: ${error.message}`);
               }
-            }
-
-            // Branch pushes: propagate the verdict onto every open PR head
-            // targeting this branch. Their earlier validity checks were
-            // computed against the previous base state; a push that breaks
-            // (or fixes) the branch's CODEOWNERS must be reflected on those
-            // heads immediately, not at their next PR event.
-            if (!context.payload.pull_request) {
+            } else {
+              // Push to main/sandbox: validate the pushed commit, then
+              // propagate FAILURE ONLY onto every open PR head targeting
+              // this branch. A success is never written to PR heads from
+              // this path - stale success is impossible by construction -
+              // and after a fix lands each PR re-earns green via its own
+              // run or a manual re-run (stated in the check summary).
               const branch = context.ref.replace("refs/heads/", "");
-              const conclusion =
-                totalErrors > 0 || validationError ? "failure" : "success";
-              // Push runs propagate FAILURE ONLY. A success is never written
-              // to PR heads from this path, which makes a stale success
-              // impossible BY CONSTRUCTION - there is no freshness probe to
-              // race and no read-then-write window to exploit. Failure is
-              // always safe to write (fail-closed), and after a fix lands on
-              // the base, each PR's verdict returns to green via its own
-              // pull_request_target run (next push/edit) or a manual re-run.
-              if (conclusion === "success") {
+              try {
+                totalErrors += await validateRef(context.sha);
+              } catch (error) {
+                validationError = true;
+                core.error(`Validation could not complete: ${error.message}`);
+              }
+
+              if (totalErrors === 0 && !validationError) {
                 core.info(
                   `Base ${branch} CODEOWNERS valid; PR-head verdicts refresh on their own events.`
                 );
-                return;
-              }
-              const prs = await github.paginate(github.rest.pulls.list, {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                state: "open",
-                base: branch,
-                per_page: 100,
-              });
-              for (const pr of prs) {
-                if (!pr.head || typeof pr.head.sha !== "string") {
-                  continue;
-                }
+              } else {
+                let prs = [];
                 try {
-                  await withRetries(`propagate PR #${pr.number}`, () =>
-                    github.request("POST /repos/{owner}/{repo}/check-runs", {
+                  prs = await withRetries("pulls.list", () =>
+                    github.paginate(github.rest.pulls.list, {
                       owner: context.repo.owner,
                       repo: context.repo.repo,
-                      name: "codeowners-errors",
-                      head_sha: pr.head.sha,
-                      status: "completed",
-                      conclusion: "failure",
-                      output: {
-                        title: "CODEOWNERS validity",
-                        summary: `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. Re-run this check (or push to the PR) after the fix to go green.`,
-                      },
+                      state: "open",
+                      base: branch,
+                      per_page: 100,
                     })
                   );
-                  core.info(`Propagated failure to PR #${pr.number} head.`);
                 } catch (error) {
-                  // One head's write must not block the rest; the job still
-                  // fails below so the miss is visible and retried.
+                  // Cannot enumerate heads -> cannot write to them; the
+                  // failed run is the durable, visible signal and a re-run
+                  // (or the next PR/push event) reconciles. A sustained API
+                  // outage freezing prior checks is inherent to any
+                  // API-driven writer.
                   validationError = true;
-                  core.error(
-                    `Could not propagate to PR #${pr.number}: ${error.message}`
-                  );
+                  core.error(`Could not enumerate open PRs: ${error.message}`);
+                }
+                for (const pr of prs) {
+                  if (!pr.head || typeof pr.head.sha !== "string") {
+                    continue;
+                  }
+                  try {
+                    await publishCheck(
+                      pr.head.sha,
+                      "failure",
+                      `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. Re-run this check (or push to the PR) after the fix to go green.`
+                    );
+                    core.info(`Propagated failure to PR #${pr.number} head.`);
+                  } catch (error) {
+                    // One head's write must not block the rest; the job still
+                    // fails below so the miss is visible and re-runnable.
+                    validationError = true;
+                    core.error(
+                      `Could not propagate to PR #${pr.number}: ${error.message}`
+                    );
+                  }
                 }
               }
             }
