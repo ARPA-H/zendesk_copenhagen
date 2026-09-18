@@ -110,6 +110,8 @@ jobs:
             }
 
             let totalErrors = 0;
+            let validationError = false;
+            try {
             for (const ref of refs) {
               // Raw endpoint call: immune to Octokit generated-method naming.
               const { data } = await github.request(
@@ -133,12 +135,16 @@ jobs:
                 );
               }
             }
-            if (totalErrors > 0) {
-              core.setFailed(
-                `${totalErrors} CODEOWNERS error(s) - invalid entries fail OPEN, fix them before merging.`
-              );
-            } else {
-              core.info("CODEOWNERS is valid on all checked refs.");
+            } catch (error) {
+              // PR events: throwing fails this PR's own required check -
+              // already fail-closed. Push events: fall through so the
+              // fail-closed FAILURE verdict still propagates to open PR
+              // heads instead of exiting with their stale successes intact.
+              if (context.payload.pull_request) {
+                throw error;
+              }
+              validationError = true;
+              core.error(`Validation could not complete: ${error.message}`);
             }
 
             // Branch pushes: propagate the verdict onto every open PR head
@@ -148,25 +154,38 @@ jobs:
             // heads immediately, not at their next PR event.
             if (!context.payload.pull_request) {
               const branch = context.ref.replace("refs/heads/", "");
-              // Freshness gate: only the run for the CURRENT branch head may
-              // propagate. If the branch advanced past this push, the newer
-              // push's run owns the verdict - a stale valid-push run must
-              // never overwrite a newer invalid-push failure on PR heads.
-              const { data: refData } = await github.request(
-                "GET /repos/{owner}/{repo}/git/ref/{ref}",
-                {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  ref: `heads/${branch}`,
+              const conclusion =
+                totalErrors > 0 || validationError ? "failure" : "success";
+              // Freshness gate for SUCCESS only: a stale success is the
+              // dangerous write, so success may propagate only while this
+              // push is still the branch head (checked as late as possible;
+              // the per-branch queue orders runs, so the residual window is
+              // milliseconds). FAILURE propagates unconditionally - the
+              // fail-closed direction is always safe to write, and any
+              // newer run's own propagation supersedes it on completion.
+              if (conclusion === "success") {
+                let headSha = null;
+                try {
+                  const { data: refData } = await github.request(
+                    "GET /repos/{owner}/{repo}/git/ref/{ref}",
+                    {
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      ref: `heads/${branch}`,
+                    }
+                  );
+                  headSha = refData.object.sha;
+                } catch (error) {
+                  core.warning(`Freshness probe failed: ${error.message}`);
                 }
-              );
-              if (refData.object.sha !== context.sha) {
-                core.info(
-                  `Branch ${branch} advanced past this push; skipping propagation.`
-                );
-                return;
+                if (headSha !== context.sha) {
+                  core.info(
+                    `Branch ${branch} advanced past this push (or freshness unknown); skipping success propagation.`
+                  );
+                  core.setFailed("Superseded run; the newer run owns the verdict.");
+                  return;
+                }
               }
-              const conclusion = totalErrors > 0 ? "failure" : "success";
               const prs = await github.paginate(github.rest.pulls.list, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -178,21 +197,40 @@ jobs:
                 if (!pr.head || typeof pr.head.sha !== "string") {
                   continue;
                 }
-                await github.request("POST /repos/{owner}/{repo}/check-runs", {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  name: "codeowners-errors",
-                  head_sha: pr.head.sha,
-                  status: "completed",
-                  conclusion: conclusion,
-                  output: {
-                    title: "CODEOWNERS validity",
-                    summary:
-                      conclusion === "success"
-                        ? `Base branch ${branch} has a valid CODEOWNERS.`
-                        : `Base branch ${branch} now has ${totalErrors} CODEOWNERS error(s) - the native owner rule is fail-open until it is fixed on ${branch}.`,
-                  },
-                });
-                core.info(`Propagated ${conclusion} to PR #${pr.number} head.`);
+                try {
+                  await github.request("POST /repos/{owner}/{repo}/check-runs", {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    name: "codeowners-errors",
+                    head_sha: pr.head.sha,
+                    status: "completed",
+                    conclusion: conclusion,
+                    output: {
+                      title: "CODEOWNERS validity",
+                      summary:
+                        conclusion === "success"
+                          ? `Base branch ${branch} has a valid CODEOWNERS.`
+                          : `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}.`,
+                    },
+                  });
+                  core.info(`Propagated ${conclusion} to PR #${pr.number} head.`);
+                } catch (error) {
+                  // One head's write must not block the rest; the job still
+                  // fails below so the miss is visible and retried.
+                  validationError = true;
+                  core.error(
+                    `Could not propagate to PR #${pr.number}: ${error.message}`
+                  );
+                }
               }
+            }
+
+            if (totalErrors > 0 || validationError) {
+              core.setFailed(
+                `${totalErrors} CODEOWNERS error(s)` +
+                  (validationError ? " plus validation/propagation API failure(s)" : "") +
+                  " - invalid entries fail OPEN, fix before merging."
+              );
+            } else {
+              core.info("CODEOWNERS is valid on all checked refs.");
             }
