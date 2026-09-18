@@ -45,6 +45,13 @@ on:
 jobs:
   codeowners-errors:
     runs-on: ubuntu-latest
+    # Serialize runs per branch/PR so an older push run cannot finish after
+    # a newer one (throttle only - correctness comes from the in-script
+    # branch-head freshness gate below, which refuses to propagate a
+    # verdict for a push that is no longer the branch head).
+    concurrency:
+      group: codeowners-validity-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
     steps:
       - name: Fail on any CODEOWNERS error
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
@@ -141,6 +148,24 @@ jobs:
             // heads immediately, not at their next PR event.
             if (!context.payload.pull_request) {
               const branch = context.ref.replace("refs/heads/", "");
+              // Freshness gate: only the run for the CURRENT branch head may
+              // propagate. If the branch advanced past this push, the newer
+              // push's run owns the verdict - a stale valid-push run must
+              // never overwrite a newer invalid-push failure on PR heads.
+              const { data: refData } = await github.request(
+                "GET /repos/{owner}/{repo}/git/ref/{ref}",
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${branch}`,
+                }
+              );
+              if (refData.object.sha !== context.sha) {
+                core.info(
+                  `Branch ${branch} advanced past this push; skipping propagation.`
+                );
+                return;
+              }
               const conclusion = totalErrors > 0 ? "failure" : "success";
               const prs = await github.paginate(github.rest.pulls.list, {
                 owner: context.repo.owner,
