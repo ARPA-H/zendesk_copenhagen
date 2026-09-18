@@ -1,14 +1,10 @@
-# Maintained by ARPA-H. Every path requires review from a listed owner via
-# the `main` Ruleset's "require code owner review" rule - GitHub enforces
-# this server-side against live review state, so it cannot be forged or
-# staled by any workflow.
+# CODEOWNERS — zendesk_copenhagen
 #
-# IMPORTANT: CODEOWNERS fails OPEN on invalid entries (unknown users/teams
-# are silently ignored, and a file with no valid owners satisfies the rule
-# vacuously - exactly what happened with the inherited upstream Zendesk
-# teams this file used to name). The "CODEOWNERS validity" workflow calls
-# GitHub's codeowners/errors API on every PR and fails on any error, so a
-# typo or a departed account can never silently disable review enforcement
-# again. Owners must have write access to count.
+# Each line is a file pattern followed by one or more owners.
+# The last matching pattern takes precedence.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Owners must have Triage or above on the repo; GitHub silently ignores entries for users
+# without write access.
 
 * @petersonjdNIH @ksavilaNIH
