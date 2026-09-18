@@ -233,20 +233,26 @@ jobs:
                     per_page: 100,
                   })
                 );
-                const touchesCodeowners = files.some(
-                  (file) =>
-                    CODEOWNERS_PATHS.includes(file.filename) ||
-                    (file.previous_filename &&
-                      CODEOWNERS_PATHS.includes(file.previous_filename))
+                const { data: pr } = await withRetries(`pulls.get #${prNumber}`, () =>
+                  github.rest.pulls.get({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prNumber,
+                  })
                 );
-                if (touchesCodeowners) {
-                  const { data: pr } = await withRetries(`pulls.get #${prNumber}`, () =>
-                    github.rest.pulls.get({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      pull_number: prNumber,
-                    })
+                // The files endpoint is capped at 3,000 entries; a truncated
+                // list could hide a CODEOWNERS change, so an incomplete scan
+                // forces merge-result validation (fail-closed direction).
+                const fileScanComplete = files.length >= pr.changed_files;
+                const touchesCodeowners =
+                  !fileScanComplete ||
+                  files.some(
+                    (file) =>
+                      CODEOWNERS_PATHS.includes(file.filename) ||
+                      (file.previous_filename &&
+                        CODEOWNERS_PATHS.includes(file.previous_filename))
                   );
+                if (touchesCodeowners) {
                   if (pr.merge_commit_sha && pr.mergeable !== false) {
                     totalErrors += await validateRef(pr.merge_commit_sha);
                   } else {
