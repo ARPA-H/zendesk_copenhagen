@@ -55,12 +55,17 @@ name: Enforce Required Reviewers
 #      the repository-level copy of the secret DELETED). Without this, any
 #      same-repo PR can add its own workflow, read the repo-level secret,
 #      mint the same App token, and forge this gate's check.
-#   2. A branch-protection Ruleset on `main` that (a) requires the
-#      "Authorized Reviewer Check" from this repository's GitHub App,
-#      (b) requires the "Reviewer Gate (Actions)" check from GitHub Actions,
-#      (c) enables "dismiss stale pull request approvals" and "require
-#      approval of the most recent reviewable push", and (d) restricts who
-#      can merge.
+#   2. A branch-protection Ruleset on `main` that (a) requires a pull
+#      request with AT LEAST 1 required approval, enabling "dismiss stale
+#      pull request approvals" and "require approval of the most recent
+#      reviewable push" - these native rules are evaluated server-side
+#      against live review state at merge time, so NO workflow-forged or
+#      stale check can substitute for a real, current approval (this is the
+#      terminal backstop for every check-forgery and outage-staleness chain;
+#      the workflow's checks add the WHO on top: only allowlisted logins
+#      count); (b) requires the "Authorized Reviewer Check" from this
+#      repository's GitHub App; (c) requires the "Reviewer Gate (Actions)"
+#      check (liveness); and (d) restricts who can merge.
 # Prefer GitHub's native required-reviewers/CODEOWNERS enforcement where
 # possible - this workflow exists to enforce a named allowlist without
 # CODEOWNERS.
