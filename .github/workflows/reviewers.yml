@@ -452,31 +452,29 @@ jobs:
                 `, and ${allowedReviewers.length - MAX_LISTED_REVIEWERS} more`
               : allowedReviewers.join(", ");
 
-          // Policy freshness: the sweep evaluated against the allowlist read
-          // at run start. If the protected allowlist changed (or became
-          // unreadable) while PRs were being evaluated, no SUCCESS computed
-          // from the old policy may be published - the queued push-triggered
-          // sweep will recompute from the new policy.
-          let policyChangedDuringSweep = false;
-          if ([...aggregateBySha.values()].some((a) => a.allApproved)) {
-            const freshPolicy = await readAllowlist();
-            const sameList =
-              !freshPolicy.failed &&
-              !policyReadFailed &&
-              JSON.stringify([...allowedReviewers].sort()) ===
-                JSON.stringify([...freshPolicy.list].sort());
-            if (!sameList) {
-              core.warning("Allowlist changed mid-sweep; downgrading successes.");
-              policyChangedDuringSweep = true;
-            }
-          }
-
           for (const [headSha, aggregate] of aggregateBySha) {
             let conclusion = aggregate.allApproved ? "success" : "failure";
             let staleDowngrade = false;
-            if (conclusion === "success" && policyChangedDuringSweep) {
-              conclusion = "failure";
-              staleDowngrade = true;
+
+            // Policy freshness PER SUCCESS PUBLISH: the sweep evaluated
+            // against the allowlist read at run start, and a reviewer
+            // removed on main at any point during the sweep must not be
+            // honored by a later publish in this same run. Re-read the
+            // protected policy immediately before each success; any change
+            // (or an unreadable re-read) downgrades fail-closed - the
+            // push-triggered sweep recomputes from the new policy.
+            if (conclusion === "success") {
+              const freshPolicy = await readAllowlist();
+              const sameList =
+                !freshPolicy.failed &&
+                !policyReadFailed &&
+                JSON.stringify([...allowedReviewers].sort()) ===
+                  JSON.stringify([...freshPolicy.list].sort());
+              if (!sameList) {
+                core.warning("Allowlist changed mid-sweep; downgrading success.");
+                conclusion = "failure";
+                staleDowngrade = true;
+              }
             }
 
             // Pre-publish freshness re-read: the verdict above was computed
