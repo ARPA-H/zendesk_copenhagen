@@ -112,6 +112,13 @@ jobs:
       group: reviewer-check
       cancel-in-progress: false
     steps:
+    # Recorded before anything that can fail: the mirror step uses this to
+    # decide which App-published checks are FRESH (written by this run) vs
+    # stale leftovers from an earlier run.
+    - name: Record run start
+      id: stamp
+      run: echo "started=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
     - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
       id: app-token
       with:
@@ -435,10 +442,6 @@ jobs:
             }
           }
 
-          // Every published verdict is exported for the fail-safe mirror step
-          // (which re-publishes them per head with the workflow's own token).
-          const publishedVerdicts = [];
-
           for (const [headSha, aggregate] of aggregateBySha) {
             let conclusion = aggregate.allApproved ? "success" : "failure";
             let staleDowngrade = false;
@@ -462,14 +465,21 @@ jobs:
                 if (fresh.excluded) {
                   continue;
                 }
-                if (fresh.evalError || !fresh.approved || fresh.headSha !== headSha) {
+                if (fresh.evalError) {
+                  // An API error during the freshness re-read is reported as
+                  // an API error (not as a state change) so operators see
+                  // the true cause and the retry path.
+                  conclusion = "failure";
+                  aggregate.anyError = true;
+                  break;
+                }
+                if (!fresh.approved || fresh.headSha !== headSha) {
                   conclusion = "failure";
                   staleDowngrade = true;
                   break;
                 }
               }
             }
-            publishedVerdicts.push({ headSha, conclusion });
 
             const sharedSuffix =
               aggregate.prNumbers.length > 1
@@ -479,7 +489,7 @@ jobs:
               conclusion === "success"
                 ? "✅ Approved by authorized reviewer" + sharedSuffix
                 : staleDowngrade
-                  ? "❌ Review or policy state changed while this sweep was evaluating; failing closed pending the already-queued re-evaluation"
+                  ? "❌ Review or policy state changed while this sweep was evaluating; failing closed - the next sweep (PR event, /recheck, allowlist push, or the half-hourly schedule) re-evaluates"
                   : aggregate.anyError
                     ? "❌ Evaluation could not complete (API error - see the workflow run log); failing closed until a sweep succeeds"
                     : policyReadFailed
@@ -517,8 +527,6 @@ jobs:
             }
           }
 
-          core.setOutput("verdicts", JSON.stringify(publishedVerdicts));
-
           if (sweepErrors > 0) {
             core.setFailed(`${sweepErrors} evaluation step(s) failed; see warnings.`);
           }
@@ -526,22 +534,29 @@ jobs:
     - name: Publish fail-safe mirror check
       # Runs even when App-token minting or the sweep fails (if: always()).
       # The mirror is written with the workflow's own GITHUB_TOKEN, so an
-      # App-token outage cannot leave PR heads without a current verdict:
-      # when the gate step did not complete successfully, every open PR head
-      # receives a FAILURE mirror check. Requiring "Reviewer Gate (Actions)"
-      # in the Ruleset therefore makes mint/sweep outages fail closed PER
-      # HEAD - something the job's own check cannot provide, since on
-      # push/schedule runs that attaches to the default-branch commit, not to
-      # PR heads. The mirror is a liveness fail-safe only: authorization is
-      # always carried by the App-owned "Authorized Reviewer Check".
+      # App-token outage cannot leave PR heads without a current verdict.
+      # Per-head freshness is derived from the App's own checks rather than
+      # from a serialized verdict hand-off (which would be unbounded on large
+      # sweeps and would discard healthy heads on a partial gate failure):
+      # for every open PR head, the latest non-Actions-authored "Authorized
+      # Reviewer Check" is FRESH if it completed after this run started -
+      # the serialized concurrency group guarantees no other writer ran in
+      # between - and its conclusion is mirrored; heads WITHOUT a fresh App
+      # check (token mint failed, enumeration failed, or that head's publish
+      # failed) receive a FAILURE mirror. Requiring "Reviewer Gate (Actions)"
+      # in the Ruleset therefore makes gate outages fail closed PER HEAD -
+      # something the job's own check cannot provide, since on push/schedule
+      # runs that attaches to the default-branch commit, not PR heads. The
+      # mirror is a liveness fail-safe only: authorization is always carried
+      # by the App-owned "Authorized Reviewer Check".
       if: always()
       uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       env:
-        GATE_OUTCOME: ${{ steps.gate.outcome }}
-        GATE_VERDICTS: ${{ steps.gate.outputs.verdicts }}
+        RUN_STARTED_AT: ${{ steps.stamp.outputs.started }}
       with:
         script: |
           const MIRROR_CHECK_NAME = "Reviewer Gate (Actions)";
+          const GATE_CHECK_NAME = "Authorized Reviewer Check";
           const PROTECTED_BASE = "main";
 
           async function withRetries(label, fn) {
@@ -561,60 +576,87 @@ jobs:
             }
           }
 
-          const gateSucceeded = process.env.GATE_OUTCOME === "success";
-          let verdicts = [];
+          const runStartedAt = Date.parse(process.env.RUN_STARTED_AT || "");
+          if (!Number.isFinite(runStartedAt)) {
+            core.setFailed("Mirror has no run-start timestamp; cannot assess freshness.");
+            return;
+          }
+
+          let openPrs = [];
           try {
-            verdicts = JSON.parse(process.env.GATE_VERDICTS || "[]");
+            openPrs = await withRetries("pulls.list (mirror)", () =>
+              github.paginate(github.rest.pulls.list, {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: "open",
+                base: PROTECTED_BASE,
+                per_page: 100,
+              })
+            );
           } catch (error) {
-            verdicts = [];
+            core.setFailed(`Mirror could not enumerate open PRs: ${error.message}`);
+            return;
           }
 
-          const byHead = new Map();
-          if (gateSucceeded) {
-            for (const verdict of verdicts) {
-              if (verdict && typeof verdict.headSha === "string") {
-                byHead.set(
-                  verdict.headSha,
-                  verdict.conclusion === "success" ? "success" : "failure"
-                );
-              }
-            }
-          }
-
-          if (!gateSucceeded) {
-            // The gate could not complete (token mint failure, enumeration
-            // failure, or per-PR errors): fail closed on every open PR head
-            // this token can see, replacing any previously green mirror.
-            let openPrs = [];
-            try {
-              openPrs = await withRetries("pulls.list (mirror)", () =>
-                github.paginate(github.rest.pulls.list, {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  state: "open",
-                  base: PROTECTED_BASE,
-                  per_page: 100,
-                })
-              );
-            } catch (error) {
-              core.setFailed(
-                `Mirror could not enumerate open PRs: ${error.message}`
-              );
-              return;
-            }
-            for (const pr of openPrs) {
-              if (pr.head && pr.head.sha) {
-                byHead.set(pr.head.sha, "failure");
-              }
+          const heads = new Set();
+          for (const pr of openPrs) {
+            if (pr.head && typeof pr.head.sha === "string") {
+              heads.add(pr.head.sha);
             }
           }
 
           let mirrorErrors = 0;
-          for (const [headSha, conclusion] of byHead) {
+          for (const headSha of heads) {
+            let conclusion = "failure";
+            try {
+              const { data } = await withRetries(`checks ${headSha.slice(0, 7)}`, () =>
+                github.rest.checks.listForRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: headSha,
+                  check_name: GATE_CHECK_NAME,
+                  filter: "latest",
+                  per_page: 100,
+                })
+              );
+              // Only App-authored checks count: a check with this name minted
+              // by another workflow via GITHUB_TOKEN belongs to the
+              // github-actions app and is excluded, so it can neither forge
+              // freshness nor a verdict.
+              const appChecks = (data.check_runs || []).filter(
+                (check) =>
+                  check.name === GATE_CHECK_NAME &&
+                  check.app &&
+                  check.app.slug !== "github-actions"
+              );
+              let latest = null;
+              for (const check of appChecks) {
+                const completed = Date.parse(check.completed_at || "");
+                if (
+                  Number.isFinite(completed) &&
+                  (!latest || completed > Date.parse(latest.completed_at))
+                ) {
+                  latest = check;
+                }
+              }
+              const fresh =
+                latest &&
+                latest.status === "completed" &&
+                Date.parse(latest.completed_at) >= runStartedAt;
+              if (fresh && latest.conclusion === "success") {
+                conclusion = "success";
+              }
+            } catch (error) {
+              // Unreadable check state -> keep the fail-closed default.
+              core.warning(
+                `Mirror could not read checks for ${headSha}: ${error.message}`
+              );
+            }
+
             const summary =
               conclusion === "success"
-                ? "Liveness mirror of the App-published Authorized Reviewer Check for this head. Authorization is carried by the App check; this check only proves the gate's latest sweep completed."
-                : "Fail-safe: the reviewer gate could not complete its sweep for this head (or the head failed evaluation); failing closed until a sweep succeeds.";
+                ? "Liveness mirror: this run's sweep published a fresh successful Authorized Reviewer Check for this head. Authorization is carried by the App check; this check only proves the gate is alive."
+                : "Fail-safe: this run produced no fresh successful Authorized Reviewer Check for this head (gate outage, evaluation failure, or a genuine review failure); failing closed until a sweep succeeds.";
             try {
               await withRetries(`mirror ${headSha.slice(0, 7)}`, () =>
                 github.rest.checks.create({
