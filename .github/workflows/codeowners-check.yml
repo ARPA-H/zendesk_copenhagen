@@ -44,26 +44,40 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            const ref = context.payload.pull_request?.head?.sha || context.sha;
-            // Raw endpoint call: immune to Octokit generated-method naming.
-            const { data } = await github.request(
-              "GET /repos/{owner}/{repo}/codeowners/errors",
-              {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: ref,
-              }
-            );
-            const errors = data.errors || [];
-            if (errors.length > 0) {
-              for (const error of errors) {
+            // On PR events validate BOTH refs: the base branch holds the
+            // CODEOWNERS GitHub actually enforces for this PR's review
+            // requirement (its live state, hence the branch name), and the
+            // head holds what this PR would make the enforced file for
+            // every subsequent PR. On push events, the pushed commit.
+            const refs = context.payload.pull_request
+              ? [
+                  context.payload.pull_request.base.ref,
+                  context.payload.pull_request.head.sha,
+                ]
+              : [context.sha];
+
+            let totalErrors = 0;
+            for (const ref of refs) {
+              // Raw endpoint call: immune to Octokit generated-method naming.
+              const { data } = await github.request(
+                "GET /repos/{owner}/{repo}/codeowners/errors",
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: ref,
+                }
+              );
+              for (const error of data.errors || []) {
+                totalErrors += 1;
                 core.error(
-                  `${error.path}:${error.line} ${error.kind}: ${error.message}`
+                  `[${ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
                 );
               }
+            }
+            if (totalErrors > 0) {
               core.setFailed(
-                `${errors.length} CODEOWNERS error(s) - invalid entries fail OPEN, fix them before merging.`
+                `${totalErrors} CODEOWNERS error(s) - invalid entries fail OPEN, fix them before merging.`
               );
             } else {
-              core.info("CODEOWNERS is valid.");
+              core.info("CODEOWNERS is valid on all checked refs.");
             }
