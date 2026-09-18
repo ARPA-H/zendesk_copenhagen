@@ -130,12 +130,20 @@ jobs:
     if: >-
       github.event_name != 'issue_comment' ||
       (github.event.issue.pull_request && github.event.comment.body == '/recheck')
-    # Serialize ALL check writers in one group, at the JOB level so runs
+    # Serialize check writers in one group, at the JOB level so runs
     # filtered out by the `if` above (e.g. arbitrary comments) never enter
-    # the group and cannot displace privileged runs. cancel-in-progress is
-    # false: an in-flight evaluation always finishes, later runs queue (the
-    # newest queued run subsumes displaced ones since every run re-reads all
-    # state), so two writers can never publish checks out of order.
+    # the group. cancel-in-progress is false: an in-flight evaluation always
+    # finishes, later runs queue, and a displaced pending run is subsumed by
+    # the newer full sweep. THROTTLING ONLY - never a security boundary:
+    # concurrency groups are repo-wide and their names are public, so any
+    # same-repo PR workflow can squat this group and delay (never reorder or
+    # forge) sweeps. Correctness is order-independent by construction: the
+    # pre-publish freshness re-read revalidates live state before any
+    # success, and the mirror accepts only checks stamped with its own
+    # run+attempt marker. Squatting is a visible Actions-quota DoS by a
+    # collaborator (auditable in the Actions tab); the authorization
+    # backstop during any induced staleness is the Ruleset's native
+    # approval rules.
     concurrency:
       group: reviewer-check
       cancel-in-progress: false
@@ -536,7 +544,10 @@ jobs:
                   head_sha: headSha,
                   status: "completed",
                   conclusion: conclusion,
-                  external_id: String(context.runId),
+                  // Composite marker: run_id survives re-runs unchanged, so
+                  // the attempt number is included - an earlier attempt's
+                  // checks must not read as fresh in a later attempt.
+                  external_id: `${context.runId}-${process.env.GITHUB_RUN_ATTEMPT || "1"}`,
                   output: { title: CHECK_NAME, summary: summary },
                 })
               );
@@ -604,7 +615,7 @@ jobs:
           // Empty when App-token minting failed: no check can then match,
           // so every head fail-closes below - exactly the desired outcome.
           const gateAppSlug = process.env.GATE_APP_SLUG || "";
-          const runId = String(context.runId);
+          const runMarker = `${context.runId}-${process.env.GITHUB_RUN_ATTEMPT || "1"}`;
 
           let openPrs = [];
           try {
@@ -655,7 +666,7 @@ jobs:
                   check.app &&
                   gateAppSlug !== "" &&
                   check.app.slug === gateAppSlug &&
-                  check.external_id === runId &&
+                  check.external_id === runMarker &&
                   check.status === "completed"
               );
               if (fresh && fresh.conclusion === "success") {
