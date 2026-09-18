@@ -1,0 +1,46 @@
+name: CODEOWNERS validity
+
+# CODEOWNERS fails OPEN when entries are invalid: GitHub silently ignores
+# unknown owners, and a file with no valid owners vacuously satisfies a
+# "require code owner review" rule. This check calls the codeowners/errors
+# API for the ref under test and fails on ANY error, so the review gate can
+# never be silently disabled by a typo, a renamed team, or a departed
+# account. Require this check in the `main` Ruleset.
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - sandbox
+
+jobs:
+  codeowners-errors:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail on any CODEOWNERS error
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const ref = context.payload.pull_request?.head?.sha || context.sha;
+            const { data } = await github.rest.repos.codeownersErrors({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: ref,
+            });
+            const errors = data.errors || [];
+            if (errors.length > 0) {
+              for (const error of errors) {
+                core.error(
+                  `${error.path}:${error.line} ${error.kind}: ${error.message}`
+                );
+              }
+              core.setFailed(
+                `${errors.length} CODEOWNERS error(s) - invalid entries fail OPEN, fix them before merging.`
+              );
+            } else {
+              core.info("CODEOWNERS is valid.");
+            }
