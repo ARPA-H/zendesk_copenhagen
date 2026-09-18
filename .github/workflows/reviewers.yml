@@ -94,7 +94,13 @@ on:
       # recomputed instead of lingering until the next scheduled run.
       - '.github/workflows/reviewers.yml'
   schedule:
+    # NOTE: verify scheduled workflows actually run in this repository -
+    # schedules are disabled by default in forks and auto-disable after 60
+    # days of repo inactivity; the /recheck comment and workflow_dispatch
+    # below are the manual fallbacks if this cadence is unavailable.
     - cron: '23,53 * * * *'
+  # Manual recovery lever when the (already-required) gate check is wedged.
+  workflow_dispatch:
 
 jobs:
   launch-reviewer-check:
