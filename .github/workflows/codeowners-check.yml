@@ -17,10 +17,11 @@ name: CODEOWNERS validity
 
 permissions:
   contents: read
-  # checks/pull-requests: on branch pushes the verdict is propagated as an
-  # explicit check run onto every open PR head targeting that branch (see
-  # the script), so a push that breaks CODEOWNERS immediately flips the
-  # validity check on already-open PRs instead of leaving stale successes.
+  # checks/pull-requests: on branch pushes a FAILURE verdict is propagated
+  # as an explicit check run onto every open PR head targeting that branch,
+  # so a push that breaks CODEOWNERS immediately flips already-open PRs.
+  # Successes are never pushed to heads (each PR re-earns green via its own
+  # run), making stale-success races impossible by construction.
   checks: write
   pull-requests: read
 
@@ -45,10 +46,9 @@ on:
 jobs:
   codeowners-errors:
     runs-on: ubuntu-latest
-    # Serialize runs per branch/PR so an older push run cannot finish after
-    # a newer one (throttle only - correctness comes from the in-script
-    # branch-head freshness gate below, which refuses to propagate a
-    # verdict for a push that is no longer the branch head).
+    # Serialize runs per branch/PR (throttle). Correctness does not depend
+    # on ordering: push runs only ever write FAILURE to PR heads, so no
+    # stale-success write exists in any interleaving.
     concurrency:
       group: codeowners-validity-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
@@ -156,35 +156,18 @@ jobs:
               const branch = context.ref.replace("refs/heads/", "");
               const conclusion =
                 totalErrors > 0 || validationError ? "failure" : "success";
-              // Freshness gate for SUCCESS only: a stale success is the
-              // dangerous write, so success may propagate only while this
-              // push is still the branch head (checked as late as possible;
-              // the per-branch queue orders runs, so the residual window is
-              // milliseconds). FAILURE propagates unconditionally - the
-              // fail-closed direction is always safe to write, and any
-              // newer run's own propagation supersedes it on completion.
+              // Push runs propagate FAILURE ONLY. A success is never written
+              // to PR heads from this path, which makes a stale success
+              // impossible BY CONSTRUCTION - there is no freshness probe to
+              // race and no read-then-write window to exploit. Failure is
+              // always safe to write (fail-closed), and after a fix lands on
+              // the base, each PR's verdict returns to green via its own
+              // pull_request_target run (next push/edit) or a manual re-run.
               if (conclusion === "success") {
-                let headSha = null;
-                try {
-                  const { data: refData } = await github.request(
-                    "GET /repos/{owner}/{repo}/git/ref/{ref}",
-                    {
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      ref: `heads/${branch}`,
-                    }
-                  );
-                  headSha = refData.object.sha;
-                } catch (error) {
-                  core.warning(`Freshness probe failed: ${error.message}`);
-                }
-                if (headSha !== context.sha) {
-                  core.info(
-                    `Branch ${branch} advanced past this push (or freshness unknown); skipping success propagation.`
-                  );
-                  core.setFailed("Superseded run; the newer run owns the verdict.");
-                  return;
-                }
+                core.info(
+                  `Base ${branch} CODEOWNERS valid; PR-head verdicts refresh on their own events.`
+                );
+                return;
               }
               const prs = await github.paginate(github.rest.pulls.list, {
                 owner: context.repo.owner,
@@ -204,16 +187,13 @@ jobs:
                     name: "codeowners-errors",
                     head_sha: pr.head.sha,
                     status: "completed",
-                    conclusion: conclusion,
+                    conclusion: "failure",
                     output: {
                       title: "CODEOWNERS validity",
-                      summary:
-                        conclusion === "success"
-                          ? `Base branch ${branch} has a valid CODEOWNERS.`
-                          : `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}.`,
+                      summary: `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. Re-run this check (or push to the PR) after the fix to go green.`,
                     },
                   });
-                  core.info(`Propagated ${conclusion} to PR #${pr.number} head.`);
+                  core.info(`Propagated failure to PR #${pr.number} head.`);
                 } catch (error) {
                   // One head's write must not block the rest; the job still
                   // fails below so the miss is visible and retried.
