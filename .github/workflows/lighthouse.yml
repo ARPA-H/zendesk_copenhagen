@@ -3,10 +3,28 @@ name: Lighthouse
 permissions:
   contents: read
 
-"on": [push]
+# SECURITY: run on demand only. The previous `on: [push]` trigger ran this
+# job - which publishes the built theme via bin/theme-upload.js (deleting
+# every non-live theme on the target account) and receives the Zendesk API
+# token and end-user credentials - on EVERY push to EVERY branch, exposing
+# the secrets to any-branch workflow runs and making a stray feature-branch
+# push a production deploy. Deploys are owned by update.yml (main/sandbox
+# only); this audit job is maintainer-dispatched.
+#
+# Residual risk (cannot be fully closed inside this file): a dispatch of a
+# modified copy of this workflow on a writer's feature branch still executes
+# that branch's file with repository-level secrets. The `if` guard below
+# stops dispatches of THIS file from non-main/sandbox refs, and the job is
+# bound to the `lighthouse` environment so the credentials can be moved to
+# environment secrets with deployment-branch rules + required reviewers
+# (Settings -> Environments), which is the complete fix. Alternatively,
+# delete this workflow if the audit is unused in this fork.
+"on": [workflow_dispatch]
 
 jobs:
   lighthouse:
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox'
+    environment: lighthouse
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
