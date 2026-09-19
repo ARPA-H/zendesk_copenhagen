@@ -19,6 +19,10 @@ name: CODEOWNERS validity
 #     wrong verdicts, and when the PR does not touch CODEOWNERS the merged
 #     file is the base file anyway.
 #   - Push events on main/sandbox: the pushed commit.
+#   - Scheduled/manual runs: the live main and sandbox branches. Owner
+#     validity can change with NO repository event (an account losing
+#     access, a team membership change), so periodic reconciliation keeps a
+#     green verdict from outliving its truth indefinitely.
 #
 # Scope: this is an ACCIDENT guard, not an authorization boundary. A PR
 # shipping a broken CODEOWNERS cannot weaken its own review requirement
@@ -30,10 +34,11 @@ name: CODEOWNERS validity
 permissions:
   contents: read
   # checks/pull-requests: PR runs publish/update the verdict explicitly on
-  # the PR head; on branch pushes a FAILURE verdict is propagated onto every
-  # open PR head targeting that branch. Successes are never pushed to heads
-  # from the push path (each PR re-earns green via its own run), making
-  # stale-success races impossible by construction.
+  # the PR head; branch pushes and scheduled/manual reconciliation propagate
+  # a FAILURE verdict onto every open PR head targeting a broken branch.
+  # Successes are never pushed to heads from those paths (each PR re-earns
+  # green via its own run), making stale-success races impossible by
+  # construction.
   checks: write
   pull-requests: read
 
@@ -56,6 +61,14 @@ on:
     branches:
       - main
       - sandbox
+  # Ownership drift happens with NO repo event (a user losing repository
+  # access, a team membership change): revalidate the protected branches
+  # periodically, and on demand, so a fail-open CODEOWNERS cannot hide
+  # behind an old green check until the next push. Both triggers execute
+  # the workflow definition from the default branch (trusted source).
+  schedule:
+    - cron: "23 */6 * * *"
+  workflow_dispatch: {}
 
 jobs:
   # Job id deliberately differs from the explicit check-run names: the
@@ -329,28 +342,46 @@ jobs:
                 core.error(`Could not publish PR-head check: ${error.message}`);
               }
             } else {
-              // Push to main/sandbox: validate the pushed commit, then
-              // propagate FAILURE ONLY onto every open PR head targeting
-              // this branch. A success is never written to PR heads from
-              // this path - stale success is impossible by construction -
-              // and after a fix lands each PR re-earns green via its own
-              // run or a manual re-run (stated in the check summary).
-              const branch = context.ref.replace("refs/heads/", "");
-              try {
-                totalErrors += await validateRef(context.sha);
-              } catch (error) {
-                validationError = true;
-                core.error(`Validation could not complete: ${error.message}`);
-              }
+              // Push to main/sandbox, scheduled reconciliation, or manual
+              // dispatch: validate the branch(es), then propagate FAILURE
+              // ONLY onto every open PR head targeting a broken branch. A
+              // success is never written to PR heads from this path - stale
+              // success is impossible by construction - and after a fix
+              // lands each PR re-earns green via its own run or a manual
+              // re-run (stated in the check summary). The schedule/dispatch
+              // path exists because ownership validity can change with NO
+              // repository event (an account losing access, a team change),
+              // which would otherwise leave old green verdicts unrefuted.
+              const targets =
+                context.eventName === "push"
+                  ? [{ branch: context.ref.replace("refs/heads/", ""), ref: context.sha }]
+                  : ["main", "sandbox"].map((branch) => ({ branch, ref: branch }));
+              for (const target of targets) {
+                const branch = target.branch;
+                let branchErrors = 0;
+                let branchValidationError = false;
+                try {
+                  branchErrors = await validateRef(target.ref);
+                } catch (error) {
+                  branchValidationError = true;
+                  core.error(
+                    `[${branch}] Validation could not complete: ${error.message}`
+                  );
+                }
+                totalErrors += branchErrors;
+                if (branchValidationError) {
+                  validationError = true;
+                }
 
-              if (totalErrors === 0 && !validationError) {
-                core.info(
-                  `Base ${branch} CODEOWNERS valid; PR-head verdicts refresh on their own events.`
-                );
-              } else {
+                if (branchErrors === 0 && !branchValidationError) {
+                  core.info(
+                    `Base ${branch} CODEOWNERS valid; PR-head verdicts refresh on their own events.`
+                  );
+                  continue;
+                }
                 let prs = [];
                 try {
-                  prs = await withRetries("pulls.list", () =>
+                  prs = await withRetries(`pulls.list ${branch}`, () =>
                     github.paginate(github.rest.pulls.list, {
                       owner: context.repo.owner,
                       repo: context.repo.repo,
@@ -362,11 +393,13 @@ jobs:
                 } catch (error) {
                   // Cannot enumerate heads -> cannot write to them; the
                   // failed run is the durable, visible signal and a re-run
-                  // (or the next PR/push event) reconciles. A sustained API
-                  // outage freezing prior checks is inherent to any
-                  // API-driven writer.
+                  // (or the next PR/push/scheduled event) reconciles. A
+                  // sustained API outage freezing prior checks is inherent
+                  // to any API-driven writer.
                   validationError = true;
-                  core.error(`Could not enumerate open PRs: ${error.message}`);
+                  core.error(
+                    `[${branch}] Could not enumerate open PRs: ${error.message}`
+                  );
                 }
                 for (const pr of prs) {
                   if (!pr.head || typeof pr.head.sha !== "string") {
