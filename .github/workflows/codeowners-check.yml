@@ -19,10 +19,14 @@ name: CODEOWNERS validity
 #     wrong verdicts, and when the PR does not touch CODEOWNERS the merged
 #     file is the base file anyway.
 #   - Push events on main/sandbox: the pushed commit.
-#   - Scheduled/manual runs: the live main and sandbox branches. Owner
-#     validity can change with NO repository event (an account losing
-#     access, a team membership change), so periodic reconciliation keeps a
-#     green verdict from outliving its truth indefinitely.
+#   - Scheduled/manual runs: the live main and sandbox branches, AND the
+#     current merge result of every open PR that modifies a CODEOWNERS path
+#     (a valid base does not make those verdicts safe to retain - an owner
+#     added by a PR can lose access, or a base update can change the test
+#     merge, with no head event). Owner validity can change with NO
+#     repository event, so periodic reconciliation keeps a green verdict
+#     from outliving its truth indefinitely. Reconciliation writes are
+#     FAILURE-ONLY, like the push path.
 #
 # Scope: this is an ACCIDENT guard, not an authorization boundary. A PR
 # shipping a broken CODEOWNERS cannot weaken its own review requirement
@@ -379,33 +383,128 @@ jobs:
                   validationError = true;
                 }
 
+                const isReconciliation = context.eventName !== "push";
+                let prs = [];
+                if (branchErrors > 0 || branchValidationError || isReconciliation) {
+                  try {
+                    prs = await withRetries(`pulls.list ${branch}`, () =>
+                      github.paginate(github.rest.pulls.list, {
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        state: "open",
+                        base: branch,
+                        per_page: 100,
+                      })
+                    );
+                  } catch (error) {
+                    // Cannot enumerate heads -> cannot write to them; the
+                    // failed run is the durable, visible signal and a re-run
+                    // (or the next PR/push/scheduled event) reconciles. A
+                    // sustained API outage freezing prior checks is inherent
+                    // to any API-driven writer.
+                    validationError = true;
+                    core.error(
+                      `[${branch}] Could not enumerate open PRs: ${error.message}`
+                    );
+                  }
+                }
+
                 if (branchErrors === 0 && !branchValidationError) {
                   core.info(
                     `Base ${branch} CODEOWNERS valid; PR-head verdicts refresh on their own events.`
                   );
+                  if (isReconciliation) {
+                    // A valid base does not make retained PR-head successes
+                    // safe: a PR that MODIFIES CODEOWNERS earned its green
+                    // from its merge result, which can go invalid with no
+                    // head event (an owner it adds loses access, or a base
+                    // update changes the test merge). Revalidate those merge
+                    // results here - failure-only, mirroring the PR-event
+                    // path's semantics (strict mergeable === true gate,
+                    // fail closed when the merge result is unavailable).
+                    for (const pr of prs) {
+                      if (!pr.head || typeof pr.head.sha !== "string") {
+                        continue;
+                      }
+                      try {
+                        const files = await withRetries(
+                          `pulls.listFiles #${pr.number}`,
+                          () =>
+                            github.paginate(github.rest.pulls.listFiles, {
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              pull_number: pr.number,
+                              per_page: 100,
+                            })
+                        );
+                        let full = null;
+                        for (let attempt = 1; attempt <= 3; attempt++) {
+                          const { data } = await withRetries(
+                            `pulls.get #${pr.number}`,
+                            () =>
+                              github.rest.pulls.get({
+                                owner: context.repo.owner,
+                                repo: context.repo.repo,
+                                pull_number: pr.number,
+                              })
+                          );
+                          full = data;
+                          if (full.mergeable !== null) {
+                            break;
+                          }
+                          await new Promise((resolve) => setTimeout(resolve, 5000));
+                        }
+                        // Same truncation guard as the PR-event path: an
+                        // incomplete file scan cannot rule out a CODEOWNERS
+                        // change, so it forces merge-result validation.
+                        const fileScanComplete = files.length >= full.changed_files;
+                        const touchesCodeowners =
+                          !fileScanComplete ||
+                          files.some(
+                            (file) =>
+                              CODEOWNERS_PATHS.includes(file.filename) ||
+                              (file.previous_filename &&
+                                CODEOWNERS_PATHS.includes(file.previous_filename))
+                          );
+                        if (!touchesCodeowners) {
+                          continue;
+                        }
+                        let mergeErrors = 0;
+                        if (full.merge_commit_sha && full.mergeable === true) {
+                          mergeErrors = await validateRef(full.merge_commit_sha);
+                        } else {
+                          // Unavailable merge result (conflict, or still
+                          // computing after the poll): fail closed, exactly
+                          // like the PR-event path.
+                          mergeErrors = 1;
+                          core.error(
+                            `[${branch}] PR #${pr.number} modifies CODEOWNERS but no fresh merge result is available.`
+                          );
+                        }
+                        if (mergeErrors > 0) {
+                          totalErrors += mergeErrors;
+                          await publishCheck(
+                            pr.head.sha,
+                            branch,
+                            "failure",
+                            "This PR modifies CODEOWNERS and its current merge result is invalid or could not be validated (an owner may have lost access since the last validation, or the base moved) - invalid entries fail OPEN; fix and re-run this check to go green."
+                          );
+                          core.info(
+                            `Reconciliation failed PR #${pr.number} (merge-result verdict no longer valid).`
+                          );
+                        }
+                      } catch (error) {
+                        // One PR's reconciliation failure must not block the
+                        // rest; the job still fails below so the miss is
+                        // visible and re-runnable.
+                        validationError = true;
+                        core.error(
+                          `Could not reconcile PR #${pr.number}: ${error.message}`
+                        );
+                      }
+                    }
+                  }
                   continue;
-                }
-                let prs = [];
-                try {
-                  prs = await withRetries(`pulls.list ${branch}`, () =>
-                    github.paginate(github.rest.pulls.list, {
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      state: "open",
-                      base: branch,
-                      per_page: 100,
-                    })
-                  );
-                } catch (error) {
-                  // Cannot enumerate heads -> cannot write to them; the
-                  // failed run is the durable, visible signal and a re-run
-                  // (or the next PR/push/scheduled event) reconciles. A
-                  // sustained API outage freezing prior checks is inherent
-                  // to any API-driven writer.
-                  validationError = true;
-                  core.error(
-                    `[${branch}] Could not enumerate open PRs: ${error.message}`
-                  );
                 }
                 for (const pr of prs) {
                   if (!pr.head || typeof pr.head.sha !== "string") {
