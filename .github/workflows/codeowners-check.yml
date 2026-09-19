@@ -19,7 +19,8 @@ name: CODEOWNERS validity
 #     wrong verdicts, and when the PR does not touch CODEOWNERS the merged
 #     file is the base file anyway.
 #   - Push events on main/sandbox: the pushed commit.
-#   - Scheduled/manual runs: the live main and sandbox branches, AND the
+#   - Scheduled runs (re-run one from the Actions UI for on-demand
+#     reconciliation): the live main and sandbox branches, AND the
 #     current merge result of every open PR that modifies a CODEOWNERS path
 #     (a valid base does not make those verdicts safe to retain - an owner
 #     added by a PR can lose access, or a base update can change the test
@@ -67,12 +68,15 @@ on:
       - sandbox
   # Ownership drift happens with NO repo event (a user losing repository
   # access, a team membership change): revalidate the protected branches
-  # periodically, and on demand, so a fail-open CODEOWNERS cannot hide
-  # behind an old green check until the next push. Both triggers execute
-  # the workflow definition from the default branch (trusted source).
+  # periodically so a fail-open CODEOWNERS cannot hide behind an old green
+  # check until the next push. Scheduled runs execute the default-branch
+  # workflow definition (trusted source). Deliberately NO workflow_dispatch:
+  # dispatch executes the workflow definition from the DISPATCHED ref, so an
+  # unprotected branch's modified copy could run under this file's identity.
+  # For on-demand reconciliation, re-run the latest scheduled or push run
+  # from the Actions UI - re-runs reuse the original trusted definition.
   schedule:
     - cron: "23 */6 * * *"
-  workflow_dispatch: {}
 
 jobs:
   # Job id deliberately differs from the explicit check-run names: the
@@ -352,8 +356,8 @@ jobs:
                 core.error(`Could not publish PR-head check: ${error.message}`);
               }
             } else {
-              // Push to main/sandbox, scheduled reconciliation, or manual
-              // dispatch: validate the branch(es), then propagate FAILURE
+              // Push to main/sandbox, or scheduled reconciliation:
+              // validate the branch(es), then propagate FAILURE
               // ONLY onto every open PR head targeting a broken branch. A
               // success is never written to PR heads from this path - stale
               // success is impossible by construction - and after a fix
@@ -494,13 +498,28 @@ jobs:
                           );
                         }
                       } catch (error) {
-                        // One PR's reconciliation failure must not block the
-                        // rest; the job still fails below so the miss is
-                        // visible and re-runnable.
+                        // Fail closed on read failures too: an earlier green
+                        // explicit check must not outlive a merge result this
+                        // run could not validate. Best-effort - if even the
+                        // write fails, the failed job remains the durable,
+                        // re-runnable signal, and one PR's failure does not
+                        // block reconciling the rest.
                         validationError = true;
                         core.error(
                           `Could not reconcile PR #${pr.number}: ${error.message}`
                         );
+                        try {
+                          await publishCheck(
+                            pr.head.sha,
+                            branch,
+                            "failure",
+                            "Scheduled reconciliation could not validate this PR's CODEOWNERS state (API failure) - failing closed; re-run this check (or push to the PR) to re-earn green."
+                          );
+                        } catch (publishError) {
+                          core.error(
+                            `Could not publish reconciliation failure to PR #${pr.number}: ${publishError.message}`
+                          );
+                        }
                       }
                     }
                   }
