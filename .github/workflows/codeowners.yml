@@ -12,8 +12,8 @@ on:
   # No `paths:` filter on pull_request: this job's check ("Validate
   # CODEOWNERS") is REQUIRED by the branch Ruleset, and a required check
   # whose workflow is path-filtered never reports on non-matching PRs -
-  # they hang at "Expected - Waiting" and can never merge. The job is two
-  # API calls, so it simply runs on every PR.
+  # they hang at "Expected - Waiting" and can never merge. The job is a
+  # handful of API calls, so it simply runs on every PR.
   #
   # BOOTSTRAP CAVEAT: `pull_request` executes the workflow definition from
   # the PR's MERGE REF, so a PR author can edit this file to always
@@ -55,33 +55,72 @@ jobs:
           # fork head SHAs are never needed) and the event commit on push
           # and manual dispatch.
           REF: ${{ github.sha }}
+          # On PRs, ALSO validate the base commit: GitHub enforces the BASE
+          # branch's CODEOWNERS for the PR's own review rule, so a broken
+          # base must fail the check even when the merge result is clean.
+          # Empty on push/dispatch.
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
 
-          if ! response=$(gh api "repos/${REPO}/codeowners/errors?ref=${REF}" 2>&1); then
-            echo "::error::Could not read CODEOWNERS errors for ${REF}: ${response}"
-            exit 1
+          validate_ref() {
+            ref="$1"
+            label="$2"
+
+            # The errors endpoint returns an EMPTY errors array when no
+            # CODEOWNERS exists at all - and an absent file is the ultimate
+            # fail-open (native review has no owners to require). Require
+            # one of the supported locations to exist first.
+            found=""
+            for path in .github/CODEOWNERS CODEOWNERS docs/CODEOWNERS; do
+              if gh api "repos/${REPO}/contents/${path}?ref=${ref}" >/dev/null 2>&1; then
+                found="$path"
+                break
+              fi
+            done
+            if [ -z "$found" ]; then
+              echo "::error::No CODEOWNERS file exists at ${label} (${ref}) - native code-owner review has no owners to require (fail-open)."
+              echo "## CODEOWNERS is missing (${label})" >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            if ! response=$(gh api "repos/${REPO}/codeowners/errors?ref=${ref}" 2>&1); then
+              echo "::error::Could not read CODEOWNERS errors for ${label} (${ref}): ${response}"
+              return 1
+            fi
+
+            count=$(printf '%s' "$response" | jq '.errors | length')
+
+            if [ "$count" -eq 0 ]; then
+              echo "CODEOWNERS is valid at ${label} (${ref}): every owner resolves."
+              return 0
+            fi
+
+            echo "::error::CODEOWNERS at ${label} has ${count} unresolved entr(ies). Code-owner review is silently DISABLED for the affected paths."
+            printf '%s' "$response" | jq -r '
+              .errors[]
+              | "::error file=\(.path),line=\(.line),col=\(.column)::\(.kind): \(.suggestion // "invalid CODEOWNERS entry")"
+            '
+            {
+              echo "## CODEOWNERS is invalid (${label})"
+              echo
+              echo "GitHub ignores unresolvable rules, so these paths currently have **no owner**"
+              echo "and any \`require_code_owner_review\` rule covering them is vacuously satisfied."
+              echo
+              printf '%s' "$response" | jq -r '.errors[] | "- \`\(.path)\` line \(.line): **\(.kind)** — \(.suggestion // "invalid entry")"'
+            } >> "$GITHUB_STEP_SUMMARY"
+            return 1
+          }
+
+          status=0
+          if [ -n "$BASE_REF" ]; then
+            validate_ref "$BASE_REF" "base branch" || status=1
+            validate_ref "$REF" "merge result" || status=1
+          else
+            validate_ref "$REF" "event commit" || status=1
           fi
 
-          count=$(printf '%s' "$response" | jq '.errors | length')
-
-          if [ "$count" -eq 0 ]; then
-            echo "CODEOWNERS is valid at ${REF}: every owner resolves."
+          if [ "$status" -eq 0 ]; then
             echo "CODEOWNERS is valid: every owner resolves." >> "$GITHUB_STEP_SUMMARY"
-            exit 0
           fi
-
-          echo "::error::CODEOWNERS has ${count} unresolved entr(ies). Code-owner review is silently DISABLED for the affected paths."
-          printf '%s' "$response" | jq -r '
-            .errors[]
-            | "::error file=\(.path),line=\(.line),col=\(.column)::\(.kind): \(.suggestion // "invalid CODEOWNERS entry")"
-          '
-          {
-            echo "## CODEOWNERS is invalid"
-            echo
-            echo "GitHub ignores unresolvable rules, so these paths currently have **no owner**"
-            echo "and any \`require_code_owner_review\` rule covering them is vacuously satisfied."
-            echo
-            printf '%s' "$response" | jq -r '.errors[] | "- `\(.path)` line \(.line): **\(.kind)** — \(.suggestion // "invalid entry")"'
-          } >> "$GITHUB_STEP_SUMMARY"
-          exit 1
+          exit "$status"
