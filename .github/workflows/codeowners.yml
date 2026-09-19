@@ -35,6 +35,14 @@ on:
     branches:
       - main
       - sandbox
+  # Owner validity can drift with NO repository event (an account losing
+  # access, a team change). The scheduled run validates both protected
+  # branches so drift surfaces as a failed run within one interval - a
+  # detection alarm, deliberately NOT merge-blocking check propagation
+  # (that machinery was retired with the previous guard; the Ruleset
+  # "Require workflows to pass" rule is the enforcement lever).
+  schedule:
+    - cron: "31 */6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -60,6 +68,7 @@ jobs:
           # base must fail the check even when the merge result is clean.
           # Empty on push/dispatch.
           BASE_REF: ${{ github.event.pull_request.base.sha }}
+          EVENT: ${{ github.event_name }}
         run: |
           set -euo pipefail
 
@@ -95,6 +104,20 @@ jobs:
             count=$(printf '%s' "$response" | jq '.errors | length')
 
             if [ "$count" -eq 0 ]; then
+              # Zero parser errors does not prove coverage: an empty or
+              # comment-only file (or one whose LAST catch-all rule lists no
+              # owner - the last matching rule wins and ownerless rules are
+              # legal) has no errors yet leaves require_code_owner_review
+              # with nobody to require. Enforce this repo's catch-all
+              # policy: the last `*` rule must name at least one owner.
+              owners=$(gh api "repos/${REPO}/contents/${found}?ref=${ref}" \
+                -H "Accept: application/vnd.github.raw+json" \
+                | awk '$1 !~ /^#/ && $1 == "*" { n = NF } END { print n + 0 }')
+              if [ "$owners" -lt 2 ]; then
+                echo "::error::CODEOWNERS at ${label} (${found}) has no owned catch-all rule (\`* @owner\`) - native code-owner review has no owner to require for most paths (fail-open)."
+                echo "## CODEOWNERS has no owned catch-all rule (${label})" >> "$GITHUB_STEP_SUMMARY"
+                return 1
+              fi
               echo "CODEOWNERS is valid at ${label} (${ref}): every owner resolves."
               return 0
             fi
@@ -116,7 +139,11 @@ jobs:
           }
 
           status=0
-          if [ -n "$BASE_REF" ]; then
+          if [ "$EVENT" = "schedule" ]; then
+            # Drift reconciliation: validate both protected branches by name.
+            validate_ref main "main branch" || status=1
+            validate_ref sandbox "sandbox branch" || status=1
+          elif [ -n "$BASE_REF" ]; then
             validate_ref "$BASE_REF" "base branch" || status=1
             validate_ref "$REF" "merge result" || status=1
           else
