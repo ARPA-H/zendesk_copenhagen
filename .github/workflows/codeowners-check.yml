@@ -373,10 +373,11 @@ jobs:
                 // base push during this run recomputes the test merge, and
                 // the new merge result can be invalid even when the new base
                 // is valid on its own (e.g. complementary catch-all edits).
-                // Refetch the PR and, if the merge SHA moved, validate the
-                // fresh one; anything short of a fresh mergeable === true
-                // fails closed. The push run's own merge-result sweep is the
-                // corrective backstop for any residual interleaving.
+                // Refetch the PR and validate the fresh merge SHA - even
+                // when unchanged, since owner validity can drift without a
+                // new merge commit; anything short of a fresh mergeable ===
+                // true fails closed. The push run's own merge-result sweep
+                // is the corrective backstop for any residual interleaving.
                 try {
                   let fresh = null;
                   for (let attempt = 1; attempt <= 3; attempt++) {
