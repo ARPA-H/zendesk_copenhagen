@@ -1,0 +1,639 @@
+name: CODEOWNERS validity
+
+# CODEOWNERS fails OPEN when entries are invalid: GitHub silently ignores
+# unknown owners, and a file with no valid owners vacuously satisfies a
+# "require code owner review" rule. This check validates CODEOWNERS via the
+# codeowners/errors API and fails on ANY error, so the review gate can never
+# be silently disabled by a typo, a renamed team, or a departed account.
+# Require the "codeowners-errors (main)" check in the `main` Ruleset - the
+# context is BASE-SUFFIXED so a verdict computed for one target branch can
+# never satisfy (or overwrite) the requirement of another when a commit is
+# shared by PRs targeting both main and sandbox.
+#
+# What is validated, and in which repository context:
+#   - PR events: the LIVE base branch (the CODEOWNERS GitHub actually
+#     enforces for the PR), and - only when the PR modifies a CODEOWNERS
+#     path - the PR's MERGE RESULT (merge_commit_sha), both in the BASE
+#     repository context. Fork snapshots are never validated directly:
+#     owner validity is repository-scoped, so a fork context would produce
+#     wrong verdicts, and when the PR does not touch CODEOWNERS the merged
+#     file is the base file anyway.
+#   - Push events on main/sandbox: the pushed commit.
+#   - Scheduled runs (re-run one from the Actions UI for on-demand
+#     reconciliation): the live main and sandbox branches. Owner validity
+#     can change with NO repository event, so periodic reconciliation keeps
+#     a green verdict from outliving its truth indefinitely.
+#   - BOTH push and scheduled runs additionally revalidate the current
+#     merge result of every open PR that modifies a CODEOWNERS path: a
+#     valid base does not make those verdicts safe to retain - a base push
+#     changes their test merges with no head event, and an owner added by
+#     a PR can lose access with no event at all. These sweep writes are
+#     FAILURE-ONLY; success is only ever earned by the PR's own run.
+#
+# Scope: this is an ACCIDENT guard, not an authorization boundary. A PR
+# shipping a broken CODEOWNERS cannot weaken its own review requirement
+# (GitHub reads the BASE branch's file); breakage bites only AFTER merge,
+# and the push trigger re-validates the branch the moment that happens. A
+# forged same-name Actions check could only mask this advisory signal,
+# never bypass native code-owner review itself.
+#
+# Optional stronger Ruleset wiring: alongside (or instead of) requiring the
+# "codeowners-errors (main)" context, a "Require workflows to pass" rule
+# pinned to this file on main makes GitHub itself demand a FRESH passing
+# run of this workflow per merge, with the workflow definition read from
+# the pinned ref. That closes the commit-scoped check-reuse window and the
+# same-name-forgery class server-side, and makes this job's own failure
+# (core.setFailed) directly merge-blocking.
+
+permissions:
+  contents: read
+  # checks/pull-requests: PR runs publish/update the verdict explicitly on
+  # the PR head; branch pushes and scheduled/manual reconciliation propagate
+  # a FAILURE verdict onto every open PR head targeting a broken branch.
+  # Successes are never pushed to heads from those paths (each PR re-earns
+  # green via its own run), making stale-success races impossible by
+  # construction.
+  checks: write
+  pull-requests: read
+
+on:
+  # pull_request_target, NOT pull_request: this executes the workflow
+  # definition from the PR's BASE branch (a protected branch here), so a PR
+  # cannot edit this file to skip the check or force success. Safe usage:
+  # the job performs NO checkout and never executes or interpolates PR
+  # content - it only makes read-only contents/errors/PR API reads using
+  # server-provided identifiers, and writes codeowners-errors check runs
+  # (the checks: write scope above). `edited` covers base-branch
+  # retargeting so a commit-scoped success from an earlier base cannot go
+  # stale unnoticed after a retarget round-trip.
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+    branches:
+      - main
+      - sandbox
+  push:
+    branches:
+      - main
+      - sandbox
+  # Ownership drift happens with NO repo event (a user losing repository
+  # access, a team membership change): revalidate the protected branches
+  # periodically so a fail-open CODEOWNERS cannot hide behind an old green
+  # check until the next push. Scheduled runs execute the default-branch
+  # workflow definition (trusted source). Deliberately NO workflow_dispatch:
+  # dispatch executes the workflow definition from the DISPATCHED ref, so an
+  # unprotected branch's modified copy could run under this file's identity.
+  # For on-demand reconciliation, re-run the latest scheduled or push run
+  # from the Actions UI - re-runs reuse the original trusted definition.
+  schedule:
+    - cron: "23 */6 * * *"
+
+jobs:
+  # Job id deliberately differs from the explicit check-run names: the
+  # implicit job check GitHub creates would otherwise collide with (and hide
+  # from lookup) the explicit per-base runs published below.
+  codeowners-validity:
+    runs-on: ubuntu-latest
+    # Serialize runs per branch/PR (throttle). Push/schedule runs only ever
+    # write FAILURE to PR heads, so THEY can never plant a stale success. A
+    # PR run's own success write can race a concurrent base-breaking push
+    # only inside the window between its pre-publish base revalidation and
+    # its check write (sub-seconds); if it loses that race, the scheduled
+    # reconciliation re-propagates failure within one interval, and any PR
+    # event or re-run corrects it sooner. The Checks API has no
+    # compare-and-swap, so this bounded window is inherent to any
+    # API-driven writer; ordering cannot make it worse than that.
+    concurrency:
+      group: codeowners-validity-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: false
+    steps:
+      - name: Fail on any CODEOWNERS error
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            // Base-suffixed context: verdicts for different target branches
+            // are distinct checks, so a shared commit can never inherit or
+            // overwrite another base's verdict.
+            function checkNameFor(base) {
+              return `codeowners-errors (${base})`;
+            }
+            const CHECK_TITLE = "CODEOWNERS validity";
+            const CODEOWNERS_PATHS = [
+              ".github/CODEOWNERS",
+              "CODEOWNERS",
+              "docs/CODEOWNERS",
+            ];
+
+            // Retry transient API failures so one blip cannot strand a stale
+            // check verdict; 404s are semantic and never retried.
+            async function withRetries(label, fn) {
+              const MAX_ATTEMPTS = 3;
+              for (let attempt = 1; ; attempt++) {
+                try {
+                  return await fn();
+                } catch (error) {
+                  if (attempt >= MAX_ATTEMPTS || error.status === 404) {
+                    throw error;
+                  }
+                  core.warning(`${label}: attempt ${attempt} failed; retrying`);
+                  await new Promise((resolve) => setTimeout(resolve, 1500 * attempt));
+                }
+              }
+            }
+
+            // Syntax errors alone do not prove coverage: an empty or
+            // comment-only CODEOWNERS is valid to the errors API yet leaves
+            // the native owner rule with nobody to require (fail-open). So
+            // each ref must ALSO contain at least one non-comment catch-all
+            // rule (a line whose pattern is `*`); unknown/invalid owners on
+            // that line are still caught by the errors API.
+            async function hasCatchAllRule(ref) {
+              for (const path of CODEOWNERS_PATHS) {
+                let content;
+                try {
+                  // Raw media type: the JSON representation omits base64
+                  // content above 1 MB, while CODEOWNERS may be up to 3 MB -
+                  // a large valid file must not decode as empty (which would
+                  // wrongly fail the catch-all requirement).
+                  const { data } = await withRetries(`contents ${path}`, () =>
+                    github.request("GET /repos/{owner}/{repo}/contents/{path}", {
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      path: path,
+                      ref: ref,
+                      headers: { accept: "application/vnd.github.raw+json" },
+                    })
+                  );
+                  content =
+                    typeof data === "string"
+                      ? data
+                      : Buffer.from(data.content, "base64").toString("utf8");
+                } catch (error) {
+                  if (error.status === 404) {
+                    continue;
+                  }
+                  throw error;
+                }
+                // GitHub uses the first CODEOWNERS file it finds in
+                // precedence order; judge coverage on that same file. Within
+                // the file the LAST matching rule wins and ownerless rules
+                // are legal, so a bare `*` after `* @owner` clears ownership
+                // for every path: the EFFECTIVE catch-all is the last `*`
+                // rule, and that rule must name at least one owner.
+                let lastCatchAll = null;
+                for (const line of content.split("\n")) {
+                  const trimmed = line.trim();
+                  if (trimmed === "" || trimmed.startsWith("#")) {
+                    continue;
+                  }
+                  const fields = trimmed.split(/\s+/);
+                  if (fields[0] === "*") {
+                    lastCatchAll = fields;
+                  }
+                }
+                return lastCatchAll !== null && lastCatchAll.length >= 2;
+              }
+              return false;
+            }
+
+            // Validate one ref in the BASE repository context: API-reported
+            // errors plus catch-all coverage.
+            async function validateRef(ref) {
+              let errors = 0;
+              // Raw endpoint call: immune to Octokit generated-method naming.
+              const { data } = await withRetries("codeowners/errors", () =>
+                github.request("GET /repos/{owner}/{repo}/codeowners/errors", {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: ref,
+                })
+              );
+              for (const error of data.errors || []) {
+                errors += 1;
+                core.error(
+                  `[${ref}] ${error.path}:${error.line} ${error.kind}: ${error.message}`
+                );
+              }
+              if (!(await hasCatchAllRule(ref))) {
+                errors += 1;
+                core.error(
+                  `[${ref}] CODEOWNERS has no catch-all (\`* @owner\`) rule - native code-owner review would have no owner to require for most paths (fail-open).`
+                );
+              }
+              return errors;
+            }
+
+            // Publish the verdict as ONE mutable check run per head: update
+            // the existing explicit run when present (matched by our output
+            // title so the workflow job's own implicit check is never
+            // touched), otherwise create it.
+            async function publishCheck(headSha, base, conclusion, summary) {
+              const checkName = checkNameFor(base);
+              const { data } = await withRetries(`checks.list ${headSha.slice(0, 7)}`, () =>
+                github.request("GET /repos/{owner}/{repo}/commits/{ref}/check-runs", {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: headSha,
+                  check_name: checkName,
+                  filter: "latest",
+                  per_page: 50,
+                })
+              );
+              const existing = (data.check_runs || []).find(
+                (check) =>
+                  check.app &&
+                  check.app.slug === "github-actions" &&
+                  check.output &&
+                  check.output.title === CHECK_TITLE
+              );
+              const body = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                status: "completed",
+                conclusion: conclusion,
+                output: { title: CHECK_TITLE, summary: summary },
+              };
+              if (existing) {
+                await withRetries(`checks.update ${headSha.slice(0, 7)}`, () =>
+                  github.request(
+                    "PATCH /repos/{owner}/{repo}/check-runs/{check_run_id}",
+                    { ...body, check_run_id: existing.id }
+                  )
+                );
+              } else {
+                await withRetries(`checks.create ${headSha.slice(0, 7)}`, () =>
+                  github.request("POST /repos/{owner}/{repo}/check-runs", {
+                    ...body,
+                    name: checkName,
+                    head_sha: headSha,
+                  })
+                );
+              }
+            }
+
+            let totalErrors = 0;
+            let validationError = false;
+
+            if (context.payload.pull_request) {
+              const prNumber = context.payload.pull_request.number;
+              const headSha = context.payload.pull_request.head.sha;
+              const baseRef = context.payload.pull_request.base.ref;
+              // Hoisted: the pre-publish revalidation below needs these.
+              let pr = null;
+              let touchesCodeowners = false;
+
+              try {
+                // Always validate the LIVE base branch: it holds the
+                // CODEOWNERS GitHub enforces for this PR's review rule.
+                totalErrors += await validateRef(baseRef);
+
+                // Only when the PR modifies a CODEOWNERS path does its
+                // content change what will be enforced after merge - and the
+                // correct object to validate is the MERGE RESULT, in the
+                // base repository context (owner validity is repo-scoped, so
+                // a fork snapshot would be validated against the wrong
+                // collaborator set).
+                const files = await withRetries("pulls.listFiles", () =>
+                  github.paginate(github.rest.pulls.listFiles, {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: prNumber,
+                    per_page: 100,
+                  })
+                );
+                // mergeable is computed lazily: null means "still
+                // computing", during which merge_commit_sha may be a STALE
+                // previous test merge. Poll briefly for a definitive answer;
+                // anything short of mergeable === true fails closed below.
+                for (let attempt = 1; attempt <= 3; attempt++) {
+                  const { data } = await withRetries(`pulls.get #${prNumber}`, () =>
+                    github.rest.pulls.get({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      pull_number: prNumber,
+                    })
+                  );
+                  pr = data;
+                  if (pr.mergeable !== null) {
+                    break;
+                  }
+                  await new Promise((resolve) => setTimeout(resolve, 5000));
+                }
+                // The files endpoint is capped at 3,000 entries; a truncated
+                // list could hide a CODEOWNERS change, so an incomplete scan
+                // forces merge-result validation (fail-closed direction).
+                const fileScanComplete = files.length >= pr.changed_files;
+                touchesCodeowners =
+                  !fileScanComplete ||
+                  files.some(
+                    (file) =>
+                      CODEOWNERS_PATHS.includes(file.filename) ||
+                      (file.previous_filename &&
+                        CODEOWNERS_PATHS.includes(file.previous_filename))
+                  );
+                if (touchesCodeowners) {
+                  if (pr.merge_commit_sha && pr.mergeable === true) {
+                    totalErrors += await validateRef(pr.merge_commit_sha);
+                  } else {
+                    // No computable merge result (conflict or still being
+                    // computed): fail closed - conflicts block merge natively
+                    // anyway, and a re-run validates once GitHub has the
+                    // test-merge ready.
+                    totalErrors += 1;
+                    core.error(
+                      "PR modifies CODEOWNERS but no FRESH merge result is available (conflict, or mergeability still computing); failing closed - re-run once resolved."
+                    );
+                  }
+                }
+              } catch (error) {
+                validationError = true;
+                core.error(`Validation could not complete: ${error.message}`);
+              }
+
+              let conclusion =
+                totalErrors > 0 || validationError ? "failure" : "success";
+              if (conclusion === "success") {
+                // Revalidate the LIVE base immediately before publishing: the
+                // base may have changed while this run worked. A base-breaking
+                // push also propagates failures from its own run, which is the
+                // corrective backstop for any residual interleaving.
+                try {
+                  const baseErrors = await validateRef(baseRef);
+                  if (baseErrors > 0) {
+                    totalErrors += baseErrors;
+                    conclusion = "failure";
+                  }
+                } catch (error) {
+                  validationError = true;
+                  conclusion = "failure";
+                  core.error(`Base revalidation failed: ${error.message}`);
+                }
+              }
+              if (conclusion === "success" && touchesCodeowners) {
+                // Symmetric pre-publish revalidation of the MERGE RESULT: a
+                // base push during this run recomputes the test merge, and
+                // the new merge result can be invalid even when the new base
+                // is valid on its own (e.g. complementary catch-all edits).
+                // Refetch the PR and validate the fresh merge SHA - even
+                // when unchanged, since owner validity can drift without a
+                // new merge commit; anything short of a fresh mergeable ===
+                // true fails closed. The push run's own merge-result sweep
+                // is the corrective backstop for any residual interleaving.
+                try {
+                  let fresh = null;
+                  for (let attempt = 1; attempt <= 3; attempt++) {
+                    const { data } = await withRetries(
+                      `pulls.get(fresh) #${prNumber}`,
+                      () =>
+                        github.rest.pulls.get({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          pull_number: prNumber,
+                        })
+                    );
+                    fresh = data;
+                    if (fresh.mergeable !== null) {
+                      break;
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 5000));
+                  }
+                  if (!fresh.merge_commit_sha || fresh.mergeable !== true) {
+                    totalErrors += 1;
+                    conclusion = "failure";
+                    core.error(
+                      "Pre-publish merge-result revalidation: no fresh merge result available; failing closed."
+                    );
+                  } else {
+                    // Validate even when the SHA is unchanged: owner
+                    // validity can drift without a new merge commit (an
+                    // owner this PR introduces can lose access), and this
+                    // run must not overwrite a concurrent reconciliation
+                    // failure with a verdict from the earlier read.
+                    const freshErrors = await validateRef(fresh.merge_commit_sha);
+                    if (freshErrors > 0) {
+                      totalErrors += freshErrors;
+                      conclusion = "failure";
+                    }
+                  }
+                } catch (error) {
+                  validationError = true;
+                  conclusion = "failure";
+                  core.error(
+                    `Merge-result revalidation failed: ${error.message}`
+                  );
+                }
+              }
+
+              try {
+                await publishCheck(
+                  headSha,
+                  baseRef,
+                  conclusion,
+                  conclusion === "success"
+                    ? "CODEOWNERS is valid on the base branch (and in this PR's merge result, when the PR modifies it)."
+                    : "CODEOWNERS is invalid or could not be validated on the base branch or in this PR's merge result - invalid entries fail OPEN; fix before merging."
+                );
+              } catch (error) {
+                validationError = true;
+                core.error(`Could not publish PR-head check: ${error.message}`);
+              }
+            } else {
+              // Push to main/sandbox, or scheduled reconciliation:
+              // validate the branch(es), then propagate FAILURE
+              // ONLY onto every open PR head targeting a broken branch. A
+              // success is never written to PR heads from this path - stale
+              // success is impossible by construction - and after a fix
+              // lands each PR re-earns green via its own run or a manual
+              // re-run (stated in the check summary). The schedule/dispatch
+              // path exists because ownership validity can change with NO
+              // repository event (an account losing access, a team change),
+              // which would otherwise leave old green verdicts unrefuted.
+              const targets =
+                context.eventName === "push"
+                  ? [{ branch: context.ref.replace("refs/heads/", ""), ref: context.sha }]
+                  : ["main", "sandbox"].map((branch) => ({ branch, ref: branch }));
+              for (const target of targets) {
+                const branch = target.branch;
+                let branchErrors = 0;
+                let branchValidationError = false;
+                try {
+                  branchErrors = await validateRef(target.ref);
+                } catch (error) {
+                  branchValidationError = true;
+                  core.error(
+                    `[${branch}] Validation could not complete: ${error.message}`
+                  );
+                }
+                totalErrors += branchErrors;
+                if (branchValidationError) {
+                  validationError = true;
+                }
+
+                let prs = [];
+                try {
+                  prs = await withRetries(`pulls.list ${branch}`, () =>
+                    github.paginate(github.rest.pulls.list, {
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      state: "open",
+                      base: branch,
+                      per_page: 100,
+                    })
+                  );
+                } catch (error) {
+                  // Cannot enumerate heads -> cannot write to them; the
+                  // failed run is the durable, visible signal and a re-run
+                  // (or the next PR/push/scheduled event) reconciles. A
+                  // sustained API outage freezing prior checks is inherent
+                  // to any API-driven writer.
+                  validationError = true;
+                  core.error(
+                    `[${branch}] Could not enumerate open PRs: ${error.message}`
+                  );
+                }
+
+                if (branchErrors === 0 && !branchValidationError) {
+                  core.info(
+                    `Base ${branch} CODEOWNERS valid; PR-head verdicts refresh on their own events.`
+                  );
+                  {
+                    // A valid base does not make retained PR-head successes
+                    // safe: a PR that MODIFIES CODEOWNERS earned its green
+                    // from its merge result, which can go invalid with no
+                    // head event (a base push changes its test merge, or an
+                    // owner it adds loses access). Sweep those merge results
+                    // on EVERY push/scheduled run - failure-only, mirroring
+                    // the PR-event path's semantics (strict mergeable ===
+                    // true gate, fail closed when the merge result is
+                    // unavailable or unreadable).
+                    for (const pr of prs) {
+                      if (!pr.head || typeof pr.head.sha !== "string") {
+                        continue;
+                      }
+                      try {
+                        const files = await withRetries(
+                          `pulls.listFiles #${pr.number}`,
+                          () =>
+                            github.paginate(github.rest.pulls.listFiles, {
+                              owner: context.repo.owner,
+                              repo: context.repo.repo,
+                              pull_number: pr.number,
+                              per_page: 100,
+                            })
+                        );
+                        let full = null;
+                        for (let attempt = 1; attempt <= 3; attempt++) {
+                          const { data } = await withRetries(
+                            `pulls.get #${pr.number}`,
+                            () =>
+                              github.rest.pulls.get({
+                                owner: context.repo.owner,
+                                repo: context.repo.repo,
+                                pull_number: pr.number,
+                              })
+                          );
+                          full = data;
+                          if (full.mergeable !== null) {
+                            break;
+                          }
+                          await new Promise((resolve) => setTimeout(resolve, 5000));
+                        }
+                        // Same truncation guard as the PR-event path: an
+                        // incomplete file scan cannot rule out a CODEOWNERS
+                        // change, so it forces merge-result validation.
+                        const fileScanComplete = files.length >= full.changed_files;
+                        const touchesCodeowners =
+                          !fileScanComplete ||
+                          files.some(
+                            (file) =>
+                              CODEOWNERS_PATHS.includes(file.filename) ||
+                              (file.previous_filename &&
+                                CODEOWNERS_PATHS.includes(file.previous_filename))
+                          );
+                        if (!touchesCodeowners) {
+                          continue;
+                        }
+                        let mergeErrors = 0;
+                        if (full.merge_commit_sha && full.mergeable === true) {
+                          mergeErrors = await validateRef(full.merge_commit_sha);
+                        } else {
+                          // Unavailable merge result (conflict, or still
+                          // computing after the poll): fail closed, exactly
+                          // like the PR-event path.
+                          mergeErrors = 1;
+                          core.error(
+                            `[${branch}] PR #${pr.number} modifies CODEOWNERS but no fresh merge result is available.`
+                          );
+                        }
+                        if (mergeErrors > 0) {
+                          totalErrors += mergeErrors;
+                          await publishCheck(
+                            pr.head.sha,
+                            branch,
+                            "failure",
+                            "This PR modifies CODEOWNERS and its current merge result is invalid or could not be validated (an owner may have lost access since the last validation, or the base moved) - invalid entries fail OPEN. After fixing, go green via a PR event (push/reopen) or by re-running this PR's own CODEOWNERS validity run - re-running the push/scheduled run cannot write success."
+                          );
+                          core.info(
+                            `Reconciliation failed PR #${pr.number} (merge-result verdict no longer valid).`
+                          );
+                        }
+                      } catch (error) {
+                        // Fail closed on read failures too: an earlier green
+                        // explicit check must not outlive a merge result this
+                        // run could not validate. Best-effort - if even the
+                        // write fails, the failed job remains the durable,
+                        // re-runnable signal, and one PR's failure does not
+                        // block reconciling the rest.
+                        validationError = true;
+                        core.error(
+                          `Could not reconcile PR #${pr.number}: ${error.message}`
+                        );
+                        try {
+                          await publishCheck(
+                            pr.head.sha,
+                            branch,
+                            "failure",
+                            "Scheduled reconciliation could not validate this PR's CODEOWNERS state (API failure) - failing closed. Re-earn green via a PR event (push/reopen) or by re-running this PR's own CODEOWNERS validity run - re-running the push/scheduled run cannot write success."
+                          );
+                        } catch (publishError) {
+                          core.error(
+                            `Could not publish reconciliation failure to PR #${pr.number}: ${publishError.message}`
+                          );
+                        }
+                      }
+                    }
+                  }
+                  continue;
+                }
+                for (const pr of prs) {
+                  if (!pr.head || typeof pr.head.sha !== "string") {
+                    continue;
+                  }
+                  try {
+                    await publishCheck(
+                      pr.head.sha,
+                      branch,
+                      "failure",
+                      `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. After the fix, go green via a PR event (push/reopen) or by re-running this PR's own CODEOWNERS validity run - re-running the push/scheduled run cannot write success.`
+                    );
+                    core.info(`Propagated failure to PR #${pr.number} head.`);
+                  } catch (error) {
+                    // One head's write must not block the rest; the job still
+                    // fails below so the miss is visible and re-runnable.
+                    validationError = true;
+                    core.error(
+                      `Could not propagate to PR #${pr.number}: ${error.message}`
+                    );
+                  }
+                }
+              }
+            }
+
+            if (totalErrors > 0 || validationError) {
+              core.setFailed(
+                `${totalErrors} CODEOWNERS error(s)` +
+                  (validationError ? " plus validation/propagation API failure(s)" : "") +
+                  " - invalid entries fail OPEN, fix before merging."
+              );
+            } else {
+              core.info("CODEOWNERS is valid on all checked refs.");
+            }
