@@ -17,14 +17,19 @@ on:
   #
   # BOOTSTRAP CAVEAT: `pull_request` executes the workflow definition from
   # the PR's MERGE REF, so a PR author can edit this file to always
-  # succeed. That is accepted only to bootstrap (a pull_request_target
-  # version cannot produce its own required check before the file exists
-  # on the base branch). Once this file is on main+sandbox, flip this
-  # trigger to `pull_request_target` (trusted base-branch definition) -
-  # the job's check name is unchanged, so the Ruleset needs no edit.
-  # Until then, and in general, native code-owner review is the
-  # authorization boundary; this check guards the fail-open
-  # invalid-CODEOWNERS class, not merge authorization.
+  # succeed. That is accepted to bootstrap (a pull_request_target version
+  # cannot produce its own required check before the file exists on the
+  # base branch - and for the same reason, a later PR that naively flips
+  # this trigger to pull_request_target would wedge itself: its merge ref
+  # loses the pull_request trigger while the base still lacks
+  # pull_request_target). POST-BOOTSTRAP HARDENING (maintainer, Ruleset
+  # side): add a "Require workflows to pass" rule pinned to this file on
+  # the protected ref - GitHub then requires a fresh run of the PINNED
+  # definition per merge, making merge-ref edits and same-name check
+  # forgery moot; the status-check requirement can then be dropped or
+  # kept as UX. Throughout, native code-owner review is the authorization
+  # boundary; this check guards the fail-open invalid-CODEOWNERS class,
+  # not merge authorization.
   pull_request:
   push:
     branches:
