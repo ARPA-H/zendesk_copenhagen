@@ -70,10 +70,13 @@ jobs:
             # The errors endpoint returns an EMPTY errors array when no
             # CODEOWNERS exists at all - and an absent file is the ultimate
             # fail-open (native review has no owners to require). Require
-            # one of the supported locations to exist first.
+            # one of the supported locations to exist first, and require it
+            # to be a regular FILE: the contents API also returns 200 for a
+            # directory, symlink, or submodule at these paths (jq errors on
+            # the directory-listing array, so those fall through too).
             found=""
             for path in .github/CODEOWNERS CODEOWNERS docs/CODEOWNERS; do
-              if gh api "repos/${REPO}/contents/${path}?ref=${ref}" >/dev/null 2>&1; then
+              if [ "$(gh api "repos/${REPO}/contents/${path}?ref=${ref}" --jq '.type' 2>/dev/null)" = "file" ]; then
                 found="$path"
                 break
               fi
