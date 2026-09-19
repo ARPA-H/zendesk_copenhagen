@@ -13,9 +13,9 @@ describe("stripTags", () => {
   });
 
   it("drops event-handler markup without executing it", () => {
-    expect(stripTags('<img src=x onerror="window.__stripTagsPwned = 1">text')).toBe(
-      "text"
-    );
+    expect(
+      stripTags('<img src=x onerror="window.__stripTagsPwned = 1">text')
+    ).toBe("text");
     expect(window.__stripTagsPwned).toBeUndefined();
   });
 
