@@ -1,4 +1,4 @@
-name: CODEOWNERS Validation
+name: Validate CODEOWNERS
 
 # CODEOWNERS fails OPEN when entries are invalid: GitHub silently ignores
 # unknown owners, and a file with no valid owners vacuously satisfies a
