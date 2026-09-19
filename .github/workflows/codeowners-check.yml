@@ -401,7 +401,12 @@ jobs:
                     core.error(
                       "Pre-publish merge-result revalidation: no fresh merge result available; failing closed."
                     );
-                  } else if (fresh.merge_commit_sha !== pr.merge_commit_sha) {
+                  } else {
+                    // Validate even when the SHA is unchanged: owner
+                    // validity can drift without a new merge commit (an
+                    // owner this PR introduces can lose access), and this
+                    // run must not overwrite a concurrent reconciliation
+                    // failure with a verdict from the earlier read.
                     const freshErrors = await validateRef(fresh.merge_commit_sha);
                     if (freshErrors > 0) {
                       totalErrors += freshErrors;
