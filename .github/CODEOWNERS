@@ -1,23 +1,10 @@
-# Code owners for the ARPA-H fork of the Copenhagen theme.
+# CODEOWNERS — zendesk_copenhagen
 #
-# Two things about CODEOWNERS that make this file easy to get wrong:
+# Each line is a file pattern followed by one or more owners.
+# The last matching pattern takes precedence.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 #
-#   1. Owners must have WRITE access to this repository. A user or team with
-#      only read access is treated as unresolvable.
-#   2. GitHub SILENTLY IGNORES any rule whose owner it cannot resolve. There
-#      is no warning on the PR and no failing check - the paths simply end up
-#      with no owner, and a `require_code_owner_review` branch rule covering
-#      them is then vacuously satisfied.
-#
-# Because of (2) a stale owner disables the review requirement instead of
-# breaking loudly, which is exactly what happened here: this file still
-# carried the upstream zendesk/copenhagen_theme rules (@zendesk/vikings,
-# @zendesk/localization, @zendesk/butlers). Those teams do not exist in the
-# ARPA-H organization, so every rule resolved to "Unknown owner" and the
-# `require_code_owner_review` rule on `main` enforced nothing.
-#
-# The "Validate CODEOWNERS" workflow (.github/workflows/codeowners.yml) now
-# fails the build whenever this file has resolution errors, so the fail-open
-# cannot recur unnoticed.
+# Owners must have Triage or above on the repo; GitHub silently ignores entries for users
+# without write access.
 
-* @ksavilaNIH @petersonjdNIH
+* @petersonjdNIH @ksavilaNIH
