@@ -13,10 +13,6 @@ on:
         options:
           - main
           - sandbox
-      scriptBranch:
-        description: 'Run scripts from'
-        required: true
-        default: 'master'
 
 permissions:
   contents: read
@@ -27,6 +23,16 @@ concurrency:
 
 jobs:
   import_theme:
+    # SECURITY: fail closed at runtime. `type: choice` constrains the web UI,
+    # but the input value must never be trusted to be one of the options when
+    # it is about to select a checkout ref and a credential set - so only the
+    # two reviewed deploy branches are accepted. The dispatch ref (the branch
+    # whose copy of this workflow definition runs) is restricted to the same
+    # protected branches, so a modified copy of this YAML on an unprotected
+    # branch never executes with the Zendesk secrets.
+    if: >-
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox') &&
+      (github.event.inputs.branchName == 'main' || github.event.inputs.branchName == 'sandbox')
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -34,12 +40,12 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branchName }}
 
-      - name: Check out importTheme.js
-        uses: Bhacaz/checkout-files@e3e34e7daef91a5f237485bb88a260aee4be29dd # v2
-        with:
-          files: '.github/workflows/scripts/importTheme.js'
-          branch: ${{ github.event.inputs.scriptBranch }}
-
+      # SECURITY: importTheme.js is intentionally executed from the same
+      # reviewed ref that is being deployed (the branchName checkout above).
+      # The previous 'scriptBranch' input fetched and ran the script from an
+      # arbitrary branch with production Zendesk tokens in the environment,
+      # letting anyone with dispatch rights run unreviewed code with prod
+      # credentials even when main/sandbox are branch-protected.
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
