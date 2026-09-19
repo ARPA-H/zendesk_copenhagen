@@ -14,6 +14,17 @@ on:
   # whose workflow is path-filtered never reports on non-matching PRs -
   # they hang at "Expected - Waiting" and can never merge. The job is two
   # API calls, so it simply runs on every PR.
+  #
+  # BOOTSTRAP CAVEAT: `pull_request` executes the workflow definition from
+  # the PR's MERGE REF, so a PR author can edit this file to always
+  # succeed. That is accepted only to bootstrap (a pull_request_target
+  # version cannot produce its own required check before the file exists
+  # on the base branch). Once this file is on main+sandbox, flip this
+  # trigger to `pull_request_target` (trusted base-branch definition) -
+  # the job's check name is unchanged, so the Ruleset needs no edit.
+  # Until then, and in general, native code-owner review is the
+  # authorization boundary; this check guards the fail-open
+  # invalid-CODEOWNERS class, not merge authorization.
   pull_request:
   push:
     branches:
@@ -34,7 +45,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
-          REF: ${{ github.event.pull_request.head.sha || github.sha }}
+          # github.sha is the MERGE COMMIT on pull_request events (so the
+          # validated file includes both head- and base-side changes, and
+          # fork head SHAs are never needed) and the event commit on push
+          # and manual dispatch.
+          REF: ${{ github.sha }}
         run: |
           set -euo pipefail
 
