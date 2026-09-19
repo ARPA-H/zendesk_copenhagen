@@ -36,6 +36,14 @@ name: CODEOWNERS validity
 # and the push trigger re-validates the branch the moment that happens. A
 # forged same-name Actions check could only mask this advisory signal,
 # never bypass native code-owner review itself.
+#
+# Optional stronger Ruleset wiring: alongside (or instead of) requiring the
+# "codeowners-errors (main)" context, a "Require workflows to pass" rule
+# pinned to this file on main makes GitHub itself demand a FRESH passing
+# run of this workflow per merge, with the workflow definition read from
+# the pinned ref. That closes the commit-scoped check-reuse window and the
+# same-name-forgery class server-side, and makes this job's own failure
+# (core.setFailed) directly merge-blocking.
 
 permissions:
   contents: read
@@ -142,15 +150,23 @@ jobs:
               for (const path of CODEOWNERS_PATHS) {
                 let content;
                 try {
+                  // Raw media type: the JSON representation omits base64
+                  // content above 1 MB, while CODEOWNERS may be up to 3 MB -
+                  // a large valid file must not decode as empty (which would
+                  // wrongly fail the catch-all requirement).
                   const { data } = await withRetries(`contents ${path}`, () =>
                     github.request("GET /repos/{owner}/{repo}/contents/{path}", {
                       owner: context.repo.owner,
                       repo: context.repo.repo,
                       path: path,
                       ref: ref,
+                      headers: { accept: "application/vnd.github.raw+json" },
                     })
                   );
-                  content = Buffer.from(data.content, "base64").toString("utf8");
+                  content =
+                    typeof data === "string"
+                      ? data
+                      : Buffer.from(data.content, "base64").toString("utf8");
                 } catch (error) {
                   if (error.status === 404) {
                     continue;
@@ -540,7 +556,7 @@ jobs:
                             pr.head.sha,
                             branch,
                             "failure",
-                            "This PR modifies CODEOWNERS and its current merge result is invalid or could not be validated (an owner may have lost access since the last validation, or the base moved) - invalid entries fail OPEN; fix and re-run this check to go green."
+                            "This PR modifies CODEOWNERS and its current merge result is invalid or could not be validated (an owner may have lost access since the last validation, or the base moved) - invalid entries fail OPEN. After fixing, go green via a PR event (push/reopen) or by re-running this PR's own CODEOWNERS validity run - re-running the push/scheduled run cannot write success."
                           );
                           core.info(
                             `Reconciliation failed PR #${pr.number} (merge-result verdict no longer valid).`
@@ -562,7 +578,7 @@ jobs:
                             pr.head.sha,
                             branch,
                             "failure",
-                            "Scheduled reconciliation could not validate this PR's CODEOWNERS state (API failure) - failing closed; re-run this check (or push to the PR) to re-earn green."
+                            "Scheduled reconciliation could not validate this PR's CODEOWNERS state (API failure) - failing closed. Re-earn green via a PR event (push/reopen) or by re-running this PR's own CODEOWNERS validity run - re-running the push/scheduled run cannot write success."
                           );
                         } catch (publishError) {
                           core.error(
@@ -583,7 +599,7 @@ jobs:
                       pr.head.sha,
                       branch,
                       "failure",
-                      `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. Re-run this check (or push to the PR) after the fix to go green.`
+                      `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. After the fix, go green via a PR event (push/reopen) or by re-running this PR's own CODEOWNERS validity run - re-running the push/scheduled run cannot write success.`
                     );
                     core.info(`Propagated failure to PR #${pr.number} head.`);
                   } catch (error) {
