@@ -76,9 +76,15 @@ jobs:
   # from lookup) the explicit per-base runs published below.
   codeowners-validity:
     runs-on: ubuntu-latest
-    # Serialize runs per branch/PR (throttle). Correctness does not depend
-    # on ordering: push runs only ever write FAILURE to PR heads, so no
-    # stale-success write exists in any interleaving.
+    # Serialize runs per branch/PR (throttle). Push/schedule runs only ever
+    # write FAILURE to PR heads, so THEY can never plant a stale success. A
+    # PR run's own success write can race a concurrent base-breaking push
+    # only inside the window between its pre-publish base revalidation and
+    # its check write (sub-seconds); if it loses that race, the scheduled
+    # reconciliation re-propagates failure within one interval, and any PR
+    # event or re-run corrects it sooner. The Checks API has no
+    # compare-and-swap, so this bounded window is inherent to any
+    # API-driven writer; ordering cannot make it worse than that.
     concurrency:
       group: codeowners-validity-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: false
