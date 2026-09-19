@@ -5,7 +5,10 @@ name: CODEOWNERS validity
 # "require code owner review" rule. This check validates CODEOWNERS via the
 # codeowners/errors API and fails on ANY error, so the review gate can never
 # be silently disabled by a typo, a renamed team, or a departed account.
-# Require this check ("codeowners-errors") in the `main` Ruleset.
+# Require the "codeowners-errors (main)" check in the `main` Ruleset - the
+# context is BASE-SUFFIXED so a verdict computed for one target branch can
+# never satisfy (or overwrite) the requirement of another when a commit is
+# shared by PRs targeting both main and sandbox.
 #
 # What is validated, and in which repository context:
 #   - PR events: the LIVE base branch (the CODEOWNERS GitHub actually
@@ -55,7 +58,10 @@ on:
       - sandbox
 
 jobs:
-  codeowners-errors:
+  # Job id deliberately differs from the explicit check-run names: the
+  # implicit job check GitHub creates would otherwise collide with (and hide
+  # from lookup) the explicit per-base runs published below.
+  codeowners-validity:
     runs-on: ubuntu-latest
     # Serialize runs per branch/PR (throttle). Correctness does not depend
     # on ordering: push runs only ever write FAILURE to PR heads, so no
@@ -68,7 +74,12 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
-            const CHECK_NAME = "codeowners-errors";
+            // Base-suffixed context: verdicts for different target branches
+            // are distinct checks, so a shared commit can never inherit or
+            // overwrite another base's verdict.
+            function checkNameFor(base) {
+              return `codeowners-errors (${base})`;
+            }
             const CHECK_TITLE = "CODEOWNERS validity";
             const CODEOWNERS_PATHS = [
               ".github/CODEOWNERS",
@@ -163,13 +174,14 @@ jobs:
             // the existing explicit run when present (matched by our output
             // title so the workflow job's own implicit check is never
             // touched), otherwise create it.
-            async function publishCheck(headSha, conclusion, summary) {
+            async function publishCheck(headSha, base, conclusion, summary) {
+              const checkName = checkNameFor(base);
               const { data } = await withRetries(`checks.list ${headSha.slice(0, 7)}`, () =>
                 github.request("GET /repos/{owner}/{repo}/commits/{ref}/check-runs", {
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   ref: headSha,
-                  check_name: CHECK_NAME,
+                  check_name: checkName,
                   filter: "latest",
                   per_page: 50,
                 })
@@ -199,7 +211,7 @@ jobs:
                 await withRetries(`checks.create ${headSha.slice(0, 7)}`, () =>
                   github.request("POST /repos/{owner}/{repo}/check-runs", {
                     ...body,
-                    name: CHECK_NAME,
+                    name: checkName,
                     head_sha: headSha,
                   })
                 );
@@ -306,6 +318,7 @@ jobs:
               try {
                 await publishCheck(
                   headSha,
+                  baseRef,
                   conclusion,
                   conclusion === "success"
                     ? "CODEOWNERS is valid on the base branch (and in this PR's merge result, when the PR modifies it)."
@@ -362,6 +375,7 @@ jobs:
                   try {
                     await publishCheck(
                       pr.head.sha,
+                      branch,
                       "failure",
                       `Base branch ${branch} has CODEOWNERS problems (or could not be validated) - the native owner rule may be fail-open until fixed on ${branch}. Re-run this check (or push to the PR) after the fix to go green.`
                     );
