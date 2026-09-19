@@ -173,16 +173,24 @@ jobs:
                   }
                   throw error;
                 }
-                // GitHub uses the first CODEOWNERS it finds in precedence
-                // order; judge coverage on that same file.
-                return content.split("\n").some((line) => {
+                // GitHub uses the first CODEOWNERS file it finds in
+                // precedence order; judge coverage on that same file. Within
+                // the file the LAST matching rule wins and ownerless rules
+                // are legal, so a bare `*` after `* @owner` clears ownership
+                // for every path: the EFFECTIVE catch-all is the last `*`
+                // rule, and that rule must name at least one owner.
+                let lastCatchAll = null;
+                for (const line of content.split("\n")) {
                   const trimmed = line.trim();
                   if (trimmed === "" || trimmed.startsWith("#")) {
-                    return false;
+                    continue;
                   }
                   const fields = trimmed.split(/\s+/);
-                  return fields[0] === "*" && fields.length >= 2;
-                });
+                  if (fields[0] === "*") {
+                    lastCatchAll = fields;
+                  }
+                }
+                return lastCatchAll !== null && lastCatchAll.length >= 2;
               }
               return false;
             }
