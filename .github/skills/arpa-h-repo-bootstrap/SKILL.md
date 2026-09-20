@@ -1,17 +1,17 @@
 ---
 name: arpa-h-repo-bootstrap
-description: "ARPA-H repo bootstrap — devcontainer, .gitignore, GitHub Actions security, environment file setup, PLAN.md, and AGENTS.md. Use when creating or updating any ARPA-H internal repo's foundational configuration. Examines the repo's language stack, frameworks, tooling, and services, then generates a complete devcontainer config with ARPA-H standard extensions, validates .gitignore coverage, enforces GitHub Actions SHA pinning, wires up environment file conventions, maintains a PLAN.md tracking stack decisions and work items, and produces an AGENTS.md with repo and developer-specific agent directives. Use for: new repo setup, adding Codespaces support, updating devcontainer to match current stack, adding missing extensions, auditing repo hygiene."
+description: "ARPA-H repo bootstrap — devcontainer, .gitignore, GitHub Actions security, environment file setup, PLAN.md, and AGENTS.md. Use when creating or updating any ARPA-H internal repo's foundational configuration. Examines the repo's language stack, frameworks, tooling, and services, then generates a complete devcontainer config with ARPA-H standard extensions, picks a safe install method for every CLI (feature vs. checksum-verified binary) and verifies the tools actually landed, validates .gitignore coverage, enforces GitHub Actions SHA pinning, wires up environment file conventions, maintains a PLAN.md tracking stack decisions and work items, and produces an AGENTS.md with repo and developer-specific agent directives. Use for: new repo setup, adding Codespaces support, updating devcontainer to match current stack, adding missing extensions, debugging a devcontainer where a tool is missing or broken after rebuild, auditing repo hygiene."
 ---
 
 # ARPA-H GitHub Repo Setup
 
 ## Overview
 
-This skill produces a complete `.devcontainer/devcontainer.json` for any ARPA-H repo by
-combining two things:
+This skill produces a complete `.devcontainer/` for any ARPA-H repo by combining three things:
 
 1. **Stack discovery** — what the repo actually needs (language runtime, tools, services)
-2. **ARPA-H standard layer** — extensions and settings that are always included regardless of stack
+2. **Install method** — how each tool gets into the container, and proof that it actually landed
+3. **ARPA-H standard layer** — extensions and settings that are always included regardless of stack
 
 ---
 
@@ -23,14 +23,14 @@ Examine the repo before writing anything. Check for the following signals:
 
 ### Language / Runtime
 
-| Signal                                         | Conclusion                                                             |
-| ---------------------------------------------- | ---------------------------------------------------------------------- |
-| `package.json` at root                         | Node.js project — read `engines.node` for version, default to LTS (24) |
-| `requirements.txt` / `pyproject.toml` / `*.py` | Python project                                                         |
-| `go.mod`                                       | Go project                                                             |
-| `Cargo.toml`                                   | Rust project                                                           |
-| `pom.xml` / `build.gradle`                     | Java project                                                           |
-| Multiple present                               | Multi-language — use a base image and add features for each            |
+| Signal | Conclusion |
+| --- | --- |
+| `package.json` at root | Node.js project — read `engines.node` for version, default to LTS (24) |
+| `requirements.txt` / `pyproject.toml` / `*.py` | Python project |
+| `go.mod` | Go project |
+| `Cargo.toml` | Rust project |
+| `pom.xml` / `build.gradle` | Java project |
+| Multiple present | Multi-language — use a base image and add features for each |
 
 ### Frontend Framework
 
@@ -44,30 +44,30 @@ Examine the repo before writing anything. Check for the following signals:
 
 ### Backend / API
 
-| Signal                                         | Service                                                           |
-| ---------------------------------------------- | ----------------------------------------------------------------- |
-| `api/` folder with `host.json`                 | Azure Functions — port 7071, needs `azure-functions-core-tools@4` |
-| `server/` or `src/server` with Express/Fastify | Node API — port 8080 or as configured                             |
-| `*.py` with FastAPI/Flask                      | Python API — port 8000                                            |
-| `Dockerfile` or `docker-compose.yml`           | Container-based — use `docker-outside-of-docker` feature          |
+| Signal | Service |
+| --- | --- |
+| `api/` folder with `host.json` | Azure Functions — port 7071, needs `azure-functions-core-tools@4` |
+| `server/` or `src/server` with Express/Fastify | Node API — port 8080 or as configured |
+| `*.py` with FastAPI/Flask | Python API — port 8000 |
+| `Dockerfile` or `docker-compose.yml` | Container-based — use `docker-outside-of-docker` feature |
 
 ### Local Storage / Emulators
 
-| Signal                                          | Service                                                      | Ports               |
-| ----------------------------------------------- | ------------------------------------------------------------ | ------------------- |
+| Signal | Service | Ports |
+| --- | --- | --- |
 | `@azure/storage-*` or `azurite` in package.json | Azurite emulator — install globally, store at `/tmp/azurite` | 10000, 10001, 10002 |
-| `@azure/cosmos*` in package.json                | CosmosDB — may need Azurite or emulator                      | —                   |
-| `mongoose` / `mongodb` in package.json          | MongoDB — add `ghcr.io/devcontainers/features/mongo:1`       | 27017               |
-| `pg` / `prisma` with postgres provider          | PostgreSQL — add `ghcr.io/devcontainers/features/postgres:1` | 5432                |
-| `redis` in package.json                         | Redis — add `ghcr.io/devcontainers/features/redis:1`         | 6379                |
+| `@azure/cosmos*` in package.json | CosmosDB — may need Azurite or emulator | — |
+| `mongoose` / `mongodb` in package.json | MongoDB — add `ghcr.io/devcontainers/features/mongo:1` | 27017 |
+| `pg` / `prisma` with postgres provider | PostgreSQL — add `ghcr.io/devcontainers/features/postgres:1` | 5432 |
+| `redis` in package.json | Redis — add `ghcr.io/devcontainers/features/redis:1` | 6379 |
 
 ### Azure Integration
 
-| Signal                                                           | Action                                                       |
-| ---------------------------------------------------------------- | ------------------------------------------------------------ |
-| `@azure/identity` or `DefaultAzureCredential` in any source file | Add `ghcr.io/devcontainers/features/azure-cli:1` feature     |
-| `infra/` folder with `*.tf` files                                | Add Terraform — `ghcr.io/devcontainers/features/terraform:1` |
-| `.bicep` files                                                   | Azure CLI is sufficient                                      |
+| Signal | Action |
+| --- | --- |
+| `@azure/identity` or `DefaultAzureCredential` in any source file | Azure CLI needed — run the codename check in Step 3 before reaching for `ghcr.io/devcontainers/features/azure-cli:1` |
+| `infra/` folder with `*.tf` files | Add Terraform — `ghcr.io/devcontainers/features/terraform:1` |
+| `.bicep` files | Azure CLI is sufficient |
 
 ### Environment Files
 
@@ -77,12 +77,12 @@ Examine the repo before writing anything. Check for the following signals:
 
 ### Linting / Formatting
 
-| Signal                                                                       | Extension to add                 |
-| ---------------------------------------------------------------------------- | -------------------------------- |
-| `.eslintrc*` / `eslint.config.*`                                             | `dbaeumer.vscode-eslint`         |
-| `.prettierrc*` / `prettier` in package.json                                  | `esbenp.prettier-vscode`         |
-| `pyproject.toml` with ruff/black                                             | `charliermarsh.ruff`             |
-| `.editorconfig`                                                              | `editorconfig.editorconfig`      |
+| Signal | Extension to add |
+| --- | --- |
+| `.eslintrc*` / `eslint.config.*` | `dbaeumer.vscode-eslint` |
+| `.prettierrc*` / `prettier` in package.json | `esbenp.prettier-vscode` |
+| `pyproject.toml` with ruff/black | `charliermarsh.ruff` |
+| `.editorconfig` | `editorconfig.editorconfig` |
 | `.markdownlint*` / `markdownlint` in package.json / any `*.md` files present | `davidanson.vscode-markdownlint` |
 
 ### Linter ignore rules — always exclude `.github/skills`
@@ -157,18 +157,18 @@ Apply all ignore rules that are relevant to the linters detected in the repo. If
 
 ### Language-Specific Extensions
 
-| Language/Framework      | Extensions                                                                                      |
-| ----------------------- | ----------------------------------------------------------------------------------------------- |
-| TypeScript / JavaScript | No dedicated extension needed — covered by TypeScript and ESLint extensions                     |
-| Python                  | `ms-python.python`, `ms-python.vscode-pylance`                                                  |
-| Go                      | `golang.go`                                                                                     |
-| Rust                    | `rust-lang.rust-analyzer` — provides IntelliSense, inline errors, and `clippy` lint integration |
-| Terraform               | `hashicorp.terraform`                                                                           |
-| Docker                  | `ms-azuretools.vscode-docker`                                                                   |
-| Svelte                  | `svelte.svelte-vscode`                                                                          |
-| Astro                   | `astro-build.astro-vscode`                                                                      |
-| Vue                     | `vue.volar`                                                                                     |
-| React (TSX/JSX)         | No dedicated extension needed — covered by TypeScript and ESLint extensions                     |
+| Language/Framework | Extensions |
+| --- | --- |
+| TypeScript / JavaScript | No dedicated extension needed — covered by TypeScript and ESLint extensions |
+| Python | `ms-python.python`, `ms-python.vscode-pylance` |
+| Go | `golang.go` |
+| Rust | `rust-lang.rust-analyzer` — provides IntelliSense, inline errors, and `clippy` lint integration |
+| Terraform | `hashicorp.terraform` |
+| Docker | `ms-azuretools.vscode-docker` |
+| Svelte | `svelte.svelte-vscode` |
+| Astro | `astro-build.astro-vscode` |
+| Vue | `vue.volar` |
+| React (TSX/JSX) | No dedicated extension needed — covered by TypeScript and ESLint extensions |
 
 > **Every extension identified in the tables above MUST be written to `customizations.vscode.extensions` in `devcontainer.json`.** This is the only guarantee that extensions are available after a rebuild or in a new Codespace. Do not rely on a developer installing them manually.
 
@@ -180,11 +180,11 @@ Apply all ignore rules that are relevant to the linters detected in the repo. If
 
 Only pull devcontainer base images and features from these sources. Any other registry is unapproved and must not be used.
 
-| Registry                                   | What it provides                                                          | Trust basis                                                                                                                                                       |
-| ------------------------------------------ | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mcr.microsoft.com/devcontainers/*`        | Base images (Node.js, Python, Go, Universal, etc.)                        | Microsoft-owned registry, SLA-backed, source at [github.com/devcontainers/images](https://github.com/devcontainers/images)                                        |
-| `ghcr.io/devcontainers/features/*`         | Official devcontainer features (gh CLI, Node, Azure CLI, Terraform, etc.) | Maintained by the `devcontainers` org (Microsoft-backed), source at [github.com/devcontainers/features](https://github.com/devcontainers/features)                |
-| `ghcr.io/devcontainers-contrib/features/*` | Community features not yet promoted to the official org                   | Community-contributed; use only for features with an active commit history and no official equivalent — prefer `ghcr.io/devcontainers/features/*` when one exists |
+| Registry | What it provides | Trust basis |
+| --- | --- | --- |
+| `mcr.microsoft.com/devcontainers/*` | Base images (Node.js, Python, Go, Universal, etc.) | Microsoft-owned registry, SLA-backed, source at [github.com/devcontainers/images](https://github.com/devcontainers/images) |
+| `ghcr.io/devcontainers/features/*` | Official devcontainer features (gh CLI, Node, Azure CLI, Terraform, etc.) | Maintained by the `devcontainers` org (Microsoft-backed), source at [github.com/devcontainers/features](https://github.com/devcontainers/features) |
+| `ghcr.io/devcontainers-contrib/features/*` | Community features not yet promoted to the official org | Community-contributed; use only for features with an active commit history and no official equivalent — prefer `ghcr.io/devcontainers/features/*` when one exists |
 
 **Do not use:**
 
@@ -209,27 +209,122 @@ Pin the Node.js version to match `engines.node` in `package.json`, or default to
 
 ---
 
-## Step 3 — Apply ARPA-H Standard Extensions and Features
+## Step 3 — Install Tooling: Choose a Method, Then Verify
 
-These extensions and devcontainer features are **always included** in every ARPA-H devcontainer, regardless of stack.
-Merge them with any stack-specific extensions discovered in Step 1.
+Every tool the repo depends on must be present after a rebuild. Devcontainer features **fail silently** — a feature that reports success can still leave the tool absent or broken. Treat installation and verification as one task, never two.
+
+### Choosing an install method
+
+Prefer first-party sources, but **never at the cost of a setup that fails repeatedly**. A developer who hits a broken container reaches for whatever works — a global install, a curl-to-shell, a machine outside the boundary. A tool missing from the container is a tool acquired by a worse route. The registry allowlist in Step 2 is a default, not an absolute.
+
+In order of preference:
+
+1. **First-party feature** — `mcr.microsoft.com/devcontainers/*`, `ghcr.io/devcontainers/features/*`. Only if it works on your base image; see the codename check below.
+2. **Checksum-verified binary** from the vendor's release, version pinned, signature verified when one is published. Confirm the release ships a manifest first:
+
+   ```bash
+   gh api repos/<owner>/<repo>/releases/latest --jq '.assets[].name' | grep -iE 'sha|sum|asc'
+   ```
+
+3. **Reputable third-party feature**, version pinned. Acceptable when 1 and 2 don't apply. Name the maintainer and the reason in a comment.
+4. **`curl … | bash`** — never. It is unpinned and unverified, and is almost always the weakest option available rather than the most convenient. If the repo SHA-pins its GitHub Actions, piping an unpinned remote script into a shell contradicts that directly.
+
+**Worked example — bun:** no first-party feature exists, and `bun.sh/install` is option 4. So the real choice is a third-party feature (option 3) or a checksum-verified binary (option 2, and stronger here because bun signs `SHASUMS256.txt`).
+
+### Confirm a feature option exists before using it
+
+Unknown options are **ignored, not rejected**. `ghcr.io/devcontainers/features/node:1` has no `bunVersion` option; setting it yields neither node nor bun, with no error at build time. Check the feature's `devcontainer-feature.json` before using any option:
+
+```bash
+gh api repos/devcontainers/features/contents/src/<feature>/devcontainer-feature.json \
+  -H 'Accept: application/vnd.github.raw' | jq '.options | keys'
+```
+
+### Check the vendor apt repo covers your base image codename
+
+Features that derive their apt suite from `lsb_release -cs` break when the vendor has not published that codename. Microsoft publishes no `azure-cli` repo for Debian **trixie**, so the feature aborts and leaves Debian's repackaged `python3-azure-cli*` behind — a stale build that fails to load the `monitor` and `rdbms` command modules.
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' \
+  "https://packages.microsoft.com/repos/azure-cli/dists/$(lsb_release -cs)/Release"
+```
+
+`404` means don't use the feature. Add the vendor repo yourself with the suite pinned to the nearest published release, and record in the script when to re-check.
+
+### Delete features whose output you overwrite
+
+If you install a CLI yourself, remove the corresponding feature from `devcontainer.json`. Leaving both in place cost 237s of a 559s image build installing 132 packages that the script then purged.
+
+### Put installs in scripts, not inline chains
+
+One script per tool in `.devcontainer/`, called from `onCreateCommand`. Each with `set -euo pipefail` and an idempotency guard that early-exits when the tool is already present. Inline `&&`-chains are unreadable, unlintable, and swallow errors.
+
+```bash
+#!/usr/bin/env bash
+# .devcontainer/install-<tool>.sh
+set -euo pipefail
+
+VERSION="1.2.3"   # pinned — bump deliberately
+
+command -v <tool> >/dev/null 2>&1 && exit 0   # idempotency guard
+
+# download release asset + its checksum manifest, verify, then install
+```
+
+Dispatch from a single entry point so `devcontainer.json` stays a one-liner:
+
+```jsonc
+"onCreateCommand": "bash .devcontainer/on-create.sh"
+```
+
+```bash
+#!/usr/bin/env bash
+# .devcontainer/on-create.sh
+set -euo pipefail
+
+bash .devcontainer/install-bun.sh
+bash .devcontainer/install-az.sh
+bash .devcontainer/install-gitleaks.sh
+```
+
+### gitleaks: install the binary, not the Action
+
+The gitleaks binary is MIT-licensed and free; `gitleaks-action` requires a paid licence for organizations. Install the binary per option 2 and call it from a committed pre-commit hook.
+
+### Verify after every rebuild
+
+Never trust a rebuild without checking. Commit this as `.devcontainer/verify-tools.sh` so it is one command rather than a remembered snippet, and list **every** tool the repo depends on:
+
+```bash
+for t in az gh terraform node bun gitleaks; do
+  printf '%-12s ' "$t"
+  command -v "$t" >/dev/null 2>&1 \
+    && { "$t" --version 2>/dev/null || "$t" version 2>/dev/null; } | head -1 \
+    || echo MISSING
+done
+```
+
+This check is what catches every failure described above.
+
+---
+
+## Step 4 — Apply ARPA-H Standard Extensions and Features
+
+These extensions and devcontainer features are **always included** in every ARPA-H devcontainer, regardless of stack. Merge them with any stack-specific extensions discovered in Step 1.
 
 ### Always-on: devcontainer features
 
 ```jsonc
 "features": {
-  "ghcr.io/devcontainers/features/github-cli:1": {},  // gh CLI — required for all ARPA-H repos
-  "ghcr.io/devcontainers/features/node:1": {
-    "version": "none",
-    "installJupyterlab": false,
-    "bunVersion": "latest"          // installs bun — preferred package manager for all ARPA-H repos
-  }
+  "ghcr.io/devcontainers/features/github-cli:1": {}  // gh CLI — required for all ARPA-H repos
 }
 ```
 
 The `gh` CLI must always be present. Every ARPA-H repo uses GitHub for issues, PRs, and Actions; `gh` is the standard tool for interacting with the GitHub API from the terminal and from scripts.
 
-`bun` must always be present. It is the preferred package manager for all ARPA-H Node.js repos (see Step 5 — Build lifecycle commands, package manager security). The `node` feature with `version: "none"` installs bun without overriding the Node.js runtime already provided by the base image. Add any stack-specific features alongside these entries rather than replacing them.
+`bun` must always be present. It is the preferred package manager for all ARPA-H Node.js repos (see Step 6 — Build lifecycle commands, package manager security). **There is no first-party bun feature, and `ghcr.io/devcontainers/features/node:1` has no `bunVersion` option** — setting one installs nothing and reports no error. Install bun as a checksum-verified binary via `.devcontainer/install-bun.sh` (Step 3, option 2); bun publishes `SHASUMS256.txt` with every release.
+
+Add any stack-specific features alongside `github-cli` rather than replacing it, and run each one through Step 3 before committing to it.
 
 ### Always-on: GitHub & Collaboration
 
@@ -258,9 +353,7 @@ Azurite.azurite                       ← Azurite signal
 
 ### Always: suppress the Dev Container extension recommendation
 
-Repos that include a `.devcontainer/devcontainer.json` trigger VS Code to recommend the
-**Dev Containers** extension (`ms-vscode-remote.remote-containers`). Inside GitHub Codespaces
-that extension is irrelevant — Codespaces handles containerisation natively without it.
+Repos that include a `.devcontainer/devcontainer.json` trigger VS Code to recommend the **Dev Containers** extension (`ms-vscode-remote.remote-containers`). Inside GitHub Codespaces that extension is irrelevant — Codespaces handles containerisation natively without it.
 
 Add or update `.vscode/extensions.json` to silence the nag:
 
@@ -276,13 +369,12 @@ Add or update `.vscode/extensions.json` to silence the nag:
 **Rules:**
 
 - If `.vscode/extensions.json` does not exist, create it with the content above.
-- If it already exists and has a `recommendations` array, preserve it and merge in the
-  `unwantedRecommendations` key.
-- `.vscode/extensions.json` must **not** be gitignored (see Step 7).
+- If it already exists and has a `recommendations` array, preserve it and merge in the `unwantedRecommendations` key.
+- `.vscode/extensions.json` must **not** be gitignored (see Step 8).
 
 ---
 
-## Step 4 — Apply ARPA-H Standard Settings
+## Step 5 — Apply ARPA-H Standard Settings
 
 Always include these VS Code settings:
 
@@ -307,15 +399,11 @@ Azure Functions specific settings (add when Functions signal detected):
 
 ---
 
-## Step 5 — Build lifecycle commands
+## Step 6 — Build lifecycle commands
 
-> **Prebuilds:** A prebuild runs `onCreateCommand` and `updateContentCommand` ahead of time
-> and bakes them into a cached image, so users get a faster container open. `postCreateCommand`
-> runs once when the user's codespace is first created (not on resume). `postStartCommand` runs
-> on every open and resume.
+> **Prebuilds:** A prebuild runs `onCreateCommand` and `updateContentCommand` ahead of time and bakes them into a cached image, so users get a faster container open. `postCreateCommand` runs once when the user's codespace is first created (not on resume). `postStartCommand` runs on every open and resume.
 >
-> The lifecycle commands in this step are structured to be prebuild-compatible. After completing this step, **tell the user** to ask a repo admin to enable the
-> prebuild in GitHub: **Settings → Codespaces → Prebuild configuration → Set up prebuild**.
+> The lifecycle commands in this step are structured to be prebuild-compatible. After completing this step, **tell the user** to ask a repo admin to enable the prebuild in GitHub: **Settings → Codespaces → Prebuild configuration → Set up prebuild**.
 
 ### onCreateCommand
 
@@ -326,10 +414,15 @@ Runs **once** when the container is first created.
 
 Suitable for: secret-free, cacheable setup (for example global tool installation) — anything slow that benefits from prebuild caching.
 
-Install global tools only here — things that are slow to install, don't change with repo content, and benefit from being baked into a prebuild cache:
+Install global tools only here — things that are slow to install, don't change with repo content, and benefit from being baked into a prebuild cache. Every CLI install goes in its own script per Step 3, dispatched from a single `on-create.sh`:
+
+```jsonc
+"onCreateCommand": "bash .devcontainer/on-create.sh"
+```
+
+Package-manager globals belong in the same script:
 
 ```bash
-# Pattern: global tools only
 bun add --global <global-tool-1> <global-tool-2>
 ```
 
@@ -352,9 +445,7 @@ Suitable for: installing project dependencies whose contents are tied to the rep
 bun install && cd <subpackage> && bun install
 ```
 
-When the command grows beyond a simple one-liner,
-move it into a script in `.devcontainer/` and reference it instead:
-`"updateContentCommand": "bash .devcontainer/update-content.sh"`. Do the same for `postCreateCommand` and `postStartCommand` as needed.
+Every lifecycle command should point at a script in `.devcontainer/` — `on-create.sh`, `update-content.sh`, `post-create.sh`, `post-start.sh` — each with `set -euo pipefail`. Keep `devcontainer.json` free of inline `&&`-chains.
 
 ### postCreateCommand
 
@@ -366,12 +457,32 @@ Suitable for: per-user initialization — populating `.env` files from environme
 
 Copy env example files (runs once at container creation, never overwrites):
 
-```bash
-cp -n .env.local.example .env.local ; cp -n api/local.settings.json.example api/local.settings.json ; true
+```jsonc
+"postCreateCommand": "bash .devcontainer/post-create.sh"
 ```
 
-Adapt to whatever example files were found in Step 1. Always end with `; true` to prevent
-failure from blocking container creation if files already exist.
+```bash
+#!/usr/bin/env bash
+# .devcontainer/post-create.sh
+set -euo pipefail
+
+cp -n .env.local.example .env.local
+cp -n api/local.settings.json.example api/local.settings.json
+```
+
+Adapt to whatever example files were found in Step 1. `cp -n` already exits 0 when the destination exists, so no error suppression is needed.
+
+#### Never end `postCreateCommand` with `; true`
+
+It masks every failure before it. A broken az install ran on every rebuild and reported nothing because of one. If a single step is genuinely optional, guard that step — not the whole chain:
+
+```bash
+# ✅ the optional step guards itself; everything else still fails loudly
+command -v optional-tool >/dev/null 2>&1 && optional-tool init
+
+# ❌ swallows every failure in the chain
+step-one ; step-two ; true
+```
 
 ### postStartCommand
 
@@ -411,7 +522,7 @@ Never use `npm install` without `--ignore-scripts` for packages pulled from the 
 
 ---
 
-## Step 6 — Port Forwarding
+## Step 7 — Port Forwarding
 
 Include `forwardPorts` and `portsAttributes` for every service discovered:
 
@@ -430,7 +541,7 @@ Use `"notify"` for primary dev server and API ports. Use `"silent"` for emulator
 
 ---
 
-## Step 7 — Verify .gitignore
+## Step 8 — Verify .gitignore
 
 Check for a `.gitignore` at the repo root. Create one if absent. Ensure the following entries are present:
 
@@ -516,7 +627,7 @@ Cargo.lock   # omit this line for libraries; keep for binaries/applications
 
 ---
 
-## Step 8 — Remove Stale Git LFS Hooks
+## Step 9 — Remove Stale Git LFS Hooks
 
 The standard `mcr.microsoft.com/devcontainers/javascript-node` image does not include `git-lfs`. If a repo was ever cloned on a machine where `git lfs install` was run globally, all four LFS hooks (`pre-push`, `post-commit`, `post-checkout`, `post-merge`) are written into `.git/hooks/`. Inside the devcontainer every `git commit` and `git push` then fails or emits blocking errors — even when no files are LFS-tracked.
 
@@ -545,7 +656,7 @@ rm -f .git/hooks/pre-push .git/hooks/post-commit .git/hooks/post-checkout .git/h
 
 ### postCreateCommand hook (recommended)
 
-To keep the devcontainer clean on every rebuild, add a guard to `postCreateCommand` that removes the hooks when LFS is not in use. Append this fragment **after** any dependency-install commands:
+To keep the devcontainer clean on every rebuild, add a guard to `.devcontainer/post-create.sh` that removes the hooks when LFS is not in use. Append this fragment **after** any dependency-install commands:
 
 ```bash
 # Remove stale LFS hooks — image has no git-lfs and no LFS attributes are declared
@@ -590,6 +701,7 @@ gh api repos/<owner>/<repo>/git/tags/<sha> --jq '.object.sha'
 - Audit every `uses:` line for unpinned references
 - Replace unpinned tags with the resolved commit SHA + a `# vX.Y.Z` comment
 - This applies to all actions: `actions/*`, `github/*`, and any third-party actions
+- Do not add `gitleaks/gitleaks-action` — it requires a paid licence for organizations. Install the MIT-licensed binary in the devcontainer instead (Step 3) and run it from a committed pre-commit hook.
 
 ### Exclude skill file updates from triggering workflow runs
 
@@ -879,11 +991,14 @@ Create `.github/CODEOWNERS`:
 
 ## Output Format
 
-Produce a single `.devcontainer/devcontainer.json` file with:
+Produce a `.devcontainer/` directory containing:
 
-- Inline comments (`//`) explaining non-obvious choices
-- Sections in this order: `name`, `image`, `features`, `onCreateCommand`, `updateContentCommand`, `postCreateCommand`, `postStartCommand`, `forwardPorts`, `portsAttributes`, `customizations`
-- Extension IDs in lowercase exactly as published on the VS Code Marketplace
+- `devcontainer.json` with inline comments (`//`) explaining non-obvious choices, and sections in this order: `name`, `image`, `features`, `onCreateCommand`, `updateContentCommand`, `postCreateCommand`, `postStartCommand`, `forwardPorts`, `portsAttributes`, `customizations`
+- One `install-<tool>.sh` per self-installed CLI, version-pinned and checksum-verified
+- Lifecycle scripts (`on-create.sh`, `update-content.sh`, `post-create.sh`, `post-start.sh`) for each lifecycle command in use — no inline `&&`-chains in `devcontainer.json`
+- `verify-tools.sh` listing every tool the repo depends on
+
+Extension IDs go in `customizations.vscode.extensions` in lowercase, exactly as published on the VS Code Marketplace.
 
 ---
 
