@@ -109,10 +109,13 @@ jobs:
               # owner - the last matching rule wins and ownerless rules are
               # legal) has no errors yet leaves require_code_owner_review
               # with nobody to require. Enforce this repo's catch-all
-              # policy: the last `*` rule must name at least one owner.
+              # policy: the last all-path rule (`*`, `**`, or `**/*` - any
+              # of them matches every path) must name at least one owner.
+              # Narrower ownerless globs can still clear their own paths;
+              # full per-path evaluation is beyond a coverage heuristic.
               owners=$(gh api "repos/${REPO}/contents/${found}?ref=${ref}" \
                 -H "Accept: application/vnd.github.raw+json" \
-                | awk '$1 !~ /^#/ && $1 == "*" { n = NF } END { print n + 0 }')
+                | awk '$1 !~ /^#/ && ($1 == "*" || $1 == "**" || $1 == "**/*") { n = NF } END { print n + 0 }')
               if [ "$owners" -lt 2 ]; then
                 echo "::error::CODEOWNERS at ${label} (${found}) has no owned catch-all rule (\`* @owner\`) - native code-owner review has no owner to require for most paths (fail-open)."
                 echo "## CODEOWNERS has no owned catch-all rule (${label})" >> "$GITHUB_STEP_SUMMARY"
