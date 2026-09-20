@@ -113,8 +113,17 @@ jobs:
               # of them matches every path) must name at least one owner.
               # Narrower ownerless globs can still clear their own paths;
               # full per-path evaluation is beyond a coverage heuristic.
-              owners=$(gh api "repos/${REPO}/contents/${found}?ref=${ref}" \
-                -H "Accept: application/vnd.github.raw+json" \
+              # Capture-and-check rather than piping: errexit is suppressed
+              # inside a function invoked as `f || ...`, and a mid-stream
+              # gh failure must not hand awk PARTIAL content (which could
+              # still show an owned catch-all while omitting a later
+              # overriding rule). A failed read fails the validation.
+              if ! raw=$(gh api "repos/${REPO}/contents/${found}?ref=${ref}" \
+                -H "Accept: application/vnd.github.raw+json"); then
+                echo "::error::Could not read ${found} at ${label} (${ref}) for the coverage check."
+                return 1
+              fi
+              owners=$(printf '%s\n' "$raw" \
                 | awk '$1 !~ /^#/ && ($1 == "*" || $1 == "**" || $1 == "**/*") { n = NF } END { print n + 0 }')
               if [ "$owners" -lt 2 ]; then
                 echo "::error::CODEOWNERS at ${label} (${found}) has no owned catch-all rule (\`* @owner\`) - native code-owner review has no owner to require for most paths (fail-open)."
