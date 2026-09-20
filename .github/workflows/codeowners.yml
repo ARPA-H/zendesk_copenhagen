@@ -142,7 +142,7 @@ jobs:
                 return 1
               fi
               owners=$(printf '%s\n' "$raw" \
-                | awk '$1 !~ /^#/ && ($1 == "*" || $1 == "**" || $1 == "**/*") { n = NF } END { print n + 0 }')
+                | awk '$1 !~ /^#/ && ($1 == "*" || $1 == "**" || $1 == "**/*") { c = NF; for (i = 1; i <= NF; i++) if ($i ~ /^#/) { c = i - 1; break }; n = c } END { print n + 0 }')
               if [ "$owners" -lt 2 ]; then
                 echo "::error::CODEOWNERS at ${label} (${found}) has no owned catch-all rule (\`* @owner\`) - native code-owner review has no owner to require for most paths (fail-open)."
                 echo "## CODEOWNERS has no owned catch-all rule (${label})" >> "$GITHUB_STEP_SUMMARY"
