@@ -85,10 +85,28 @@ jobs:
             # the directory-listing array, so those fall through too).
             found=""
             for path in .github/CODEOWNERS CODEOWNERS docs/CODEOWNERS; do
-              if [ "$(gh api "repos/${REPO}/contents/${path}?ref=${ref}" --jq '.type' 2>/dev/null)" = "file" ]; then
-                found="$path"
-                break
+              # Only a genuine 404 may fall through to the next location:
+              # treating a transient 5xx/403 as "absent" could shift
+              # discovery to a lower-precedence file and validate the wrong
+              # one. Any other failure fails closed.
+              if resp=$(gh api "repos/${REPO}/contents/${path}?ref=${ref}" 2>&1); then
+                if [ "$(printf '%s' "$resp" | jq -r '.type' 2>/dev/null)" = "file" ]; then
+                  found="$path"
+                  break
+                fi
+                # 200 but not a regular file (directory/symlink/submodule):
+                # not a usable CODEOWNERS; try the next location.
+                continue
               fi
+              case "$resp" in
+                *"HTTP 404"*)
+                  continue
+                  ;;
+                *)
+                  echo "::error::Could not probe ${path} at ${label} (${ref}): ${resp}"
+                  return 1
+                  ;;
+              esac
             done
             if [ -z "$found" ]; then
               echo "::error::No CODEOWNERS file exists at ${label} (${ref}) - native code-owner review has no owners to require (fail-open)."
