@@ -194,6 +194,59 @@ azuredeploy.json
 }
 ```
 
+## Table Deployment (Workspace Resource Group)
+
+Deploy the custom table **as its own deployment, scoped directly to the workspace's resource group** — do not nest it inside `azuredeploy.json`. A nested `Microsoft.Resources/deployments` resource can only target a different resource group within the *same subscription* (cross-subscription also needs `subscriptionId`), which is fragile if the workspace's location isn't guaranteed. Running this template as its own top-level deployment against the workspace RG avoids that constraint entirely. The schema must include `columns` matching the DCR stream declaration above, otherwise a fresh deployment creates a table with no columns.
+
+`table.json`:
+
+```json
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workspaceName": { "type": "string" },
+    "tableName":     { "type": "string" }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.OperationalInsights/workspaces/tables",
+      "apiVersion": "2022-10-01",
+      "name": "[concat(parameters('workspaceName'), '/', parameters('tableName'))]",
+      "properties": {
+        "schema": {
+          "name": "[parameters('tableName')]",
+          "columns": [
+            { "name": "TimeGenerated", "type": "datetime" },
+            { "name": "EventId",       "type": "string" },
+            { "name": "EventType",     "type": "string" },
+            { "name": "ActorId",       "type": "string" },
+            { "name": "ActorEmail",    "type": "string" },
+            { "name": "TargetId",      "type": "string" },
+            { "name": "Status",        "type": "string" },
+            { "name": "CreatedDate",   "type": "datetime" },
+            { "name": "RawData",       "type": "dynamic" }
+          ]
+        },
+        "retentionInDays":      365,
+        "totalRetentionInDays": 4383
+      }
+    }
+  ]
+}
+```
+
+Deploy it before `azuredeploy.json`, targeting the workspace's own resource group:
+
+```bash
+az deployment group create \
+  --resource-group "<workspace-rg>" \
+  --template-file table.json \
+  --parameters \
+      workspaceName="<workspace>" \
+      tableName="Product<ConnectorName><LogType>_CL"
+```
+
 ## Sentinel Data Connector Definition (UX Manifest)
 
 To surface the connector in the Sentinel **Data Connectors** gallery, add a connector definition resource:
@@ -231,6 +284,8 @@ To surface the connector in the Sentinel **Data Connectors** gallery, add a conn
 ```
 
 ## Deploy Command
+
+Deploy the table first (see [Table Deployment](#table-deployment-workspace-resource-group) above), then deploy the connector:
 
 ```bash
 az deployment group create \
