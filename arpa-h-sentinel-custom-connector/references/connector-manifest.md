@@ -145,8 +145,10 @@ azuredeploy.json
         "[resourceId('Microsoft.Insights/dataCollectionRules', variables('dcrName'))]"
       ],
       "properties": {
+        "httpsOnly": true,
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('functionAppName'), '-plan'))]",
         "siteConfig": {
+          "http20Enabled": true,
           "appSettings": [
             { "name": "AzureWebJobsStorage",   "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', parameters('storageAccountName'), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value)]" },
             { "name": "FUNCTIONS_EXTENSION_VERSION", "value": "~4" },
