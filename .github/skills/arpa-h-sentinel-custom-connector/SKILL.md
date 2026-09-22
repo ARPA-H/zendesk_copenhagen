@@ -164,7 +164,7 @@ client.upload(rule_id=DCR_RULE_ID, stream_name=DCR_STREAM_NAME, logs=records)
 - `Microsoft.Insights/components` — naming: `appi-operations-sentinel-<connector>-usc`; set `APPLICATIONINSIGHTS_CONNECTION_STRING` on the Function App
 - `Microsoft.Insights/dataCollectionEndpoints`
 - `Microsoft.Insights/dataCollectionRules`
-- `Microsoft.Web/sites` with `identity: { type: 'SystemAssigned' }`
+- `Microsoft.Web/sites` with `identity: { type: 'SystemAssigned' }`, `httpsOnly: true` (requires HTTPS; plain HTTP is redirected), and `siteConfig.http20Enabled: true` (enables HTTP/2)
 - `Microsoft.Authorization/roleAssignments` (Storage, DCR, DCE)
 - Parameterize: workspace name, workspace RG, DCE name, table name, Function App name, Key Vault name, Key Vault RG
 
@@ -373,6 +373,8 @@ All zones must be **linked to the VNet** used by the Function App.
 - [ ] `publicNetworkAccess: 'Disabled'` set on Key Vault and Storage
 - [ ] DCE `networkAcls.publicNetworkAccess: 'SecuredByPerimeter'` (already set in `deployment.bicep`)
 - [ ] `vnetRouteAllEnabled: true` on the Function App
+- [ ] `httpsOnly: true` set on the Function App (rejects plain HTTP)
+- [ ] `siteConfig.http20Enabled: true` set on the Function App (HTTP/2.0)
 
 ---
 

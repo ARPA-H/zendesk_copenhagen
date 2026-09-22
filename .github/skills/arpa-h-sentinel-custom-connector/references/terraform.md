@@ -179,6 +179,7 @@ resource "azurerm_linux_function_app" "connector" {
   service_plan_id            = azurerm_service_plan.connector.id
   # Set subnet_resource_id in terraform.tfvars to enable VNet integration; leave empty for public.
   virtual_network_subnet_id  = var.subnet_resource_id != "" ? var.subnet_resource_id : null
+  https_only                 = true # reject plain HTTP
 
   identity {
     type = "SystemAssigned"
@@ -186,6 +187,7 @@ resource "azurerm_linux_function_app" "connector" {
 
   site_config {
     vnet_route_all_enabled = var.subnet_resource_id != ""  # routes ALL outbound traffic via VNet
+    http2_enabled           = true # enable HTTP/2
     application_stack {
       python_version = "3.11"
     }
