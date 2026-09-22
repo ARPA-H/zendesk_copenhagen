@@ -2,7 +2,7 @@
 
 Full Terraform configuration for provisioning all Sentinel custom connector infrastructure using the `azurerm` provider.
 
-**Requires:** `azurerm` provider ≥ 3.90; Terraform ≥ 1.5 or OpenTofu ≥ 1.6.
+**Requires:** `azurerm` provider ≥ 3.90; `azapi` provider ≥ 1.13 (the custom table's `schema.columns` isn't supported by `azurerm_log_analytics_workspace_table`, which only manages retention on an already-existing table); Terraform ≥ 1.5 or OpenTofu ≥ 1.6.
 
 ---
 
@@ -45,12 +45,18 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.90"
     }
+    azapi = {
+      source  = "Azure/azapi"
+      version = "~> 1.13"
+    }
   }
 }
 
 provider "azurerm" {
   features {}
 }
+
+provider "azapi" {}
 
 # ── Data Collection Endpoint ─────────────────────────────────────────────────
 resource "azurerm_monitor_data_collection_endpoint" "connector" {
@@ -92,6 +98,40 @@ resource "azurerm_monitor_data_collection_rule" "connector" {
     column { name = "CreatedDate";   type = "datetime" }
     column { name = "RawData";       type = "dynamic" }
   }
+
+  depends_on = [azapi_resource.connector_table]
+}
+
+# ── Log Analytics Custom Table (schema + retention) ─────────────────────────
+# azurerm_log_analytics_workspace_table only manages retention on an existing table and
+# does not support schema.columns — use azapi_resource to create the table with its full
+# schema, matching the DCR stream_declaration columns above.
+resource "azapi_resource" "connector_table" {
+  type      = "Microsoft.OperationalInsights/workspaces/tables@2022-10-01"
+  name      = "Product${var.connector_name}Events_CL"
+  parent_id = var.workspace_resource_id
+
+  # AzAPI 1.x requires body as a JSON string, not a native HCL object (that's the 2.x schema)
+  body = jsonencode({
+    properties = {
+      schema = {
+        name = "Product${var.connector_name}Events_CL"
+        columns = [
+          { name = "TimeGenerated", type = "datetime" },
+          { name = "EventId",       type = "string" },
+          { name = "EventType",     type = "string" },
+          { name = "ActorId",       type = "string" },
+          { name = "ActorEmail",    type = "string" },
+          { name = "TargetId",      type = "string" },
+          { name = "Status",        type = "string" },
+          { name = "CreatedDate",   type = "datetime" },
+          { name = "RawData",       type = "dynamic" }
+        ]
+      }
+      retentionInDays      = 365   # Interactive: 1 year
+      totalRetentionInDays = 4383  # Total: 12 years (4383 = 12*365 + 3 leap days; ARM API takes days, not years)
+    }
+  })
 }
 
 # ── Storage Account (state tracking) ────────────────────────────────────────
@@ -172,7 +212,7 @@ resource "azurerm_role_assignment" "dcr_publisher" {
 
 # ── Cross-RG Role Assignment: Function App → Key Vault (Key Vault Secrets User)
 # Terraform data sources make cross-RG/cross-subscription role assignments trivial —
-# no nested deployments or expressionEvaluationPolicy workarounds needed.
+# no nested deployments or expressionEvaluationOptions workarounds needed.
 data "azurerm_key_vault" "existing" {
   name                = var.key_vault_name
   resource_group_name = var.key_vault_resource_group
@@ -513,5 +553,5 @@ private_link_scope_resource_group = "rg-monitoring"
 - **`coalesce()` in transform KQL** is not supported in DCR transform KQL regardless of IaC tool. Use `iif(isnotempty(field), todatetime(field), now())` instead.
 - **`stream_declaration` column types** use lowercase: `string`, `int`, `real`, `boolean`, `datetime`, `dynamic` — matching the Azure API.
 - **Flex Consumption (FC1):** Change `sku_name = "Y1"` to `sku_name = "FC1"` and replace `storage_account_access_key` with `storage_uses_managed_identity = true`. Add a `Storage Blob Data Owner` role assignment on the storage account for the Function App's managed identity.
-- **Custom Log Analytics table creation** is not supported by `azurerm` directly. Use the separate `az monitor log-analytics workspace table create` CLI command or an ARM template (`create-custom-table.json`) as a one-time setup step, same as with Bicep deployments.
+- **Custom Log Analytics table creation** is not supported by `azurerm_log_analytics_workspace_table` (retention-only) — use the `azapi_resource` shown above, or the separate `az monitor log-analytics workspace table create` CLI command, as a one-time setup step.
 - **State file security:** The Terraform state file will contain the storage account access key in plaintext. Use [azurerm backend with customer-managed key](https://developer.hashicorp.com/terraform/language/backend/azurerm) or restrict access to the state blob container to deployment identities only.

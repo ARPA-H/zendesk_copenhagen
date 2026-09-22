@@ -68,13 +68,47 @@ Note the `logsIngestion` endpoint URL from the output — this is used by the SD
 
 ### 3. Create the Custom Table in Log Analytics
 
+Run this against the **workspace's own resource group** — if the connector resources live in a different resource group, `--resource-group` here must still point at the workspace's RG, not the connector's.
+
 ```bash
 az monitor log-analytics workspace table create \
-  --resource-group "<rg>" \
+  --resource-group "<workspace-rg>" \
   --workspace-name "<workspace-name>" \
   --name "Product<ConnectorName><LogType>_CL" \
-  --columns '[{"name":"TimeGenerated","type":"datetime"},{"name":"RecordId","type":"string"},{"name":"EventType","type":"string"},{"name":"Status","type":"string"},{"name":"RawData","type":"dynamic"}]'
+  --retention-time 365 \
+  --total-retention-time 4383 \
+  --columns '[{"name":"TimeGenerated","type":"datetime"},{"name":"EventId","type":"string"},{"name":"EventType","type":"string"},{"name":"ActorId","type":"string"},{"name":"ActorEmail","type":"string"},{"name":"TargetId","type":"string"},{"name":"Status","type":"string"},{"name":"CreatedDate","type":"datetime"},{"name":"RawData","type":"dynamic"}]'
 ```
+
+**Bicep** — deploy this as a standalone deployment run directly against the workspace's resource group (`az deployment group create --resource-group <workspace-rg> --template-file table.bicep --parameters workspaceName=<workspace-name>`), the same way as the standalone ARM template below — don't nest it in the connector's main deployment. The `schema.columns` must match the columns passed to the CLI above and the DCR stream declaration in [Connector Manifest](./references/connector-manifest.md), or a fresh deployment creates a table with no columns / a schema mismatch:
+
+```bicep
+param workspaceName string
+
+resource table 'Microsoft.OperationalInsights/workspaces/tables@2022-10-01' = {
+  name: '${workspaceName}/Product<ConnectorName><LogType>_CL'
+  properties: {
+    schema: {
+      name: 'Product<ConnectorName><LogType>_CL'
+      columns: [
+        { name: 'TimeGenerated', type: 'datetime' }
+        { name: 'EventId', type: 'string' }
+        { name: 'EventType', type: 'string' }
+        { name: 'ActorId', type: 'string' }
+        { name: 'ActorEmail', type: 'string' }
+        { name: 'TargetId', type: 'string' }
+        { name: 'Status', type: 'string' }
+        { name: 'CreatedDate', type: 'datetime' }
+        { name: 'RawData', type: 'dynamic' }
+      ]
+    }
+    retentionInDays:      365   // Interactive: 1 year
+    totalRetentionInDays: 4383  // Total: 12 years (4383 = 12*365 + 3 leap days; ARM API takes days, not years)
+  }
+}
+```
+
+**ARM** — a nested `Microsoft.Resources/deployments` resource can only target a different resource group when that group exists in the *same subscription* as the parent deployment (and a different subscription requires also setting `subscriptionId`), which makes it fragile if the workspace could live elsewhere. Deploy the table as its own template run directly against the workspace's resource group instead — it always works regardless of subscription. See [Connector Manifest](./references/connector-manifest.md#table-deployment-workspace-resource-group) for the standalone template and command.
 
 ### 4. Create the DCR (Data Collection Rule)
 
@@ -117,7 +151,7 @@ client.upload(rule_id=DCR_RULE_ID, stream_name=DCR_STREAM_NAME, logs=records)
 
 | Scenario                 | ARM JSON                                                                       | Bicep                                                         | Terraform                                                                  |
 | ------------------------ | ------------------------------------------------------------------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Cross-RG role assignment | Requires nested deployment + `expressionEvaluationPolicy: inner` — error-prone | `module` with `scope: resourceGroup(otherRg)` — works cleanly | `data` source + `azurerm_role_assignment` — trivial, no nested deployments |
+| Cross-RG role assignment | Requires nested deployment + `expressionEvaluationOptions.scope: inner` — error-prone | `module` with `scope: resourceGroup(otherRg)` — works cleanly | `data` source + `azurerm_role_assignment` — trivial, no nested deployments |
 | DCR transform KQL        | `coalesce()` unsupported — use `iif(isnotempty(...), ..., ...)`                | Same restriction, but easier to read/debug                    | Same restriction — use `iif(isnotempty(...), ..., ...)` in `transform_kql` |
 | Resource references      | `reference(resourceId(...))` verbose syntax                                    | Direct `resource.property` access                             | Attribute references: `resource_type.name.attribute`                       |
 | Dependency management    | Manual `dependsOn` arrays                                                      | Automatically inferred from resource references               | Automatically inferred from resource references                            |
@@ -674,7 +708,7 @@ See [Terraform Connector Reference](./references/terraform.md) for a full `main.
 
 ### Known ARM JSON Limitations for Connectors
 
-1. **Cross-RG role assignments** — Cannot scope a `Microsoft.Authorization/roleAssignments` resource to a resource in a different resource group within the same deployment. Workarounds (nested deployments with `expressionEvaluationPolicy: inner`) are fragile and error-prone.
+1. **Cross-RG role assignments** — Cannot scope a `Microsoft.Authorization/roleAssignments` resource to a resource in a different resource group within the same deployment. Workarounds (nested deployments with `expressionEvaluationOptions: { scope: inner }`) are fragile and error-prone.
 2. **DCR transform KQL** — The `coalesce()` function is not supported in DCR transform KQL regardless of IaC format. Use `iif(isnotempty(field), todatetime(field), now())` instead.
 3. **Verbose syntax** — `reference(resourceId(...), apiVersion, 'Full').identity.principalId` vs Bicep's `resource.identity.principalId`.
 
@@ -685,7 +719,7 @@ hubspot/infrastructure/
   deployment.bicep          # Main template — all resources in connector RG
   kvRoleAssignment.bicep    # Module — KV Secrets User role assignment in KV RG
   parameters.json           # Shared parameter file (works with both Bicep and ARM)
-  create-custom-table.json  # Separate ARM template for Log Analytics table creation
+  table.bicep               # Standalone template for the custom _CL table — deployed separately against the workspace RG
 ```
 
 ### Terraform File Structure for a Connector
