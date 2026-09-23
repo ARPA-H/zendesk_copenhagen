@@ -164,7 +164,7 @@ client.upload(rule_id=DCR_RULE_ID, stream_name=DCR_STREAM_NAME, logs=records)
 - `Microsoft.Insights/components` — naming: `appi-operations-sentinel-<connector>-usc`; set `APPLICATIONINSIGHTS_CONNECTION_STRING` on the Function App
 - `Microsoft.Insights/dataCollectionEndpoints`
 - `Microsoft.Insights/dataCollectionRules`
-- `Microsoft.Web/sites` with `identity: { type: 'SystemAssigned' }`, `httpsOnly: true` (requires HTTPS; plain HTTP is redirected), and `siteConfig.http20Enabled: true` (enables HTTP/2)
+- `Microsoft.Web/sites` with `identity: { type: 'SystemAssigned' }`, `httpsOnly: true` (requires HTTPS; plain HTTP is redirected), and `siteConfig.http20Enabled: true` (enables HTTP/2), `siteConfig.minTlsVersion: '1.3'`, `siteConfig.scmMinTlsVersion: '1.3'` (enforce TLS 1.3 on both the site and SCM/Kudu endpoints)
 - `Microsoft.Authorization/roleAssignments` (Storage, DCR, DCE)
 - Parameterize: workspace name, workspace RG, DCE name, table name, Function App name, Key Vault name, Key Vault RG
 
@@ -375,6 +375,7 @@ All zones must be **linked to the VNet** used by the Function App.
 - [ ] `vnetRouteAllEnabled: true` on the Function App
 - [ ] `httpsOnly: true` set on the Function App (rejects plain HTTP)
 - [ ] `siteConfig.http20Enabled: true` set on the Function App (HTTP/2.0)
+- [ ] `siteConfig.minTlsVersion: '1.3'` and `siteConfig.scmMinTlsVersion: '1.3'` set on the Function App (enforce TLS 1.3)
 
 ---
 
