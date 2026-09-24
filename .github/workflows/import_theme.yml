@@ -30,9 +30,23 @@ jobs:
     # whose copy of this workflow definition runs) is restricted to the same
     # protected branches, so a modified copy of this YAML on an unprotected
     # branch never executes with the Zendesk secrets.
+    #
+    # SECURITY (residual risk, not closable from this file alone): this `if`
+    # guard lives in the dispatched ref's own copy of the workflow, so a
+    # writer can push a feature branch with the guard deleted and dispatch
+    # THAT ref instead - the guard can't stop a modified copy of itself. The
+    # `environment:` binding below is the real boundary: GitHub enforces an
+    # environment's deployment-branch policy and required reviewers
+    # server-side, independent of what this YAML says. That only holds once
+    # the `production`/`sandbox` environments are configured in Settings ->
+    # Environments (branch restriction to main/sandbox, required reviewers)
+    # and the Zendesk secrets below are moved into them - a repo-admin action
+    # this file can't perform on its own.
     if: >-
       (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox') &&
       (github.event.inputs.branchName == 'main' || github.event.inputs.branchName == 'sandbox')
+    environment:
+      name: ${{ github.event.inputs.branchName == 'sandbox' && 'sandbox' || 'production' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
