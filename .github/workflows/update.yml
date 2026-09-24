@@ -46,7 +46,16 @@ concurrency:
 
 jobs:
   update_theme:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    # SECURITY: fail closed for manual dispatches. workflow_dispatch has no
+    # branch restriction of its own, so a dispatch from an arbitrary ref would
+    # otherwise check out and run unreviewed code, while TARGET_BRANCH (from
+    # github.ref_name) still resolves to the production secrets below for any
+    # branch name other than 'sandbox'. Only allow it from the two reviewed
+    # deployment branches.
+    if: >-
+      github.event.pull_request.merged == true ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox'))
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
