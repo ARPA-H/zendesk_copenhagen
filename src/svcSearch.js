@@ -65,14 +65,15 @@ function esc(s) {
 }
 
 export function stripTags(s) {
-  // Parse with an inert DOMParser document instead of assigning to a live
-  // element's innerHTML: even on a detached element, innerHTML fetches
-  // resources and fires handlers (e.g. <img src=x onerror=...>), so
-  // untrusted API HTML must never be reinterpreted as live markup. Same
+  // Parse via a <template> element's content fragment rather than DOMParser:
+  // a template's content document is spec-guaranteed inert (no subresource
+  // fetches for <img>/<iframe>, no handlers), whereas a DOMParser document's
+  // lack of fetching is not consistently guaranteed across engines. Same
   // idiom as htmlToText in src/modules/service-catalog/utils/sanitize.ts.
   if (!s) return "";
-  var doc = new DOMParser().parseFromString(String(s), "text/html");
-  return ((doc.body && doc.body.textContent) || "").trim();
+  var template = document.createElement("template");
+  template.innerHTML = String(s);
+  return ((template.content && template.content.textContent) || "").trim();
 }
 
 /**

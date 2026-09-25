@@ -85,15 +85,17 @@ export function sanitizeFieldDescription(html: string): string {
 }
 
 /**
- * Converts a possibly-HTML string to plain text using an inert `DOMParser`
- * document, so resources are never fetched and handlers like `onerror` never
- * fire (unlike assigning to `innerHTML`).
+ * Converts a possibly-HTML string to plain text using a `<template>`
+ * element's content fragment, which is spec-guaranteed inert (no
+ * subresource fetches for `<img>`/`<iframe>`, no handlers) - unlike a
+ * `DOMParser` document or assigning to a live element's `innerHTML`.
  */
 export function htmlToText(html: string): string {
   if (!html) {
     return "";
   }
 
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  return doc.body.textContent ?? "";
+  const template = document.createElement("template");
+  template.innerHTML = html;
+  return template.content.textContent ?? "";
 }
