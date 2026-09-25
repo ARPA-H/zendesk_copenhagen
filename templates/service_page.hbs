@@ -428,12 +428,14 @@
       return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
     function stripHtml(str) {
-      // Inert DOMParser parse: detached-element innerHTML still fires
-      // handlers like <img onerror>, and this receives raw article body
-      // HTML from the search API, so it must never touch a live element.
+      // Parse via a <template> element's content fragment: it's spec-guaranteed
+      // inert (no subresource fetches for <img>/<iframe>, no handlers), unlike
+      // a DOMParser document, and this receives raw article body HTML from the
+      // search API.
       if (!str) return '';
-      var doc = new DOMParser().parseFromString(String(str), 'text/html');
-      return ((doc.body && doc.body.textContent) || '').trim();
+      var template = document.createElement('template');
+      template.innerHTML = String(str);
+      return ((template.content && template.content.textContent) || '').trim();
     }
     function truncate(str, max) {
       var text = String(str || '').trim();
