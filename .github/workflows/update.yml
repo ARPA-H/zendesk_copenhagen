@@ -56,6 +56,18 @@ jobs:
       github.event.pull_request.merged == true ||
       github.event_name == 'push' ||
       (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox'))
+    # SECURITY (residual risk, not closable from this file alone): the `if`
+    # above is self-bypassable - it lives in the dispatched ref's own copy of
+    # this workflow, so a writer can dispatch a feature-branch copy with the
+    # guard removed and still reach the production secrets below. The real
+    # boundary is this `environment:` binding: GitHub enforces an
+    # environment's deployment-branch policy and required reviewers
+    # server-side, independent of the YAML being executed - but only once the
+    # `production`/`sandbox` environments are configured in Settings ->
+    # Environments (branch restriction, required reviewers) and the Zendesk
+    # secrets are moved into them, a repo-admin action this file can't do.
+    environment:
+      name: ${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name) == 'sandbox' && 'sandbox' || 'production' }}
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
