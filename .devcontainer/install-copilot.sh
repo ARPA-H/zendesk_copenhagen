@@ -12,7 +12,7 @@
 # - --ignore-scripts: the CLI ships platform binaries as optionalDependencies
 #   (no lifecycle scripts required to function), so package install scripts
 #   never execute under the Codespace's credentials.
-set -uo pipefail
+set -euo pipefail
 
 PIN=$(sed -n 's/.*"COPILOT_CLI_VERSION": *"\([^"]*\)".*/\1/p' \
   "$(dirname "${BASH_SOURCE[0]}")/devcontainer.json" | head -n 1)
