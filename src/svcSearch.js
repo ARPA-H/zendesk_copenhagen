@@ -64,10 +64,16 @@ function esc(s) {
     .replace(/'/g, "&#39;");
 }
 
-function stripTags(s) {
-  var d = document.createElement("div");
-  d.innerHTML = s || "";
-  return (d.textContent || "").trim();
+export function stripTags(s) {
+  // Parse via a <template> element's content fragment rather than DOMParser:
+  // a template's content document is spec-guaranteed inert (no subresource
+  // fetches for <img>/<iframe>, no handlers), whereas a DOMParser document's
+  // lack of fetching is not consistently guaranteed across engines. Same
+  // idiom as htmlToText in src/modules/service-catalog/utils/sanitize.ts.
+  if (!s) return "";
+  var template = document.createElement("template");
+  template.innerHTML = String(s);
+  return ((template.content && template.content.textContent) || "").trim();
 }
 
 /**

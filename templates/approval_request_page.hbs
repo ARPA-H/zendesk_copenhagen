@@ -12,8 +12,14 @@
   const helpCenterPath ={{json (page_path "help_center")}}; 
   const container = document.getElementById("approval-request");
   
-  // Extract the ID from the URL
-  const id = window.location.pathname.split("/").pop()
+  // Extract the ID from the URL. Only accept a plain opaque id token:
+  // a crafted link with a percent-encoded final segment must never be
+  // replayed into the approval API paths built from this value. Negated
+  // character class instead of a $-anchored match: `$` also matches before
+  // a trailing line terminator, which would let "abc\n" through.
+  const rawApprovalId = window.location.pathname.split("/").pop() || "";
+  const id =
+    rawApprovalId && !/[^A-Za-z0-9_-]/.test(rawApprovalId) ? rawApprovalId : "";
 
   const props = {
     baseLocale: {{json help_center.base_locale}},

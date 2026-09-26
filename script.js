@@ -17,6 +17,20 @@
     toggle.focus();
   }
 
+  // Collapsible elements track their expanded state on the toggle button only;
+  // aria-expanded is not valid on the wrapping div/nav, so a class is used for styling
+  function toggleCollapsible(toggle, element) {
+    const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", !isExpanded);
+    element.classList.toggle("expanded", !isExpanded);
+  }
+
+  function closeCollapsible(toggle, element) {
+    toggle.setAttribute("aria-expanded", false);
+    element.classList.remove("expanded");
+    toggle.focus();
+  }
+
   // Navigation
 
   window.addEventListener("DOMContentLoaded", () => {
@@ -48,12 +62,12 @@
       );
 
       element.addEventListener("click", () => {
-        toggleNavigation(toggle, element);
+        toggleCollapsible(toggle, element);
       });
 
       element.addEventListener("keyup", (event) => {
         if (event.keyCode === ESCAPE) {
-          closeNavigation(toggle, element);
+          closeCollapsible(toggle, element);
         }
       });
     });
@@ -866,9 +880,15 @@
   }
 
   function stripTags(s) {
-    var d = document.createElement("div");
-    d.innerHTML = s || "";
-    return (d.textContent || "").trim();
+    // Parse via a <template> element's content fragment rather than DOMParser:
+    // a template's content document is spec-guaranteed inert (no subresource
+    // fetches for <img>/<iframe>, no handlers), whereas a DOMParser document's
+    // lack of fetching is not consistently guaranteed across engines. Same
+    // idiom as htmlToText in src/modules/service-catalog/utils/sanitize.ts.
+    if (!s) return "";
+    var template = document.createElement("template");
+    template.innerHTML = String(s);
+    return ((template.content && template.content.textContent) || "").trim();
   }
 
   /**

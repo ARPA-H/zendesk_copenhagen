@@ -46,7 +46,28 @@ concurrency:
 
 jobs:
   update_theme:
-    if: github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    # SECURITY: fail closed for manual dispatches. workflow_dispatch has no
+    # branch restriction of its own, so a dispatch from an arbitrary ref would
+    # otherwise check out and run unreviewed code, while TARGET_BRANCH (from
+    # github.ref_name) still resolves to the production secrets below for any
+    # branch name other than 'sandbox'. Only allow it from the two reviewed
+    # deployment branches.
+    if: >-
+      github.event.pull_request.merged == true ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox'))
+    # SECURITY (residual risk, not closable from this file alone): the `if`
+    # above is self-bypassable - it lives in the dispatched ref's own copy of
+    # this workflow, so a writer can dispatch a feature-branch copy with the
+    # guard removed and still reach the production secrets below. The real
+    # boundary is this `environment:` binding: GitHub enforces an
+    # environment's deployment-branch policy and required reviewers
+    # server-side, independent of the YAML being executed - but only once the
+    # `production`/`sandbox` environments are configured in Settings ->
+    # Environments (branch restriction, required reviewers) and the Zendesk
+    # secrets are moved into them, a repo-admin action this file can't do.
+    environment:
+      name: ${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name) == 'sandbox' && 'sandbox' || 'production' }}
     runs-on: ubuntu-latest
     env:
       TARGET_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
@@ -79,13 +100,17 @@ jobs:
           # higher than the currently live theme's version, so bump the patch component
           # with the ever-increasing run number. This is build-only (not committed back
           # to git) — the real semantic version is still managed by semantic-release.
-          node -e "
-            const fs = require('fs');
-            const m = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
-            m.name = '${THEME_NAME}';
-            m.version = '${VERSION}.${RUN_NUMBER}';
-            fs.writeFileSync('manifest.json', JSON.stringify(m, null, 2) + '\n');
-          "
+          # SECURITY: THEME_NAME embeds the branch name (attacker-influenced on
+          # workflow_dispatch), so it is passed to node via the environment and
+          # read with process.env instead of being shell-interpolated into the
+          # inline script, which allowed JS injection via a crafted branch name.
+          THEME_NAME="${THEME_NAME}" THEME_VERSION="${VERSION}.${RUN_NUMBER}" node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+            m.name = process.env.THEME_NAME;
+            m.version = process.env.THEME_VERSION;
+            fs.writeFileSync("manifest.json", JSON.stringify(m, null, 2) + "\n");
+          '
 
       - name: Zip theme files
         run: |

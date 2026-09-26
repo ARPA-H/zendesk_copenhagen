@@ -8,6 +8,15 @@
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
 
+  // SECURITY: the Copilot CLI is pinned to an exact version instead of the
+  // mutable @latest dist-tag. Codespaces hold repo write credentials and user
+  // secrets, so auto-installing whatever npm serves at container start made
+  // every Codespace vulnerable during a compromised-release window (and
+  // post-start.sh reinstalled it on EVERY resume). Bump the pin deliberately.
+  "containerEnv": {
+    "COPILOT_CLI_VERSION": "1.0.83"
+  },
+
   // Runs once, at first container creation only. Secret-free so it can be baked
   // into a Codespaces prebuild image (Settings -> Codespaces -> Prebuild configuration).
   // Global CLI installs live here so prebuilds cache them instead of paying the
@@ -15,7 +24,7 @@
   // ripgrep/bubblewrap/socat: the Copilot coding agent's terminal sandbox shells
   // out to `rg`/`bwrap`/`socat` and fails "Sandbox dependencies not available"
   // without them - the base image doesn't ship any of the three.
-  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y ripgrep bubblewrap socat && npm install -g @github/copilot@latest",
+  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y ripgrep bubblewrap socat && bash .devcontainer/install-copilot.sh",
 
   // Runs after onCreateCommand, and again whenever a prebuild refreshes against
   // new repo content. This repo pins Yarn via .yarnrc.yml (yarnPath -> the

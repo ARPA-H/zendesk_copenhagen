@@ -13,10 +13,6 @@ on:
         options:
           - main
           - sandbox
-      scriptBranch:
-        description: 'Run scripts from'
-        required: true
-        default: 'master'
 
 permissions:
   contents: read
@@ -27,6 +23,30 @@ concurrency:
 
 jobs:
   import_theme:
+    # SECURITY: fail closed at runtime. `type: choice` constrains the web UI,
+    # but the input value must never be trusted to be one of the options when
+    # it is about to select a checkout ref and a credential set - so only the
+    # two reviewed deploy branches are accepted. The dispatch ref (the branch
+    # whose copy of this workflow definition runs) is restricted to the same
+    # protected branches, so a modified copy of this YAML on an unprotected
+    # branch never executes with the Zendesk secrets.
+    #
+    # SECURITY (residual risk, not closable from this file alone): this `if`
+    # guard lives in the dispatched ref's own copy of the workflow, so a
+    # writer can push a feature branch with the guard deleted and dispatch
+    # THAT ref instead - the guard can't stop a modified copy of itself. The
+    # `environment:` binding below is the real boundary: GitHub enforces an
+    # environment's deployment-branch policy and required reviewers
+    # server-side, independent of what this YAML says. That only holds once
+    # the `production`/`sandbox` environments are configured in Settings ->
+    # Environments (branch restriction to main/sandbox, required reviewers)
+    # and the Zendesk secrets below are moved into them - a repo-admin action
+    # this file can't perform on its own.
+    if: >-
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox') &&
+      (github.event.inputs.branchName == 'main' || github.event.inputs.branchName == 'sandbox')
+    environment:
+      name: ${{ github.event.inputs.branchName == 'sandbox' && 'sandbox' || 'production' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -34,20 +54,35 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branchName }}
 
-      - name: Check out importTheme.js
-        uses: Bhacaz/checkout-files@e3e34e7daef91a5f237485bb88a260aee4be29dd # v2
-        with:
-          files: '.github/workflows/scripts/importTheme.js'
-          branch: ${{ github.event.inputs.scriptBranch }}
-
+      # SECURITY: importTheme.js is intentionally executed from the same
+      # reviewed ref that is being deployed (the branchName checkout above).
+      # The previous 'scriptBranch' input fetched and ran the script from an
+      # arbitrary branch with production Zendesk tokens in the environment,
+      # letting anyone with dispatch rights run unreviewed code with prod
+      # credentials even when main/sandbox are branch-protected.
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: 24.x
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      # SECURITY: this workflow zips the checked-out ref directly. Without a
+      # build step here, the `assets/*-bundle.js` files zipped are whatever is
+      # committed to git, not a rebuild from the current source - so source
+      # fixes (e.g. sanitizer changes) that haven't also had their bundle
+      # regenerated and committed would silently be absent from this deploy
+      # path.
+      - name: Build theme assets
+        run: yarn build
 
       - name: Zip theme files
         run: |
-          zip -r theme.zip . -x ".*"
+          zip -r theme.zip . -x ".*" -x "node_modules/*"
           mv theme.zip ./.github/workflows/scripts/
 
       - name: Run importTheme.js
