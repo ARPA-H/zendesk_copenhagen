@@ -17,6 +17,20 @@
     toggle.focus();
   }
 
+  // Collapsible elements track their expanded state on the toggle button only;
+  // aria-expanded is not valid on the wrapping div/nav, so a class is used for styling
+  function toggleCollapsible(toggle, element) {
+    const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", !isExpanded);
+    element.classList.toggle("expanded", !isExpanded);
+  }
+
+  function closeCollapsible(toggle, element) {
+    toggle.setAttribute("aria-expanded", false);
+    element.classList.remove("expanded");
+    toggle.focus();
+  }
+
   // Navigation
 
   window.addEventListener("DOMContentLoaded", () => {
@@ -48,12 +62,12 @@
       );
 
       element.addEventListener("click", () => {
-        toggleNavigation(toggle, element);
+        toggleCollapsible(toggle, element);
       });
 
       element.addEventListener("keyup", (event) => {
         if (event.keyCode === ESCAPE) {
-          closeNavigation(toggle, element);
+          closeCollapsible(toggle, element);
         }
       });
     });
