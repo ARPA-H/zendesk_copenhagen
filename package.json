@@ -105,7 +105,7 @@
     "rollup-plugin-sass": "1.15.3",
     "sass": "1.103.0",
     "semantic-release": "25.0.9",
-    "ts-jest": "^29.4.12",
+    "ts-jest": "^29.4.13",
     "typescript": "^5.9.3",
     "url-pattern": "1.0.3",
     "vinyl": "^3.0.1",
