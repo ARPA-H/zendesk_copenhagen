@@ -5143,6 +5143,34 @@ html[dir=rtl] .notification-left-aligned {
   border: 1px solid #848F99;
 }
 
+/* ---- OS icons on article tabs ---- */
+.os-tab {
+  font-size: 0;
+}
+
+.os-tab::before {
+  content: "";
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  vertical-align: middle;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.os-tab--windows::before {
+  background-image: url($assets-windows-logo-png);
+}
+
+.os-tab--macos::before {
+  background-image: url($assets-macos-finder-png);
+}
+
+.os-tab--ios::before {
+  background-image: url($assets-ios-badge-png);
+}
+
 /***** Upload Dropzone *****/
 .upload-dropzone {
   border: 1px solid #848F99;
