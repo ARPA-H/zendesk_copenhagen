@@ -7841,23 +7841,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-tags@npm:9.15.7":
-  version: 9.15.7
-  resolution: "@zendeskgarden/react-tags@npm:9.15.7"
-  dependencies:
-    "@zendeskgarden/container-utilities": "npm:^2.0.4"
-    polished: "npm:^4.3.1"
-    prop-types: "npm:^15.5.7"
-  peerDependencies:
-    "@zendeskgarden/react-theming": ">=9.14.0"
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-    styled-components: ^5.3.1 || ^6.0.0
-  checksum: 10c0/f16f1bf6dc2d2a19ec77bd17b5e52ae7248052639018a5793ca1034388d49983fa165ce400e3e932ab0f4d11cdcdb6cdb05fbf2b6472287cfc5b110bd64dda8c
-  languageName: node
-  linkType: hard
-
-"@zendeskgarden/react-tags@npm:^9.16.1":
+"@zendeskgarden/react-tags@npm:9.16.1, @zendeskgarden/react-tags@npm:^9.16.1":
   version: 9.16.1
   resolution: "@zendeskgarden/react-tags@npm:9.16.1"
   dependencies:
@@ -9954,7 +9938,7 @@ __metadata:
     "@zendeskgarden/react-pagination": "npm:9.15.7"
     "@zendeskgarden/react-tables": "npm:9.16.1"
     "@zendeskgarden/react-tabs": "npm:9.16.1"
-    "@zendeskgarden/react-tags": "npm:9.15.7"
+    "@zendeskgarden/react-tags": "npm:9.16.1"
     "@zendeskgarden/react-theming": "npm:9.16.0"
     "@zendeskgarden/react-tooltips": "npm:9.15.7"
     "@zendeskgarden/react-typography": "npm:9.15.7"
