@@ -9973,7 +9973,7 @@ __metadata:
     i18next-parser: "npm:^9.4.0"
     jest: "npm:30.5.2"
     jest-environment-jsdom: "npm:30.5.2"
-    js-yaml: "npm:^4.3.2"
+    js-yaml: "npm:^5.4.2"
     lighthouse: "npm:13.4.1"
     linkify-string: "npm:^4.3.3"
     linkifyjs: "npm:^4.3.3"
@@ -15170,7 +15170,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^4.3.1, js-yaml@npm:^4.3.2":
+"js-yaml@npm:^4.3.1":
   version: 4.3.2
   resolution: "js-yaml@npm:4.3.2"
   dependencies:
@@ -15178,6 +15178,17 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 10c0/dedd34c2e8fef1d504687f1bc94ed0ee1311a1f78770fa2800352c6d59c635ccf555009d74e9afe529ae62199da2b1ccef30e53dc84dcd8d2d8187c22574bc97
+  languageName: node
+  linkType: hard
+
+"js-yaml@npm:^5.4.2":
+  version: 5.4.2
+  resolution: "js-yaml@npm:5.4.2"
+  dependencies:
+    argparse: "npm:^2.0.1"
+  bin:
+    js-yaml: bin/js-yaml.mjs
+  checksum: 10c0/ba7e0f72c93c7a84eca2c3de45d2a9188b16a20e83f036df723a3ac29e841496382d0b0849592f63028d1c640bcc5b65f88800da342f47469b5b99bda5c75bfc
   languageName: node
   linkType: hard
 
