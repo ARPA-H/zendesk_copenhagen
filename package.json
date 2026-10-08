@@ -47,7 +47,7 @@
     "linkifyjs": "^4.3.3",
     "lodash.debounce": "^4.0.8",
     "react": "^19.3.0",
-    "react-dom": "^19.2.8",
+    "react-dom": "^19.3.0",
     "react-dropzone": "^20.1.2",
     "react-i18next": "^17.0.11",
     "react-is": "^19.2.8",
