@@ -128,5 +128,15 @@
     "repo": "ARPA-H/care-et",
     "prefix": ".github/skills",
     "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/entra-offboarding-dashboard",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/payload-prototype",
+    "prefix": ".github/skills",
+    "branch": "main"
   }
 ]

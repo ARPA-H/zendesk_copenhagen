@@ -2,7 +2,7 @@
 
 ## DCR ARM Template
 
-Full ARM template for a DCR that targets a custom `_CL` table via the Log Ingestion API.
+Full ARM template for a DCR that targets a custom `_CL` table via the Log Ingestion API. This is a concrete worked example (a HubSpot contacts connector) with its own schema — it is independent of the generic `Product<ConnectorName><LogType>_CL` placeholder schema used in [SKILL.md](../SKILL.md) and [Connector Manifest](./connector-manifest.md). The custom table's schema must always match whatever DCR stream you actually build; the two examples are not meant to be combined.
 
 ```json
 {
