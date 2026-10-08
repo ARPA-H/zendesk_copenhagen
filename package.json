@@ -117,7 +117,7 @@
     "tar": "^7.5.22",
     "adm-zip": "^0.6.1",
     "shell-quote": "^1.10.0",
-    "undici": "^6.28.0",
+    "undici": "^6.29.0",
     "basic-ftp": "^6.0.1",
     "tmp": "^0.2.7",
     "@tootallnate/once": "^2.0.0",
