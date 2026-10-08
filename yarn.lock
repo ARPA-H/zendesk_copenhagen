@@ -7650,18 +7650,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-dropdowns@npm:9.15.7":
-  version: 9.15.7
-  resolution: "@zendeskgarden/react-dropdowns@npm:9.15.7"
+"@zendeskgarden/react-dropdowns@npm:9.16.1":
+  version: 9.16.1
+  resolution: "@zendeskgarden/react-dropdowns@npm:9.16.1"
   dependencies:
     "@floating-ui/react-dom": "npm:^2.0.0"
     "@zendeskgarden/container-combobox": "npm:^2.0.9"
     "@zendeskgarden/container-menu": "npm:^2.0.1"
     "@zendeskgarden/container-utilities": "npm:^2.0.4"
-    "@zendeskgarden/react-buttons": "npm:^9.15.7"
-    "@zendeskgarden/react-forms": "npm:^9.15.7"
-    "@zendeskgarden/react-tags": "npm:^9.15.7"
-    "@zendeskgarden/react-tooltips": "npm:^9.15.7"
+    "@zendeskgarden/react-buttons": "npm:^9.16.1"
+    "@zendeskgarden/react-forms": "npm:^9.16.1"
+    "@zendeskgarden/react-tags": "npm:^9.16.1"
+    "@zendeskgarden/react-tooltips": "npm:^9.16.1"
     polished: "npm:^4.3.1"
     prop-types: "npm:^15.7.2"
     react-merge-refs: "npm:^2.0.0"
@@ -7670,11 +7670,11 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^5.3.1 || ^6.0.0
-  checksum: 10c0/3a6aee9c52b40ffcc93f02685ced8c45fd9a3ab1d84586c3c03b59f40abaa6574cea127a287d153c04a2dba5066a9cee6c3a4da8711a269112c3e111dd69a24c
+  checksum: 10c0/3634b8ad81b0bc249e0eed3a42f83d0d6f5c03d7947d054dcfd581bc2c0937b74d69e7ce643d4cb5987ffaea2b6d10a4791e6071b973c51574391ff38ed21763
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-forms@npm:9.15.7, @zendeskgarden/react-forms@npm:^9.15.7":
+"@zendeskgarden/react-forms@npm:9.15.7":
   version: 9.15.7
   resolution: "@zendeskgarden/react-forms@npm:9.15.7"
   dependencies:
@@ -7690,6 +7690,26 @@ __metadata:
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^5.3.1 || ^6.0.0
   checksum: 10c0/6d5e63f718c7c11122b67b3db69a408807a61e11f9d15e1bae7d1ba1b343015a6e95d9755e4bef13c456d910629959a0192eb733a04343841af5d6c3900cb036
+  languageName: node
+  linkType: hard
+
+"@zendeskgarden/react-forms@npm:^9.16.1":
+  version: 9.16.1
+  resolution: "@zendeskgarden/react-forms@npm:9.16.1"
+  dependencies:
+    "@zendeskgarden/container-field": "npm:^3.0.21"
+    "@zendeskgarden/container-utilities": "npm:^2.0.4"
+    "@zendeskgarden/react-buttons": "npm:^9.16.1"
+    lodash.debounce: "npm:^4.0.8"
+    polished: "npm:^4.3.1"
+    prop-types: "npm:^15.5.7"
+    react-merge-refs: "npm:^2.0.0"
+  peerDependencies:
+    "@zendeskgarden/react-theming": ">=9.14.0"
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    styled-components: ^5.3.1 || ^6.0.0
+  checksum: 10c0/999a5fcf296aaba7eb5c9314551b2f6481c68014059d47ddbe32b44d7c33da3387b6d425072c2bc0b98975683265e3fd52cad843e023f1b153be1b1f95bd1ae8
   languageName: node
   linkType: hard
 
@@ -7821,7 +7841,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-tags@npm:9.15.7, @zendeskgarden/react-tags@npm:^9.15.7":
+"@zendeskgarden/react-tags@npm:9.15.7":
   version: 9.15.7
   resolution: "@zendeskgarden/react-tags@npm:9.15.7"
   dependencies:
@@ -7834,6 +7854,22 @@ __metadata:
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^5.3.1 || ^6.0.0
   checksum: 10c0/f16f1bf6dc2d2a19ec77bd17b5e52ae7248052639018a5793ca1034388d49983fa165ce400e3e932ab0f4d11cdcdb6cdb05fbf2b6472287cfc5b110bd64dda8c
+  languageName: node
+  linkType: hard
+
+"@zendeskgarden/react-tags@npm:^9.16.1":
+  version: 9.16.1
+  resolution: "@zendeskgarden/react-tags@npm:9.16.1"
+  dependencies:
+    "@zendeskgarden/container-utilities": "npm:^2.0.4"
+    polished: "npm:^4.3.1"
+    prop-types: "npm:^15.5.7"
+  peerDependencies:
+    "@zendeskgarden/react-theming": ">=9.14.0"
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    styled-components: ^5.3.1 || ^6.0.0
+  checksum: 10c0/916ac2b3456c9d59906f8edeb38a04f5b3fd7e141e35fba39c3565f88dd9ebd942bc0e0239a40a5c461ff532cec3a573f301b4bfc6d20bb9cca4a633ab3face8
   languageName: node
   linkType: hard
 
@@ -7871,6 +7907,25 @@ __metadata:
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^5.3.1 || ^6.0.0
   checksum: 10c0/98554fff9d82e366738534a64c7a12d7d9132d4c9e808072ae329395008dd0bb3ba9660880d0004c242c256da94bae791c387c211308b3da9e4ba799757ba3e1
+  languageName: node
+  linkType: hard
+
+"@zendeskgarden/react-tooltips@npm:^9.16.1":
+  version: 9.16.1
+  resolution: "@zendeskgarden/react-tooltips@npm:9.16.1"
+  dependencies:
+    "@floating-ui/react-dom": "npm:^2.0.0"
+    "@zendeskgarden/container-tooltip": "npm:^2.2.0"
+    "@zendeskgarden/container-utilities": "npm:^2.0.4"
+    polished: "npm:^4.3.1"
+    prop-types: "npm:^15.5.7"
+    react-merge-refs: "npm:^2.0.0"
+  peerDependencies:
+    "@zendeskgarden/react-theming": ">=9.14.0"
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    styled-components: ^5.3.1 || ^6.0.0
+  checksum: 10c0/9ee9ff1eef26187fb960034ab095338d76242b0a6e7d656a6d58de8441c3b2e09147d42278e1270206ca08a45f91d4ee382e8c3ede836f848fe01bb8290bc824
   languageName: node
   linkType: hard
 
@@ -9890,7 +9945,7 @@ __metadata:
     "@zendeskgarden/react-breadcrumbs": "npm:9.15.7"
     "@zendeskgarden/react-buttons": "npm:9.15.7"
     "@zendeskgarden/react-datepickers": "npm:9.15.8"
-    "@zendeskgarden/react-dropdowns": "npm:9.15.7"
+    "@zendeskgarden/react-dropdowns": "npm:9.16.1"
     "@zendeskgarden/react-forms": "npm:9.15.7"
     "@zendeskgarden/react-grid": "npm:9.15.7"
     "@zendeskgarden/react-loaders": "npm:9.15.7"
