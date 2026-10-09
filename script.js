@@ -813,40 +813,6 @@
     }
   })();
 
-  // ---------------------------------------------------------------------------
-  // 4. Replace OS names in article tabs with their theme asset icons. The text
-  //    stays in the DOM as the accessible name for assistive technology.
-  // ---------------------------------------------------------------------------
-  (function () {
-    var osMap = [
-      { match: /windows/i, cls: "os-tab--windows" },
-      { match: /macos|mac os/i, cls: "os-tab--macos" },
-      { match: /ios|iphone|ipad/i, cls: "os-tab--ios" },
-    ];
-
-    function tagOsTabs() {
-      var tabs = document.querySelectorAll(
-        '.wysiwyg-tabs-active [role="tab"], .wysiwyg-disclosure summary'
-      );
-
-      for (var i = 0; i < tabs.length; i++) {
-        var label = (tabs[i].textContent || "").trim();
-        for (var j = 0; j < osMap.length; j++) {
-          if (osMap[j].match.test(label)) {
-            tabs[i].classList.add("os-tab", osMap[j].cls);
-            break;
-          }
-        }
-      }
-    }
-
-    if (document.readyState !== "loading") {
-      tagOsTabs();
-    } else {
-      document.addEventListener("DOMContentLoaded", tagOsTabs);
-    }
-  })();
-
   /*
    * Shared "live search" widget logic for the Service Catalog mini search
    * (service_page.hbs) and hero search (service_list_page.hbs).
