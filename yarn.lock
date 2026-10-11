@@ -7598,24 +7598,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendeskgarden/react-buttons@npm:9.15.7, @zendeskgarden/react-buttons@npm:^9.15.7":
-  version: 9.15.7
-  resolution: "@zendeskgarden/react-buttons@npm:9.15.7"
-  dependencies:
-    "@zendeskgarden/container-utilities": "npm:^2.0.4"
-    polished: "npm:^4.3.1"
-    prop-types: "npm:^15.5.7"
-    react-merge-refs: "npm:^2.0.0"
-  peerDependencies:
-    "@zendeskgarden/react-theming": ">=9.14.0"
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
-    styled-components: ^5.3.1 || ^6.0.0
-  checksum: 10c0/66817446fbc978456ee1bcf1e0eb4d87860aaeec77f2fbb9dd6c71f44e7b8ce9ceb44bf2edf2d150ef5f274aeeea1a55daac797675ec1c66fb337e346e7e8fdd
-  languageName: node
-  linkType: hard
-
-"@zendeskgarden/react-buttons@npm:^9.16.1":
+"@zendeskgarden/react-buttons@npm:9.16.1, @zendeskgarden/react-buttons@npm:^9.16.1":
   version: 9.16.1
   resolution: "@zendeskgarden/react-buttons@npm:9.16.1"
   dependencies:
@@ -7629,6 +7612,23 @@ __metadata:
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
     styled-components: ^5.3.1 || ^6.0.0
   checksum: 10c0/2382338e88548ca2a42889daf61e5d0e7d260241b48a1d861218deb57f8f733abcfdfa1816650eb73c5d9d21a0d6bc33e4ca47b9bac81587fa4192e5ed0e0ffd
+  languageName: node
+  linkType: hard
+
+"@zendeskgarden/react-buttons@npm:^9.15.7":
+  version: 9.15.7
+  resolution: "@zendeskgarden/react-buttons@npm:9.15.7"
+  dependencies:
+    "@zendeskgarden/container-utilities": "npm:^2.0.4"
+    polished: "npm:^4.3.1"
+    prop-types: "npm:^15.5.7"
+    react-merge-refs: "npm:^2.0.0"
+  peerDependencies:
+    "@zendeskgarden/react-theming": ">=9.14.0"
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    styled-components: ^5.3.1 || ^6.0.0
+  checksum: 10c0/66817446fbc978456ee1bcf1e0eb4d87860aaeec77f2fbb9dd6c71f44e7b8ce9ceb44bf2edf2d150ef5f274aeeea1a55daac797675ec1c66fb337e346e7e8fdd
   languageName: node
   linkType: hard
 
@@ -9939,7 +9939,7 @@ __metadata:
     "@zendeskgarden/react-accordions": "npm:9.15.7"
     "@zendeskgarden/react-avatars": "npm:9.15.7"
     "@zendeskgarden/react-breadcrumbs": "npm:9.15.7"
-    "@zendeskgarden/react-buttons": "npm:9.15.7"
+    "@zendeskgarden/react-buttons": "npm:9.16.1"
     "@zendeskgarden/react-datepickers": "npm:9.15.8"
     "@zendeskgarden/react-dropdowns": "npm:9.16.1"
     "@zendeskgarden/react-forms": "npm:9.15.7"
