@@ -7,8 +7,8 @@ against `sandbox`). Nothing here deploys to Zendesk; deploys run only from
 ## Goal
 
 Bring the Service Catalog and the Knowledge pages (category, section, article,
-search results) onto one coherent visual system built from the ARPA-H NEXUS
-tokens and component conventions in the `arpa-h-web-design` skill, while
+search results) onto one coherent, NEXUS-aligned visual system built from the
+ARPA-H tokens and component conventions in the `arpa-h-web-design` skill, while
 keeping today's recognizable
 signature: the dark gradient hero with the Poppins greeting, the pill search,
 the popular-search chips and the rounded catalog card. The work runs every
@@ -38,9 +38,13 @@ decisions were made from the repository and the brief. Each is easy to reverse.
    `overdrive`) are restrained and respect reduced motion.
 5. **Copy.** Microcopy only. Service names, popular-search chips, article
    content and every string that comes from Zendesk stay as they are.
-6. **NEXUS tokens, not USWDS core.** This is a documented deviation from the
-   skill's rule that every NEXUS web project installs `@uswds/uswds` (NEXUS
-   layers on top of the [U.S. Web Design System](https://designsystem.digital.gov/)).
+6. **NEXUS-aligned, not NEXUS-conformant.** The skill's rule is that every
+   NEXUS web project installs `@uswds/uswds` (NEXUS layers on top of the
+   [U.S. Web Design System](https://designsystem.digital.gov/)). This work does
+   not, so it is described as NEXUS-aligned (tokens, color, type, shape and
+   component conventions) and the deviation is a requested exception that the
+   product owner must approve before merge; the alternative is a follow-up that
+   installs USWDS safely scoped and adds the `.gov` banner.
    Guide generates much of its own markup (search form, breadcrumbs, votes,
    pagination), so `usa-*` classes cannot be applied, and a second reset, grid
    and utility layer would put every page at risk without a Zendesk-hosted
@@ -99,8 +103,9 @@ pull request is merged.
 
 ## Open decisions
 
-- Whether USWDS core should be installed, which would also bring the
-  `usa-banner` that the skill requires on `.gov` sites.
+- **Owner decision before merge:** approve the USWDS exception, or ask for a
+  follow-up that installs USWDS core, which would also bring the `usa-banner`
+  that the skill requires on `.gov` sites.
 - Whether a `.gov` banner is required.
 - Whether Knowledge needs its own entry point on the home page.
 - Moving the hard-coded OS tile IDs in `category_page.hbs` into settings.

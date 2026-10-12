@@ -43,8 +43,10 @@ no public catalog.
 *Inferred, from `PLAN.md`.* ARPA-H runs its internal IT service catalog and
 staff self-service portal on Zendesk Guide using this theme. The theme
 rebrands Copenhagen to ARPA-H's identity and extends it with an agency-specific
-Service Catalog (request forms, a chat launcher, an "Ask AI" link) in place of
-Copenhagen's stock community and article layout. The **Knowledge** side is the
+Service Catalog (request forms, a chat launcher, an "Ask AI" link). The home
+page leads with the catalog instead of Copenhagen's stock category blocks and
+promoted articles; the community, request and approval templates still ship and
+inherit the same tokens. The **Knowledge** side is the
 Guide knowledge base: categories, sections, articles and search results.
 
 **Success, in this inferred order of priority (unconfirmed):**
@@ -138,7 +140,11 @@ request; Ask AI.
   indigo `#000334`, cyan `#52daf2`, navy `#001b5e`; Poppins for display,
   h1 and h2; Public Sans for body and h3 to h6; pill buttons with a cyan
   primary and indigo text; 16px cards.
-- **NEXUS tokens and conventions, not USWDS core.** NEXUS sits on top of the
+- **NEXUS-aligned, not NEXUS-conformant.** The skill treats USWDS core as a
+  prerequisite of every NEXUS web project; this theme does not install it, so an
+  owner decision is needed before merge: approve the exception below, or ask for
+  a follow-up that installs `@uswds/uswds` (with the `.gov` banner). NEXUS sits on
+  top of the
   [U.S. Web Design System](https://designsystem.digital.gov/), whose package
   [contains all the styles for USWDS components](https://designsystem.digital.gov/documentation/getting-started/developers/phase-two-compile/).
   This theme adopts the NEXUS tokens (color, type, spacing, radius, elevation,
