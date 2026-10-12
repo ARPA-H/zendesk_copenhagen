@@ -10,6 +10,20 @@
   background-image: linear-gradient($overlay, $overlay);
 }
 
+// A disabled control (native `disabled`, or the `data-disabled` attribute that
+// src/forms.js sets) drops to 40% opacity and loses its hover overlay.
+@mixin nexus-disabled {
+  cursor: default;
+  opacity: .4;
+
+  &,
+  &:hover,
+  &:focus,
+  &:active {
+    background-image: none;
+  }
+}
+
 .button {
   @include tablet { width: auto; }
 
@@ -61,8 +75,7 @@
   }
 
   &[data-disabled] {
-    cursor: default;
-    opacity: .4;
+    @include nexus-disabled;
   }
 }
 
@@ -94,9 +107,9 @@
     @include nexus-hover-overlay;
   }
 
-  &[disabled] {
-    cursor: default;
-    opacity: .4;
+  &[disabled],
+  &[data-disabled] {
+    @include nexus-disabled;
   }
 }
 
@@ -115,5 +128,10 @@
     @include nexus-hover-overlay(var(--color-hover-dark-15));
     color: var(--color-white);
     border: 2px solid var(--color-brand-primary);
+  }
+
+  &[disabled],
+  &[data-disabled] {
+    @include nexus-disabled;
   }
 }

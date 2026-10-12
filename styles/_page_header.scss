@@ -20,10 +20,13 @@
   .section-subscribe {
     @include tablet {
       margin-bottom: 0;
+      order: 0;
     }
 
     flex-shrink: 0; //Avoid collapsing elements in Safari
     margin-bottom: 10px;
+    // Stacked, the title is followed by its description, then the action.
+    order: 1;
   }
 
   h1 {
@@ -32,13 +35,15 @@
   }
 
   &-description {
-    @include desktop {
+    @include tablet {
       flex-basis: 100%;
     }
     color: var(--type-subheading);
     font-size: var(--font-size-sm);
     margin: 0 0 30px 0;
-    max-width: var(--measure-prose);
+    // The measure is end padding, not max-width: a max-width would clamp the
+    // full-row basis and let a short title sit beside the description.
+    padding-inline-end: max(0px, calc(100% - var(--measure-prose)));
     word-break: break-word;
   }
 

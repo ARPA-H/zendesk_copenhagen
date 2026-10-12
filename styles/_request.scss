@@ -45,7 +45,7 @@
     .comment-ccs { display: block; }
 
     .comment-show-container {
-      border-radius: 2px;
+      border-radius: var(--radius-sm);
       border: 1px solid var(--surface-stroke);
       color: var(--type-subheading);
       text-align: inherit;

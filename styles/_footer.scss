@@ -117,6 +117,29 @@
     color: var(--color-white);
     display: inline-block;
   }
+
+  // Below the tablet breakpoint the toggle starts its own row, so the menu
+  // opens from the start edge; from the tablet breakpoint the toggle sits at
+  // the end of the row and the menu aligns to the end again.
+  &-language-selector .dropdown-menu {
+    left: 0;
+    right: auto;
+
+    [dir="rtl"] & {
+      left: auto;
+      right: 0;
+    }
+
+    @include tablet {
+      left: auto;
+      right: 0;
+
+      [dir="rtl"] & {
+        left: 0;
+        right: auto;
+      }
+    }
+  }
 }
 
 .powered-by-zendesk {

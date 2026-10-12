@@ -10,7 +10,7 @@ $padding-right: 20px;
 
 .search {
   border-color: var(--color-ui-60);
-  border-radius: 30px;
+  border-radius: var(--radius-round);
   border-style: solid;
   border-width: 1px;
   display: flex;
@@ -24,7 +24,7 @@ $padding-right: 20px;
   input[type="search"], 
   .clear-button {
     background-color: var(--color-white);
-    border-radius: 30px;
+    border-radius: var(--radius-round);
     border: none;
   }
 
