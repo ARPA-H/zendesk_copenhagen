@@ -239,11 +239,11 @@ One container. Content is at most 1160px wide and never closer than the page gut
 
 ## Elevation & Depth
 
-Flat by default. Service cards rest on a stroke alone; item-page panels carry `--shadow-1`; hovered link cards raise to `--shadow-2`. Menus and popovers use `--shadow-3`. All shadows are 10% black with an offset; no colored halos.
+Flat by default. Service cards and search result cards rest on a stroke alone; the service item page has no panels and no shadows; hovered link cards raise to `--shadow-2`. Menus and popovers use `--shadow-3`. All shadows are 10% black with an offset; no colored halos.
 
 ### Shadow Vocabulary
 
-- **Resting panel** (`box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1)`): item-page panels and search results.
+- **Resting panel** (`box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1)`): the search pill on the results page and the alert banner.
 - **Raised** (`0 4px 8px rgba(0, 0, 0, 0.1)`): hovered cards.
 - **Overlay** (`0 8px 12px rgba(0, 0, 0, 0.1)`): menus, the mobile navigation panel.
 - **Focus on light** (`0 0 0 1px #0957be, 0 0 3px 1px #0957be`): every keyboard focus.
@@ -291,7 +291,7 @@ A dark gradient hero (the hero artwork image) with a Poppins greeting, one white
 
 ### Cards
 
-White with a 2px `#e5eaf0` stroke (carried over from the current catalog) and a 16px radius. Link cards raise to `--shadow-2` and take a link-blue border on hover.
+White with a 2px `#e5eaf0` stroke (carried over from the current catalog) and a 16px radius. Link cards raise to `--shadow-2` and take a link-blue border on hover. A service name clamps to two lines with an ellipsis and carries the full name as a tooltip; a category heading wraps instead of truncating, because cut-off text cannot be read at 320 pixels.
 
 ### Footer
 

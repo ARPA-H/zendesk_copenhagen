@@ -337,7 +337,7 @@ import{r as e,p as t,aK as n,q as s,T as r,aL as a,j as o,aM as i,aN as l,K as c
   gap: ${e=>e.theme.space.xxs};
   color: ${({theme:e})=>s({theme:e,variable:"foreground.default"})};
   margin-top: ${e=>e.theme.space.sm};
-`,Jt=({serviceItem:t,helpCenterPath:n,selectedCategoryId:s})=>{const r=s?`${n}/services/${t.id}?category_id=${s}`:`${n}/services/${t.id}`,a=e.useMemo((()=>de(t.name||"")),[t.name]),i=e.useMemo((()=>de(d(t.description||""))),[t.description]);return o.jsx(Ht,{"data-testid":"service-catalog-list-item-container",children:o.jsxs(Dt,{href:r,children:[o.jsx(Re,{size:"medium",name:t.name,description:t.description,url:t.thumbnail_url}),o.jsxs(Gt,{children:[o.jsx(Bt,{children:a}),o.jsx(Vt,{children:i})]})]})})},Kt=r.div`
+`,Jt=({serviceItem:t,helpCenterPath:n,selectedCategoryId:s})=>{const r=s?`${n}/services/${t.id}?category_id=${s}`:`${n}/services/${t.id}`,a=e.useMemo((()=>de(t.name||"")),[t.name]),i=e.useMemo((()=>de(d(t.description||""))),[t.description]);return o.jsx(Ht,{"data-testid":"service-catalog-list-item-container",children:o.jsxs(Dt,{href:r,children:[o.jsx(Re,{size:"medium",name:t.name,description:t.description,url:t.thumbnail_url}),o.jsxs(Gt,{children:[o.jsx(Bt,{title:a,children:a}),o.jsx(Vt,{children:i})]})]})})},Kt=r.div`
   display: flex;
   flex-direction: column;
   background-color: ${({theme:e})=>s({theme:e,hue:"grey",shade:300})};
@@ -390,10 +390,8 @@ import{r as e,p as t,aK as n,q as s,T as r,aL as a,j as o,aM as i,aN as l,K as c
   padding: 0;
 `,kn=r(te).attrs({tag:"h2",isBold:!0})`
   margin-bottom: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 600px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 `,vn=r.div`
   display: flex;
   align-items: center;

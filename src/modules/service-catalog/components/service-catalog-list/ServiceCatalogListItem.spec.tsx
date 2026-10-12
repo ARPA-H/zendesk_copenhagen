@@ -80,6 +80,20 @@ describe("ServiceCatalogListItem", () => {
       );
     });
 
+    it("should expose the full name as a tooltip on a title that may be clamped", () => {
+      const longName =
+        "Request an exception to the standard government-furnished laptop configuration for international travel";
+
+      render(
+        <ServiceCatalogListItem
+          serviceItem={{ ...mockServiceItem, name: longName }}
+          helpCenterPath={mockHelpCenterPath}
+        />
+      );
+
+      expect(screen.getByText(longName)).toHaveAttribute("title", longName);
+    });
+
     it("should render name and description as text without executing HTML payloads", () => {
       const onError = jest.fn();
       (window as unknown as { __xss?: () => void }).__xss = onError;

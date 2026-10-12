@@ -39,12 +39,12 @@ const StyledGrid = styled(Grid)`
   padding: 0;
 `;
 
+// A category name wraps instead of being cut off: truncating it hid text that
+// people cannot read any other way, and it fails reflow at 320px.
 const CategoryHeading = styled(XL).attrs({ tag: "h2", isBold: true })`
   margin-bottom: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 600px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 `;
 
 const CountAndSortRow = styled.div`

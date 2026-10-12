@@ -9,8 +9,9 @@
   Official U.S. government banner, markup from the USWDS 3.14 component
   (https://designsystem.digital.gov/components/banner/). help.arpa-h.gov is a
   public .gov site, so the banner shows to signed-in and anonymous visitors
-  alike. The panel is rendered collapsed (hidden) so opening it later cannot
-  shift the page; src/govBanner.js toggles it. Without script, or if script.js
+  alike. The panel is rendered collapsed (hidden), so a page never loads with it
+  open and then collapses it; opening it pushes the page down, as any disclosure
+  does. src/govBanner.js toggles it. Without script, or if script.js
   never starts the controller (see document_head.hbs), the panel stays visible
   (see styles/_usa-banner.scss). The copy is the official English
   text, which is not a Help Center string, so it is not translated here.

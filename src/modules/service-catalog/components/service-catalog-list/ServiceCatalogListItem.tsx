@@ -92,7 +92,7 @@ const ServiceCatalogListItem = ({
           url={serviceItem.thumbnail_url}
         />
         <TextContainer>
-          <ItemTitle>{titleText}</ItemTitle>
+          <ItemTitle title={titleText}>{titleText}</ItemTitle>
           <ItemDescription>{cleanText}</ItemDescription>
         </TextContainer>
       </ItemLink>

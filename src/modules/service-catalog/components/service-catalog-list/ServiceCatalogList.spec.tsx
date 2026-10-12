@@ -279,3 +279,47 @@ describe("ServiceCatalogList sorting", () => {
     });
   });
 });
+
+describe("ServiceCatalogList category heading", () => {
+  beforeEach(() => {
+    setUrl("");
+    jest.clearAllMocks();
+  });
+
+  // The CSS styled-components generated for an element, read from the injected
+  // style tags (jsdom has no layout engine to compute it for us).
+  function cssRulesFor(element: Element) {
+    const css = Array.from(document.querySelectorAll("style"))
+      .map((style) => style.textContent)
+      .join("\n");
+
+    return Array.from(element.classList)
+      .map(
+        (cls) => css.match(new RegExp(`\\.${cls}\\s*\\{([^}]*)\\}`))?.[1] ?? ""
+      )
+      .join(" ");
+  }
+
+  it("wraps a long category name instead of truncating it", async () => {
+    const fetchMock = mockFetch();
+    const longName =
+      "Information technology equipment, accessories and peripheral requests for government-furnished devices";
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId="123"
+        selectedCategoryName={longName}
+      />
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    const heading = screen.getByRole("heading", { level: 2, name: longName });
+    const rules = cssRulesFor(heading);
+
+    expect(rules).toMatch(/overflow-wrap:\s*anywhere/);
+    expect(rules).not.toMatch(/white-space:\s*nowrap/);
+    expect(rules).not.toMatch(/text-overflow/);
+  });
+});
