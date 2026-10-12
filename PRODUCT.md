@@ -103,8 +103,9 @@ into Knowledge pages.
 - Service Catalog home and list: greeting, native instant search in the hero,
   popular-search chips, category tree sidebar, search, sort, service cards,
   "General request" fallback.
-- Service item page: request form with inline validation, suggested Knowledge
-  articles as the person types, helper cards, optional training button.
+- Service item page: request form with inline validation, a help rail with
+  suggested Knowledge articles as the person types and what happens after you
+  submit, a one-line general-request fallback, optional training button.
 - Knowledge: category page (with an OS tile layout for one category), section
   page, article page (sidebar of articles in section, votes, related and recent
   articles), search results with filters.

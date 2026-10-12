@@ -62,7 +62,16 @@ supersede the assumptions below wherever the two differ.
    band, the step pills, the helper cards and the nested shells; one form
    column beside a help rail. Neither NEXUS nor Garden requires this; it follows
    Impeccable's [nested cards](https://impeccable.style/anti-patterns)
-   guidance and the baseline audit.
+   guidance and the baseline audit. The form takes the 720px reading column and
+   the rail the 320px aside column from 1024px; below that the rail drops under
+   the form. The rail is static: with five suggestions it is taller than most
+   viewports, and the original sticky rule could not take effect (the rail's
+   column shrank to its content, so the card had no room to travel; the same
+   markup scrolled away with the page when measured), so people only ever saw a
+   static rail. The form module keeps a hidden action column that held a third
+   of the form's width, which left the fields at about 60% of their container in
+   the original; the page script now collapses that column so the fields use the
+   whole reading column.
 4. **Expressiveness: moderate.** State motion plus one signature moment on each
    key page (home hero, catalog card hover, article header, request success),
    all honoring `prefers-reduced-motion`.

@@ -333,12 +333,12 @@
   gap: var(--space-2);
   flex-wrap: wrap;
   width: 100%;
-  margin: var(--space-4) 0 var(--space-05);
+  margin: var(--space-205) 0 0;
   padding: 18px 22px;
   box-sizing: border-box;
   border: 1px solid var(--color-ui-10);
   border-radius: var(--radius-lg);
-  background: var(--color-white);
+  background: var(--surface-subtle);
 }
 .svc-help-banner-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .svc-help-banner-title { font-family: var(--font-secondary); font-size: var(--font-size-xs); font-weight: 600; color: var(--type-body); }
