@@ -7230,11 +7230,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zendesk/zcli-apps@npm:^1.1.4":
-  version: 1.1.4
-  resolution: "@zendesk/zcli-apps@npm:1.1.4"
+"@zendesk/zcli-apps@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@zendesk/zcli-apps@npm:2.1.0"
   dependencies:
-    adm-zip: "npm:0.5.10"
+    adm-zip: "npm:0.6.1"
     archiver: "npm:^5.3.1"
     axios: "npm:^1.12.0"
     chalk: "npm:^4.1.2"
@@ -7246,22 +7246,22 @@ __metadata:
     rimraf: "npm:^3.0.2"
     semver: "npm:^7.3.2"
     tslib: "npm:^2.4.0"
-    uuid: "npm:^8.3.2"
+    uuid: "npm:^11.1.1"
   bin:
     zcli-apps: bin/run
-  checksum: 10c0/87c41bb0c789a1d7cb5d54e6cc0aaf836862e03c78cc525528661b17b7386c311a175bf4530dbc77ff2fb1351ffdaef9026ba5d85ee0c57248cff92e849056bc
+  checksum: 10c0/304a90e99dad60ab72dbfa41f44eb2a1bb2da33630b5c4075ac1afacb7f4808b88acaa6814b52fa04eabe5f9e87cbcbb08263897ba38ebce760203f0f6c30656
   languageName: node
   linkType: hard
 
-"@zendesk/zcli-connectors@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@zendesk/zcli-connectors@npm:1.2.0"
+"@zendesk/zcli-connectors@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@zendesk/zcli-connectors@npm:2.1.0"
   dependencies:
     "@babel/preset-env": "npm:^7.0.0"
     "@rollup/plugin-babel": "npm:^6.0.0"
     "@rollup/plugin-commonjs": "npm:^25.0.0"
     "@rollup/plugin-node-resolve": "npm:^15.0.0"
-    adm-zip: "npm:0.5.10"
+    adm-zip: "npm:0.6.1"
     archiver: "npm:^5.3.1"
     axios: "npm:^1.12.0"
     chalk: "npm:^4.1.2"
@@ -7272,13 +7272,13 @@ __metadata:
     vite: "npm:^6.0.0"
   bin:
     zcli-connectors: bin/run
-  checksum: 10c0/3e13bf2020f5adc1ce98241f3c1736dce9375346c40caf58bb4c032a21a2eb26ecc63b6d226b9171f001e25768364f5c79c896bc730557fa194ec7e0ed177a41
+  checksum: 10c0/40b60c3ae069a49e15e277935acfa5fd74cbd43027b9375e80fae367c50451f462c148db03bb2042dd35731d7157822bba234bf9388cd597125ada3775f9ec34
   languageName: node
   linkType: hard
 
-"@zendesk/zcli-core@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@zendesk/zcli-core@npm:1.2.0"
+"@zendesk/zcli-core@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@zendesk/zcli-core@npm:2.0.0"
   dependencies:
     "@oclif/plugin-plugins": "npm:=2.1.12"
     axios: "npm:^1.12.0"
@@ -7289,13 +7289,13 @@ __metadata:
   dependenciesMeta:
     keytar:
       optional: true
-  checksum: 10c0/66eb8a33e9f507d845bdd8220c3a56a34b2ba2411dee2944656e3ee023a398158ed240271279ebd45b18ea2bca627ab3845eb204cf044c668eebd947fa2bada0
+  checksum: 10c0/172dfed4d5b33c32e7f3502fab9ad77e41235fa360d9f8a08a609fe988051bd24216a8efc6e3bb2019170dd76f660e89b185bb024306cb4028c357cbce79cf36
   languageName: node
   linkType: hard
 
-"@zendesk/zcli-themes@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@zendesk/zcli-themes@npm:1.2.0"
+"@zendesk/zcli-themes@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@zendesk/zcli-themes@npm:2.1.0"
   dependencies:
     "@types/inquirer": "npm:^8.0.0"
     "@types/ws": "npm:^8.5.4"
@@ -7310,28 +7310,28 @@ __metadata:
     ws: "npm:^8.13.0"
   bin:
     zcli-themes: bin/run
-  checksum: 10c0/9c666efccabe2a1a33177d41145867d7555e1abc4dd0191fe4289feb8368566e3ac8a60b50cf199838edfcb1d8c972078362290fceef93c1311738573828c420
+  checksum: 10c0/166816a3b71b0cba377248640241e53209eb21c82d4e4c30e4f87ff410ce14ab66fce97b85b696054d788a3ce378dd52727dc67b8e148cf9399874da8aef47f8
   languageName: node
   linkType: hard
 
-"@zendesk/zcli@npm:1.2.0":
-  version: 1.2.0
-  resolution: "@zendesk/zcli@npm:1.2.0"
+"@zendesk/zcli@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@zendesk/zcli@npm:2.1.0"
   dependencies:
     "@oclif/plugin-autocomplete": "npm:=1.3.10"
     "@oclif/plugin-help": "npm:=5.1.23"
     "@oclif/plugin-not-found": "npm:=2.3.16"
     "@oclif/plugin-update": "npm:=3.0.13"
     "@oclif/plugin-warn-if-update-available": "npm:=2.0.20"
-    "@zendesk/zcli-apps": "npm:^1.1.4"
-    "@zendesk/zcli-connectors": "npm:^1.2.0"
-    "@zendesk/zcli-core": "npm:^1.2.0"
-    "@zendesk/zcli-themes": "npm:^1.2.0"
+    "@zendesk/zcli-apps": "npm:^2.1.0"
+    "@zendesk/zcli-connectors": "npm:^2.1.0"
+    "@zendesk/zcli-core": "npm:^2.0.0"
+    "@zendesk/zcli-themes": "npm:^2.1.0"
     chalk: "npm:^4.1.2"
     tslib: "npm:^2.4.0"
   bin:
     zcli: bin/run
-  checksum: 10c0/e0630216ed35d00192448f6bc6c1cd44b9aebf89a5219b3f7a20e624a2710c47083342022a96b89721492e2e77afad474a16c41545152edb79c68291f8932a46
+  checksum: 10c0/351e101be65f25a762d2293dbf463c81a59f94e0ca9995ddeb01840f7a6eee7f6db5649340e72f02bc34e7d03a0ae83a2e44b5d39995a0c917f95af2a714eddb
   languageName: node
   linkType: hard
 
@@ -9933,7 +9933,7 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^8.70.1"
     "@typescript-eslint/parser": "npm:^8.70.1"
     "@zendesk/help-center-wysiwyg": "npm:1.1.2"
-    "@zendesk/zcli": "npm:1.2.0"
+    "@zendesk/zcli": "npm:2.1.0"
     "@zendeskgarden/container-grid": "npm:^3.0.21"
     "@zendeskgarden/container-utilities": "npm:^2.0.5"
     "@zendeskgarden/react-accordions": "npm:9.15.7"
