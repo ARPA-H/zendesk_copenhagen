@@ -151,7 +151,8 @@ request; Ask AI.
 - `PLAN.md` (session log and rationale), `AGENTS.md`, `manifest.json`,
   `templates/`, `styles/`, `src/`, and `thumbnail.png` (a screenshot of the
   current Service Catalog home).
-- Offline render checks produced for this work (see `docs/`).
+- Offline render checks and a scored critique and audit, added under `docs/`
+  as the phases land (none exist at Phase 0).
 - Absent, and not to be fabricated: usage analytics, user research,
   testimonials, support volumes, and visual-regression goldens.
 

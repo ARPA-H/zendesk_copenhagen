@@ -30,8 +30,11 @@ decisions were made from the repository and the brief. Each is easy to reverse.
    skill's restyling checklist specifies. No `.gov` banner is added; the portal
    is internal and the requirement is unconfirmed.
 4. **Phases.** All Impeccable commands except `live`, which needs an
-   interactive browser session. The expressive phases (`bolder`, `animate`,
-   `delight`, `overdrive`) are restrained and respect reduced motion.
+   interactive browser session. `bolder` and `quieter` pull in opposite
+   directions, so both are evaluated and each is applied only where the
+   critique calls for it; a command with nothing to do is recorded as a no-op
+   with the reason. The expressive phases (`bolder`, `animate`, `delight`,
+   `overdrive`) are restrained and respect reduced motion.
 5. **Copy.** Microcopy only. Service names, popular-search chips, article
    content and every string that comes from Zendesk stay as they are.
 6. **Commits.** Created through GitHub's `createCommitOnBranch` mutation, which
@@ -40,19 +43,19 @@ decisions were made from the repository and the brief. Each is easy to reverse.
 
 ## Phases
 
-| Phase | Command | What changes |
-| --- | --- | --- |
-| 0 | `init`, `document`, `critique`, `audit` | PRODUCT.md, DESIGN.md, a scored baseline critique and audit |
-| 1 | `colorize` | Token layer, NEXUS color rules, indigo header, pill buttons, focus ring |
-| 2 | `typeset` | Poppins display and headings, Public Sans body, one type scale |
-| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm |
-| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors |
-| 5 | `distill` | Remove dead and duplicated styles and markup |
-| 6 | `clarify` | Microcopy (labels, placeholders, empty and error states) |
-| 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow |
-| 8 | `optimize` | CSS weight, font loading, layout shift, images |
-| 9 | `onboard`, `bolder` or `quieter`, `animate`, `delight`, `overdrive`, `extract` | Restrained expressive layer and token extraction |
-| 10 | `polish`, `audit` | Final pass, final score, docs |
+| Phase | Command | What changes | Status |
+| --- | --- | --- | --- |
+| 0 | `init`, `document`, `critique`, `audit` | PRODUCT.md, DESIGN.md, a scored baseline critique and audit | In progress: PRODUCT.md and this plan are in; DESIGN.md, the critique and the audit follow once the offline render checks exist |
+| 1 | `colorize` | Token layer, NEXUS color rules, indigo header, pill buttons, focus ring | Planned |
+| 2 | `typeset` | Poppins display and headings, Public Sans body, one type scale | Planned |
+| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm | Planned |
+| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
+| 5 | `distill` | Remove dead and duplicated styles and markup | Planned |
+| 6 | `clarify` | Microcopy (labels, placeholders, empty and error states) | Planned |
+| 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
+| 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
+| 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Restrained expressive layer and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Planned |
+| 10 | `polish`, `audit` | Final pass, final score, docs | Planned |
 
 ## Gates
 
