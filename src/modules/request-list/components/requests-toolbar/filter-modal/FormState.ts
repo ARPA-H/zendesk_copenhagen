@@ -15,5 +15,4 @@ interface InvalidFormState<Key extends string = string> {
 }
 
 export type FormState<Key extends string = string> =
-  | ValidFormState
-  | InvalidFormState<Key>;
+  ValidFormState | InvalidFormState<Key>;

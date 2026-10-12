@@ -31,9 +31,7 @@ interface ExactMatchNumberFilter {
 }
 
 type NumberFilter =
-  | AnyValueNumberFilter
-  | RangeNumberFilter
-  | ExactMatchNumberFilter;
+  AnyValueNumberFilter | RangeNumberFilter | ExactMatchNumberFilter;
 
 const Container = styled.div`
   display: flex;
