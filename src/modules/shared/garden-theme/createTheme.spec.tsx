@@ -111,6 +111,22 @@ describe("createTheme", () => {
     expect(style.borderRadius).toBe("1000px");
   });
 
+  it("drops disabled buttons to 40% opacity and keeps their NEXUS colors", () => {
+    render(
+      <ThemeProviders theme={theme}>
+        <Button isPrimary disabled>
+          {LABEL}
+        </Button>
+        <Button disabled>{LABEL}</Button>
+      </ThemeProviders>
+    );
+    const [primary, outline] = screen.getAllByRole("button");
+    expect(getComputedStyle(primary).opacity).toBe("0.4");
+    expect(getComputedStyle(primary).backgroundColor).toBe("rgb(82, 218, 242)");
+    expect(getComputedStyle(outline).opacity).toBe("0.4");
+    expect(getComputedStyle(outline).color).toBe("rgb(0, 3, 52)");
+  });
+
   it("renders the default button as an indigo outline", () => {
     render(
       <ThemeProviders theme={theme}>

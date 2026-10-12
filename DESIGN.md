@@ -6,7 +6,7 @@ colors:
   indigo-light: "#2a2d56"
   cyan: "#52daf2"
   cyan-light: "#6fe0f4"
-  cyan-dark: "#44b6ca"
+  cyan-hover: "#4ac5df" # cyan under the 10% indigo hover overlay, flattened
   navy: "#001b5e"
   link: "#0957be"
   link-hover: "#07418f"
@@ -72,7 +72,7 @@ components:
     padding: "8px 20px"
     height: "40px"
   button-primary-hover:
-    backgroundColor: "{colors.cyan-dark}"
+    backgroundColor: "{colors.cyan-hover}"
   button-outline:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.indigo}"

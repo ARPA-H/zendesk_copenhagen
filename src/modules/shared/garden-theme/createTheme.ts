@@ -71,15 +71,21 @@ const accessibleFormWrapperStyle = createAccessibleFormControlStyle(true);
 
 /**
  * NEXUS buttons are pills. The primary kind is cyan with indigo text (white on
- * cyan is 1.6:1), the default kind is an indigo outline, and hover darkens
- * with an indigo overlay instead of a second color. Garden passes its
- * options to styled-components as transient props ($isPrimary and so on).
+ * cyan is 1.6:1), the default kind is an indigo outline, hover darkens with an
+ * indigo overlay instead of a second color, and a disabled button drops to 40%
+ * opacity. The native disabled attribute already blocks clicks, so pointer
+ * events stay on for tooltips. Garden passes its options to styled-components
+ * as transient props ($isPrimary and so on).
  */
 const buttonStyle = css<ButtonStyleProps>`
   ${(p) =>
     !p.$isLink &&
     css`
       border-radius: 1000px;
+
+      &:disabled {
+        opacity: 0.4;
+      }
     `}
 
   ${(p) =>
@@ -94,6 +100,11 @@ const buttonStyle = css<ButtonStyleProps>`
       &:active:not(:disabled) {
         background-color: ${c["cyan-neutral"]};
         background-image: ${overlay(INDIGO_OVERLAY_10)};
+      }
+
+      &:disabled {
+        background-color: ${c["cyan-neutral"]};
+        color: ${c["indigo-neutral"]};
       }
     `}
 
@@ -112,6 +123,12 @@ const buttonStyle = css<ButtonStyleProps>`
         border-color: ${c["indigo-neutral"]};
         background-color: transparent;
         background-image: ${overlay(INDIGO_OVERLAY_5)};
+        color: ${c["indigo-neutral"]};
+      }
+
+      &:disabled {
+        border-color: ${c["indigo-neutral"]};
+        background-color: transparent;
         color: ${c["indigo-neutral"]};
       }
     `}

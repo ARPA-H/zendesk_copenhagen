@@ -31,6 +31,10 @@ function e(e,t){return t.forEach((function(t){t&&"string"!=typeof t&&!Array.isAr
   `},wb=vb(!1),xb=vb(!0),kb=Xr`
   ${e=>!e.$isLink&&Xr`
       border-radius: 1000px;
+
+      &:disabled {
+        opacity: 0.4;
+      }
     `}
 
   ${e=>e.$isPrimary&&!e.$isDanger&&!e.$isNeutral&&Xr`
@@ -41,6 +45,11 @@ function e(e,t){return t.forEach((function(t){t&&"string"!=typeof t&&!Array.isAr
       &:active:not(:disabled) {
         background-color: ${gb["cyan-neutral"]};
         background-image: ${yb("rgba(0, 3, 52, 0.1)")};
+      }
+
+      &:disabled {
+        background-color: ${gb["cyan-neutral"]};
+        color: ${gb["indigo-neutral"]};
       }
     `}
 
@@ -53,6 +62,12 @@ function e(e,t){return t.forEach((function(t){t&&"string"!=typeof t&&!Array.isAr
         border-color: ${gb["indigo-neutral"]};
         background-color: transparent;
         background-image: ${yb("rgba(0, 3, 52, 0.05)")};
+        color: ${gb["indigo-neutral"]};
+      }
+
+      &:disabled {
+        border-color: ${gb["indigo-neutral"]};
+        background-color: transparent;
         color: ${gb["indigo-neutral"]};
       }
     `}
