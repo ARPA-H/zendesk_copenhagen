@@ -116,8 +116,9 @@
       }
 
       &:hover {
-        background-color: var(--color-link-hover);
-        border-color: var(--color-link-hover);
+        @include nexus-hover-overlay(var(--color-hover-dark-15));
+        background-color: var(--color-brand-primary);
+        border-color: var(--color-brand-primary);
       }
     }
 

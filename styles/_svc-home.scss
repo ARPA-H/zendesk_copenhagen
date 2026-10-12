@@ -15,17 +15,28 @@
    ============================================================ */
 
 /* ---------- HERO ---------- */
-.svc-hero { position: relative; }
+/* The base .hero is a fixed 300px box whose inner block is centered with a
+   transform, so content that wraps (four rows of popular chips at 390px)
+   spills out of the artwork and up under the logo. The service hero keeps the
+   300px look as a minimum and grows with its content instead. */
+.svc-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: auto;
+  min-height: 300px;
+}
 .svc-hero .svc-hero-inner,
 .svc-hero .hero-inner {
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: static;
+  transform: none;
   width: 100% !important;
   max-width: 100% !important;
-  min-height: 240px;
-  padding: 36px clamp(20px, 6vw, 88px);
+  padding: var(--space-5) clamp(20px, 6vw, 88px);
   box-sizing: border-box;
 }
 .svc-hero-greeting {
@@ -417,7 +428,8 @@ a.svc-help-btn:hover,
 .service-catalog-main-content .svc-skeleton { visibility: hidden !important; }
 
 @media (max-width: 960px) {
-  .svc-hero .svc-hero-inner, .svc-hero .hero-inner { min-height: 200px; padding: 28px 20px; }
+  .svc-hero { min-height: 240px; }
+  .svc-hero .svc-hero-inner, .svc-hero .hero-inner { padding: var(--space-4) var(--space-205); }
   .svc-cardwrap { padding: 24px 12px 48px; }
   .svc-list-shell { margin-top: -32px; padding: 20px 14px 28px; }
 }
@@ -435,7 +447,8 @@ a.svc-help-btn:hover,
   // scroll.
   html.svc-home, body.svc-home { overflow-x: hidden !important; max-width: 100% !important; }
 
-  .svc-hero .svc-hero-inner, .svc-hero .hero-inner { min-height: 160px; padding: 22px 16px; }
+  .svc-hero { min-height: 0; }
+  .svc-hero .svc-hero-inner, .svc-hero .hero-inner { padding: var(--space-5) var(--space-2); }
   .svc-hero-subtitle { font-size: var(--font-size-xs); margin-top: 8px; }
   .svc-hero-search { margin-top: 18px; padding: 6px 6px 6px 18px; }
   .svc-hero-input { font-size: var(--font-size-xs); padding: 11px 12px; }

@@ -378,6 +378,10 @@ template {
   --on-dark-hover: rgba(255, 255, 255, 0.25);
   /* An indigo scrim keeps white chip text at 4.5:1 over any part of the artwork. */
   --on-dark-chip: rgba(0, 3, 52, 0.55);
+  /* Footer: the NEXUS divider on indigo (surface stroke) and the copyright
+     line, which the spec sets at 60% opacity (about 5:1 on indigo). */
+  --on-dark-stroke: var(--color-navy-400);
+  --on-dark-text-subtle: var(--color-ui-30);
   --measure-prose: 32em; /* about 70 characters of body text per line */
   /* ----- Typography ----- */
   --font-primary: "Poppins", "Public Sans", -apple-system, BlinkMacSystemFont,
@@ -1443,9 +1447,14 @@ ul {
 /***** Footer *****/
 .footer {
   margin-top: var(--space-8);
-  padding: var(--space-4) 0;
+  padding: var(--space-6) 0 var(--space-5);
   background-color: var(--color-brand-primary);
   color: var(--color-white);
+}
+@media (min-width: 768px) {
+  .footer {
+    padding-top: var(--space-8);
+  }
 }
 .footer :focus-visible {
   box-shadow: var(--shadow-focus-on-dark);
@@ -1455,10 +1464,8 @@ ul {
   margin: 0 auto;
   padding: 0 5%;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-5);
 }
 @media (min-width: 1160px) {
   .footer-inner {
@@ -1466,11 +1473,80 @@ ul {
     width: 90%;
   }
 }
-.footer-inner > a {
+.footer-top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+@media (min-width: 768px) {
+  .footer-top {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3) var(--space-5);
+  }
+}
+@media (min-width: 768px) {
+  .footer-nav {
+    margin-inline-start: auto;
+  }
+}
+.footer-logo {
+  display: inline-flex;
   border-radius: var(--radius-sm);
 }
-.footer-inner > a, .footer-inner > a:visited {
+.footer-logo img {
+  display: block;
+  width: 180px;
+  height: auto;
+}
+.footer-nav-list, .footer-aux-nav-list {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.footer-nav-list {
+  gap: var(--space-1) var(--space-3);
+}
+@media (min-width: 768px) {
+  .footer-nav-list {
+    column-gap: var(--space-4);
+  }
+}
+.footer-aux-nav-list {
+  justify-content: center;
+  gap: var(--space-1) var(--space-2);
+}
+.footer-nav a, .footer-aux-nav a {
+  display: inline-block;
+  padding: var(--space-05) 0;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-2xs);
+  text-decoration: none;
+}
+.footer-nav a, .footer-nav a:visited, .footer-aux-nav a, .footer-aux-nav a:visited {
   color: var(--color-white);
+}
+.footer-nav a:hover, .footer-aux-nav a:hover {
+  text-decoration: underline;
+}
+.footer-bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--on-dark-stroke);
+}
+.footer-copyright {
+  margin: 0;
+  color: var(--on-dark-text-subtle);
+  font-size: var(--font-size-2xs);
+  opacity: 0.6;
+  text-align: center;
 }
 .footer-language-selector button {
   color: var(--color-white);
@@ -3147,8 +3223,9 @@ body.section-page .container {
   color: var(--color-white);
 }
 .community-follow button[data-selected=true]:hover {
-  background-color: var(--color-link-hover);
-  border-color: var(--color-link-hover);
+  background-image: linear-gradient(var(--color-hover-dark-15), var(--color-hover-dark-15));
+  background-color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary);
 }
 .community-follow button::after {
   border-left: 1px solid var(--color-brand-primary);
@@ -5849,8 +5926,16 @@ zd-summary-block {
    "hide-everything-then-reveal-with-JS" FOUC scaffold.
    ============================================================ */
 /* ---------- HERO ---------- */
+/* The base .hero is a fixed 300px box whose inner block is centered with a
+   transform, so content that wraps (four rows of popular chips at 390px)
+   spills out of the artwork and up under the logo. The service hero keeps the
+   300px look as a minimum and grows with its content instead. */
 .svc-hero {
   position: relative;
+  display: flex;
+  align-items: center;
+  height: auto;
+  min-height: 300px;
 }
 
 .svc-hero .svc-hero-inner,
@@ -5859,10 +5944,11 @@ zd-summary-block {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  position: static;
+  transform: none;
   width: 100% !important;
   max-width: 100% !important;
-  min-height: 240px;
-  padding: 36px clamp(20px, 6vw, 88px);
+  padding: var(--space-5) clamp(20px, 6vw, 88px);
   box-sizing: border-box;
 }
 
@@ -6424,9 +6510,11 @@ a.svc-help-btn:hover,
 }
 
 @media (max-width: 960px) {
+  .svc-hero {
+    min-height: 240px;
+  }
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner {
-    min-height: 200px;
-    padding: 28px 20px;
+    padding: var(--space-4) var(--space-205);
   }
   .svc-cardwrap {
     padding: 24px 12px 48px;
@@ -6442,9 +6530,11 @@ a.svc-help-btn:hover,
     overflow-x: hidden !important;
     max-width: 100% !important;
   }
+  .svc-hero {
+    min-height: 0;
+  }
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner {
-    min-height: 160px;
-    padding: 22px 16px;
+    padding: var(--space-5) var(--space-2);
   }
   .svc-hero-subtitle {
     font-size: var(--font-size-xs);

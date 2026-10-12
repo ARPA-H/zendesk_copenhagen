@@ -88,7 +88,7 @@
       "refersTo": "nav-bar",
       "description": "Full-bleed indigo bar with the reverse logo, white links and one cyan pill.",
       "html": "<div class=\"ds-nav\"><span class=\"ds-nav-logo\">ARPA-H</span><span class=\"ds-nav-spacer\"></span><button class=\"ds-nav-ai\">Ask AI</button><span class=\"ds-nav-user\">Jordan Lee</span></div>",
-      "css": ".ds-nav { display: flex; align-items: center; gap: 16px; height: 71px; padding: 0 32px; background: #000334; color: #ffffff; font: 400 14px 'Public Sans', sans-serif; } .ds-nav-logo { font: 700 22px 'Poppins', sans-serif; letter-spacing: 4px; } .ds-nav-spacer { flex: 1; } .ds-nav-ai { min-height: 40px; padding: 8px 16px; border: 0; border-radius: 1000px; background: #52daf2; color: #000334; font: 600 14px 'Public Sans', sans-serif; }"
+      "css": ".ds-nav { display: flex; align-items: center; gap: 16px; height: 71px; padding: 0 32px; background: #000334; color: #ffffff; font: 400 14px 'Public Sans', sans-serif; } .ds-nav-logo { font: 700 24px 'Poppins', sans-serif; letter-spacing: 4px; } .ds-nav-spacer { flex: 1; } .ds-nav-ai { min-height: 40px; padding: 8px 16px; border: 0; border-radius: 1000px; background: #52daf2; color: #000334; font: 600 14px 'Public Sans', sans-serif; }"
     },
     {
       "name": "Service Card",
@@ -96,7 +96,7 @@
       "refersTo": "catalog-card",
       "description": "A catalog tile: white, 2px light stroke, 16px radius; hover raises it and takes a link-blue border.",
       "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-card-icon\"></span><span>Laptop and monitor</span></a>",
-      "css": ".ds-card { display: flex; flex-direction: column; gap: 12px; width: 220px; padding: 20px; border: 2px solid #e5eaf0; border-radius: 16px; background: #ffffff; color: #000334; font: 400 15px 'Public Sans', sans-serif; text-decoration: none; } .ds-card-icon { width: 36px; height: 36px; border: 2px solid #4a4d52; border-radius: 8px; } .ds-card:hover { border-color: #0957be; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }"
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 12px; width: 220px; padding: 20px; border: 2px solid #e5eaf0; border-radius: 16px; background: #ffffff; color: #000334; font: 400 16px 'Public Sans', sans-serif; text-decoration: none; } .ds-card-icon { width: 36px; height: 36px; border: 2px solid #4a4d52; border-radius: 8px; } .ds-card:hover { border-color: #0957be; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }"
     },
     {
       "name": "Error Notification",

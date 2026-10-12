@@ -119,3 +119,22 @@
     document.addEventListener("DOMContentLoaded", wireSearchPillButton);
   }
 })();
+
+// ---------------------------------------------------------------------------
+// 4. Keep the footer copyright year current. The template renders the year it
+//    was last edited so the notice is complete without JavaScript; this swaps
+//    in the visitor's current year.
+// ---------------------------------------------------------------------------
+export function setFooterYear() {
+  var years = document.querySelectorAll("[data-footer-year]");
+  var year = String(new Date().getFullYear());
+  for (var i = 0; i < years.length; i++) {
+    years[i].textContent = year;
+  }
+}
+
+if (document.readyState !== "loading") {
+  setFooterYear();
+} else {
+  document.addEventListener("DOMContentLoaded", setFooterYear);
+}

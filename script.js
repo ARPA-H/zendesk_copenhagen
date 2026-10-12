@@ -813,6 +813,25 @@
     }
   })();
 
+  // ---------------------------------------------------------------------------
+  // 4. Keep the footer copyright year current. The template renders the year it
+  //    was last edited so the notice is complete without JavaScript; this swaps
+  //    in the visitor's current year.
+  // ---------------------------------------------------------------------------
+  function setFooterYear() {
+    var years = document.querySelectorAll("[data-footer-year]");
+    var year = String(new Date().getFullYear());
+    for (var i = 0; i < years.length; i++) {
+      years[i].textContent = year;
+    }
+  }
+
+  if (document.readyState !== "loading") {
+    setFooterYear();
+  } else {
+    document.addEventListener("DOMContentLoaded", setFooterYear);
+  }
+
   /*
    * Shared "live search" widget logic for the Service Catalog mini search
    * (service_page.hbs) and hero search (service_list_page.hbs).

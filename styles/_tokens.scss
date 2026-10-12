@@ -211,6 +211,10 @@
   --on-dark-hover: rgba(255, 255, 255, 0.25);
   /* An indigo scrim keeps white chip text at 4.5:1 over any part of the artwork. */
   --on-dark-chip: rgba(0, 3, 52, 0.55);
+  /* Footer: the NEXUS divider on indigo (surface stroke) and the copyright
+     line, which the spec sets at 60% opacity (about 5:1 on indigo). */
+  --on-dark-stroke: var(--color-navy-400);
+  --on-dark-text-subtle: var(--color-ui-30);
 
   --measure-prose: 32em; /* about 70 characters of body text per line */
 
