@@ -569,6 +569,38 @@ template {
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url($assets-public-sans-400-latin_ext-woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url($assets-public-sans-400-latin-woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url($assets-public-sans-700-latin_ext-woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Public Sans Web";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url($assets-public-sans-700-latin-woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
   font-family: "Poppins";
   font-style: normal;
   font-weight: 400;
@@ -1139,7 +1171,7 @@ ul {
 }
 
 .usa-accordion {
-  color: var(--type-body);
+  color: #1b1b1b;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -1169,9 +1201,9 @@ ul {
 }
 
 .usa-accordion--bordered .usa-accordion__content {
-  border-bottom: 0.25rem solid var(--surface-subtle);
-  border-left: 0.25rem solid var(--surface-subtle);
-  border-right: 0.25rem solid var(--surface-subtle);
+  border-bottom: 0.25rem solid #f0f0f0;
+  border-left: 0.25rem solid #f0f0f0;
+  border-right: 0.25rem solid #f0f0f0;
   padding-bottom: 1rem;
 }
 
@@ -1193,8 +1225,8 @@ ul {
 }
 
 .usa-accordion__content {
-  color: var(--type-body);
-  background-color: var(--surface-page);
+  color: #1b1b1b;
+  background-color: white;
   margin-top: 0;
   overflow: auto;
   padding: 1rem 1.25rem 0.75rem 1.25rem;
@@ -1209,24 +1241,24 @@ ul {
 }
 
 .usa-accordion__button {
-  color: var(--color-link);
+  color: #005ea2;
   text-decoration: underline;
 }
 
 .usa-accordion__button:visited {
-  color: var(--color-link-visited);
+  color: #54278f;
 }
 
 .usa-accordion__button:hover {
-  color: var(--color-link-hover);
+  color: #1a4480;
 }
 
 .usa-accordion__button:active {
-  color: var(--color-link-hover);
+  color: #162e51;
 }
 
 .usa-accordion__button:focus {
-  outline: 0.25rem solid var(--color-focus-ring);
+  outline: 0.25rem solid #2491ff;
   outline-offset: 0rem;
 }
 
@@ -1250,15 +1282,15 @@ ul {
 }
 
 .usa-accordion__button.usa-button--hover {
-  color: var(--color-link-hover);
+  color: #1a4480;
 }
 
 .usa-accordion__button.usa-button--active {
-  color: var(--color-link-hover);
+  color: #162e51;
 }
 
 .usa-accordion__button:disabled, .usa-accordion__button[aria-disabled=true], .usa-accordion__button:disabled:hover, .usa-accordion__button[aria-disabled=true]:hover, .usa-accordion__button[aria-disabled=true]:focus {
-  color: var(--type-muted);
+  color: #757575;
 }
 
 @media (forced-colors: active) {
@@ -1267,8 +1299,8 @@ ul {
   }
 }
 .usa-accordion__button {
-  color: var(--type-body);
-  background-color: var(--surface-subtle);
+  color: #1b1b1b;
+  background-color: #f0f0f0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M19 13H5v-2h14v2z%22/%3E%3C/svg%3E"), linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
   background-size: 1.5rem;
@@ -1293,8 +1325,8 @@ ul {
 }
 
 .usa-accordion__button:hover {
-  color: var(--type-body);
-  background-color: var(--surface-stroke);
+  color: #1b1b1b;
+  background-color: #dfe1e2;
   background-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M19 13H5v-2h14v2z%22/%3E%3C/svg%3E"), linear-gradient(transparent, transparent);
   background-repeat: no-repeat;
   text-decoration: none;
@@ -1416,7 +1448,7 @@ ul {
   font-family: Public Sans Web, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
   font-size: 1rem;
   line-height: 1.6;
-  background-color: var(--surface-subtle);
+  background-color: #f0f0f0;
 }
 
 @media all and (min-width: 40em) {
@@ -1454,7 +1486,7 @@ ul {
 }
 .usa-banner__header,
 .usa-banner__content {
-  color: var(--type-body);
+  color: #1b1b1b;
 }
 
 .usa-banner__content {
@@ -1601,14 +1633,14 @@ ul {
 @supports (mask: url("")) {
   .usa-banner__header-action::after {
     background: none;
-    background-color: var(--color-link);
+    background-color: #005ea2;
     mask-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z%22/%3E%3C/svg%3E"), linear-gradient(transparent, transparent);
     mask-position: center center;
     mask-repeat: no-repeat;
     mask-size: 1rem 1rem;
   }
   .usa-banner__header-action::after:hover {
-    background-color: var(--color-link-hover);
+    background-color: #1a4480;
   }
 }
 .usa-banner__header-action::after {
@@ -1619,19 +1651,19 @@ ul {
 
 .usa-banner__header-action:hover::after {
   content: "";
-  background-color: var(--color-link-hover);
+  background-color: #1a4480;
 }
 
 .usa-banner__header-action {
-  color: var(--color-link);
+  color: #005ea2;
 }
 
 .usa-banner__header-action:visited {
-  color: var(--color-link-visited);
+  color: #54278f;
 }
 
 .usa-banner__header-action:hover, .usa-banner__header-action:active {
-  color: var(--color-link-hover);
+  color: #1a4480;
 }
 
 .usa-banner__header-action {
@@ -1698,24 +1730,24 @@ ul {
 }
 
 .usa-banner__button {
-  color: var(--color-link);
+  color: #005ea2;
   text-decoration: underline;
 }
 
 .usa-banner__button:visited {
-  color: var(--color-link-visited);
+  color: #54278f;
 }
 
 .usa-banner__button:hover {
-  color: var(--color-link-hover);
+  color: #1a4480;
 }
 
 .usa-banner__button:active {
-  color: var(--color-link-hover);
+  color: #162e51;
 }
 
 .usa-banner__button:focus {
-  outline: 0.25rem solid var(--color-focus-ring);
+  outline: 0.25rem solid #2491ff;
   outline-offset: 0rem;
 }
 
@@ -1739,15 +1771,15 @@ ul {
 }
 
 .usa-banner__button.usa-button--hover {
-  color: var(--color-link-hover);
+  color: #1a4480;
 }
 
 .usa-banner__button.usa-button--active {
-  color: var(--color-link-hover);
+  color: #162e51;
 }
 
 .usa-banner__button:disabled, .usa-banner__button[aria-disabled=true], .usa-banner__button:disabled:hover, .usa-banner__button[aria-disabled=true]:hover, .usa-banner__button[aria-disabled=true]:focus {
-  color: var(--type-muted);
+  color: #757575;
 }
 
 @media (forced-colors: active) {
@@ -1761,17 +1793,17 @@ ul {
   position: absolute;
   bottom: 0;
   top: 0;
-  color: var(--color-link);
+  color: #005ea2;
   text-decoration: underline;
-  color: var(--color-link);
+  color: #005ea2;
 }
 
 .usa-banner__button:visited {
-  color: var(--color-link-visited);
+  color: #54278f;
 }
 
 .usa-banner__button:hover, .usa-banner__button:active {
-  color: var(--color-link-hover);
+  color: #1a4480;
 }
 
 .usa-banner__button {
@@ -1806,14 +1838,14 @@ ul {
   @supports (mask: url("")) {
     .usa-banner__button::after {
       background: none;
-      background-color: var(--color-link);
+      background-color: #005ea2;
       mask-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6z%22/%3E%3C/svg%3E"), linear-gradient(transparent, transparent);
       mask-position: center center;
       mask-repeat: no-repeat;
       mask-size: 1rem 1rem;
     }
     .usa-banner__button::after:hover {
-      background-color: var(--color-link-hover);
+      background-color: #1a4480;
     }
   }
   .usa-banner__button::after {
@@ -1823,16 +1855,16 @@ ul {
   }
   .usa-banner__button:hover::after {
     content: "";
-    background-color: var(--color-link-hover);
+    background-color: #1a4480;
   }
   .usa-banner__button {
-    color: var(--color-link);
+    color: #005ea2;
   }
   .usa-banner__button:visited {
-    color: var(--color-link-visited);
+    color: #54278f;
   }
   .usa-banner__button:hover, .usa-banner__button:active {
-    color: var(--color-link-hover);
+    color: #1a4480;
   }
   .usa-banner__button {
     position: static;
@@ -1880,7 +1912,7 @@ ul {
   @supports (mask: url("")) {
     .usa-banner__button[aria-expanded=true]::after {
       background: none;
-      background-color: var(--color-link);
+      background-color: #005ea2;
       mask-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z%22/%3E%3C/svg%3E"), linear-gradient(transparent, transparent);
       mask-position: center center;
       mask-repeat: no-repeat;
@@ -1898,7 +1930,7 @@ ul {
     top: 0;
     position: absolute;
     right: 0;
-    background-color: var(--surface-stroke);
+    background-color: #dfe1e2;
     content: "";
     display: block;
     height: 3rem;
@@ -1925,14 +1957,14 @@ ul {
   @supports (mask: url("")) {
     .usa-banner__button[aria-expanded=true]::after {
       background: none;
-      background-color: var(--color-link);
+      background-color: #005ea2;
       mask-image: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2224%22 height=%2224%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22m12 8-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z%22/%3E%3C/svg%3E"), linear-gradient(transparent, transparent);
       mask-position: center center;
       mask-repeat: no-repeat;
       mask-size: 1rem 1rem;
     }
     .usa-banner__button[aria-expanded=true]::after:hover {
-      background-color: var(--color-link-hover);
+      background-color: #1a4480;
     }
   }
   .usa-banner__button[aria-expanded=true]::after {
@@ -1942,7 +1974,7 @@ ul {
   }
   .usa-banner__button[aria-expanded=true]:hover::after {
     content: "";
-    background-color: var(--color-link-hover);
+    background-color: #1a4480;
   }
   .usa-banner__button[aria-expanded=true] {
     height: auto;
@@ -2000,30 +2032,6 @@ ul {
   flex: 1 1 0%;
 }
 
-.usa-banner,
-.usa-banner .usa-accordion {
-  font-family: var(--font-secondary);
-}
-.usa-banner .usa-banner__header,
-.usa-banner .usa-banner__header-text,
-.usa-banner .usa-banner__header-action,
-.usa-banner .usa-banner__button {
-  font-size: var(--font-size-2xs);
-  line-height: 1.4;
-}
-.usa-banner .usa-banner__content {
-  font-size: var(--font-size-2xs);
-}
-
-.usa-banner__inner,
-.usa-banner__content {
-  box-sizing: border-box;
-  padding-inline: max(var(--page-gutter), (100% - 1160px) / 2);
-  width: 100%;
-  margin-inline: 0;
-  max-width: none;
-}
-
 .usa-banner .grid-col-auto {
   flex: 0 1 auto;
   max-width: 100%;
@@ -2040,17 +2048,6 @@ ul {
     max-width: 100%;
     width: auto;
   }
-}
-
-.usa-banner__button:focus,
-.usa-banner__header-action:focus {
-  outline: none;
-}
-.usa-banner__button:focus-visible,
-.usa-banner__header-action:focus-visible {
-  outline: 2px solid transparent;
-  outline-offset: 2px;
-  box-shadow: var(--shadow-focus);
 }
 
 html:not(.js) .usa-banner__content[hidden] {
@@ -7789,7 +7786,7 @@ a.svc-help-btn:hover,
 }
 
 .custom-os-tile-label {
-  font-family: var(--font-primary);
+  font-family: var(--font-secondary);
   font-size: var(--font-size-md);
   font-weight: 600;
   line-height: 1.3;

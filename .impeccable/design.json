@@ -92,9 +92,9 @@
       "name": "Government Banner",
       "kind": "banner",
       "refersTo": "government-banner",
-      "description": "The official USWDS banner above the navigation bar on every page: a 28px band on the subtle surface with the flag, the official sentence and a \"Here's how you know\" link that opens the explanation.",
+      "description": "The official USWDS banner above the navigation bar on every page, stock and never restyled: a 22px band on USWDS gray with the flag, the official sentence at 12px and a \"Here's how you know\" link that opens the explanation.",
       "html": "<div class=\"ds-banner\"><span class=\"ds-banner-flag\"></span><span>An official website of the United States government</span><a href=\"#\">Here's how you know</a></div>",
-      "css": ".ds-banner { display: flex; align-items: center; gap: 8px; min-height: 28px; padding: 0 32px; background: #f3f5f8; color: #000334; font: 400 14px 'Public Sans', sans-serif; } .ds-banner-flag { width: 16px; height: 11px; background: linear-gradient(#bf2d1d 50%, #ffffff 50%); } .ds-banner a { color: #0957be; }"
+      "css": ".ds-banner { display: flex; align-items: center; gap: 8px; min-height: 22px; padding: 0 32px; background: #f0f0f0; color: #1b1b1b; font: 400 12px 'Public Sans', sans-serif; } .ds-banner-flag { width: 16px; height: 11px; background: linear-gradient(#bf2d1d 50%, #ffffff 50%); } .ds-banner a { color: #005ea2; }"
     },
     {
       "name": "Navigation Bar",

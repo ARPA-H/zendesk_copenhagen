@@ -25,7 +25,9 @@ supersede the assumptions below wherever the two differ.
    every page, signed in or not. It is built from the real `@uswds/uswds` 3.14.0
    package (a devDependency with no advisories in the GitHub Advisory Database)
    by `bin/build-usa-banner.mjs`, which compiles only the banner, the accordion
-   base and the media block and maps the USWDS colors onto NEXUS role tokens.
+   base and the media block and emits them exactly as USWDS ships them: the
+   NEXUS reference says the banner must never be visually modified, so no color,
+   type, spacing, container or focus change is applied to it.
    Measured offline over 9 pages at 1440 and 390 pixels wide (4,689 elements,
    625 of them Zendesk Garden):
 
@@ -123,7 +125,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
    | Fonts | Public Sans and Poppins self-hosted in `assets/`; the skill's Google Fonts CDN option is not used (`AGENTS.md` forbids font CDNs) |
    | Icon sprite | Inline SVGs in the templates |
    | Utility classes | Not used |
-   | `.gov` banner | The USWDS banner, compiled from the package in isolation (see owner decision 1) |
+   | `.gov` banner | The stock USWDS banner, compiled from the package in isolation and never restyled (see owner decision 1) |
 
 7. **Commits.** Created through GitHub's `createCommitOnBranch` mutation, which
    [signs commits and marks them Verified](https://github.blog/changelog/2021-09-13-a-simpler-api-for-authoring-commits/),

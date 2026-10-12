@@ -1,39 +1,14 @@
 // U.S. government banner: https://designsystem.digital.gov/components/banner/
 //
-// The component's CSS is compiled from the USWDS package by bin/build-usa-banner.mjs
-// (colors already mapped onto the NEXUS role tokens). This file only fits it to the
-// theme: one type voice, the page container's edges, the NEXUS focus ring and the
-// 14px floor for readable text. The markup is in templates/header.hbs and the
-// disclosure behavior in src/govBanner.js.
+// Stock USWDS, unmodified. The NEXUS reference says the banner must never be visually
+// modified, so its colors, type, spacing, container and focus ring are exactly what
+// USWDS ships, and NEXUS styling stops at the banner's edge. The component's CSS is
+// compiled from the package by bin/build-usa-banner.mjs. This file adds only what a
+// full USWDS build would supply around it: the one font family name the banner asks
+// for (see _fonts.scss), the grid helpers its markup uses, and the no-script
+// fallback. The markup is in templates/header.hbs and the disclosure behavior in
+// src/govBanner.js.
 @import "usa-banner-generated";
-
-.usa-banner {
-  &,
-  .usa-accordion {
-    font-family: var(--font-secondary);
-  }
-
-  // The component sets 12px and 13px; readable text here never goes below 14px.
-  .usa-banner__header,
-  .usa-banner__header-text,
-  .usa-banner__header-action,
-  .usa-banner__button {
-    font-size: var(--font-size-2xs);
-    line-height: 1.4;
-  }
-
-  .usa-banner__content {
-    font-size: var(--font-size-2xs);
-  }
-}
-
-// The inner row and the open panel share the page container's left edge.
-.usa-banner__inner,
-.usa-banner__content {
-  @include max-width-container;
-  margin-inline: 0;
-  max-width: none;
-}
 
 // The USWDS grid helpers the markup uses, scoped to the banner so no grid
 // library is needed.
@@ -56,19 +31,6 @@
       max-width: 100%;
       width: auto;
     }
-  }
-}
-
-// The NEXUS focus ring replaces the component's blue outline, on keyboard
-// focus only.
-.usa-banner__button,
-.usa-banner__header-action {
-  &:focus {
-    outline: none;
-  }
-
-  &:focus-visible {
-    @include focus-ring;
   }
 }
 

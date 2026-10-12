@@ -62,6 +62,23 @@
   $assets-public-sans-700-latin_ext-woff2
 );
 
+// The unmodified USWDS banner asks for "Public Sans Web", the name USWDS gives
+// its own copy of Public Sans. The same self-hosted files are served under that
+// name (400 and 700 are the only weights the banner uses), so the browser cache
+// serves both and the banner renders in Public Sans without any edit to its CSS.
+@include arpah-font-face(
+  "Public Sans Web",
+  400,
+  $assets-public-sans-400-latin-woff2,
+  $assets-public-sans-400-latin_ext-woff2
+);
+@include arpah-font-face(
+  "Public Sans Web",
+  700,
+  $assets-public-sans-700-latin-woff2,
+  $assets-public-sans-700-latin_ext-woff2
+);
+
 @include arpah-font-face(
   "Poppins",
   400,

@@ -128,8 +128,9 @@ into Knowledge pages.
 ### Decided with the owner
 
 - The `.gov` banner is required (the site is public): it is built from the
-  `@uswds/uswds` package in isolation and shown on every page. The rest of the
-  USWDS library stays out.
+  `@uswds/uswds` package in isolation and shown on every page, unmodified (the
+  NEXUS reference says the banner must never be visually modified). The rest of
+  the USWDS library stays out.
 - The home page gets a Knowledge entry point (a "Browse help articles" band),
   for signed-in people only, with the hero, chips and catalog.
 - The service item page is rebuilt: no greeting band, step pills, helper cards

@@ -31,6 +31,8 @@ colors:
   warning-light: "#fdf3df"
   warning-dark: "#7a5d20"
   info-light: "#cdeafa"
+  usa-gray-5: "#f0f0f0" # the stock USWDS banner background; the banner is never restyled
+  usa-ink: "#1b1b1b" # the stock USWDS banner text
 typography:
   display:
     fontFamily: "Poppins, 'Public Sans', sans-serif"
@@ -123,9 +125,9 @@ components:
     textColor: "{colors.on-dark}"
     height: "71px"
   government-banner:
-    backgroundColor: "{colors.surface-subtle}"
-    textColor: "{colors.indigo}"
-    height: "28px"
+    backgroundColor: "{colors.usa-gray-5}"
+    textColor: "{colors.usa-ink}"
+    height: "22px"
   search-button:
     backgroundColor: "{colors.hot-pink}"
     textColor: "{colors.on-dark}" # the magnifier icon; 3.26:1, enough for a graphic
@@ -195,7 +197,7 @@ A restrained palette: indigo and white carry almost everything, cyan marks the t
 
 **The No Raw Color Rule.** Components read alias tokens from `styles/_tokens.scss`, never a hex or rgb value, never a named color such as `yellow`, and never a palette step such as `--color-blue-700`; when a component needs a step it gets a role alias first (`--surface-selected`, `--status-open`). The gate in the plan checks all three. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.
 
-**The One Source Rule.** Tokens own every color and the logo. The brand, text, link and background color settings and the Logo setting are removed from `manifest.json`, so Admin Center no longer offers controls that would do nothing, and a value saved under an older design cannot override the palette or put a full-color logo on the indigo bar; the alert banner keeps its own color settings because an announcement is chosen per use. The React modules cannot read CSS custom properties inside Garden color scales, so `src/modules/shared/garden-theme/nexusPalette.ts` mirrors the primitives it uses and a unit test fails when the two files drift.
+**The One Source Rule.** Tokens own every color and the logo, apart from the stock `.gov` banner, which keeps USWDS's own colors. The brand, text, link and background color settings and the Logo setting are removed from `manifest.json`, so Admin Center no longer offers controls that would do nothing, and a value saved under an older design cannot override the palette or put a full-color logo on the indigo bar; the alert banner keeps its own color settings because an announcement is chosen per use. The React modules cannot read CSS custom properties inside Garden color scales, so `src/modules/shared/garden-theme/nexusPalette.ts` mirrors the primitives it uses and a unit test fails when the two files drift.
 
 ## Typography
 
@@ -233,7 +235,7 @@ Page titles and section titles sit one step below the NEXUS marketing scale (h1 
 
 ## Layout
 
-One container. Content is at most 1160px wide and never closer than the page gutter to the viewport edge (`--page-gutter`: 16px, 32px from 768px), so the government banner, navigation bar, breadcrumbs, page content and footer share one left edge at every width. Column tokens set the shared widths: `--column-reading` 720px (article, section list, search results, the item form), `--column-aside` 320px (the item page help rail), `--column-rail` 240px (filter and navigation rails) and `--column-gap` 48px between a rail and its column. Category pages put their sections on a two-column grid from 768px with one gutter and one row gap and no boxes; list rows use 12px of padding for a 48px pitch. Spacing comes from the `--space-*` tokens (the NEXUS 8px scale); one dark band, one bright surface per page is the target composition for Knowledge. Wide article tables scroll inside their own focusable region instead of widening the page.
+One container. Content is at most 1160px wide and never closer than the page gutter to the viewport edge (`--page-gutter`: 16px, 32px from 768px), so the navigation bar, breadcrumbs, page content and footer share one left edge at every width (the stock government banner above them keeps its own USWDS container). Column tokens set the shared widths: `--column-reading` 720px (article, section list, search results, the item form), `--column-aside` 320px (the item page help rail), `--column-rail` 240px (filter and navigation rails) and `--column-gap` 48px between a rail and its column. Category pages put their sections on a two-column grid from 768px with one gutter and one row gap and no boxes; list rows use 12px of padding for a 48px pitch. Spacing comes from the `--space-*` tokens (the NEXUS 8px scale); one dark band, one bright surface per page is the target composition for Knowledge. Wide article tables scroll inside their own focusable region instead of widening the page.
 
 ## Elevation & Depth
 
@@ -277,7 +279,7 @@ The service catalog list, the item page and the request forms are React modules 
 
 ### Government banner
 
-The official [USWDS banner](https://designsystem.digital.gov/components/banner/) sits above the navigation bar on every page, signed in or not, because help.arpa-h.gov is a public .gov site. Its CSS is compiled from the `@uswds/uswds` package by `bin/build-usa-banner.mjs`: only the banner, the accordion base and the media block, with the USWDS colors mapped onto NEXUS role tokens, so no reset, grid or utility rule reaches the page (measured: 0 rendered elements change; the full library changes 17%). It is a 28px band on `--surface-subtle` from 640px and wraps below that; its content shares the page container's left edge. The explanation panel is rendered collapsed and opens from the "Here's how you know" button (text 14px, the NEXUS focus ring); without script the panel stays visible. The copy is the official English text.
+The official [USWDS banner](https://designsystem.digital.gov/components/banner/) sits above the navigation bar on every page, signed in or not, because help.arpa-h.gov is a public .gov site. It is stock USWDS and is never restyled: the NEXUS reference (`.github/skills/arpa-h-web-design/SKILL.md`, header checklist) says the banner must never be visually modified. Its colors, 12px text, spacing, 1024px centered container and focus ring are exactly what USWDS ships, so it does not share the page container's left edge, and NEXUS styling stops at its edge. Its CSS is compiled from the `@uswds/uswds` package by `bin/build-usa-banner.mjs`: only the banner, the accordion base and the media block, emitted as shipped, so no reset, grid or utility rule reaches the page (measured: 0 rendered elements change; the full library changes 17%). The only edits are delivery ones: the settings comments are dropped, the icon URLs are inlined, and the font name the banner asks for, "Public Sans Web", is served from the theme's self-hosted Public Sans files. The explanation panel is rendered collapsed and opens from the "Here's how you know" button; without script the panel stays visible. The copy is the official English text.
 
 ### Navigation bar
 
@@ -316,6 +318,7 @@ Notifications and validation use the feedback tokens only, as soft fills with da
 - **Don't** nest a card inside a card.
 - **Don't** add a colored border on one side of a card, list item or alert wider than 1px.
 - **Don't** use `outline: none` without a replacement ring.
-- **Don't** hard-code hex, rgba or named color values (such as `yellow`) in the stylesheets.
+- **Don't** hard-code hex, rgba or named color values (such as `yellow`) in the stylesheets. The one exception is the generated stock USWDS banner (`styles/_usa-banner-generated.scss`).
+- **Don't** restyle the `.gov` banner: no color, type, spacing, container or focus changes. NEXUS styling stops at its edge.
 - **Don't** write a font size outside the scale: new text takes a `--font-size-*` token.
 - **Don't** add USWDS reset, grid or utility CSS: the banner is the only USWDS component, compiled in isolation, because the full library changes 17% of rendered elements (it grows the Garden catalog search field from 47 to 54px, which shifts everything below it).
