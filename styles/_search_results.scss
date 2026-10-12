@@ -248,10 +248,11 @@
   font-weight: bold;
 }
 
-/* Add a yellow background for Chinese */
+/* Highlight search matches on Chinese pages with the selected surface; yellow
+   is reserved for warning messages. */
 html[lang|="zh"] {
   .search-result-description em {
     font-style: normal;
-    background: yellow;
+    background: var(--surface-selected);
   }
 }

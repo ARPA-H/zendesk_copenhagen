@@ -119,7 +119,7 @@
     "rules": [
       { "name": "The Cyan Is Action Rule", "body": "Cyan appears only on things that can be pressed. A static element that borrows it reads as interactive.", "section": "colors" },
       { "name": "The Feedback Only Rule", "body": "Yellow, green and red mark warning, success and error messages; no badge, card or accent on the in-scope pages uses them.", "section": "colors" },
-      { "name": "The No Raw Color Rule", "body": "Components read alias tokens from styles/_tokens.scss, never a hex value or a palette step; URL-encoded SVG data URIs carry noted copies of token colors.", "section": "colors" },
+      { "name": "The No Raw Color Rule", "body": "Components read alias tokens from styles/_tokens.scss, never a hex or rgb value, a named color or a palette step; URL-encoded SVG data URIs carry noted copies of token colors.", "section": "colors" },
       { "name": "The One Source Rule", "body": "Tokens own every color and the logo; the color and logo settings are removed from the manifest, and the React palette mirrors the tokens under a drift test.", "section": "colors" },
       { "name": "The Visible Focus Rule", "body": "Every interactive element shows a ring; the dark-surface ring is cyan with an indigo gap.", "section": "elevation" }
     ],
@@ -136,7 +136,7 @@
       "Don't nest a card inside a card.",
       "Don't add a colored border on one side of a card, list item or alert wider than 1px.",
       "Don't use outline: none without a replacement ring.",
-      "Don't hard-code hex or rgba values in the stylesheets.",
+      "Don't hard-code hex, rgba or named color values (such as yellow) in the stylesheets.",
   "Don't write a font size outside the scale: new text takes a --font-size-* token."
     ]
   }

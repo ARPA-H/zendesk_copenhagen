@@ -163,6 +163,8 @@ export function createTheme(settings?: Settings): IGardenTheme {
       xs: "12px",
       xl: "24px",
       xxl: "28px",
+      // Garden's XXXL is the service page h1, which is 32px like every other h1.
+      xxxl: "32px",
     },
     palette: {
       ...DEFAULT_THEME.palette,

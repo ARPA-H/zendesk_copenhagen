@@ -182,7 +182,7 @@ A restrained palette: indigo and white carry almost everything, cyan marks the o
 
 **The Feedback Only Rule.** Yellow, green and red mark warning, success and error messages. No badge, card or accent on the in-scope pages uses them; request status tags use pink, blue and grey, and the approvals module keeps its red new-comment divider until it is designed.
 
-**The No Raw Color Rule.** Components read alias tokens from `styles/_tokens.scss`, never a hex value and never a palette step such as `--color-blue-700`; when a component needs a step it gets a role alias first (`--surface-selected`, `--status-open`). The gate in the plan checks both. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.
+**The No Raw Color Rule.** Components read alias tokens from `styles/_tokens.scss`, never a hex or rgb value, never a named color such as `yellow`, and never a palette step such as `--color-blue-700`; when a component needs a step it gets a role alias first (`--surface-selected`, `--status-open`). The gate in the plan checks all three. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.
 
 **The One Source Rule.** Tokens own every color and the logo. The brand, text, link and background color settings and the Logo setting are removed from `manifest.json`, so Admin Center no longer offers controls that would do nothing, and a value saved under an older design cannot override the palette or put a full-color logo on the indigo bar; the alert banner keeps its own color settings because an announcement is chosen per use. The React modules cannot read CSS custom properties inside Garden color scales, so `src/modules/shared/garden-theme/nexusPalette.ts` mirrors the primitives it uses and a unit test fails when the two files drift.
 
@@ -218,7 +218,7 @@ Page titles and section titles sit one step below the NEXUS marketing scale (h1 
 - **Numerals.** Counts, dates and table figures use tabular numerals so columns line up.
 - **Resilience.** Headings balance their lines and may break inside a long unbroken token instead of widening the page.
 - **Inputs.** Form fields are 16px, which also stops iOS Safari from zooming the page on focus.
-- **React.** Garden's sizes stay in pixels because its sizing math needs them, with the three off-scale values (10, 22 and 26px) moved to the nearest step; the Garden system font stack leads with Public Sans, and the hand-styled catalog text reads the same `--font-size-*` tokens.
+- **React.** Garden's sizes stay in pixels because its sizing math needs them, with the three off-scale values (10, 22 and 26px) moved to the nearest step and its largest heading (36px) set to the h1 size of 32px; the Garden system font stack leads with Public Sans, and the hand-styled catalog text reads the same `--font-size-*` tokens.
 
 ## Layout
 
@@ -301,5 +301,5 @@ Notifications and validation use the feedback tokens only, as soft fills with da
 - **Don't** nest a card inside a card.
 - **Don't** add a colored border on one side of a card, list item or alert wider than 1px.
 - **Don't** use `outline: none` without a replacement ring.
-- **Don't** hard-code hex or rgba values in the stylesheets.
+- **Don't** hard-code hex, rgba or named color values (such as `yellow`) in the stylesheets.
 - **Don't** write a font size outside the scale: new text takes a `--font-size-*` token.

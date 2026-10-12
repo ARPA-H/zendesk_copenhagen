@@ -85,6 +85,7 @@ describe("createTheme", () => {
     Object.values(theme.fontSizes).forEach((size) => {
       expect(nexusSizes).toContain(parseInt(size, 10));
     });
+    expect(theme.fontSizes.xxxl).toBe("32px");
   });
 
   it("maps feedback hues to NEXUS feedback colors", () => {
