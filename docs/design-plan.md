@@ -85,12 +85,16 @@ Run from the repository root; each should hold at the end of the work.
 
 ```bash
 yarn eslint && yarn lint:md && yarn test && yarn build
+
+# Token contract: no raw color literal and no palette-step reference
+# (--color-<hue>-<step>) outside styles/_tokens.scss; exits 0 when clean.
+! grep -rnE "#[0-9a-fA-F]{3,8}\b|rgba?\(|var\(--color-(blue|pink|violet|turquoise|green|yellow|red|cyan|indigo|navy|grey)-[a-z0-9]+\)" styles --include='*.scss' --exclude=_tokens.scss
 ```
 
-No raw color literals in the in-scope partials outside the token files, and no
-decorative use of the feedback colors (the commands are refined as the token
-layer lands). Every text and control pairing is checked for WCAG contrast, and
-the offline render checks below run at 1440, 768 and 390 pixels wide.
+Feedback colors (yellow, green, red) are used only for messages; the review
+of each phase checks that by reading the diff. Every text and control pairing
+is checked for WCAG contrast, and the offline render checks below run at 1440,
+768 and 390 pixels wide.
 
 ## Verifying without Zendesk
 

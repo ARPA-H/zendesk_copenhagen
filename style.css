@@ -189,15 +189,17 @@ template {
    Names match the canonical file so a diff stays readable.
 
    Rules (see DESIGN.md):
-   - Components read ALIAS tokens (--color-brand-*, --color-ui-*, --space-*),
-     never raw hex values and never primitives directly.
+   - Components read ALIAS tokens (--color-brand-*, --color-ui-*, --space-*,
+     and the role tokens such as --surface-* and --status-*), never raw hex
+     values and never primitives (--color-<hue>-<step>) directly. Add a role
+     alias here first when a component needs a palette step.
    - Cyan is the action color only. Yellow, green and red are feedback
      (warning, success, error) only.
    - Do not write a dollar-prefixed Zendesk setting name in this file's
      comments: Zendesk substitutes those names inside CSS text.
    - The React modules cannot read these properties inside Garden color
      scales, so src/modules/shared/garden-theme/nexusPalette.ts mirrors the
-     primitives it uses; nexusPalette.spec.ts fails when the two drift.
+     primitives it uses; createTheme.spec.tsx fails when the two drift.
    ============================================================ */
 :root {
   /* ----- Primitives: brand ----- */
@@ -356,6 +358,16 @@ template {
   --surface-subtle: var(--color-ui-5);
   --surface-stroke: var(--color-ui-20);
   --surface-card-transparent: rgba(243, 245, 248, 0.7);
+  /* Selected rows, hovered rail items and quiet info bands. Selection is not
+     an action, so it is never cyan. */
+  --surface-selected: var(--color-blue-50);
+  --surface-badge: var(--color-cyan-800);
+  --color-info-border: var(--color-blue-300);
+  /* Request status labels: accents, not feedback. */
+  --status-default: var(--color-turquoise-700);
+  --status-pending: var(--color-blue-700);
+  --status-open: var(--color-pink-600);
+  --status-new: var(--color-violet-600);
   --type-body: var(--color-brand-primary);
   --type-subheading: var(--color-ui-70);
   --type-muted: var(--color-ui-60);
@@ -3120,7 +3132,7 @@ body.section-page .container {
 /***** Status labels *****/
 /* Styles labels used in posts, articles and requests */
 .status-label {
-  background-color: var(--color-turquoise-700);
+  background-color: var(--status-default);
   border-radius: 4px;
   color: var(--color-white);
   font-size: 12px;
@@ -3162,17 +3174,17 @@ body.section-page .container {
   color: var(--type-subheading);
 }
 .status-label-pending, .status-label-pending-moderation {
-  background-color: var(--color-blue-700);
+  background-color: var(--status-pending);
   text-align: center;
 }
 .status-label-open {
-  background-color: var(--color-pink-600);
+  background-color: var(--status-open);
 }
 .status-label-solved {
   background-color: var(--color-ui-60);
 }
 .status-label-new {
-  background-color: var(--color-violet-600);
+  background-color: var(--status-new);
   color: var(--color-white);
 }
 .status-label-hold {
@@ -3448,7 +3460,7 @@ body.section-page .container {
 /***** Community Badges *****/
 /* Styles labels used next to the authors of article comments, community posts, and community comments */
 .community-badge-title {
-  background-color: var(--color-cyan-800);
+  background-color: var(--surface-badge);
   border-radius: 4px;
   color: var(--color-white);
   font-size: 12px;
@@ -5085,7 +5097,7 @@ html[lang|=zh] .search-results-description em {
 /* Notice */
 .notification-notice {
   background: var(--color-info-light);
-  border-color: var(--color-blue-300);
+  border-color: var(--color-info-border);
 }
 
 .notification-notice .notification-icon::before, .notification-notice .notification-inline.notification-error::before {
@@ -5821,6 +5833,8 @@ zd-summary-block {
 }
 
 .svc-hero-search:focus-within {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: var(--shadow-focus-on-dark);
 }
 
@@ -5903,7 +5917,7 @@ zd-summary-block {
 }
 
 .svc-res-service .svc-res-icon {
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
   color: var(--color-brand-primary);
 }
 
@@ -5949,7 +5963,7 @@ zd-summary-block {
 
 .svc-res-service .svc-res-badge {
   color: var(--color-brand-primary);
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
 }
 
 .svc-res-doc .svc-res-badge {
@@ -6342,7 +6356,7 @@ a.svc-help-btn:hover,
 }
 
 .svc-cat-skel-row-active {
-  background-color: var(--color-blue-50) !important;
+  background-color: var(--surface-selected) !important;
 }
 
 .svc-cat-skel-main {
@@ -6634,7 +6648,7 @@ body {
 
 /* ---- HEADER BAR (greeting + step indicator) ---- */
 .svc-topbar {
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
   border-radius: 16px;
   padding: 16px 20px;
   margin-bottom: 18px;
@@ -7345,6 +7359,8 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 
 .svc-searchrow .svc-hero-search:focus-within {
   border-color: var(--color-focus-ring);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: var(--shadow-focus);
 }
 
@@ -7375,6 +7391,8 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 
 .svc-mini-search:focus-within {
   border-color: var(--color-focus-ring);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: var(--shadow-focus);
 }
 
@@ -7508,7 +7526,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 }
 
 .svc-mr-service .svc-mr-icon {
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
   color: var(--color-brand-primary);
 }
 
@@ -7555,7 +7573,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 
 .svc-mr-service .svc-mr-badge {
   color: var(--color-brand-primary);
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
 }
 
 .svc-mr-doc .svc-mr-badge {
@@ -7767,7 +7785,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
      5.8:1 contrast ratio against white — well past the 4.5:1 text
      and 3:1 non-text/UI-component minimums.
    - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus
-     ring (`0 0 0 1px var(--color-blue-700), 0 0 3px 1px var(--color-blue-700)`) is layered on
+     ring (`0 0 0 1px var(--color-focus-ring), 0 0 3px 1px var(--color-focus-ring)`) is layered on
      top of, not swapped out for, the red invalid ring.
    - Motion (WCAG 2.3.3): the one-shot "shake" is gated behind
      `prefers-reduced-motion: no-preference` and runs once, never
@@ -7805,7 +7823,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 .svc-form-panel input:not([type=hidden]):not([type=checkbox]):not([type=radio])[aria-invalid=true]:focus-visible,
 .svc-form-panel textarea[aria-invalid=true]:focus-visible,
 .svc-form-panel select[aria-invalid=true]:focus-visible {
-  box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-blue-700) inset, 0 0 3px 1px var(--color-blue-700) !important;
+  box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-focus-ring) inset, 0 0 3px 1px var(--color-focus-ring) !important;
 }
 .svc-form-panel input[type=checkbox][aria-invalid=true] {
   outline: 2px dashed var(--color-error) !important;
@@ -7818,7 +7836,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 }
 .svc-form-panel input[type=checkbox][aria-invalid=true]:focus-visible {
   outline: 2px dashed var(--color-error) !important;
-  box-shadow: 0 0 0 3px var(--color-white), 0 0 0 5px var(--color-blue-700) !important;
+  box-shadow: 0 0 0 3px var(--color-white), 0 0 0 5px var(--color-focus-ring) !important;
 }
 .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]) {
   border: 2px solid var(--color-error) !important;
@@ -7831,7 +7849,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   }
 }
 .svc-form-panel [data-garden-id="dropdowns.combobox.trigger"]:has(input[aria-invalid=true]):focus-within {
-  box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-blue-700) inset, 0 0 3px 1px var(--color-blue-700) !important;
+  box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-focus-ring) inset, 0 0 3px 1px var(--color-focus-ring) !important;
 }
 
 @keyframes svcFieldAngryShake {
@@ -7884,11 +7902,11 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 }
 
 .svc-search-sidebar .sidenav-item:hover {
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
 }
 
 .svc-search-sidebar .sidenav-item.current {
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
   color: var(--color-brand-primary);
   font-weight: 600;
 }
@@ -7982,6 +8000,8 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 
 .svc-search-pill:focus-within {
   border-color: var(--color-focus-ring) !important;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: var(--shadow-focus);
 }
 

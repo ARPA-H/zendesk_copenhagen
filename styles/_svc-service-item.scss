@@ -22,7 +22,7 @@ body { background: var(--color-white); }
 
 /* ---- HEADER BAR (greeting + step indicator) ---- */
 .svc-topbar {
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
   border-radius: 16px;
   padding: 16px 20px;
   margin-bottom: 18px;
@@ -359,6 +359,8 @@ body > pre, body > code, body > .template-name, body > .editor-label { display: 
 
 .svc-searchrow .svc-hero-search:focus-within {
   border-color: var(--color-focus-ring);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: var(--shadow-focus);
 }
 
@@ -386,7 +388,12 @@ body > pre, body > code, body > .template-name, body > .editor-label { display: 
   box-shadow: var(--shadow-1);
   box-sizing: border-box;
 }
-.svc-mini-search:focus-within { border-color: var(--color-focus-ring); box-shadow: var(--shadow-focus); }
+.svc-mini-search:focus-within {
+  border-color: var(--color-focus-ring);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
+}
 .svc-mini-search-icon { display: inline-flex; align-items: center; color: var(--color-ui-60); flex-shrink: 0; }
 .svc-mini-search-icon svg { width: 18px; height: 18px; }
 .svc-mini-input {
@@ -447,7 +454,7 @@ body > pre, body > code, body > .template-name, body > .editor-label { display: 
   display: flex; align-items: center; justify-content: center;
   border-radius: 8px;
 }
-.svc-mr-service .svc-mr-icon { background: var(--color-blue-50); color: var(--color-brand-primary); }
+.svc-mr-service .svc-mr-icon { background: var(--surface-selected); color: var(--color-brand-primary); }
 .svc-mr-doc .svc-mr-icon { background: var(--color-ui-5); color: var(--color-ui-60); }
 .svc-mr-icon svg { width: 17px; height: 17px; }
 .svc-mr-text { flex: 1; min-width: 0; }
@@ -457,7 +464,7 @@ body > pre, body > code, body > .template-name, body > .editor-label { display: 
 .svc-mr-title { font-size: 13.5px; color: var(--type-body); text-decoration: none; }
 .svc-mr-sub { font-size: 12px; color: var(--type-muted); }
 .svc-mr-badge { flex-shrink: 0; font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 1000px; }
-.svc-mr-service .svc-mr-badge { color: var(--color-brand-primary); background: var(--color-blue-50); }
+.svc-mr-service .svc-mr-badge { color: var(--color-brand-primary); background: var(--surface-selected); }
 .svc-mr-doc .svc-mr-badge { color: var(--color-ui-60); background: var(--color-ui-10); }
 .svc-mr-empty, .svc-mr-loading { padding: 16px; font-size: 13px; color: var(--type-muted); text-align: center; }
 .svc-mr-footer {

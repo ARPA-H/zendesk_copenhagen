@@ -51,7 +51,7 @@
      5.8:1 contrast ratio against white — well past the 4.5:1 text
      and 3:1 non-text/UI-component minimums.
    - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus
-     ring (`0 0 0 1px var(--color-blue-700), 0 0 3px 1px var(--color-blue-700)`) is layered on
+     ring (`0 0 0 1px var(--color-focus-ring), 0 0 3px 1px var(--color-focus-ring)`) is layered on
      top of, not swapped out for, the red invalid ring.
    - Motion (WCAG 2.3.3): the one-shot "shake" is gated behind
      `prefers-reduced-motion: no-preference` and runs once, never
@@ -96,8 +96,8 @@
 
     // Focus indicator must stay visible even while invalid.
     &[aria-invalid="true"]:focus-visible {
-      box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-blue-700) inset,
-        0 0 3px 1px var(--color-blue-700) !important;
+      box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-focus-ring) inset,
+        0 0 3px 1px var(--color-focus-ring) !important;
     }
   }
 
@@ -116,7 +116,7 @@
 
     &[aria-invalid="true"]:focus-visible {
       outline: 2px dashed var(--color-error) !important;
-      box-shadow: 0 0 0 3px var(--color-white), 0 0 0 5px var(--color-blue-700) !important;
+      box-shadow: 0 0 0 3px var(--color-white), 0 0 0 5px var(--color-focus-ring) !important;
     }
   }
 
@@ -133,8 +133,8 @@
     }
 
     &:has(input[aria-invalid="true"]):focus-within {
-      box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-blue-700) inset,
-        0 0 3px 1px var(--color-blue-700) !important;
+      box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-focus-ring) inset,
+        0 0 3px 1px var(--color-focus-ring) !important;
     }
   }
 }

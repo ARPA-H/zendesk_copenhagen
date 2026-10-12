@@ -150,7 +150,7 @@ A restrained palette: indigo and white carry almost everything, cyan marks the o
 
 **The Feedback Only Rule.** Yellow, green and red mark warning, success and error messages. No badge, card or accent on the in-scope pages uses them; request status tags use pink, blue and grey, and the approvals module keeps its red new-comment divider until it is designed.
 
-**The No Raw Color Rule.** Components read alias tokens from `styles/_tokens.scss`. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.
+**The No Raw Color Rule.** Components read alias tokens from `styles/_tokens.scss`, never a hex value and never a palette step such as `--color-blue-700`; when a component needs a step it gets a role alias first (`--surface-selected`, `--status-open`). The gate in the plan checks both. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.
 
 **The One Source Rule.** Tokens own every color. The color settings in `manifest.json` (brand, text, link and background) are kept so existing theme settings still import, but neither the stylesheets nor the React theme applies them; a saved value from an older design cannot override the palette. The React modules cannot read CSS custom properties inside Garden color scales, so `src/modules/shared/garden-theme/nexusPalette.ts` mirrors the primitives it uses and a unit test fails when the two files drift.
 

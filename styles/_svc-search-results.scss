@@ -27,9 +27,9 @@
   border-radius: 8px;
   transition: background-color 0.14s ease, color 0.14s ease;
 }
-.svc-search-sidebar .sidenav-item:hover { background: var(--color-blue-50); }
+.svc-search-sidebar .sidenav-item:hover { background: var(--surface-selected); }
 .svc-search-sidebar .sidenav-item.current {
-  background: var(--color-blue-50);
+  background: var(--surface-selected);
   color: var(--color-brand-primary);
   font-weight: 600;
 }
@@ -80,6 +80,8 @@
 }
 .svc-search-pill:focus-within {
   border-color: var(--color-focus-ring) !important;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: var(--shadow-focus);
 }
 .svc-search-pill > *:not(.svc-search-pill-btn),

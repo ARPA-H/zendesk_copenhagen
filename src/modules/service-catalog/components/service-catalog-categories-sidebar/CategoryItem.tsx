@@ -56,16 +56,13 @@ const StyledSidebarItem = styled.div<{
 
   &:focus {
     outline: none;
-    box-shadow: inset 0 0 0 2px
-      ${(props) =>
-        getColor({ theme: props.theme, variable: "border.primaryEmphasis" })};
-  }
-
-  &:focus:not(:focus-visible) {
-    box-shadow: none;
   }
 
   &:focus-visible {
+    /* The transparent outline is repainted in forced-colors mode, where the
+       box-shadow ring is dropped. */
+    outline: 2px solid transparent;
+    outline-offset: -2px;
     box-shadow: inset 0 0 0 2px
       ${(props) =>
         getColor({ theme: props.theme, variable: "border.primaryEmphasis" })};

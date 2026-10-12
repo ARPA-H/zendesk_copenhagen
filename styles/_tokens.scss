@@ -6,15 +6,17 @@
    Names match the canonical file so a diff stays readable.
 
    Rules (see DESIGN.md):
-   - Components read ALIAS tokens (--color-brand-*, --color-ui-*, --space-*),
-     never raw hex values and never primitives directly.
+   - Components read ALIAS tokens (--color-brand-*, --color-ui-*, --space-*,
+     and the role tokens such as --surface-* and --status-*), never raw hex
+     values and never primitives (--color-<hue>-<step>) directly. Add a role
+     alias here first when a component needs a palette step.
    - Cyan is the action color only. Yellow, green and red are feedback
      (warning, success, error) only.
    - Do not write a dollar-prefixed Zendesk setting name in this file's
      comments: Zendesk substitutes those names inside CSS text.
    - The React modules cannot read these properties inside Garden color
      scales, so src/modules/shared/garden-theme/nexusPalette.ts mirrors the
-     primitives it uses; nexusPalette.spec.ts fails when the two drift.
+     primitives it uses; createTheme.spec.tsx fails when the two drift.
    ============================================================ */
 
 :root {
@@ -189,6 +191,16 @@
   --surface-subtle: var(--color-ui-5);
   --surface-stroke: var(--color-ui-20);
   --surface-card-transparent: rgba(243, 245, 248, 0.7);
+  /* Selected rows, hovered rail items and quiet info bands. Selection is not
+     an action, so it is never cyan. */
+  --surface-selected: var(--color-blue-50);
+  --surface-badge: var(--color-cyan-800);
+  --color-info-border: var(--color-blue-300);
+  /* Request status labels: accents, not feedback. */
+  --status-default: var(--color-turquoise-700);
+  --status-pending: var(--color-blue-700);
+  --status-open: var(--color-pink-600);
+  --status-new: var(--color-violet-600);
   --type-body: var(--color-brand-primary);
   --type-subheading: var(--color-ui-70);
   --type-muted: var(--color-ui-60);
