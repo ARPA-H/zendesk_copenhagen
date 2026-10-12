@@ -23,6 +23,7 @@ const parts = () => ({
 describe("govBanner", () => {
   afterEach(() => {
     document.body.innerHTML = "";
+    document.documentElement.classList.remove("js", "js-ready");
   });
 
   it("opens the panel and marks the header expanded", () => {
@@ -82,5 +83,37 @@ describe("govBanner", () => {
     document.body.innerHTML = "<p>No banner</p>";
 
     expect(() => initGovBanner()).not.toThrow();
+  });
+
+  it("marks the page scripted and ready only after the handlers are installed", () => {
+    document.body.innerHTML = BANNER;
+    const { button, panel } = parts();
+    const attach = button.addEventListener.bind(button);
+    let readyWhenWired = null;
+    button.addEventListener = (type, handler) => {
+      readyWhenWired = document.documentElement.classList.contains("js-ready");
+      attach(type, handler);
+    };
+
+    initGovBanner();
+
+    expect(readyWhenWired).toBe(false);
+    expect(document.documentElement.classList.contains("js")).toBe(true);
+    expect(document.documentElement.classList.contains("js-ready")).toBe(true);
+
+    button.click();
+    expect(panel.hidden).toBe(false);
+  });
+
+  it("does not mark the page ready when the init throws before the handlers", () => {
+    document.body.innerHTML = BANNER;
+    const failing = {
+      querySelectorAll: () => {
+        throw new Error("controller unavailable");
+      },
+    };
+
+    expect(() => initGovBanner(failing)).toThrow("controller unavailable");
+    expect(document.documentElement.classList.contains("js-ready")).toBe(false);
   });
 });

@@ -25,6 +25,17 @@ export function toggleBanner(button) {
   setBannerExpanded(button, button.getAttribute("aria-expanded") !== "true");
 }
 
+// document_head.hbs sets "js" before this script loads, so the collapsed banner
+// never flashes open, and drops it again after five seconds unless "js-ready" is
+// there. Marking the page only after the handlers are installed means a blocked or
+// failed script leaves the explanation readable instead of behind an inert button.
+function markScriptReady() {
+  var classes = document.documentElement.classList;
+
+  classes.add("js");
+  classes.add("js-ready");
+}
+
 export function initGovBanner(root) {
   var scope = root || document;
   var buttons = scope.querySelectorAll(BUTTON_SELECTOR);
@@ -40,6 +51,8 @@ export function initGovBanner(root) {
       });
     })(buttons[i]);
   }
+
+  markScriptReady();
 }
 
 if (document.readyState !== "loading") {

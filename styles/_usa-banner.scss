@@ -34,7 +34,9 @@
   }
 }
 
-// Without script the explanation stays readable and the dead button goes away.
+// Without script, or when the controller never starts (document_head.hbs drops
+// "js" after five seconds without "js-ready"), the explanation stays readable
+// and the dead button goes away.
 html:not(.js) {
   .usa-banner__content[hidden] {
     display: block;

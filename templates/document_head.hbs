@@ -37,8 +37,21 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
 <!-- Lets the stylesheet tell a scripted page from an unscripted one, so the
-     government banner's explanation stays readable without script. -->
-<script type="text/javascript">document.documentElement.className += " js";</script>
+     government banner's explanation stays readable without script. "js" is set
+     now so the collapsed banner never flashes open. src/govBanner.js adds
+     "js-ready" once its click handlers are installed; if that has not happened
+     after five seconds (script.js blocked, failed or very slow), "js" is dropped
+     again so the explanation is exposed instead of sitting behind an inert
+     button. The controller puts both classes back whenever it does start. -->
+<script type="text/javascript">
+  (function () {
+    var root = document.documentElement;
+    root.classList.add("js");
+    setTimeout(function () {
+      if (!root.classList.contains("js-ready")) root.classList.remove("js");
+    }, 5000);
+  })();
+</script>
 
 <!--
   Self-hosted Public Sans (USWDS / ARPA-H standard type) and Poppins (NEXUS
