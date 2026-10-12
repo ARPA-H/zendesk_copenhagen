@@ -147,7 +147,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 0 | `init`, `critique`, `audit` | PRODUCT.md, a scored baseline critique ([23/40](design-critique-2026-10-12.md)) and audit ([10/20](design-audit-2026-10-12.md)) | Done |
 | 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
 | 2 | `typeset` | One NEXUS type scale in `rem` tokens (12 to 40 pixels, eight sizes in use): Poppins for the greeting and h1 and h2, Public Sans for everything read or pressed; a 70-character prose measure; tabular numerals; rewritten article, table and heading rhythm; the Garden theme on the same scale; the dead `.svc-hero-results`, `.svc-res-*`, `.svc-mini-*` and `.svc-mr-*` styles removed | Done |
-| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the header blended into the hero; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category and section grids, Device FAQs tiles, overflow fixes, the banner, the blended header and the Knowledge band done |
+| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the header blended into the hero; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category, section, article and search grids, Device FAQs tiles, overflow fixes, the banner, the blended header, the Knowledge band, the service item rebuild and the spacing sweep done; catalog title clamping to follow |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
 | 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
@@ -155,6 +155,26 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
 | 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Moderate expressive layer (state motion plus one signature moment per key page, reduced-motion safe) and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Planned |
 | 10 | `polish`, `audit` | Final pass, final score, docs | Planned |
+
+Layout decisions made during Phase 3 (each is easy to reverse):
+
+- **Rails stay static.** The roadmap proposed sticky article, search and
+  catalog rails that scroll inside themselves. The item page showed the cost:
+  with five suggestions the rail is taller than most viewports, and its
+  original sticky rule could not take effect, so people only ever saw a static
+  rail. The Knowledge rails were static too, and stay static.
+- **Search results keep their bordered cards.** The roadmap suggested hairline
+  rows, but the cards are part of the look people recognize, so only their
+  spacing changed: the base list rule padded every item on top of the card gap,
+  which put 52 pixels between cards, and it is now 16. The page moved onto the
+  shared 240 | 48 | 720 grid, the same as the article page.
+- **The article grid is rail 240, gap 48, column 720** (it was 17%, 66%
+  and 30 pixel padding), with the free space on the right. Prose keeps its
+  70-character cap; tables and figures use the full column.
+- **The spacing sweep covers the Knowledge and catalog partials** and snaps
+  raw values onto the `--space-*` scale (left and right pairs became logical
+  properties, which also drops the RTL special cases). The hero's search pill
+  and chips are exempt: they keep the dimensions the owner approved by eye.
 
 ## Gates
 
@@ -165,8 +185,10 @@ yarn eslint && yarn lint:md && yarn test && yarn build
 
 # Token contract: no raw color literal (hex, rgb or a named color such as
 # yellow) and no palette-step reference (--color-<hue>-<step>) outside
-# styles/_tokens.scss; exits 0 when clean.
-! grep -rnE "#[0-9a-fA-F]{3,8}\b|rgba?\(|var\(--color-(blue|pink|violet|turquoise|green|yellow|red|cyan|indigo|navy|grey)-[a-z0-9]+\)|:[[:space:]]*(yellow|red|green|blue|orange|purple|pink|black|white|gr[ae]y)\b" styles --include='*.scss' --exclude=_tokens.scss
+# styles/_tokens.scss; exits 0 when clean. The generated stock USWDS banner
+# (styles/_usa-banner-generated.scss) is the one exception, because the NEXUS
+# reference says the banner must never be visually modified.
+! grep -rnE "#[0-9a-fA-F]{3,8}\b|rgba?\(|var\(--color-(blue|pink|violet|turquoise|green|yellow|red|cyan|indigo|navy|grey)-[a-z0-9]+\)|:[[:space:]]*(yellow|red|green|blue|orange|purple|pink|black|white|gr[ae]y)\b" styles --include='*.scss' --exclude=_tokens.scss --exclude=_usa-banner-generated.scss
 ```
 
 Feedback colors (yellow, green, red) are used only for messages; the review

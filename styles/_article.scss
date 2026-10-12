@@ -1,26 +1,23 @@
 /***** Article *****/
 .article {
   /*
-  * The article grid is defined this way to optimize readability:
-  * Sidebar | Content | Free space
-  * 17%     | 66%     | 17%
+  * The article grid: a navigation rail, the reading column, then free space.
+  * The widths are the shared column tokens (240 | 48 gap | 720), so the page
+  * lines up with the section and search pages.
   */
-  @include desktop {
-    flex: 1 0 66%;
-    max-width: 66%;
-    min-width: 640px;
-    padding: 0 30px;
-  }
-
   flex: 1 0 auto; //Explicit values needed whith flex-direction: column for IE11
+  min-width: 0;
 
   &-container {
-    @include desktop {
-      flex-direction: row;
-    }
-
     display: flex;
     flex-direction: column;
+
+    @include desktop {
+      align-items: start;
+      column-gap: var(--column-gap);
+      display: grid;
+      grid-template-columns: var(--column-rail) minmax(0, var(--column-reading));
+    }
   }
 
   &-header {
@@ -34,16 +31,16 @@
     flex-direction: column;
     flex-wrap: wrap;
     justify-content: space-between;
-    margin-bottom: 40px;
-    margin-top: 20px;
+    margin-bottom: var(--space-4);
+    margin-top: var(--space-2);
   }
 
   &-avatar {
-    margin-right: 10px;
+    margin-inline-end: var(--space-1);
   }
 
   &-author {
-    margin-bottom: 10px;
+    margin-bottom: var(--space-1);
   }
 
   &-title {
@@ -87,7 +84,7 @@
   }
 
   &-content {
-    margin: 40px 0;
+    margin: var(--space-4) 0;
     word-wrap: break-word;
   }
 
@@ -95,7 +92,7 @@
     align-items: center;
     display: flex;
     justify-content: space-between;
-    padding-bottom: 20px;
+    padding-bottom: var(--space-2);
   }
 
   &-comment-count {
@@ -116,15 +113,15 @@
   &-sidebar {
     @include desktop {
       border: 0;
-      flex: 0 0 17%;
+      flex: none;
       height: auto;
-      max-width: 17%;
+      max-width: none;
     }
 
     border-bottom: 1px solid var(--surface-stroke);
     border-top: 1px solid var(--surface-stroke);
     flex: 1 0 auto; //Explicit values needed whith flex-direction: column for IE11
-    margin-bottom: 20px;
+    margin-bottom: var(--space-3);
     padding: 0;
   }
 
@@ -136,7 +133,7 @@
     border-top: 1px solid var(--surface-stroke);
     display: flex;
     flex-direction: column;
-    padding: 20px 0;
+    padding: var(--space-3) 0;
 
     > * {
       flex: 1 0 50%; //Explicit values needed whith flex-direction: column for IE11
@@ -149,14 +146,14 @@
       }
 
       @include tablet {
-        padding-right: 20px;
+        padding-inline-end: var(--space-3);
       }
     }
   }
 
   &-votes {
     border-top: 1px solid var(--surface-stroke);
-    padding: 30px 0;
+    padding: var(--space-4) 0;
     text-align: center;
 
     &-question { // Explicit values for rendering h2 like a span for accessibility.
@@ -168,7 +165,7 @@
   }
 
   &-vote {
-    margin: 10px 5px;
+    margin: var(--space-1) var(--space-05);
     min-width: 90px;
     width: auto;
   }
@@ -179,7 +176,7 @@
   }
 
   &-more-questions {
-    margin: 10px 0 20px;
+    margin: var(--space-1) 0 var(--space-3);
     text-align: center;
     @include standalone-link;
   }
@@ -194,7 +191,7 @@
     a {
       color: var(--type-body);
       display: block;
-      padding: 20px 0;
+      padding: var(--space-3) 0;
 
       &:hover,
       &:focus {
@@ -234,8 +231,8 @@
 
   &-item {
     display: block;
-    margin-top: 10px;
-    margin-bottom: 16px;
+    margin-top: var(--space-1);
+    margin-bottom: var(--space-2);
     overflow: hidden;
     text-overflow: ellipsis;
 
@@ -254,6 +251,6 @@
   }
 
   li {
-    margin-bottom: 15px;
+    margin-bottom: var(--space-2);
   }
 }

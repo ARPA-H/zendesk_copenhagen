@@ -7,7 +7,7 @@
     // The description takes a row of its own (flex-basis below); without
     // wrapping, the title is squeezed to its narrowest word.
     flex-wrap: wrap;
-    gap: 0 16px;
+    gap: 0 var(--space-2);
     margin: 0;
   }
 
@@ -15,7 +15,7 @@
   flex-direction: column;
   flex-wrap: wrap;
   justify-content: space-between;
-  margin: 10px 0;
+  margin: var(--space-1) 0;
 
   .section-subscribe {
     @include tablet {
@@ -24,14 +24,14 @@
     }
 
     flex-shrink: 0; //Avoid collapsing elements in Safari
-    margin-bottom: 10px;
+    margin-bottom: var(--space-1);
     // Stacked, the title is followed by its description, then the action.
     order: 1;
   }
 
   h1 {
     flex-grow: 1;
-    margin-bottom: 10px;
+    margin-bottom: var(--space-1);
   }
 
   &-description {
@@ -40,7 +40,7 @@
     }
     color: var(--type-subheading);
     font-size: var(--font-size-sm);
-    margin: 0 0 30px 0;
+    margin: 0 0 var(--space-4) 0;
     // The measure is end padding, not max-width: a max-width would clamp the
     // full-row basis and let a short title sit beside the description.
     padding-inline-end: max(0px, calc(100% - var(--measure-prose)));

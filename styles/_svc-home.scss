@@ -303,8 +303,8 @@
   position: fixed;
   z-index: 10000;
   max-width: 240px;
-  padding: 8px 11px;
-  border-radius: 8px;
+  padding: var(--space-1) var(--space-105);
+  border-radius: var(--radius-md);
   background: var(--type-body);
   color: var(--color-white);
   font-size: var(--font-size-2xs);
@@ -378,7 +378,7 @@ a.svc-help-btn:hover,
 .service-catalog-main-content input[type="text"],
 .service-catalog-main-content input[type="search"] {
   border-radius: 16px !important;
-  padding: 2px 8px !important;
+  padding: var(--space-2px) var(--space-1) !important;
   font-size: var(--font-size-xs) !important;
   caret-color: var(--type-body) !important;
   box-shadow: none !important;
@@ -418,21 +418,21 @@ a.svc-help-btn:hover,
   position: absolute; inset: 0;
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
-  gap: 28px;
+  gap: var(--space-4);
   transition: opacity 0.3s ease;
   z-index: 1;
 }
 .svc-cat-skeleton.svc-cat-skel-hide { opacity: 0; pointer-events: none; }
-.svc-cat-skel-side { display: flex; flex-direction: column; gap: 12px; padding-top: 6px; }
-.svc-cat-skel-row { height: 34px; border-radius: 8px; }
+.svc-cat-skel-side { display: flex; flex-direction: column; gap: var(--space-105); padding-top: 6px; }
+.svc-cat-skel-row { height: 34px; border-radius: var(--radius-md); }
 .svc-cat-skel-row-active { background-color: var(--surface-selected) !important; }
 .svc-cat-skel-main { min-width: 0; }
-.svc-cat-skel-heading { width: 200px; height: 30px; border-radius: 8px; margin-bottom: 14px; }
-.svc-cat-skel-subtext { width: 70%; max-width: 520px; height: 14px; border-radius: 8px; margin-bottom: 28px; }
+.svc-cat-skel-heading { width: 200px; height: 30px; border-radius: var(--radius-md); margin-bottom: var(--space-105); }
+.svc-cat-skel-subtext { width: 70%; max-width: 520px; height: 14px; border-radius: var(--radius-md); margin-bottom: var(--space-3); }
 .svc-cat-skel-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  gap: var(--space-2);
 }
 .svc-cat-skel-card { height: 120px; border-radius: 16px; }
 
@@ -488,7 +488,7 @@ a.svc-help-btn:hover,
     min-width: 0 !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
-    padding: 16px 12px !important;
+    padding: var(--space-2) var(--space-105) !important;
     overflow: visible !important;
   }
   .service-catalog-main-content a[href*="/services/"] h1,

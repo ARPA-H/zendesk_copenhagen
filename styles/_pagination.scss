@@ -1,7 +1,7 @@
 /***** Pagination *****/
 
 .pagination {
-  margin: 20px 0;
+  margin: var(--space-3) 0;
   text-align: center;
 
   &-next, &-prev, &-first, &-last {
@@ -13,7 +13,7 @@
 
   &-first, &-last {
     &-link {
-      padding: 0 10px;
+      padding: 0 var(--space-105);
     }
 
     &-text {
@@ -23,35 +23,19 @@
 
   &-next {
     &-link {
-      padding-right: 10px;
+      padding-inline-end: var(--space-105);
     }
     &-text {
-      margin-right: 10px;
-    }
-    [dir="rtl"] & {
-      &-link {
-        padding-left: 10px;
-      }
-      &-text {
-        margin-left: 10px;
-      }
+      margin-inline-end: var(--space-105);
     }
   }
 
   &-prev {
     &-link {
-      padding-left: 10px;
+      padding-inline-start: var(--space-105);
     }
     &-text {
-      margin-left: 10px;
-    }
-    [dir="rtl"] & {
-      &-link {
-        padding-right: 10px;
-      }
-      &-text {
-        margin-right: 10px;
-      }
+      margin-inline-start: var(--space-105);
     }
   }
 }

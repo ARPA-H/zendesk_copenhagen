@@ -68,12 +68,12 @@
 @mixin image-alignment {
   &.image-style-align-left {
     float: left;
-    margin: 8px 20px 6px 0;
+    margin: var(--space-1) var(--space-3) var(--space-1) 0;
   }
 
   &.image-style-align-right {
     float: right;
-    margin: 8px 0px 6px 20px;
+    margin: var(--space-1) 0 var(--space-1) var(--space-3);
   }
 
   &.image-style-block-align-right {
@@ -105,12 +105,23 @@
   }
 
   // More room above a heading than below it, so it reads as the start of the
-  // text that follows.
+  // text that follows. Steps of the spacing scale: h2 40 and 12, h3 32 and 8,
+  // h4 24 and 8.
+  h2 {
+    margin: var(--space-5) 0 var(--space-105);
+  }
+
+  h3 {
+    margin: var(--space-4) 0 var(--space-1);
+  }
+
+  h4 {
+    margin: var(--space-3) 0 var(--space-1);
+  }
+
   h2,
   h3,
   h4 {
-    margin: 1.75em 0 0.5em;
-
     &:first-child {
       margin-top: 0;
     }
@@ -171,7 +182,7 @@
   figure.image {
     display: table;
 
-    margin: 0 auto;
+    margin: var(--space-3) auto;
 
     > img {
       display: block;
@@ -183,7 +194,7 @@
 
 
   figcaption {
-    padding: 10px 0;
+    padding: var(--space-1) 0;
     font-size: var(--font-size-2xs);
     text-align: center;
     background-color: var(--color-ui-10);
@@ -191,16 +202,10 @@
 
   ul,
   ol {
-    padding-left: 20px;
     list-style-position: outside;
-    margin: 20px 0 20px 20px;
-
-    [dir="rtl"] & {
-      padding-right: 20px;
-      padding-left: 0;
-      margin-left: 0;
-      margin-right: 20px;
-    }
+    margin: var(--space-2) 0;
+    margin-inline-start: var(--space-2);
+    padding-inline-start: var(--space-3);
   }
 
   // Sub level list
@@ -221,15 +226,15 @@
     background: var(--surface-subtle);
     border: 1px solid var(--surface-stroke);
     border-radius: var(--radius-sm);
-    padding: 0 5px;
-    margin: 0 2px;
+    padding: 0 var(--space-05);
+    margin: 0 var(--space-2px);
   }
 
   pre {
     background: var(--surface-subtle);
     border: 1px solid var(--surface-stroke);
     border-radius: var(--radius-sm);
-    padding: 10px 15px;
+    padding: var(--space-105) var(--space-2);
     overflow: auto;
     white-space: pre;
     direction: ltr;
@@ -240,7 +245,7 @@
   blockquote {
     border-left: 1px solid var(--surface-stroke);
     color: var(--type-subheading);
-    padding: 0 15px;
+    padding: 0 var(--space-2);
   }
 }
 

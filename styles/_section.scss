@@ -42,7 +42,7 @@
 .see-all-sections-trigger {
   cursor: pointer;
   display: block;
-  padding: 15px;
+  padding: var(--space-2);
   text-align: center;
 
   &[aria-hidden="true"] {

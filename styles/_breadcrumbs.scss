@@ -4,7 +4,7 @@
     margin: 0;
   }
 
-  margin: 0 0 15px 0;
+  margin: 0 0 var(--space-2) 0;
   padding: 0;
   display: flex;
   // A long trail wraps onto a second line instead of widening the page.
@@ -22,7 +22,7 @@
 
     + li::before {
       content: ">" / "";
-      margin: 0 4px;
+      margin: 0 var(--space-05);
     }
 
     a:visited {

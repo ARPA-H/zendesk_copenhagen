@@ -1,38 +1,40 @@
 /***** Search results *****/
 .search-results {
-  @include desktop {
-    flex-direction: row;
-  }
-
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   justify-content: space-between;
 
-  &-column {
-    @include desktop {
-      flex: 0 0 75%;
-    }
+  // The shared page grid: filter rail | gap | results column (the column
+  // tokens), the same as the article page, with the free space on the right.
+  @include desktop {
+    align-items: start;
+    column-gap: var(--column-gap);
+    display: grid;
+    grid-template-columns: var(--column-rail) minmax(0, var(--column-reading));
+    justify-content: start;
+  }
 
+  &-column {
     flex: 1;
   }
 
   &-sidebar {
     border-top: 1px solid var(--surface-stroke);
     flex: 1 0 auto;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-3);
     padding: 0;
 
     @include desktop {
       border: 0;
-      flex: 0 0 20%;
+      flex: none;
       height: auto;
     }
 
     .sidenav-item {
       border-radius: 4px;
-      padding: 10px 36px;
-      margin-bottom: 4px;
+      padding: var(--space-105) var(--space-4);
+      margin-bottom: var(--space-05);
       color: var(--type-body);
 
       &:hover,
@@ -55,7 +57,7 @@
       .content-tag {
         background: var(--color-ui-10);
         border-radius: 4px;
-        padding: 4px 12px;
+        padding: var(--space-05) var(--space-105);
         text-decoration: none;
 
         .label {
@@ -80,7 +82,7 @@
     }
 
     .collapsible-sidebar {
-      margin-bottom: 30px;
+      margin-bottom: var(--space-4);
 
       &:not(.expanded) {
         .multibrand-filter-list {
@@ -103,7 +105,7 @@
       border: none;
       cursor: pointer;
       display: block;
-      padding: 10px;
+      padding: var(--space-105);
       color: var(--color-link);
 
       &[aria-hidden="true"] {
@@ -127,9 +129,9 @@
   }
 
   &-list {
-    margin-bottom: 25px;
+    margin-bottom: var(--space-3);
     > li {
-      padding: 20px 0;
+      padding: var(--space-3) 0;
       &:first-child {
         border-top: 1px solid var(--surface-stroke);
       }
@@ -193,20 +195,13 @@
   &-meta-count {
     color: var(--type-subheading);
     font-size: $font-size-small;
+    margin-inline-start: var(--space-3);
 
     &-icon {
       color: var(--color-brand-primary);
       vertical-align: middle;
       width: 13px;
       height: 13px;
-    }
-
-    [dir="ltr"] & {
-      margin-left: 20px;
-    }
-
-    [dir="rtl"] & {
-      margin-right: 20px;
     }
   }
 
@@ -225,13 +220,7 @@
     }
 
     .meta-data {
-      [dir="ltr"] & {
-        @include desktop { margin-left: 20px; }
-      }
-
-      [dir="rtl"] & {
-        @include desktop { margin-right: 20px; }
-      }
+      @include desktop { margin-inline-start: var(--space-3); }
 
       &::after {
         content: none;
@@ -244,7 +233,7 @@
   }
 
   &-description {
-    margin-top: 10px;
+    margin-top: var(--space-1);
     margin-bottom: 0;
     word-break: break-word;
   }
