@@ -82,8 +82,10 @@ Knowledge pages.
 - **Locales.** Upstream ships about forty locales and RTL support; the fork's
   custom templates are mostly English (a known gap). New CSS keeps RTL working
   by using logical properties.
-- **Rhythm.** Visits are short and task-driven. The catalog is fetched once per
-  session and cached.
+- **Rhythm.** Visits are short and task-driven. The shared live-search widget
+  (`src/svcSearch.js`) caches the catalog's item list in `sessionStorage` for
+  30 minutes; the catalog page itself fetches categories on load and items for
+  each search, filter, sort and page.
 
 ## Capabilities and Constraints
 
@@ -132,6 +134,16 @@ request; Ask AI.
   indigo `#000334`, cyan `#52daf2`, navy `#001b5e`; Poppins for display,
   h1 and h2; Public Sans for body and h3 to h6; pill buttons with a cyan
   primary and indigo text; 16px cards.
+- **NEXUS tokens and conventions, not USWDS core.** NEXUS sits on top of the
+  [U.S. Web Design System](https://designsystem.digital.gov/), whose package
+  [contains all the styles for USWDS components](https://designsystem.digital.gov/documentation/getting-started/developers/phase-two-compile/).
+  This theme adopts the NEXUS tokens (color, type, spacing, radius, elevation,
+  focus) and component conventions through its own SCSS and does not install
+  `@uswds/uswds`: Guide renders much of the markup itself (search form,
+  breadcrumbs, votes, pagination), so `usa-*` classes cannot be applied, and a
+  second reset, grid and utility layer on top of Copenhagen's own would put
+  every page at risk with no Zendesk-hosted baseline to compare against.
+  Revisit together with the `.gov` banner decision.
 - **Feedback colors are for status only.** Yellow, green and red mark warning,
   success and error messages. Persistent UI, accents and decoration use cyan,
   blue, violet, turquoise and pink only (rule from the skill).

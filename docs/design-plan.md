@@ -8,7 +8,8 @@ against `sandbox`). Nothing here deploys to Zendesk; deploys run only from
 
 Bring the Service Catalog and the Knowledge pages (category, section, article,
 search results) onto one coherent visual system built from the ARPA-H NEXUS
-tokens in the `arpa-h-web-design` skill, while keeping today's recognizable
+tokens and component conventions in the `arpa-h-web-design` skill, while
+keeping today's recognizable
 signature: the dark gradient hero with the Poppins greeting, the pill search,
 the popular-search chips and the rounded catalog card. The work runs every
 Impeccable phase in turn; each phase ends in a push, a Copilot review, and a
@@ -37,7 +38,16 @@ decisions were made from the repository and the brief. Each is easy to reverse.
    `overdrive`) are restrained and respect reduced motion.
 5. **Copy.** Microcopy only. Service names, popular-search chips, article
    content and every string that comes from Zendesk stay as they are.
-6. **Commits.** Created through GitHub's `createCommitOnBranch` mutation, which
+6. **NEXUS tokens, not USWDS core.** The skill says NEXUS layers on top of the
+   [U.S. Web Design System](https://designsystem.digital.gov/). This work is
+   an explicit token-and-convention restyle of Copenhagen's own structure: it
+   does not add `@uswds/uswds`. Guide generates much of its own markup (search
+   form, breadcrumbs, votes, pagination), so `usa-*` classes cannot be applied,
+   and a second reset, grid and utility layer would put every page at risk
+   without a Zendesk-hosted baseline to compare against. The USWDS-derived
+   parts that matter here (the 8px spacing scale, the breakpoints, Public Sans,
+   the focus convention) come in through the NEXUS tokens.
+7. **Commits.** Created through GitHub's `createCommitOnBranch` mutation, which
    [signs commits and marks them Verified](https://github.blog/changelog/2021-09-13-a-simpler-api-for-authoring-commits/),
    because the local Secretive key needs Touch ID for every signature.
 
@@ -81,6 +91,8 @@ pull request is merged.
 
 ## Open decisions
 
+- Whether USWDS core should be installed, which would also bring the
+  `usa-banner` that the skill requires on `.gov` sites.
 - Whether a `.gov` banner is required.
 - Whether Knowledge needs its own entry point on the home page.
 - Moving the hard-coded OS tile IDs in `category_page.hbs` into settings.
