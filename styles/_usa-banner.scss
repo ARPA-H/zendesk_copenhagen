@@ -1,0 +1,84 @@
+// U.S. government banner: https://designsystem.digital.gov/components/banner/
+//
+// The component's CSS is compiled from the USWDS package by bin/build-usa-banner.mjs
+// (colors already mapped onto the NEXUS role tokens). This file only fits it to the
+// theme: one type voice, the page container's edges, the NEXUS focus ring and the
+// 14px floor for readable text. The markup is in templates/header.hbs and the
+// disclosure behavior in src/govBanner.js.
+@import "usa-banner-generated";
+
+.usa-banner {
+  &,
+  .usa-accordion {
+    font-family: var(--font-secondary);
+  }
+
+  // The component sets 12px and 13px; readable text here never goes below 14px.
+  .usa-banner__header,
+  .usa-banner__header-text,
+  .usa-banner__header-action,
+  .usa-banner__button {
+    font-size: var(--font-size-2xs);
+    line-height: 1.4;
+  }
+
+  .usa-banner__content {
+    font-size: var(--font-size-2xs);
+  }
+}
+
+// The inner row and the open panel share the page container's left edge.
+.usa-banner__inner,
+.usa-banner__content {
+  @include max-width-container;
+  margin-inline: 0;
+  max-width: none;
+}
+
+// The USWDS grid helpers the markup uses, scoped to the banner so no grid
+// library is needed.
+.usa-banner {
+  .grid-col-auto {
+    flex: 0 1 auto;
+    max-width: 100%;
+    width: auto;
+  }
+
+  .grid-col-fill {
+    flex: 1 1 0%;
+    max-width: 100%;
+    width: auto;
+  }
+
+  @media (min-width: 40em) {
+    .tablet\:grid-col-auto {
+      flex: 0 1 auto;
+      max-width: 100%;
+      width: auto;
+    }
+  }
+}
+
+// The NEXUS focus ring replaces the component's blue outline, on keyboard
+// focus only.
+.usa-banner__button,
+.usa-banner__header-action {
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+// Without script the explanation stays readable and the dead button goes away.
+html:not(.js) {
+  .usa-banner__content[hidden] {
+    display: block;
+  }
+
+  .usa-banner__button {
+    display: none;
+  }
+}

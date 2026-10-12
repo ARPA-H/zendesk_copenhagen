@@ -45,11 +45,23 @@
   img {
     height: auto;
     margin: 0;
-    max-height: 6rem;
     max-width: 100%;
-    object-fit: contain;
-    width: auto;
   }
+}
+
+// The three 512px canvases carry different amounts of empty margin (a wide
+// wordmark, a padded glyph, a full-bleed logo), so each is sized to read as the
+// same visual weight.
+.custom-os-tile--macos img {
+  width: 10rem;
+}
+
+.custom-os-tile--ios img {
+  width: 6rem;
+}
+
+.custom-os-tile--windows img {
+  width: 4.5rem;
 }
 
 .custom-os-tile-label {

@@ -222,7 +222,7 @@ Page titles and section titles sit one step below the NEXUS marketing scale (h1 
 
 ## Layout
 
-*Planned (Phase 3).* Today: the page container is 1160px wide with 5% side padding; the navigation bar and footer are full-bleed with their content aligned to that container. The NEXUS 8px spacing scale is available as `--space-*` tokens; one dark band, one bright surface per page is the target composition for Knowledge.
+One container. Content is at most 1160px wide and never closer than the page gutter to the viewport edge (`--page-gutter`: 16px, 32px from 768px), so the government banner, navigation bar, breadcrumbs, page content and footer share one left edge at every width. Column tokens set the shared widths: `--column-reading` 720px (article, section list, search results, the item form), `--column-aside` 320px (the item page help rail), `--column-rail` 240px (filter and navigation rails) and `--column-gap` 48px between a rail and its column. Category pages put their sections on a two-column grid from 768px with one gutter and one row gap and no boxes; list rows use 12px of padding for a 48px pitch. Spacing comes from the `--space-*` tokens (the NEXUS 8px scale); one dark band, one bright surface per page is the target composition for Knowledge. Wide article tables scroll inside their own focusable region instead of widening the page.
 
 ## Elevation & Depth
 
@@ -264,6 +264,10 @@ The service catalog list, the item page and the request forms are React modules 
 - **Selection:** the active category in the catalog sidebar is the blue tint, as in the stylesheets.
 - **Status tags:** the request list uses the same accents as the stylesheets: open is pink, awaiting reply is blue, solved is grey.
 
+### Government banner
+
+The official [USWDS banner](https://designsystem.digital.gov/components/banner/) sits above the navigation bar on every page, signed in or not, because help.arpa-h.gov is a public .gov site. Its CSS is compiled from the `@uswds/uswds` package by `bin/build-usa-banner.mjs`: only the banner, the accordion base and the media block, with the USWDS colors mapped onto NEXUS role tokens, so no reset, grid or utility rule reaches the page (measured: 0 rendered elements change; the full library changes 17%). It is a 28px band on `--surface-subtle` from 640px and wraps below that; its content shares the page container's left edge. The explanation panel is rendered collapsed and opens from the "Here's how you know" button (text 14px, the NEXUS focus ring); without script the panel stays visible. The copy is the official English text.
+
 ### Navigation bar
 
 Full-bleed indigo, 71px tall, the reverse logo at 37px, then a thin divider and the Help Center name as the site title (shown when the Show Help Center name setting is on, truncated when long), white text. Ask AI is the only cyan pill. The user menu is a white 16px card. The full bar holds at 768px and wider, as the NEXUS checklist requires; below 768px it keeps the logo and a 44px menu button that opens a white panel.
@@ -303,3 +307,4 @@ Notifications and validation use the feedback tokens only, as soft fills with da
 - **Don't** use `outline: none` without a replacement ring.
 - **Don't** hard-code hex, rgba or named color values (such as `yellow`) in the stylesheets.
 - **Don't** write a font size outside the scale: new text takes a `--font-size-*` token.
+- **Don't** add USWDS reset, grid or utility CSS: the banner is the only USWDS component, compiled in isolation, because the full library changes 17% of rendered elements (it grows the Garden catalog search field from 47 to 54px, which shifts everything below it).
