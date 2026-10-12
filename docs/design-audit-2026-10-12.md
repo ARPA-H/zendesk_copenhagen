@@ -66,7 +66,7 @@ A technical audit of the theme as it stood on `sandbox` (`9157608c`), before any
 - The skeleton loaders reserve space for the catalog while it loads.
 - Search result cards, the item-page rail and the post-submit card are well-aimed content.
 - Honest engineering notes in the SCSS explain several earlier fixes.
-- No horizontal overflow on home, services, service item, category, section or search.
+- No horizontal overflow at 390px on home, services, service item, section or search, or on the standard category page; the Device FAQs variant of `category_page.hbs` is the exception (see P1-4).
 
 ## Recommended actions
 

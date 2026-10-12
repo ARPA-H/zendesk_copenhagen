@@ -244,10 +244,15 @@ template {
   --color-turquoise-800: #12635a;
   --color-pink-50: #feeff6;
   --color-pink-100: #fde0ed;
+  --color-pink-200: #fdd0e5;
   --color-pink-300: #fcc1dc;
+  --color-pink-400: #fd82ba;
   --color-pink-neutral: #fd4497;
   --color-pink-600: #c93678;
   --color-pink-700: #942859;
+  --color-pink-800: #6f1e43;
+  --color-pink-900: #4a142d;
+  --color-pink-1000: #250a16;
   /* ----- Primitives: neutrals (cool grey) ----- */
   --color-grey-0: #ffffff;
   --color-grey-50: #f3f5f8;
@@ -1071,10 +1076,13 @@ ul {
 .logo {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 .logo a {
   display: inline-flex;
+  align-items: center;
+  min-width: 0;
   border-radius: var(--radius-sm);
 }
 .logo a:hover, .logo a:focus, .logo a:active {
@@ -1085,8 +1093,23 @@ ul {
   height: 37px;
   width: auto;
 }
-.logo span {
-  display: none;
+.logo .site-title {
+  margin-inline-start: var(--space-2);
+  padding-inline-start: var(--space-2);
+  border-inline-start: 1px solid var(--on-dark-border-strong);
+  color: var(--color-white);
+  font-family: var(--font-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 767px) {
+  .logo .site-title {
+    display: none;
+  }
 }
 
 /***** Primary action: Ask AI *****/
@@ -1124,7 +1147,7 @@ ul {
   gap: var(--space-2);
   flex: 0 0 auto;
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .nav-wrapper-desktop {
     display: none;
   }
@@ -1180,7 +1203,7 @@ ul {
 .nav-wrapper-mobile {
   display: none;
 }
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .nav-wrapper-mobile {
     display: flex;
     align-items: center;
@@ -7956,8 +7979,8 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 }
 
 .svc-search-pill:focus-within {
-  border-color: var(--color-logo-blue-dark) !important;
-  box-shadow: var(--shadow-2);
+  border-color: var(--color-focus-ring) !important;
+  box-shadow: var(--shadow-focus);
 }
 
 .svc-search-pill > *:not(.svc-search-pill-btn),

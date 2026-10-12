@@ -79,8 +79,8 @@
   overflow: visible !important;
 }
 .svc-search-pill:focus-within {
-  border-color: var(--color-logo-blue-dark) !important;
-  box-shadow: var(--shadow-2);
+  border-color: var(--color-focus-ring) !important;
+  box-shadow: var(--shadow-focus);
 }
 .svc-search-pill > *:not(.svc-search-pill-btn),
 .svc-search-pill .search,

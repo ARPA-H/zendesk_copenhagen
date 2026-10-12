@@ -148,7 +148,7 @@ A restrained palette: indigo and white carry almost everything, cyan marks the o
 
 **The Cyan Is Action Rule.** Cyan appears only on things that can be pressed. A static element that borrows it reads as interactive. ([ARPA-H/zendesk_onboarding_offboarding#41](https://github.com/ARPA-H/zendesk_onboarding_offboarding/pull/41) reached the same rule after review.)
 
-**The Feedback Only Rule.** Yellow, green and red mark warning, success and error messages. No badge, card or accent uses them.
+**The Feedback Only Rule.** Yellow, green and red mark warning, success and error messages. No badge, card or accent on the in-scope pages uses them; request status tags use pink, blue and grey, and the approvals module keeps its red new-comment divider until it is designed.
 
 **The No Raw Color Rule.** Components read alias tokens from `styles/_tokens.scss`. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.
 
@@ -204,10 +204,11 @@ The service catalog list, the item page and the request forms are React modules 
 - **Roles:** body text is indigo, subtle text is `#4a4d52`, links and focus are link blue, and form-control borders are `#6f747a` (hover `#07418f`).
 - **Buttons:** pills; primary is cyan with indigo text, the default is an indigo outline.
 - **Selection:** the active category in the catalog sidebar is the blue tint, as in the stylesheets.
+- **Status tags:** the request list uses the same accents as the stylesheets: open is pink, awaiting reply is blue, solved is grey.
 
 ### Navigation bar
 
-Full-bleed indigo, 71px tall, the reverse logo at 37px, white text. Ask AI is the only cyan pill. The user menu is a white 16px card. Below 769px the bar keeps the logo and a 44px menu button that opens a white panel.
+Full-bleed indigo, 71px tall, the reverse logo at 37px, then a thin divider and the Help Center name as the site title (shown when the Show Help Center name setting is on, truncated when long), white text. Ask AI is the only cyan pill. The user menu is a white 16px card. The full bar holds at 768px and wider, as the NEXUS checklist requires; below 768px it keeps the logo and a 44px menu button that opens a white panel.
 
 ### Hero and search
 

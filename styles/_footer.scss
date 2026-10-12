@@ -1,7 +1,9 @@
 /***** Footer *****/
-// NEXUS footer: an indigo bar with white text, matching the navigation bar.
-// Only the direct children of the inner row are recolored, so the language
-// menu keeps its own white-card styling.
+// Indigo bar with white text, matching the navigation bar. This is the color
+// pass only: the full NEXUS Solutions footer (logo, navigation row, divider,
+// centered auxiliary links, copyright) lands with the layout phase in
+// docs/design-plan.md. Only the direct children of the inner row are
+// recolored, so the language menu keeps its own white-card styling.
 .footer {
   margin-top: var(--space-8);
   padding: var(--space-4) 0;

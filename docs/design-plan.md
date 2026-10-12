@@ -70,7 +70,7 @@ decisions were made from the repository and the brief. Each is easy to reverse.
 | 0 | `init`, `critique`, `audit` | PRODUCT.md, a scored baseline critique ([23/40](design-critique-2026-10-12.md)) and audit ([10/20](design-audit-2026-10-12.md)) | Done |
 | 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
 | 2 | `typeset` | Poppins display and headings, Public Sans body, one type scale | Planned |
-| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm | Planned |
+| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the NEXUS header title separator and Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright) | Planned |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
 | 5 | `distill` | Remove dead and duplicated styles and markup, including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
@@ -110,7 +110,7 @@ styles, so the same pages and widths are compared before and after.
 
 | Phase | Measured result |
 | --- | --- |
-| 1 | Across the home, services, service item, category, article and search pages (12 page views): colors outside the NEXUS palette fell from 456 of 1,264 uses (36.1%) to 0 of 1,250; text pairs below WCAG AA contrast fell from 20 to 0; keyboard-focused controls with no visible ring fell from 10 to 0. Horizontal overflow and small touch targets are unchanged and belong to phases 3 and 7. |
+| 1 | Across the home, services, service item, category, article and search pages (12 page views): colors outside the NEXUS palette fell from 456 of 1,264 uses (36.1%) to 0 of 1,262; text pairs below WCAG AA contrast fell from 20 to 0; keyboard-focused controls with no visible ring fell from 10 to 0. Horizontal overflow and small touch targets are unchanged and belong to phases 3 and 7. |
 
 ## Open decisions
 
@@ -118,5 +118,7 @@ styles, so the same pages and widths are compared before and after.
   follow-up that installs USWDS core, which would also bring the `usa-banner`
   that the skill requires on `.gov` sites.
 - Whether a `.gov` banner is required.
+- Whether to rename the Help Center so the header reads "ARPA-H | Service Desk": the site title shows the Help Center name, and a name that starts with ARPA-H repeats the logo (the offline render uses "ARPA-H Service Desk"). The name is a Zendesk Admin Center setting; the theme only displays it, and the Show Help Center name setting turns the title off.
+- Whether the footer's mandatory auxiliary links, which point at public HHS and arpa-h.gov policy pages, belong on an internal portal.
 - Whether Knowledge needs its own entry point on the home page.
 - Moving the hard-coded OS tile IDs in `category_page.hbs` into settings.

@@ -33,6 +33,16 @@ export const NEXUS_COLORS = {
 
   "violet-600": "#4535a7",
 
+  "pink-50": "#feeff6",
+  "pink-100": "#fde0ed",
+  "pink-200": "#fdd0e5",
+  "pink-400": "#fd82ba",
+  "pink-neutral": "#fd4497",
+  "pink-600": "#c93678",
+  "pink-800": "#6f1e43",
+  "pink-900": "#4a142d",
+  "pink-1000": "#250a16",
+
   "green-50": "#dee6d7",
   "green-200": "#9eb487",
   "green-300": "#7d9b5e",
@@ -76,7 +86,7 @@ type Scale = Record<
  * Where NEXUS has no step in between, neighboring shades share a color.
  */
 export const NEXUS_PALETTE: Record<
-  "grey" | "blue" | "green" | "yellow" | "red",
+  "grey" | "blue" | "pink" | "green" | "yellow" | "red",
   Scale
 > = {
   grey: {
@@ -106,6 +116,20 @@ export const NEXUS_PALETTE: Record<
     1000: c["blue-1000"],
     1100: c["blue-1000"],
     1200: c["blue-1000"],
+  },
+  pink: {
+    100: c["pink-50"],
+    200: c["pink-100"],
+    300: c["pink-200"],
+    400: c["pink-400"],
+    500: c["pink-neutral"],
+    600: c["pink-600"],
+    700: c["pink-600"],
+    800: c["pink-800"],
+    900: c["pink-900"],
+    1000: c["pink-900"],
+    1100: c["pink-1000"],
+    1200: c["pink-1000"],
   },
   green: {
     100: c["green-50"],

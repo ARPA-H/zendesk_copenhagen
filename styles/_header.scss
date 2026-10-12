@@ -1,6 +1,14 @@
 /***** Header *****/
 $header-height: 71px;
 
+// NEXUS keeps the full bar (title and actions) at 768px and wider; the compact
+// bar with the menu button starts below it.
+@mixin header-compact {
+  @media (max-width: #{$tablet-width - 1px}) {
+    @content;
+  }
+}
+
 // NEXUS navigation bar: a full-bleed indigo bar whose content lines up with
 // the page container (5% side padding on small screens, the container width
 // above that). White text, the reverse logo, and a cyan pill for the primary
@@ -24,10 +32,13 @@ $header-height: 71px;
 .logo {
   display: flex;
   align-items: center;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
 
   a {
     display: inline-flex;
+    align-items: center;
+    min-width: 0;
     border-radius: var(--radius-sm);
 
     &:hover,
@@ -43,9 +54,25 @@ $header-height: 71px;
     width: auto;
   }
 
-  // The brand name repeats the logo and can be long enough to overflow the bar.
-  span {
-    display: none;
+  // NEXUS site title: a thin divider, then the Help Center name. The name is
+  // customer-defined, so it truncates instead of pushing the actions off the
+  // bar, and the compact bar keeps the logo alone.
+  .site-title {
+    margin-inline-start: var(--space-2);
+    padding-inline-start: var(--space-2);
+    border-inline-start: 1px solid var(--on-dark-border-strong);
+    color: var(--color-white);
+    font-family: var(--font-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @include header-compact {
+      display: none;
+    }
   }
 }
 
@@ -93,7 +120,7 @@ $header-height: 71px;
   gap: var(--space-2);
   flex: 0 0 auto;
 
-  @include mobile {
+  @include header-compact {
     display: none;
   }
 }
@@ -157,7 +184,7 @@ $header-height: 71px;
 .nav-wrapper-mobile {
   display: none;
 
-  @include mobile {
+  @include header-compact {
     display: flex;
     align-items: center;
   }

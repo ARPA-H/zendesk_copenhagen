@@ -1,6 +1,8 @@
 # Design critique: baseline, 2026-10-12
 
-Method: dual-agent (A: `f9ad6c95` design review, B: `f1e67a91` detector and browser evidence). Assessment A saw only the frozen screenshots, `PRODUCT.md` and the source, never the detector output. The renders are the theme's real templates with Zendesk helpers stubbed and the API mocked, so content is synthetic and Zendesk's instant-search web component is not evaluated.
+Method: two independent assessments. Assessment A was a design review that saw only the frozen screenshots, `PRODUCT.md` and the source, never the detector output. Assessment B ran the Impeccable detector and browser measurements. The renders are the theme's real templates with Zendesk helpers stubbed and the API mocked, so content is synthetic and Zendesk's instant-search web component is not evaluated.
+
+Evidence: the renders and measurements come from an offline harness that is not part of this repository. Handlebars 4.7.10 renders the real `templates/*.hbs` with stubbed Zendesk helpers and mocked API responses, Dart Sass 1.66.1 (the version `rollup-plugin-sass` resolves) compiles `styles/index.scss`, and puppeteer 25.13.0 drives headless Chrome with every non-local request blocked, a frozen clock and motion disabled, at 1440, 768 and 390 pixels wide. The harness re-implements Zendesk's helpers and is single-author scratch tooling, so it is deliberately not added to the theme repository; the baseline and after screenshots are attached to the pull request instead, and the harness can be contributed in a follow-up if the owner wants it maintained.
 
 Scope: Service Catalog (home, service item) and Knowledge (category, section, article, search results) plus the shared header and footer, at 1440, 768 and 390 pixels wide.
 
