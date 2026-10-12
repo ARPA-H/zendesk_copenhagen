@@ -303,7 +303,7 @@ import{r as e,p as t,aK as n,q as s,T as r,aL as a,j as o,aM as i,aN as l,K as c
   color: ${({theme:e})=>s({theme:e,variable:"foreground.default"})};
 
   &:hover {
-    border-color: ${e=>e.theme.colors.primaryHue};
+    border-color: ${({theme:e})=>s({theme:e,variable:"border.primaryEmphasis"})};
   }
 
   &:hover,

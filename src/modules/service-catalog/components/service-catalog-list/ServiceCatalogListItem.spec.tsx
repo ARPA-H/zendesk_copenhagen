@@ -104,7 +104,7 @@ describe("ServiceCatalogListItem", () => {
       delete (window as unknown as { __xss?: () => void }).__xss;
     });
 
-    it("should use primaryHue as card border color on hover", async () => {
+    it("should use the primary emphasis border color on hover", async () => {
       render(
         <ServiceCatalogListItem
           serviceItem={mockServiceItem}
@@ -127,10 +127,18 @@ describe("ServiceCatalogListItem", () => {
         .map((style) => style.textContent)
         .join("\n");
 
+      // The hover color must be a resolved Garden color: interpolating the
+      // primaryHue name directly produced the CSS keyword "blue".
+      const hoverBorderColor = getColor({
+        theme: testTheme,
+        variable: "border.primaryEmphasis",
+      });
+
       expect(styleTagsText).toMatch(
-        new RegExp(
-          `:hover\\s*\\{[^}]*border-color:\\s*${testTheme.colors.primaryHue}`
-        )
+        new RegExp(`:hover\\s*\\{[^}]*border-color:\\s*${hoverBorderColor}`)
+      );
+      expect(styleTagsText).not.toMatch(
+        /:hover\s*\{[^}]*border-color:\s*blue\s*[;}]/
       );
     });
   });

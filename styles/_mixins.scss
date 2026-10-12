@@ -42,9 +42,12 @@
   word-wrap: break-word; //IE/Edge compatibility
 }
 
+// The NEXUS focus ring. The transparent outline is repainted in a system color
+// in forced-colors mode, where box-shadow is dropped.
 @mixin focus-ring {
-  outline: 0;
-  box-shadow: 0 0 0 3px var(--color-brand-primary);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
 }
 
 @mixin standalone-link {

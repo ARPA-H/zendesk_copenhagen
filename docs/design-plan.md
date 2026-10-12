@@ -120,5 +120,6 @@ styles, so the same pages and widths are compared before and after.
 - Whether a `.gov` banner is required.
 - Whether to rename the Help Center so the header reads "ARPA-H | Service Desk": the site title shows the Help Center name, and a name that starts with ARPA-H repeats the logo (the offline render uses "ARPA-H Service Desk"). The name is a Zendesk Admin Center setting; the theme only displays it, and the Show Help Center name setting turns the title off.
 - Whether the footer's mandatory auxiliary links, which point at public HHS and arpa-h.gov policy pages, belong on an internal portal.
+- Whether pages without their own search (requests, profiles) should get a search entry point: the base theme hid the header search on every page (`_svc-tokens.scss` at the base commit), so this work removed dead markup rather than a visible control.
 - Whether Knowledge needs its own entry point on the home page.
 - Moving the hard-coded OS tile IDs in `category_page.hbs` into settings.

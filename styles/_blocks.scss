@@ -89,8 +89,7 @@
     }
 
     &:focus {
-      outline: 0;
-      box-shadow: 0 0 0 3px var(--color-brand-primary);
+      @include focus-ring;
       text-decoration: none;
     }
   }

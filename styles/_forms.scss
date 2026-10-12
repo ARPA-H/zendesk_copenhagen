@@ -20,14 +20,14 @@
   padding: 10px;
   width: 100%;
 
-  &:focus { border: 1px solid var(--color-brand-primary); }
+  &:focus { border: 1px solid var(--color-focus-ring); }
 }
 
 .form-field input[type="text"] {
   border: 1px solid var(--color-ui-60);
   border-radius: 4px;
 
-  &:focus { border: 1px solid var(--color-brand-primary); }
+  &:focus { border: 1px solid var(--color-focus-ring); }
 }
 
 .form-field input[type="checkbox"] {
@@ -47,7 +47,7 @@
   vertical-align: middle;
 
   &:focus {
-    border: 1px solid var(--color-brand-primary);
+    border: 1px solid var(--color-focus-ring);
     text-decoration: none;
   }
 }
@@ -60,7 +60,7 @@
 
 .form-field .hc-multiselect-toggle:focus {
   outline: none;
-  border: 1px solid var(--color-brand-primary);
+  border: 1px solid var(--color-focus-ring);
   text-decoration: none;
 }
 

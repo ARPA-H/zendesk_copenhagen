@@ -21,7 +21,8 @@ const ItemLink = styled.a`
   color: ${({ theme }) => getColor({ theme, variable: "foreground.default" })};
 
   &:hover {
-    border-color: ${(props) => props.theme.colors.primaryHue};
+    border-color: ${({ theme }) =>
+      getColor({ theme, variable: "border.primaryEmphasis" })};
   }
 
   &:hover,

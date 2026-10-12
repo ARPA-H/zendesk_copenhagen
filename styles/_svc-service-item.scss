@@ -112,7 +112,7 @@ body { background: var(--color-white); }
   font-size: 13px; line-height: 1.5; color: var(--color-ui-60); background: var(--color-white);
   border: 1px dashed var(--color-ui-20); border-radius: 16px; padding: 12px;
 }
-.svc-article-error { color: var(--color-warning-dark); background: var(--color-warning-light); border-color: var(--color-warning); }
+.svc-article-error { color: var(--color-error-dark); background: var(--color-error-light); border-color: var(--color-error); }
 .svc-article-item {
   display: block; text-decoration: none; color: var(--type-body); background: var(--color-white);
   border: 1px solid var(--color-ui-10); border-radius: 16px; padding: 12px;
