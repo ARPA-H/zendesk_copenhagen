@@ -67,8 +67,8 @@ decisions were made from the repository and the brief. Each is easy to reverse.
 
 | Phase | Command | What changes | Status |
 | --- | --- | --- | --- |
-| 0 | `init`, `document`, `critique`, `audit` | PRODUCT.md, DESIGN.md, a scored baseline critique and audit | In progress: PRODUCT.md and this plan are in; DESIGN.md, the critique and the audit follow once the offline render checks exist |
-| 1 | `colorize` | Token layer, NEXUS color rules, indigo header, pill buttons, focus ring | Planned |
+| 0 | `init`, `critique`, `audit` | PRODUCT.md, a scored baseline critique ([23/40](design-critique-2026-10-12.md)) and audit ([10/20](design-audit-2026-10-12.md)) | Done |
+| 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring; DESIGN.md is written from the built system | Planned |
 | 2 | `typeset` | Poppins display and headings, Public Sans body, one type scale | Planned |
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm | Planned |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
