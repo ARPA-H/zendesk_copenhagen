@@ -82,10 +82,12 @@ Knowledge pages.
 - **Locales.** Upstream ships about forty locales and RTL support; the fork's
   custom templates are mostly English (a known gap). New CSS keeps RTL working
   by using logical properties.
-- **Rhythm.** Visits are short and task-driven. The shared live-search widget
-  (`src/svcSearch.js`) caches the catalog's item list in `sessionStorage` for
-  30 minutes; the catalog page itself fetches categories on load and items for
-  each search, filter, sort and page.
+- **Rhythm.** Visits are short and task-driven. The home hero uses Zendesk's
+  native instant search; the catalog page fetches categories on load and items
+  for each search, filter, sort and page. (`src/svcSearch.js` still contains a
+  cache-backed live-search widget, `initSvcSearch`, that no template calls;
+  only its `svcSafeHref` helper is used. It is a removal candidate for the
+  distill phase.)
 
 ## Capabilities and Constraints
 
@@ -111,8 +113,10 @@ Knowledge pages.
 - Only public, documented Zendesk REST APIs.
 - `category_page.hbs` hard-codes one category ID and three section IDs for the
   OS tiles; moving them to settings is a known follow-up, not part of this work.
-- Modules under `src/modules` import only from `shared`, `ticket-fields`,
-  `flash-notifications` and `test`.
+- ESLint (`.eslintrc.js`) keeps the `approval-requests`, `new-request-form` and
+  `service-catalog` modules from importing any other feature module; they may
+  import `shared`, `test`, `ticket-fields` and `flash-notifications`, which
+  import only each other.
 
 ### Explicitly undecided (do not invent)
 

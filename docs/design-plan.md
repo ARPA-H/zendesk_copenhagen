@@ -60,7 +60,7 @@ decisions were made from the repository and the brief. Each is easy to reverse.
 | 2 | `typeset` | Poppins display and headings, Public Sans body, one type scale | Planned |
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm | Planned |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
-| 5 | `distill` | Remove dead and duplicated styles and markup | Planned |
+| 5 | `distill` | Remove dead and duplicated styles and markup, including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states) | Planned |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
