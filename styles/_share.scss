@@ -15,10 +15,10 @@
 }
 
 .share a {
-  color: $secondary-text-color;
+  color: var(--type-subheading);
   &:hover {
     text-decoration: none;
-    color: $brand_color;
+    color: var(--color-brand-primary);
   }
   
   & svg {

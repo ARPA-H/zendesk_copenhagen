@@ -9,7 +9,7 @@
 
   th,
   th a {
-    color: $secondary-text-color;
+    color: var(--type-subheading);
     font-size: $font-size-small;
     text-align: left;
 
@@ -19,7 +19,7 @@
   tr {
     @include tablet { display: table-row; }
 
-    border-bottom: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
     display: block;
     padding: 20px 0;
   }

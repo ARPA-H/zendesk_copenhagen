@@ -78,12 +78,12 @@ export function RequestsTableCell({
   };
 
   const pending: StatusColorLabel = {
-    color: "#038153",
+    color: "green",
     label: t("guide-requests-app.statusPending", "Awaiting reply"),
   };
 
   const solved: StatusColorLabel = {
-    color: "#68737d",
+    color: "grey",
     label: t("guide-requests-app.statusSolved", "Solved"),
   };
 

@@ -7,6 +7,9 @@ coverage/
 .idea/
 .vscode/settings.json
 
+# Impeccable design hook cache (design.json is kept)
+.impeccable/hook.cache.json
+
 # yarn
 .yarn/*
 !.yarn/cache

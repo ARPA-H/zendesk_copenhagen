@@ -108,14 +108,14 @@
   }
 
   &-comment-count {
-    color: $secondary-text-color;
+    color: var(--type-subheading);
 
     &:hover {
       text-decoration: none;
     }
 
     .icon-comments {
-      color: $brand_color;
+      color: var(--color-brand-primary);
       display: inline-block;
       width: 18px;
       height: 18px;
@@ -134,7 +134,7 @@
       [dir="rtl"] & { padding: 0 50px 0 0; }
     }
 
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     flex: 1;
     padding: 30px 0;
     text-align: center;

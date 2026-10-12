@@ -1,145 +1,202 @@
 /***** Header *****/
 $header-height: 71px;
 
+// NEXUS navigation bar: a full-bleed indigo bar whose content lines up with
+// the page container (5% side padding on small screens, the container width
+// above that). White text, the reverse logo, and a cyan pill for the primary
+// action (Ask AI). Dark-surface focus ring, because the standard blue ring only
+// reaches 2.4:1 on indigo.
 .header {
-  @include max-width-container;
   position: relative;
-  align-items: center;
-  background-color: #fff;
   display: flex;
-  height: $header-height;
+  align-items: center;
   justify-content: space-between;
-}
+  height: $header-height;
+  padding-inline: max(5%, calc((100% - #{$max-width-container}) / 2));
+  background-color: var(--color-brand-primary);
+  color: var(--color-white);
 
-.search-wrapper {
-  flex: 1 1 auto;
-  max-width: 600px;
-}
-
-.logo img {
-  max-height: 37px;
-  vertical-align: middle;
-}
-
-.logo span {
-  margin: 0 10px;
-  color: $brand_color;
-}
-
-.logo a {
-  display: inline-block;
-}
-
-.logo a:hover, .logo a:focus, .logo a:active {
-  text-decoration: none;
-}
-
-.user-nav {
-  @include tablet { position: relative; }
-  display: inline-block;
-  position: absolute;
-  white-space: nowrap;
-
-  &[aria-expanded="true"] {
-    background-color: #fff;
-    box-shadow: 0 0 4px 0 rgba(0, 0, 0, .15), 0 4px 10px 0 rgba(0, 0, 0, .1);
-    border: solid 1px #ddd;
-    right: 0;
-    left: 0;
-    top: $header-height;
-    z-index: 1;
-
-    > a {
-      display: block;
-      margin: 20px;
-    }
-
-    > .user-nav-list {
-      li {
-        display: block;
-      }
-
-      a {
-        display: block;
-        margin: 20px;
-      }
-    }
+  :focus-visible {
+    box-shadow: var(--shadow-focus-on-dark);
   }
 }
 
-.user-nav-list {
-  display: block;
-  list-style: none;
-
-  > li {
-    display: inline-block;
-  }
-}
-
-.nav-wrapper-desktop {
-  @include mobile { display: none; }
-  @include tablet { display: none; }
-  @include desktop { display: inline-block; }
+.logo {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
 
   a {
-    @include tablet {
-      display: inline-block;
-    }
-
-    border: 0;
-    color: $link_color;
-    display: none;
-    font-size: 14px;
-    padding: 0 20px 0 0;
-    width: auto;
-
-    [dir="rtl"] & { padding: 0 0 0 20px;}
+    display: inline-flex;
+    border-radius: var(--radius-sm);
 
     &:hover,
     &:focus,
     &:active {
-      background-color: transparent;
-      color: $link_color;
+      text-decoration: none;
+    }
+  }
+
+  img {
+    display: block;
+    height: 37px;
+    width: auto;
+  }
+
+  // The brand name repeats the logo and can be long enough to overflow the bar.
+  span {
+    display: none;
+  }
+}
+
+/***** Primary action: Ask AI *****/
+.ask-ai {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 40px;
+  padding: var(--space-1) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-round);
+  background-color: var(--color-brand-secondary);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-3);
+  white-space: nowrap;
+
+  &,
+  &:visited {
+    color: var(--color-brand-primary);
+  }
+
+  &:hover,
+  &:focus,
+  &:active {
+    background-image: linear-gradient(
+      var(--color-hover-light-10),
+      var(--color-hover-light-10)
+    );
+    color: var(--color-brand-primary);
+    text-decoration: none;
+  }
+
+  .ask-ai-icon {
+    flex-shrink: 0;
+  }
+}
+
+/***** Desktop navigation *****/
+.nav-wrapper-desktop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+.user-nav {
+  white-space: nowrap;
+}
+
+.user-nav-list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-2xs);
+
+    &,
+    &:visited {
+      color: var(--color-white);
+    }
+
+    &:hover,
+    &:focus,
+    &:active {
+      color: var(--color-white);
       text-decoration: underline;
     }
   }
 }
 
+.user-info {
+  display: inline-block;
+
+  > button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 40px;
+    padding: var(--space-05) var(--space-1);
+    border: 0;
+    border-radius: var(--radius-round);
+    color: var(--color-white);
+    font-size: var(--font-size-2xs);
+    white-space: nowrap;
+
+    &:hover,
+    &:focus {
+      background-color: var(--color-hover-dark-15);
+      color: var(--color-white);
+    }
+  }
+}
+
+/***** Mobile navigation *****/
 .nav-wrapper-mobile {
-  @include desktop { display: none; }
+  display: none;
+
+  @include mobile {
+    display: flex;
+    align-items: center;
+  }
 
   .menu-button-mobile {
-    background: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 var(--space-1);
     border: 0;
-    width: auto;
-    min-width: 71px;
+    border-radius: var(--radius-round);
+    background: none;
+    color: var(--color-white);
     cursor: pointer;
 
-    .icon-menu {
-      padding: 7px;
-      vertical-align: middle;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
+    &:hover,
+    &[aria-expanded="true"] {
+      background-color: var(--color-hover-dark-15);
     }
 
-    &[aria-expanded="true"] {
-      .icon-menu {
-        background: #f3f3f3;
-      }
+    .icon-menu {
+      width: 24px;
+      height: 24px;
     }
   }
 
   .menu-list-mobile {
     position: absolute;
-    background-color: #fff;
-    box-shadow: 0 10px 10px 0 rgba(0, 0, 0, .15);
-    border-top: solid 1px #ddd;
-    border-bottom: solid 1px #ddd;
-    right: 0;
-    left: 0;
-    top: $header-height;
-    z-index: 2;
+    top: calc(100% + var(--space-05));
+    inset-inline: var(--space-105);
+    z-index: 100;
+    padding: var(--space-1);
+    border: 1px solid var(--surface-stroke);
+    border-radius: var(--radius-lg);
+    background-color: var(--color-white);
+    box-shadow: var(--shadow-3);
+    color: var(--type-body);
 
     &[aria-expanded="false"] {
       display: none;
@@ -148,96 +205,101 @@ $header-height: 71px;
     &[aria-expanded="true"] {
       display: block;
     }
+
+    :focus-visible {
+      box-shadow: var(--shadow-focus);
+    }
   }
 
   .menu-list-mobile-items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
     .item {
-      margin: 4px 0;
+      margin: 0;
     }
 
-    li:empty:not(.nav-divider){
+    li:empty:not(.nav-divider) {
       display: none;
     }
 
     .nav-divider {
-      border-bottom: 0.1px solid #ddd;
+      height: 1px;
+      margin: var(--space-05);
       padding: 0;
+      background-color: var(--surface-stroke);
 
       &:last-child {
         display: none;
       }
     }
 
-    button {
-      background: none;
-      border: none;
-      padding: 8px 24px;
-
+    button,
+    a {
+      display: block;
       width: 100%;
-      height: 100%;
-      color: $text_color;
-      cursor: pointer;
+      min-height: 44px;
+      padding: var(--space-105) var(--space-2);
+      border: 0;
+      border-radius: var(--radius-md);
+      background: none;
+      color: var(--type-body);
+      font-size: var(--font-size-2xs);
       text-align: start;
 
-      &:active, &:focus, &:hover {
-        background-color: #f3f3f3;
-        text-decoration: underline;
+      &:active,
+      &:focus,
+      &:hover {
+        background-color: var(--color-hover-light-5);
+        text-decoration: none;
       }
     }
 
-    a {
-      display: block;
-      padding: 8px 24px;
-      width: 100%;
-      height: 100%;
-      color: $text_color;
-
-      &:active, &:focus, &:hover {
-        background-color: #f3f3f3;
-      }
+    button {
+      cursor: pointer;
     }
 
     .my-profile {
       display: flex;
-      line-height: 1.5;
+      align-items: center;
+      gap: var(--space-1);
+      line-height: var(--line-height-3);
 
       .my-profile-tooltip {
-        font-size: 12px;
-        color: #68737D;
+        font-size: var(--font-size-3xs);
+        color: var(--type-subheading);
       }
     }
 
     .menu-profile-avatar {
-      height: 20px;
-      width: 20px;
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
-      display: inline-block;
-      margin-right: 8px;
-      margin-top: 1px;
-
-      [dir="rtl"] & {
-        margin-right: 0;
-        margin-left: 8px;
-      }
     }
+  }
+
+  .ask-ai {
+    width: auto;
+    margin: var(--space-05) var(--space-2) var(--space-1);
   }
 }
 
 .skip-navigation {
   align-items: center;
-  background-color: black;
-  color: white;
+  background-color: var(--color-black);
+  color: var(--color-white);
   display: flex;
-  font-size: 14px;
+  font-size: var(--font-size-2xs);
   justify-content: center;
   left: -999px;
-  margin: 20px;
-  padding: 20px;
+  margin: var(--space-205);
+  padding: var(--space-205);
   overflow: hidden;
   position: absolute;
   top: auto;
   z-index: -999;
-
 
   [dir="rtl"] & {
     left: initial;
@@ -253,117 +315,14 @@ $header-height: 71px;
     top: auto;
     z-index: 999;
 
-
-  [dir="rtl"] & {
-    left: initial;
-    right: auto;
-  }
+    [dir="rtl"] & {
+      left: initial;
+      right: auto;
+    }
   }
 }
 
 // Disable the skip-navigation link when modals are open
 #zd-modal-container ~ .skip-navigation {
   display: none;
-}
-
-// Garden-style primary "Ask AI" button used in the header navigation.
-// Mirrors `<Button isPrimary><Button.StartIcon><SparkleIcon /></Button.StartIcon> Ask AI</Button>`.
-// Uses the theme's `link_color` / `hover_link_color` settings so the button
-// stays coherent with link styling even when admins customize the theme.
-.ask-ai {
-  align-items: center;
-  background-color: $link_color;
-  border: 1px solid $link_color;
-  border-radius: 4px;
-  color: $brand_text_color;
-  display: inline-flex;
-  font-size: 14px;
-  font-weight: $font-weight-semibold;
-  gap: 6px;
-  line-height: 1.4286;
-  padding: 6px 14px;
-
-  &:visited {
-    color: $brand_text_color;
-  }
-
-  .ask-ai-icon {
-    flex-shrink: 0;
-  }
-}
-
-.nav-wrapper-desktop .ask-ai {
-  margin-inline-end: 16px;
-  padding: 6px 14px;
-
-  &,
-  &:visited {
-    color: $brand_text_color;
-  }
-
-  &:hover,
-  &:focus,
-  &:active {
-    background-color: $hover_link_color;
-    border-color: $hover_link_color;
-    color: $brand_text_color;
-    text-decoration: none;
-  }
-}
-
-.nav-wrapper-mobile .ask-ai {
-  margin: 4px 24px;
-  padding: 6px 14px;
-  width: auto;
-  height: auto;
-
-  &,
-  &:visited {
-    color: $brand_text_color;
-  }
-
-  &:hover,
-  &:focus,
-  &:active {
-    background-color: $hover_link_color;
-    border-color: $hover_link_color;
-    color: $brand_text_color;
-    text-decoration: none;
-  }
-}
-
-/***** Header "Submit a request" nav button *****/
-
-.nav-wrapper-desktop .submit-a-request {
-  // Was hardcoded to #0957BE; matches $brand_color like the rest of this
-  // rule so the border stays in sync if brand_color is changed in Theming
-  // Center settings.
-  border: 1px solid $brand_color;
-  border-radius: 8px;
-  box-sizing: border-box;
-  color: $brand_color;
-  display: flex;
-  flex: 1 0 340px;
-  max-width: 100%;
-  text-align: center;
-  padding: 12px 24px;
-  margin-right: 12px;
-
-  &:hover,
-  &:focus,
-  &:active {
-    background-color: $brand_color;
-    color: $brand_text_color;
-    text-decoration: none;
-  }
-}
-
-// Unscoped (not just .nav-wrapper-desktop) because this same 'submit_a_request'
-// link is also rendered in .nav-wrapper-mobile (templates/header.hbs), which
-// has no focus/active rule of its own.
-.submit-a-request:focus,
-.submit-a-request:active {
-  background-color: $brand_color;
-  color: $brand_text_color;
-  text-decoration: none;
 }

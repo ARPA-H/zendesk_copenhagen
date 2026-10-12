@@ -10,7 +10,7 @@
 
   li {
     display: inline-block;
-    color: $secondary-text-color;
+    color: var(--type-subheading);
     font-size: $font-size-small;
     max-width: 450px;
     overflow: hidden;
@@ -23,7 +23,7 @@
     }
 
     a:visited {
-      color: $link_color;
+      color: var(--color-link);
     }
   }
 }

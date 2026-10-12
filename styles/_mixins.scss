@@ -44,22 +44,22 @@
 
 @mixin focus-ring {
   outline: 0;
-  box-shadow: 0 0 0 3px $brand_color;
+  box-shadow: 0 0 0 3px var(--color-brand-primary);
 }
 
 @mixin standalone-link {
   a {
-    color: $link_color;
+    color: var(--color-link);
     text-decoration: underline;
 
     &:visited {
-      color: $visited_link_color;
+      color: var(--color-link-visited);
     }
 
     &:hover,
     &:active,
     &:focus {
-      color: $hover_link_color;
+      color: var(--color-link-hover);
     }
   }
 }
@@ -118,7 +118,7 @@
     padding: 10px 0;
     font-size: 12px;
     text-align: center;
-    background-color: $secondary-shade;
+    background-color: var(--color-ui-10);
   }
 
   ul,
@@ -150,16 +150,16 @@
   }
 
   :not(pre) > code {
-    background: $primary-shade;
-    border: 1px solid $low-contrast-border-color;
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-stroke);
     border-radius: 3px;
     padding: 0 5px;
     margin: 0 2px;
   }
 
   pre {
-    background: $primary-shade;
-    border: 1px solid $low-contrast-border-color;
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-stroke);
     border-radius: 3px;
     padding: 10px 15px;
     overflow: auto;
@@ -168,8 +168,8 @@
   }
 
   blockquote {
-    border-left: 1px solid $low-contrast-border-color;
-    color: $secondary-text-color;
+    border-left: 1px solid var(--surface-stroke);
+    color: var(--type-subheading);
     font-style: italic;
     padding: 0 15px;
   }

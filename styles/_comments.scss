@@ -1,7 +1,7 @@
 /***** Comments *****/
 /* Styles comments inside articles, posts and requests */
 .comment {
-  border-bottom: 1px solid $low-contrast-border-color;
+  border-bottom: 1px solid var(--surface-stroke);
   padding: 20px 0;
 
   &-heading {
@@ -12,15 +12,15 @@
   }
 
   &-overview {
-    border-bottom: 1px solid $low-contrast-border-color;
-    border-top: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
+    border-top: 1px solid var(--surface-stroke);
     padding: 20px 0;
 
     p { margin-top: 0; }
   }
 
   &-callout {
-    color: $secondary-text-color;
+    color: var(--type-subheading);
     display: inline-block;
     font-size: $font-size-small;
     margin-bottom: 0;
@@ -34,7 +34,7 @@
     float: right;
 
     .dropdown-toggle {
-      color: $secondary-text-color;
+      color: var(--type-subheading);
       font-size: $font-size-small;
     }
 
@@ -50,7 +50,7 @@
     &.comment-official {
       @include tablet { padding-top: 20px; }
 
-      border: 1px solid $brand_color;
+      border: 1px solid var(--color-brand-primary);
       padding: 40px 20px 20px; // 20 + 20 of official commment badge
     }
   }
@@ -144,7 +144,7 @@
   &-attachments {
     margin-top: 10px;
 
-    a { color: $brand_color; }
+    a { color: var(--color-brand-primary); }
   }
 
   &-body {

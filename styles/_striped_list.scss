@@ -10,7 +10,7 @@
     }
 
     align-items: flex-start;
-    border-bottom: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -22,7 +22,7 @@
   }
 
   &-title {
-    color: $link_color;
+    color: var(--color-link);
     margin-bottom: 10px;
     margin-right: 5px;
 
@@ -32,7 +32,7 @@
       text-decoration: underline;
     }
 
-    &:visited { color: $visited_link_color; }
+    &:visited { color: var(--color-link-visited); }
   }
 
   .meta-group {
@@ -46,7 +46,7 @@
       justify-content: space-around;
     }
 
-    color: $secondary-text-color;
+    color: var(--type-subheading);
     font-size: $font-size-small;
     justify-content: flex-start;
     text-transform: capitalize;
@@ -65,7 +65,7 @@
 
   &-number {
     @include tablet {
-      color: $text_color;
+      color: var(--type-body);
       display: block;
     }
     text-align: center;

@@ -68,7 +68,7 @@ decisions were made from the repository and the brief. Each is easy to reverse.
 | Phase | Command | What changes | Status |
 | --- | --- | --- | --- |
 | 0 | `init`, `critique`, `audit` | PRODUCT.md, a scored baseline critique ([23/40](design-critique-2026-10-12.md)) and audit ([10/20](design-audit-2026-10-12.md)) | Done |
-| 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring; DESIGN.md is written from the built system | Planned |
+| 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
 | 2 | `typeset` | Poppins display and headings, Public Sans body, one type scale | Planned |
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm | Planned |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
@@ -100,6 +100,17 @@ Zendesk helpers and mocked API responses, then screenshotted in headless
 Chrome with every non-local request blocked. Instant search is a Zendesk web
 component and is not emulated; it still needs a look in the sandbox after the
 pull request is merged.
+
+## Results by phase
+
+The numbers come from an offline render-and-measure harness that lives outside
+this repository (it reads the theme and never contacts Zendesk). It loads each
+page in headless Chrome at 1440 and 390 pixels wide and measures computed
+styles, so the same pages and widths are compared before and after.
+
+| Phase | Measured result |
+| --- | --- |
+| 1 | Across the home, services, service item, category, article and search pages (12 page views): colors outside the NEXUS palette fell from 456 of 1,264 uses (36.1%) to 0 of 1,250; text pairs below WCAG AA contrast fell from 20 to 0; keyboard-focused controls with no visible ring fell from 10 to 0. Horizontal overflow and small touch targets are unchanged and belong to phases 3 and 7. |
 
 ## Open decisions
 

@@ -18,7 +18,7 @@
   }
 
   &-sidebar {
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     flex: 1 0 auto;
     margin-bottom: 20px;
     padding: 0;
@@ -33,11 +33,11 @@
       border-radius: 4px;
       padding: 10px 36px;
       margin-bottom: 4px;
-      color: $text_color;
+      color: var(--type-body);
 
       &:hover,
       &.current {
-        background-color: #e9ebed;
+        background-color: var(--color-ui-10);
         text-decoration: none;
       }
     }
@@ -53,7 +53,7 @@
       flex-grow: 0;
 
       .content-tag {
-        background: #E9EBED;
+        background: var(--color-ui-10);
         border-radius: 4px;
         padding: 4px 12px;
         text-decoration: none;
@@ -65,14 +65,14 @@
           line-height: 24px;
           text-align: center;
           letter-spacing: -0.000427656px;
-          color: #49545C;
+          color: var(--color-ui-70);
           flex-grow: 0;
           vertical-align: middle;
           display: inline-block;
         }
 
         .close-icon {
-          color: #555555;
+          color: var(--color-ui-70);
           vertical-align: middle;
           display: inline-block;
         }
@@ -95,7 +95,7 @@
     }
 
     .multibrand-filter-list .doc-count {
-      color: $field-text-color;
+      color: var(--type-subheading);
     }
 
     .see-all-filters {
@@ -104,7 +104,7 @@
       cursor: pointer;
       display: block;
       padding: 10px;
-      color: $link_color;
+      color: var(--color-link);
 
       &[aria-hidden="true"] {
         display: none;
@@ -131,7 +131,7 @@
     > li {
       padding: 20px 0;
       &:first-child {
-        border-top: 1px solid $low-contrast-border-color;
+        border-top: 1px solid var(--surface-stroke);
       }
     }
   }
@@ -143,7 +143,7 @@
     padding-top: 4rem;
 
     .headline {
-      color: #2F3941;
+      color: var(--type-body);
       font-weight: 400;
       font-size: 18px;
       line-height: 24px;
@@ -151,17 +151,17 @@
     }
 
     .action-prompt {
-      color: #68737D;
+      color: var(--color-ui-60);
       font-weight: 400;
       font-size: 14px;
       line-height: 20px;
       letter-spacing: -0.154px;
 
       a {
-        color: $link_color;
+        color: var(--color-link);
 
         &:visited {
-          color: $link_color;
+          color: var(--color-link);
         }
       }
     }
@@ -182,11 +182,11 @@
 
   &-votes,
   &-meta-count {
-    color: $secondary-text-color;
+    color: var(--type-subheading);
     font-size: $font-size-small;
 
     &-icon {
-      color: $brand_color;
+      color: var(--color-brand-primary);
       vertical-align: middle;
       width: 13px;
       height: 13px;
@@ -202,7 +202,7 @@
   }
 
   &-meta-container {
-    color: #666;
+    color: var(--color-ui-60);
     display: flex;
     flex-direction: column;
 

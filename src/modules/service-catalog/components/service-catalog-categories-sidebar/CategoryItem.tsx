@@ -43,21 +43,22 @@ const StyledSidebarItem = styled.div<{
   cursor: pointer;
   background-color: ${(props) =>
     props.$active
-      ? `${getColor({ theme: props.theme, hue: "blue", shade: 600 })}33`
+      ? getColor({ theme: props.theme, hue: "blue", shade: 100 })
       : "transparent"};
   border-radius: 4px;
 
   &:hover {
     background-color: ${(props) =>
       props.$active
-        ? `${getColor({ theme: props.theme, hue: "blue", shade: 600 })}47`
-        : `${getColor({ theme: props.theme, hue: "blue", shade: 600 })}14`};
+        ? getColor({ theme: props.theme, hue: "blue", shade: 200 })
+        : getColor({ theme: props.theme, hue: "grey", shade: 100 })};
   }
 
   &:focus {
     outline: none;
     box-shadow: inset 0 0 0 2px
-      ${(props) => getColor({ theme: props.theme, hue: "blue", shade: 600 })};
+      ${(props) =>
+        getColor({ theme: props.theme, variable: "border.primaryEmphasis" })};
   }
 
   &:focus:not(:focus-visible) {
@@ -66,7 +67,8 @@ const StyledSidebarItem = styled.div<{
 
   &:focus-visible {
     box-shadow: inset 0 0 0 2px
-      ${(props) => getColor({ theme: props.theme, hue: "blue", shade: 600 })};
+      ${(props) =>
+        getColor({ theme: props.theme, variable: "border.primaryEmphasis" })};
   }
 `;
 
@@ -111,7 +113,7 @@ const SidebarItemName = styled.span`
 
 const ItemCount = styled.span`
   flex-shrink: 0;
-  color: ${({ theme }) => getColor({ theme, hue: "grey", shade: 600 })};
+  color: ${({ theme }) => getColor({ theme, variable: "foreground.subtle" })};
 `;
 
 interface CategoryItemProps {

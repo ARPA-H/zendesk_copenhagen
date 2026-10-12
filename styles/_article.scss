@@ -100,7 +100,7 @@
   }
 
   &-comment-count {
-    color: $secondary-text-color;
+    color: var(--type-subheading);
 
     &:hover {
       text-decoration: none;
@@ -108,7 +108,7 @@
 
     &-icon {
       vertical-align: middle;
-      color: $brand_color;
+      color: var(--color-brand-primary);
       width: 18px;
       height: 18px;
     }
@@ -122,8 +122,8 @@
       max-width: 17%;
     }
 
-    border-bottom: 1px solid $low-contrast-border-color;
-    border-top: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
+    border-top: 1px solid var(--surface-stroke);
     flex: 1 0 auto; //Explicit values needed whith flex-direction: column for IE11
     margin-bottom: 20px;
     padding: 0;
@@ -134,7 +134,7 @@
       flex-direction: row;
     }
 
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     display: flex;
     flex-direction: column;
     padding: 20px 0;
@@ -156,7 +156,7 @@
   }
 
   &-votes {
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     padding: 30px 0;
     text-align: center;
 
@@ -184,10 +184,10 @@
       display: none;
     }
 
-    border-top: 1px solid $high-contrast-border-color;
+    border-top: 1px solid var(--color-ui-60);
 
     a {
-      color: $text_color;
+      color: var(--type-body);
       display: block;
       padding: 20px 0;
 

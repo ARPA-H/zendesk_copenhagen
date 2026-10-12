@@ -27,10 +27,10 @@
       &:last-child  { margin-right: 0; }
     }
 
-    border: 1px solid var(--svc-line);
+    border: 1px solid var(--color-ui-10);
     border-radius: 12px;
     box-sizing: border-box;
-    color: $brand_color;
+    color: var(--color-brand-primary);
     display: flex;
     flex: 1 0 100%;
     margin: 0 0 30px;
@@ -39,7 +39,7 @@
 
     &-internal {
       background-color: transparent;
-      border: 1px solid $low-contrast-border-color;
+      border: 1px solid var(--surface-stroke);
 
       .icon-lock {
         height: 15px;
@@ -48,7 +48,7 @@
         position: relative;
       }
 
-      a { color: $text_color; }
+      a { color: var(--type-body); }
     }
   }
 
@@ -66,7 +66,7 @@
       padding: 20px 30px;
     }
 
-    color: $brand_color;
+    color: var(--color-brand-primary);
     display: grid;
     grid-template-columns: 52px 1fr;
     padding: 20px 30px;
@@ -81,7 +81,7 @@
     }
 
     &:hover {
-      box-shadow: 1px 1px 4px rgba(0, 0, 0, .1);
+      box-shadow: var(--shadow-1);
     }
 
     &:hover .blocks-item-img {
@@ -90,7 +90,7 @@
 
     &:focus {
       outline: 0;
-      box-shadow: 0 0 0 3px $brand_color;
+      box-shadow: 0 0 0 3px var(--color-brand-primary);
       text-decoration: none;
     }
   }

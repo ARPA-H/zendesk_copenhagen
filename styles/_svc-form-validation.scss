@@ -47,11 +47,11 @@
      visibly thicker border (1px -> 2px, dashed outline for
      checkboxes), so the state reads as a shape change too, not
      just a color/hue change.
-   - Contrast (WCAG 1.4.3 / 1.4.11): --svc-error (#bf2d1d) is a
+   - Contrast (WCAG 1.4.3 / 1.4.11): --svc-error (var(--color-error)) is a
      5.8:1 contrast ratio against white — well past the 4.5:1 text
      and 3:1 non-text/UI-component minimums.
    - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus
-     ring (`0 0 0 1px #0957be, 0 0 3px 1px #0957be`) is layered on
+     ring (`0 0 0 1px var(--color-blue-700), 0 0 3px 1px var(--color-blue-700)`) is layered on
      top of, not swapped out for, the red invalid ring.
    - Motion (WCAG 2.3.3): the one-shot "shake" is gated behind
      `prefers-reduced-motion: no-preference` and runs once, never
@@ -74,9 +74,9 @@
    ============================================================ */
 
 @mixin svc-invalid-ring($width: 2px) {
-  border: $width solid var(--svc-error) !important;
-  background-color: var(--svc-error-bg) !important;
-  box-shadow: 0 0 0 1px var(--svc-error) !important;
+  border: $width solid var(--color-error) !important;
+  background-color: var(--color-error-light) !important;
+  box-shadow: 0 0 0 1px var(--color-error) !important;
 }
 
 .svc-form-panel {
@@ -96,8 +96,8 @@
 
     // Focus indicator must stay visible even while invalid.
     &[aria-invalid="true"]:focus-visible {
-      box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset,
-        0 0 3px 1px #0957be !important;
+      box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-blue-700) inset,
+        0 0 3px 1px var(--color-blue-700) !important;
     }
   }
 
@@ -106,7 +106,7 @@
   // (not solid) outline — a shape change, not just a color one.
   input[type="checkbox"] {
     &[aria-invalid="true"] {
-      outline: 2px dashed var(--svc-error) !important;
+      outline: 2px dashed var(--color-error) !important;
       outline-offset: 3px !important;
 
       @media (prefers-reduced-motion: no-preference) {
@@ -115,8 +115,8 @@
     }
 
     &[aria-invalid="true"]:focus-visible {
-      outline: 2px dashed var(--svc-error) !important;
-      box-shadow: 0 0 0 3px #fff, 0 0 0 5px #0957be !important;
+      outline: 2px dashed var(--color-error) !important;
+      box-shadow: 0 0 0 3px var(--color-white), 0 0 0 5px var(--color-blue-700) !important;
     }
   }
 
@@ -133,8 +133,8 @@
     }
 
     &:has(input[aria-invalid="true"]):focus-within {
-      box-shadow: 0 0 0 1px var(--svc-error), 0 0 0 1px #0957be inset,
-        0 0 3px 1px #0957be !important;
+      box-shadow: 0 0 0 1px var(--color-error), 0 0 0 1px var(--color-blue-700) inset,
+        0 0 3px 1px var(--color-blue-700) !important;
     }
   }
 }

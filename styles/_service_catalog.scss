@@ -85,9 +85,9 @@
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    border: 1px solid #dfe4ee;
+    border: 1px solid var(--color-ui-20);
     border-radius: 8px;
-    background: #fff;
+    background: var(--color-white);
     font-size: 15px;
     font-weight: 500;
     text-align: left;
@@ -106,7 +106,7 @@
 
   .svc-cat-sidebar-list {
     margin-top: 8px;
-    border: 1px solid #dfe4ee;
+    border: 1px solid var(--color-ui-20);
     border-radius: 8px;
     padding: 8px;
   }

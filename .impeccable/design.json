@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-12T18:30:00.000Z",
+  "title": "Design System: ARPA-H Service Desk",
+  "extensions": {
+    "colorMeta": {
+      "indigo": {
+        "role": "primary",
+        "displayName": "Deep Indigo",
+        "canonical": "#000334",
+        "tonalRamp": ["#00022b", "#000334", "#2a2d56", "#555778", "#808199", "#aaabbb", "#d4d5dd"]
+      },
+      "cyan": {
+        "role": "secondary",
+        "displayName": "Action Cyan",
+        "canonical": "#52daf2",
+        "tonalRamp": ["#296d79", "#44b6ca", "#52daf2", "#6fe0f4", "#8ce6f6", "#c5f3fb", "#e2f9fd"]
+      },
+      "link": {
+        "role": "secondary",
+        "displayName": "Link Blue",
+        "canonical": "#0957be",
+        "tonalRamp": ["#07418f", "#0957be", "#9bd6f5", "#cdeafa", "#e6f5fc"]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Muted Text",
+        "canonical": "#6f747a",
+        "tonalRamp": ["#131314", "#4a4d52", "#6f747a", "#bac2cc", "#d7dee8", "#e5eaf0", "#f3f5f8"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "The hero greeting and page titles; Poppins." },
+      "heading": { "displayName": "Heading", "purpose": "h1 and h2 in content; Poppins. The NEXUS scale arrives in Phase 2." },
+      "body": { "displayName": "Body", "purpose": "Reading text and controls; Public Sans." },
+      "label": { "displayName": "Label", "purpose": "Buttons, navigation and form labels; Public Sans medium." }
+    },
+    "shadows": [
+      { "name": "shadow-1", "value": "0 1px 4px 0 rgba(0, 0, 0, 0.1)", "purpose": "Resting panels and search results." },
+      { "name": "shadow-2", "value": "0 4px 8px 0 rgba(0, 0, 0, 0.1)", "purpose": "Hovered link cards." },
+      { "name": "shadow-3", "value": "0 8px 12px 0 rgba(0, 0, 0, 0.1)", "purpose": "Menus, popovers and the mobile navigation panel." },
+      { "name": "focus", "value": "0 0 0 1px #0957be, 0 0 3px 1px #0957be", "purpose": "Keyboard focus on light surfaces." },
+      { "name": "focus-on-dark", "value": "0 0 0 2px #000334, 0 0 0 4px #52daf2", "purpose": "Keyboard focus inside the navigation bar, footer and hero." }
+    ],
+    "motion": [
+      { "name": "ease-state", "value": "0.12s ease-in-out", "purpose": "Button and border state changes." }
+    ],
+    "breakpoints": [
+      { "name": "tablet", "value": "768px" },
+      { "name": "desktop", "value": "1024px" },
+      { "name": "container", "value": "1160px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one action color: cyan pill with indigo text. Ask AI, Submit and the hero search button use it.",
+      "html": "<button class=\"ds-btn-primary\">Submit a request</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 20px; border: 0; border-radius: 1000px; background: var(--color-brand-secondary, #52daf2); color: var(--color-brand-primary, #000334); font: 500 14px/1.35 'Public Sans', sans-serif; cursor: pointer; } .ds-btn-primary:hover { background-image: linear-gradient(rgba(0, 3, 52, 0.1), rgba(0, 3, 52, 0.1)); } .ds-btn-primary:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "The default Guide button: transparent with a 2px indigo border. General request and Follow use it.",
+      "html": "<button class=\"ds-btn-outline\">General request</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 20px; border: 2px solid var(--color-brand-primary, #000334); border-radius: 1000px; background: transparent; color: var(--color-brand-primary, #000334); font: 500 14px/1.35 'Public Sans', sans-serif; cursor: pointer; } .ds-btn-outline:hover { background-image: linear-gradient(rgba(0, 3, 52, 0.05), rgba(0, 3, 52, 0.05)); } .ds-btn-outline:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
+    },
+    {
+      "name": "Search Pill",
+      "kind": "input",
+      "refersTo": "search-pill",
+      "description": "The hero search: a white pill with a cyan circular submit. Sits on the dark hero.",
+      "html": "<div class=\"ds-search\"><span class=\"ds-search-text\">Search help articles</span><button class=\"ds-search-go\" aria-label=\"Search\"></button></div>",
+      "css": ".ds-search { display: flex; align-items: center; gap: 12px; width: 420px; padding: 9px 9px 9px 26px; border-radius: 1000px; background: #ffffff; } .ds-search-text { flex: 1; color: #6f747a; font: 400 16px 'Public Sans', sans-serif; } .ds-search-go { width: 48px; height: 48px; border: 0; border-radius: 50%; background: #52daf2; }"
+    },
+    {
+      "name": "Navigation Bar",
+      "kind": "nav",
+      "refersTo": "nav-bar",
+      "description": "Full-bleed indigo bar with the reverse logo, white links and one cyan pill.",
+      "html": "<div class=\"ds-nav\"><span class=\"ds-nav-logo\">ARPA-H</span><span class=\"ds-nav-spacer\"></span><button class=\"ds-nav-ai\">Ask AI</button><span class=\"ds-nav-user\">Jordan Lee</span></div>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 16px; height: 71px; padding: 0 32px; background: #000334; color: #ffffff; font: 400 14px 'Public Sans', sans-serif; } .ds-nav-logo { font: 700 22px 'Poppins', sans-serif; letter-spacing: 4px; } .ds-nav-spacer { flex: 1; } .ds-nav-ai { min-height: 40px; padding: 8px 16px; border: 0; border-radius: 1000px; background: #52daf2; color: #000334; font: 600 14px 'Public Sans', sans-serif; }"
+    },
+    {
+      "name": "Service Card",
+      "kind": "card",
+      "refersTo": "catalog-card",
+      "description": "A catalog tile: white, 2px light stroke, 16px radius; hover raises it and takes a link-blue border.",
+      "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-card-icon\"></span><span>Laptop and monitor</span></a>",
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 12px; width: 220px; padding: 20px; border: 2px solid #e5eaf0; border-radius: 16px; background: #ffffff; color: #000334; font: 400 15px 'Public Sans', sans-serif; text-decoration: none; } .ds-card-icon { width: 36px; height: 36px; border: 2px solid #4a4d52; border-radius: 8px; } .ds-card:hover { border-color: #0957be; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }"
+    },
+    {
+      "name": "Error Notification",
+      "kind": "custom",
+      "refersTo": "colors.error",
+      "description": "Feedback colors are for messages only: a soft fill with dark text.",
+      "html": "<div class=\"ds-notice\">We could not load suggested articles right now.</div>",
+      "css": ".ds-notice { padding: 13px 15px; border: 1px solid #bf2d1d; border-radius: 4px; background: #f4dcd9; color: #7f1e13; font: 400 14px 'Public Sans', sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lit Service Counter",
+    "overview": "One atmospheric moment, a dark indigo sky with arc artwork and a Poppins greeting, then bright, orderly surfaces where the work happens and exactly one lit button. Atmosphere is spent in the hero; everywhere else the interface is quiet, exact and fast to read.",
+    "keyCharacteristics": [
+      "One dark band (navigation bar into hero) above bright working surfaces.",
+      "Cyan is the action color and nothing else; yellow, green and red appear only in messages.",
+      "Pill-shaped actions, 16px surfaces, hairline strokes, shallow elevation.",
+      "Public Sans for reading, Poppins for the few big moments."
+    ],
+    "rules": [
+      { "name": "The Cyan Is Action Rule", "body": "Cyan appears only on things that can be pressed. A static element that borrows it reads as interactive.", "section": "colors" },
+      { "name": "The Feedback Only Rule", "body": "Yellow, green and red mark warning, success and error messages; no badge, card or accent uses them.", "section": "colors" },
+      { "name": "The No Raw Color Rule", "body": "Components read alias tokens from styles/_tokens.scss; URL-encoded SVG data URIs carry noted copies of token colors.", "section": "colors" },
+      { "name": "The Visible Focus Rule", "body": "Every interactive element shows a ring; the dark-surface ring is cyan with an indigo gap.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use cyan with indigo text for the single primary action on a page.",
+      "Do keep text on the 4.5:1 neutrals (#6f747a or darker) and give every control a visible focus ring.",
+      "Do put new colors in _tokens.scss as aliases first.",
+      "Do keep the hero and the navigation bar one continuous dark band."
+    ],
+    "donts": [
+      "Don't use cyan for anything that cannot be pressed, and don't put white text on it.",
+      "Don't use yellow, green or red outside a message.",
+      "Don't nest a card inside a card.",
+      "Don't add a colored border on one side of a card, list item or alert wider than 1px.",
+      "Don't use outline: none without a replacement ring.",
+      "Don't hard-code hex or rgba values in the stylesheets."
+    ]
+  }
+}

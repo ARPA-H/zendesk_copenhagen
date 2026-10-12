@@ -46,8 +46,8 @@
 
     .comment-show-container {
       border-radius: 2px;
-      border: 1px solid $low-contrast-border-color;
-      color: $secondary-text-color;
+      border: 1px solid var(--surface-stroke);
+      color: var(--type-subheading);
       text-align: inherit;
       padding: 8px 25px;
       width: 100%;
@@ -64,7 +64,7 @@
         border-bottom: 0;
 
         &[data-hc-focus="true"] {
-          border: 1px solid $brand_color;
+          border: 1px solid var(--color-brand-primary);
         }
       }
 
@@ -81,7 +81,7 @@
       margin-top: 0;
 
       &:focus {
-        border-top: 1px solid $brand_color;
+        border-top: 1px solid var(--color-brand-primary);
       }
     }
 
@@ -90,7 +90,7 @@
 
   &-title {
     @include desktop {
-      border-bottom: 1px solid $low-contrast-border-color;
+      border-bottom: 1px solid var(--surface-stroke);
       margin-bottom: 0;
       max-width: 66%; //Same as main container
       padding-bottom: 20px;
@@ -101,7 +101,7 @@
 
   &-sidebar {
     @include desktop {
-      background-color: $primary-shade;
+      background-color: var(--surface-subtle);
       border: 0;
       font-size: $font-size-small;
       flex: 0 0 auto;
@@ -109,8 +109,8 @@
       width: 30%; //IE11 fix
     }
 
-    border-bottom: 1px solid $low-contrast-border-color;
-    border-top: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
+    border-top: 1px solid var(--surface-stroke);
     flex: 1 0 auto;
     order: 0; //Bring to top
 
@@ -126,7 +126,7 @@
   }
 
   &-details {
-    border-bottom: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
     font-size: 0; // To remove whitespace and do a 40%/60% split
     margin: 0;
     padding-bottom: 20px;
@@ -155,7 +155,7 @@
 
     dt {
       line-break: strict;
-      color: $secondary-text-color;
+      color: var(--type-subheading);
       width: 40%;
       overflow-wrap: break-word;
     }
@@ -214,7 +214,7 @@
 
   .ck.ck-editor__main > .ck-editor__editable:not(.ck-focused),
   .ck-sticky-panel .ck-toolbar {
-    border-color: #1a1d21;
+    border-color: var(--type-body);
   }
 
   input[type="text"],
@@ -224,7 +224,7 @@
   ul[data-hc-pills-container] {
     padding: 12px 30px;
     height: 50px;
-    border-color: #1a1d21;
+    border-color: var(--type-body);
     font-size: 18px;
     font-weight: 600;
     letter-spacing: 1.2px;

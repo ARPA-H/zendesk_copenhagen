@@ -33,7 +33,7 @@
     font-size: 18px;
     font-weight: $font-weight-semibold;
 
-    a { color: $text_color; }
+    a { color: var(--type-body); }
   }
 
   .see-all-articles {
@@ -49,12 +49,12 @@
     text-overflow: ellipsis;
     overflow: hidden;
 
-    a { color: $text_color; }
+    a { color: var(--type-body); }
   }
 }
 
 .icon-star {
-  color: $brand_color;
+  color: var(--color-brand-primary);
   font-size: 18px;
 }
 

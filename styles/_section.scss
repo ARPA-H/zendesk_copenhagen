@@ -26,17 +26,17 @@
 }
 
 .section-list-item {
-  border-bottom: 1px solid $low-contrast-border-color;
+  border-bottom: 1px solid var(--surface-stroke);
   font-size: $font-size-bigger;
   padding: 15px 0;
 
   &:first-child {
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
   }
 
   a {
     align-items: center;
-    color: $text_color;
+    color: var(--type-body);
     display: flex;
     justify-content: space-between;
   }

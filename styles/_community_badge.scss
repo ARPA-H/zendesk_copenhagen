@@ -1,9 +1,9 @@
 /***** Community Badges *****/
 /* Styles labels used next to the authors of article comments, community posts, and community comments */
 .community-badge-title {
-  background-color: #04444d;
+  background-color: var(--color-cyan-800);
   border-radius: 4px;
-  color: #fff;
+  color: var(--color-white);
   font-size: 12px;
   font-weight: $font-weight-semibold;
   padding: 0px 8px;

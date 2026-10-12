@@ -1,17 +1,33 @@
 /***** Buttons *****/
+
+// NEXUS buttons are pills. The default `.button` is the outline kind (indigo
+// text, 2px indigo border); `.button-primary` and `.button-large` are the
+// primary kind (cyan with indigo text, the one action color); `.button-secondary`
+// is solid indigo. Hover darkens with a 10% indigo overlay (5% for outline),
+// which keeps the pairing legible without a second color. Disabled controls
+// drop to 40% opacity.
+@mixin nexus-hover-overlay($overlay: var(--color-hover-light-10)) {
+  background-image: linear-gradient($overlay, $overlay);
+}
+
 .button {
   @include tablet { width: auto; }
 
+  align-items: center;
   background-color: transparent;
-  border: 1px solid $button-color;
-  border-radius: 4px;
-  color: $button-color;
+  border: 2px solid var(--color-brand-primary);
+  border-radius: var(--radius-round);
+  color: var(--color-brand-primary);
   cursor: pointer;
-  display: inline-block;
-  font-size: 12px;
-  line-height: 2.34; //Taken from Zendesk garden bedrock
+  display: inline-flex;
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-medium);
+  gap: var(--space-1);
+  justify-content: center;
+  line-height: var(--line-height-3);
   margin: 0;
-  padding: 0 20px;
+  min-height: 40px;
+  padding: var(--space-1) var(--space-205);
   text-align: center;
   transition: background-color .12s ease-in-out, border-color .12s ease-in-out, color .15s ease-in-out;
   user-select: none;
@@ -20,29 +36,33 @@
   -webkit-touch-callout: none;
 
   &:visited {
-    color: $button-color;
+    color: var(--color-brand-primary);
   }
 
   &:hover,
   &:active,
-  &:focus,
-  &.button-primary {
-    background-color: $brand_color;
-    color: $brand_text_color;
+  &:focus {
+    @include nexus-hover-overlay(var(--color-hover-light-5));
+    color: var(--color-brand-primary);
     text-decoration: none;
   }
 
   &.button-primary {
+    background-color: var(--color-brand-secondary);
+    border-color: transparent;
+    color: var(--color-brand-primary);
+
     &:hover,
     &:focus,
     &:active {
-      background-color: $hover-button-color;
-      border-color: $hover-button-color;
+      @include nexus-hover-overlay;
+      border-color: transparent;
     }
   }
 
   &[data-disabled] {
     cursor: default;
+    opacity: .4;
   }
 }
 
@@ -51,47 +71,49 @@
     width: auto;
   }
 
-  cursor: pointer;
-  background-color: $button-color;
+  background-color: var(--color-brand-secondary);
   border: 0;
-  border-radius: 4px;
-  color: $brand_text_color;
-  font-size: 14px;
-  line-height: 2.72;
+  border-radius: var(--radius-round);
+  color: var(--color-brand-primary);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-3);
+  min-height: 48px;
   min-width: 190px;
-  padding: 0 1.9286em;
+  padding: var(--space-105) var(--space-3);
   width: 100%;
 
   &:visited {
-    color: $brand_text_color;
+    color: var(--color-brand-primary);
   }
 
   &:hover,
   &:active,
   &:focus {
-    background-color: $hover-button-color;
+    @include nexus-hover-overlay;
   }
 
-
   &[disabled] {
-    background-color: #ddd;
+    cursor: default;
+    opacity: .4;
   }
 }
 
 .button-secondary {
-  color: $secondary-text-color;
-  border: 1px solid $high-contrast-border-color;
-  background-color: transparent;
+  background-color: var(--color-brand-primary);
+  border: 2px solid var(--color-brand-primary);
+  color: var(--color-white);
 
   &:visited {
-    color: $secondary-text-color;
+    color: var(--color-white);
   }
 
   &:hover,
   &:focus,
   &:active {
-    color: $text_color;
-    border: 1px solid $high-contrast-border-color;
-    background-color: $primary-shade;
+    @include nexus-hover-overlay(var(--color-hover-dark-15));
+    color: var(--color-white);
+    border: 2px solid var(--color-brand-primary);
   }
 }

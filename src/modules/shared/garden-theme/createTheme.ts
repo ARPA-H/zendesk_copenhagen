@@ -1,16 +1,21 @@
-import type { IButtonProps } from "@zendeskgarden/react-buttons";
 import type { IGardenTheme } from "@zendeskgarden/react-theming";
 import { DEFAULT_THEME, getColor } from "@zendeskgarden/react-theming";
 import { css } from "styled-components";
+import { NEXUS_COLORS as c, NEXUS_PALETTE } from "./nexusPalette";
 
 export interface Settings {
-  background_color: string;
-  text_color: string;
-  brand_color: string;
-  brand_text_color: string;
-  link_color: string;
-  hover_link_color: string;
-  visited_link_color: string;
+  /**
+   * The color settings are still part of the settings payload, but the NEXUS
+   * tokens own every color (see `nexusPalette.ts` and `styles/_tokens.scss`),
+   * so `createTheme` does not apply them.
+   */
+  background_color?: string;
+  text_color?: string;
+  brand_color?: string;
+  brand_text_color?: string;
+  link_color?: string;
+  hover_link_color?: string;
+  visited_link_color?: string;
   /**
    * Optional base URL of a self-hosted Iconify API used to resolve
    * service-catalog icon references. Empty -> Iconify's public API.
@@ -18,13 +23,26 @@ export interface Settings {
   iconify_api_base?: string;
 }
 
+interface ButtonStyleProps {
+  $isBasic?: boolean;
+  $isDanger?: boolean;
+  $isLink?: boolean;
+  $isNeutral?: boolean;
+  $isPrimary?: boolean;
+}
+
+const INDIGO_OVERLAY_5 = "rgba(0, 3, 52, 0.05)";
+const INDIGO_OVERLAY_10 = "rgba(0, 3, 52, 0.1)";
+const overlay = (color: string) => `linear-gradient(${color}, ${color})`;
+
 const createAccessibleFormControlStyle = (isWrapper: boolean) => {
   const invalidSelector = isWrapper
     ? ':has(input[aria-invalid="true"])'
     : '[aria-invalid="true"]';
 
   return css`
-    /* Boost default border contrast - use :not() to preserve validation colors */
+    /* Boost default border contrast to 3:1 or better (grey 600 on white is
+       4.7:1); :not() preserves the validation colors */
     &:not(${invalidSelector}) {
       border-color: ${(p) =>
         getColor({
@@ -51,52 +69,99 @@ const createAccessibleFormControlStyle = (isWrapper: boolean) => {
 const accessibleFormInputStyle = createAccessibleFormControlStyle(false);
 const accessibleFormWrapperStyle = createAccessibleFormControlStyle(true);
 
-export function createTheme(settings: Settings): IGardenTheme {
+/**
+ * NEXUS buttons are pills. The primary kind is cyan with indigo text (white on
+ * cyan is 1.6:1), the default kind is an indigo outline, and hover darkens
+ * with an indigo overlay instead of a second color. Garden passes its
+ * options to styled-components as transient props ($isPrimary and so on).
+ */
+const buttonStyle = css<ButtonStyleProps>`
+  ${(p) =>
+    !p.$isLink &&
+    css`
+      border-radius: 1000px;
+    `}
+
+  ${(p) =>
+    p.$isPrimary &&
+    !p.$isDanger &&
+    !p.$isNeutral &&
+    css`
+      background-color: ${c["cyan-neutral"]};
+      color: ${c["indigo-neutral"]};
+
+      &:hover:not(:disabled),
+      &:active:not(:disabled) {
+        background-color: ${c["cyan-neutral"]};
+        background-image: ${overlay(INDIGO_OVERLAY_10)};
+      }
+    `}
+
+  ${(p) =>
+    !p.$isPrimary &&
+    !p.$isBasic &&
+    !p.$isDanger &&
+    !p.$isLink &&
+    !p.$isNeutral &&
+    css`
+      border-color: ${c["indigo-neutral"]};
+      color: ${c["indigo-neutral"]};
+
+      &:hover:not(:disabled),
+      &:active:not(:disabled) {
+        border-color: ${c["indigo-neutral"]};
+        background-color: transparent;
+        background-image: ${overlay(INDIGO_OVERLAY_5)};
+        color: ${c["indigo-neutral"]};
+      }
+    `}
+`;
+
+/**
+ * Link order matters: visited first, then hover, active and focus, so a hover
+ * on a visited link still shows the hover color.
+ */
+const anchorStyle = css`
+  &:visited {
+    color: ${c["violet-600"]};
+  }
+
+  &:hover,
+  &:active,
+  &:focus {
+    color: ${c["blue-800"]};
+  }
+`;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- the render functions keep passing their settings; colors come from the NEXUS tokens
+export function createTheme(settings?: Settings): IGardenTheme {
+  const { light } = DEFAULT_THEME.colors.variables;
+
   return {
     ...DEFAULT_THEME,
     rtl: document.dir === "rtl",
+    palette: {
+      ...DEFAULT_THEME.palette,
+      ...NEXUS_PALETTE,
+    },
     colors: {
       ...DEFAULT_THEME.colors,
-      primaryHue: settings.brand_color,
       variables: {
         ...DEFAULT_THEME.colors.variables,
         light: {
-          ...DEFAULT_THEME.colors.variables.light,
-          background: {
-            ...DEFAULT_THEME.colors.variables.light.background,
-            default: settings.background_color,
-            raised: settings.background_color,
-            recessed: settings.background_color,
-            subtle: settings.background_color,
-          },
+          ...light,
           foreground: {
-            ...DEFAULT_THEME.colors.variables.light.foreground,
-            default: settings.text_color,
+            ...light.foreground,
+            default: c["indigo-neutral"],
+            // Grey 800 (4a4d52) stays readable on the grey 50 surface tint
+            subtle: "neutralHue.800",
           },
         },
       },
     },
     components: {
-      "buttons.anchor": css`
-        color: ${settings.link_color};
-
-        :hover,
-        :active,
-        :focus {
-          color: ${settings.hover_link_color};
-        }
-
-        &:visited {
-          color: ${settings.visited_link_color};
-        }
-      `,
-      "buttons.button": css`
-        ${(props: IButtonProps) =>
-          props.isPrimary &&
-          css`
-            color: ${settings.brand_text_color};
-          `}
-      `,
+      "buttons.anchor": anchorStyle,
+      "buttons.button": buttonStyle,
       "forms.input": accessibleFormInputStyle,
       "forms.textarea": accessibleFormInputStyle,
       "forms.faux_input": accessibleFormInputStyle,

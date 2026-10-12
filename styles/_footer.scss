@@ -1,21 +1,37 @@
 /***** Footer *****/
+// NEXUS footer: an indigo bar with white text, matching the navigation bar.
+// Only the direct children of the inner row are recolored, so the language
+// menu keeps its own white-card styling.
 .footer {
-  border-top: 1px solid $low-contrast-border-color;
-  margin-top: 60px;
-  padding: 30px 0;
+  margin-top: var(--space-8);
+  padding: var(--space-4) 0;
+  background-color: var(--color-brand-primary);
+  color: var(--color-white);
 
-  a {
-    color: $secondary-text-color;
+  :focus-visible {
+    box-shadow: var(--shadow-focus-on-dark);
   }
 
   &-inner {
     @include max-width-container;
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+
+    > a {
+      border-radius: var(--radius-sm);
+
+      &,
+      &:visited {
+        color: var(--color-white);
+      }
+    }
   }
 
   &-language-selector button {
-    color: $secondary-text-color;
+    color: var(--color-white);
     display: inline-block;
   }
 }
@@ -23,6 +39,6 @@
 .powered-by-zendesk {
   a,
   a:visited {
-    color: $secondary-text-color;
+    color: var(--color-white);
   }
 }
