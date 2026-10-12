@@ -17,7 +17,10 @@
       <header class="page-header">
         {{!-- START CUSTOM CATEGORY BLOCK --}}
         {{#is category.id 19382827542427}}
-          {{!-- Do NOT show category name or description for this category --}}
+          {{!-- The name and description are not shown on this category, but the
+                page still needs a heading for screen readers, so it is hidden
+                visually rather than left out. --}}
+          <h1 class="visibility-hidden">{{category.name}}</h1>
         {{else}}
           <h1>{{category.name}}</h1>
           {{#if category.description}}
@@ -81,9 +84,7 @@
               {{/if}}
             </section>
           {{else}}
-            <i class="category-empty">
-              <a href="{{category.url}}">{{t 'empty'}}</a>
-            </i>
+            <p class="empty-state category-empty">There are no sections in this category yet.</p>
           {{/each}}
         </div>
       {{/is}}

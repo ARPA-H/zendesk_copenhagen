@@ -157,6 +157,7 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
           $active={isSelected}
           $nestingLevel={nestingLevel}
           $hasChildren={hasChildren}
+          aria-current={isSelected ? "true" : undefined}
           onClick={() => onSelect(category.id)}
           tabIndex={0}
           role="button"

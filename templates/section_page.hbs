@@ -63,6 +63,12 @@
 
       {{pagination "section.articles"}}
 
+      {{#unless section.sections}}
+        {{#unless section.articles}}
+          <p class="empty-state">There are no articles in this section yet.</p>
+        {{/unless}}
+      {{/unless}}
+
     </section>
   </div>
 </div>

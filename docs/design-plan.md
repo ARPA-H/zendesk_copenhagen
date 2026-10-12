@@ -148,7 +148,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
 | 2 | `typeset` | One NEXUS type scale in `rem` tokens (12 to 40 pixels, eight sizes in use): Poppins for the greeting and h1 and h2, Public Sans for everything read or pressed; a 70-character prose measure; tabular numerals; rewritten article, table and heading rhythm; the Garden theme on the same scale; the dead `.svc-hero-results`, `.svc-res-*`, `.svc-mini-*` and `.svc-mr-*` styles removed | Done |
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the header blended into the hero; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category, section, article and search grids, Device FAQs tiles, overflow fixes, the banner, the blended header, the Knowledge band, the service item rebuild, the spacing sweep and the catalog title handling done; the Phase 3 review and polish remain |
-| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
+| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done apart from review: heading structure, the signed-out hero, empty states, failed loads (prompt error, no dead button), forced colors, RTL logical properties, unclamped service names and the mobile hero artwork (native size, anchored bottom center) |
 | 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
@@ -175,6 +175,70 @@ Layout decisions made during Phase 3 (each is easy to reverse):
   raw values onto the `--space-*` scale (left and right pairs became logical
   properties, which also drops the RTL special cases). The hero's search pill
   and chips are exempt: they keep the dimensions the owner approved by eye.
+
+Hardening decisions made during Phase 4 (each is easy to reverse):
+
+- **Every page gets one `h1`.** The home and services pages had none (the
+  greeting was an `h2`); the greeting is now the `h1`, which changes nothing
+  visually because the global h1 and h2 rules share a face and weight and the
+  hero sets its own size. The Device FAQs page shows tiles instead of a title,
+  so it keeps a visually hidden `h1`.
+- **The signed-out home says why it is empty.** The greeting, search and
+  catalog stay behind sign-in (owner decision 2), so the hero band now carries
+  a heading, one sentence and a cyan sign-in action instead of sitting empty.
+  The wording ("Sign in to get help", "Use your ARPA-H account to search help
+  articles, submit a request and follow it.") is a placeholder for the
+  `clarify` phase to review; it avoids naming a service desk, because
+  help.arpa-h.gov also serves HR.
+- **Empty category and section pages say so** in plain words (a theme cannot
+  add Help Center translation keys, so the text is English like the other
+  ARPA-H copy), replacing the stock italic "Empty" link.
+- **Forced colors:** the white reverse wordmark vanished on the plain header
+  (the palette replaces the indigo bar), pill buttons lost their shape, and a
+  selected row lost its tint. Each now keeps a dark logo tile, a border or an
+  outline. This was checked with Chrome's forced-colors emulation, not on
+  Windows itself, and the Garden form controls were not re-themed.
+- **RTL:** pages were rendered with `dir="rtl"` at 1440 pixels and the grids,
+  rails, header and footer mirror. The remaining physical properties in the
+  Knowledge and catalog partials (blockquote border, the training button, the
+  lock icon nudge, the mobile catalog toggle) are now logical. Garden reads the
+  direction when it loads, so the React form controls need a real RTL locale to
+  verify.
+- **A real defect found on the way, and an owner correction:** at narrow widths
+  the header blend left a strip at the top of the hero, and the artwork tiled
+  its bright bottom edge into it, a pink and cyan band behind the logo. The
+  artwork no longer repeats. Filling the strip with flat indigo was tried and
+  the owner rejected it ("padding it with indigo isn't appropriate"), so at 768
+  pixels and below the artwork keeps its own size (one image pixel per CSS
+  pixel), anchored at the bottom center: it fills the header and the hero with
+  no strip, and it shows the pinker bottom of the artwork. Over that pink the
+  subtitle is full white and the "Popular:" label sits on the chips' indigo
+  scrim (measured on the rendered pixels at 320, 390, 430, 600 and 768: label
+  9:1 or better, subtitle 4.65:1 or better for the typical pixel behind it,
+  with single-pixel dips where a thin line of the artwork crosses the text).
+  The indigo background remains only as the fallback while the artwork loads.
+  The 1.8 MB artwork is unchanged here; `optimize` will look at its weight.
+- **Failed loads show up promptly and leave no dead control.** With the catalog
+  or the item API forced to 500, the skeleton used to stay for the six second
+  hard cap and, on a request form, a "Submit a request" button stayed under the
+  error even though there was no form behind it. The shared error screen is now
+  `role="alert"` (announced to assistive technology), both pages treat that
+  alert as "loaded" (the error appears in about one second), the submit button
+  is hidden while the form holds no field (CSS `:has()`, [Baseline widely
+  available](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Selectors/:has)
+  since Chrome and Edge 105, Safari 15.4 and Firefox 121, and already used by
+  the form validation styles), and the module's "Go to the homepage"
+  button keeps its natural size instead of stretching with the form
+  width overrides.
+- **Service names are no longer clamped.** A Copilot review noted that the
+  two-line clamp plus a native `title` tooltip left keyboard and touch users
+  unable to read a long name. Names now wrap in full (a 104-character test name
+  takes seven lines in a four-column row, and the other cards in the row
+  stretch); the description keeps its three-line clamp. Real names are short, so
+  most cards look unchanged.
+- **Not changed:** the current page's breadcrumb is still link-colored (stock
+  behavior), and the catalog's "No services in sight" copy still says "Enter
+  your keywords" after someone has typed some; both are for `clarify`.
 
 ## Gates
 

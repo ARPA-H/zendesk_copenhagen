@@ -39,7 +39,13 @@
   z-index: 5;
 }
 .svc-home .svc-hero {
+  // Shown only while the artwork loads (or if it fails), so the white wordmark
+  // never lands on the white page. The artwork covers it and does not repeat: a
+  // repeating image tiled its bright bottom edge behind the logo. At 768px and
+  // below the artwork is anchored at the bottom instead (see MOBILE).
+  background-color: var(--color-brand-primary);
   background-position: center calc(50% + #{$header-height} / 2);
+  background-repeat: no-repeat;
   box-sizing: border-box;
   margin-top: calc(-1 * #{$header-height});
   padding-top: $header-height;
@@ -91,6 +97,29 @@
   line-height: var(--line-height-4);
   color: var(--on-dark-text-muted);
   text-align: center;
+}
+
+/* Signed out: heading, one sentence and the one action. Cyan is the action
+   color, so the sign-in link takes it, with indigo text. */
+a.svc-hero-cta,
+a.svc-hero-cta:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-3);
+  padding: var(--space-105) var(--space-4);
+  border-radius: var(--radius-round);
+  background-color: var(--color-brand-secondary);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+a.svc-hero-cta:hover,
+a.svc-hero-cta:active {
+  background-image: linear-gradient(var(--color-hover-light-10), var(--color-hover-light-10));
+  color: var(--color-brand-primary);
+  text-decoration: none;
 }
 
 /* Hero search bar */
@@ -463,8 +492,24 @@ a.svc-help-btn:hover,
   html.svc-home, body.svc-home { overflow-x: hidden !important; max-width: 100% !important; }
 
   .svc-hero { min-height: 0; }
+  // The artwork keeps its own size (one image pixel per CSS pixel), anchored at
+  // the bottom center, so it runs unbroken from the top of the transparent header
+  // to the bottom of the hero. Scaled to fit it was only as tall as the hero, and
+  // the nudge above left a strip behind the logo that a flat color only covered.
+  .svc-home .svc-hero {
+    background-size: auto;
+    background-position: center bottom;
+  }
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner { padding: var(--space-5) var(--space-2); }
-  .svc-hero-subtitle { font-size: var(--font-size-xs); margin-top: 8px; }
+  // The lower part of that artwork is a lighter pink: the subtitle goes to full
+  // white and the "Popular:" label sits on the chips' indigo scrim to hold 4.5:1.
+  .svc-hero-subtitle { font-size: var(--font-size-xs); margin-top: 8px; color: var(--color-white); }
+  .svc-hero-chips-label {
+    color: var(--color-white);
+    background-color: var(--on-dark-chip);
+    padding: 5px 12px;
+    border-radius: var(--radius-round);
+  }
   .svc-hero-search { margin-top: 18px; padding: 6px 6px 6px 18px; }
   .svc-hero-input { font-size: var(--font-size-xs); padding: 11px 12px; }
   .svc-hero-search-btn { width: 42px; height: 42px; }
@@ -532,7 +577,7 @@ a.svc-help-btn:hover,
 
 @media (max-width: 430px) {
   .svc-hero-chips { gap: 6px; }
-  .svc-hero-chip { padding: 5px 10px; }
+  .svc-hero-chip, .svc-hero-chips-label { padding: 5px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .svc-tooltip { transition: none !important; }

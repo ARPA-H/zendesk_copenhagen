@@ -154,8 +154,9 @@
     targetId: 'service-catalog-item',
     skeletonId: 'svc-form-skeleton',
     readyClasses: ['svc-form-ready'],
+    // A form control, or the module's error screen (role="alert") in its place.
     isComplete: (form) =>
-      !!form.querySelector('input, textarea, select, button[type="submit"], [role="textbox"]'),
+      !!form.querySelector('input, textarea, select, button[type="submit"], [role="textbox"], [role="alert"]'),
   });
 </script>
 

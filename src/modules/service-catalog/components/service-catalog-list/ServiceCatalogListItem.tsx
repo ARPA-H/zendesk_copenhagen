@@ -34,10 +34,6 @@ const ItemLink = styled.a`
 const ItemTitle = styled.div`
   font-size: var(--font-size-xs, 1rem);
   font-weight: ${(props) => props.theme.fontWeights.semibold};
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
   word-break: break-word;
 `;
 
@@ -92,7 +88,7 @@ const ServiceCatalogListItem = ({
           url={serviceItem.thumbnail_url}
         />
         <TextContainer>
-          <ItemTitle title={titleText}>{titleText}</ItemTitle>
+          <ItemTitle>{titleText}</ItemTitle>
           <ItemDescription>{cleanText}</ItemDescription>
         </TextContainer>
       </ItemLink>

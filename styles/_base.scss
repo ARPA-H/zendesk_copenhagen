@@ -193,3 +193,13 @@ ul {
 .visibility-hidden {
   @include visually-hidden;
 }
+
+// A page with nothing to list says so in plain words (category and section
+// pages), in the body voice rather than the stock italic link.
+.empty-state {
+  color: var(--type-subheading);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-4);
+  margin: var(--space-4) 0;
+  max-width: var(--measure-prose);
+}

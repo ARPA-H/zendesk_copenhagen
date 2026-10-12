@@ -80,7 +80,7 @@ describe("ServiceCatalogListItem", () => {
       );
     });
 
-    it("should expose the full name as a tooltip on a title that may be clamped", () => {
+    it("should show a long name in full instead of clamping it behind a hover-only tooltip", () => {
       const longName =
         "Request an exception to the standard government-furnished laptop configuration for international travel";
 
@@ -91,7 +91,19 @@ describe("ServiceCatalogListItem", () => {
         />
       );
 
-      expect(screen.getByText(longName)).toHaveAttribute("title", longName);
+      const title = screen.getByText(longName);
+      expect(title).not.toHaveAttribute("title");
+      expect(
+        getComputedStyle(title).getPropertyValue("-webkit-line-clamp")
+      ).toBe("");
+
+      // Control: the secondary description is still clamped, so an empty value
+      // above means "not clamped" rather than "jsdom cannot read the property".
+      expect(
+        getComputedStyle(
+          screen.getByText(/This is a keyboard/)
+        ).getPropertyValue("-webkit-line-clamp")
+      ).toBe("3");
     });
 
     it("should render name and description as text without executing HTML payloads", () => {

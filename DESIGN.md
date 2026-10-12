@@ -230,6 +230,7 @@ Page titles and section titles sit one step below the NEXUS marketing scale (h1 
 - **Rhythm.** A heading gets more space above than below, so it reads as the start of the text that follows.
 - **Numerals.** Counts, dates and table figures use tabular numerals so columns line up.
 - **Resilience.** Headings balance their lines and may break inside a long unbroken token instead of widening the page.
+- **One h1.** Every page has one `h1`: the greeting on the home and services pages, the page title elsewhere, and a visually hidden one on the Device FAQs page, which shows tiles instead of a title.
 - **Inputs.** Form fields are 16px, which also stops iOS Safari from zooming the page on focus.
 - **React.** Garden's sizes stay in pixels because its sizing math needs them, with the three off-scale values (10, 22 and 26px) moved to the nearest step and its largest heading (36px) set to the h1 size of 32px; the Garden system font stack leads with Public Sans, and the hand-styled catalog text reads the same `--font-size-*` tokens.
 
@@ -252,6 +253,8 @@ Flat by default. Service cards and search result cards rest on a stroke alone; t
 ### Named Rules
 
 **The Visible Focus Rule.** Every interactive element shows a ring. The ring is a box-shadow plus a transparent 2px outline, so forced-colors mode repaints it.
+
+**The Forced Colors Rule.** Meaning never rests on a fill alone. In forced-colors mode the palette replaces authored colors, so a pill button keeps a border, a selected row an outline and the white wordmark its own dark tile (`styles/_forced-colors.scss`). Selected state is also exposed in markup (`aria-current`), not just painted.
 
 ## Shapes
 
@@ -287,11 +290,11 @@ Full-bleed indigo, 71px tall, the reverse logo at 37px and white text, with no s
 
 ### Hero and search
 
-A dark gradient hero (the hero artwork image) with a Poppins greeting, one white pill search with a hot pink circular submit and a white magnifier, and popular-search chips: translucent pills over a 55% indigo scrim, so white text stays above 4.5:1 on any part of the artwork. The search pill takes the dark-surface focus ring as a whole.
+A dark gradient hero (the hero artwork image) with a Poppins greeting, one white pill search with a hot pink circular submit and a white magnifier, and popular-search chips: translucent pills over a 55% indigo scrim, so white text stays above 4.5:1 on any part of the artwork. The search pill takes the dark-surface focus ring as a whole. The greeting is the page's `h1`. Signed out, the greeting, search and catalog stay behind sign-in, so the band carries an `h1` ("Sign in to get help"), one sentence and a cyan sign-in action instead of sitting empty. The artwork does not repeat. Above 768 pixels it is scaled to cover the hero and nudged down by half the header's height, which keeps the part behind the content where it was. At 768 pixels and below it keeps its own size (one image pixel per CSS pixel), anchored at the bottom center, so the pink glow fills the band and the transparent header sits on artwork up to the very top; scaled to fit, the artwork was only as tall as the hero and left a strip behind the logo, which a flat indigo fill only hid and the owner rejected. The indigo shows only while the artwork loads. Over that lighter pink the subtitle is full white and the "Popular:" label takes the chips' indigo scrim, which keeps the label above 9:1 and the subtitle above 4.5:1 for the typical pixel behind it (4.65:1 at the lowest, signed out); single pixels where a thin line of the artwork crosses the text dip lower.
 
 ### Cards
 
-White with a 2px `#e5eaf0` stroke (carried over from the current catalog) and a 16px radius. Link cards raise to `--shadow-2` and take a link-blue border on hover. A service name clamps to two lines with an ellipsis and carries the full name as a tooltip; a category heading wraps instead of truncating, because cut-off text cannot be read at 320 pixels.
+White with a 2px `#e5eaf0` stroke (carried over from the current catalog) and a 16px radius. Link cards raise to `--shadow-2` and take a link-blue border on hover. A service name and a category heading wrap in full instead of truncating, because cut-off text cannot be read at 320 pixels and a native `title` tooltip is out of reach of keyboard and touch users; cards in a row stretch to the tallest, and only the secondary description clamps (three lines).
 
 ### Footer
 
@@ -299,7 +302,9 @@ Full-bleed indigo with white text, in the order the NEXUS spec sets for a portal
 
 ### Messages
 
-Notifications and validation use the feedback tokens only, as soft fills with dark text.
+Notifications and validation use the feedback tokens only, as soft fills with dark text. A list with nothing in it says so in plain words in the body voice (`.empty-state`, for example "There are no articles in this section yet."), not in the stock italic link.
+
+A failed load replaces its skeleton at once. The module's error screen is announced as an alert (`role="alert"`), the page's skeleton treats that alert as "loaded" so a failure shows in about a second instead of after the six second hard cap, and on a request form with no form to submit the custom submit button is hidden rather than left as a control that does nothing.
 
 ## Do's and Don'ts
 

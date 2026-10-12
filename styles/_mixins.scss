@@ -243,7 +243,7 @@
   // No italic face is loaded, so italics would be synthesized; the quote is
   // set apart by its rule and a quieter color instead.
   blockquote {
-    border-left: 1px solid var(--surface-stroke);
+    border-inline-start: 1px solid var(--surface-stroke);
     color: var(--type-subheading);
     padding: 0 var(--space-2);
   }

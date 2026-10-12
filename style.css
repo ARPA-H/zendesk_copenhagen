@@ -844,6 +844,14 @@ ul {
   white-space: nowrap;
 }
 
+.empty-state {
+  color: var(--type-subheading);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-4);
+  margin: var(--space-4) 0;
+  max-width: var(--measure-prose);
+}
+
 /***** Buttons *****/
 .button, .pagination-next-link, .pagination-prev-link, .pagination-first-link, .pagination-last-link, .subscriptions-subscribe button, .requests-table-toolbar .organization-subscribe button, .community-follow button, .article-subscribe button, .section-subscribe button, .split-button button {
   align-items: center;
@@ -2736,7 +2744,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   height: 20px;
   width: 20px;
   position: relative;
-  left: -5px;
+  inset-inline-start: -5px;
   vertical-align: baseline;
 }
 
@@ -3273,7 +3281,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 }
 .article-title .icon-lock {
   position: relative;
-  left: -5px;
+  inset-inline-start: -5px;
   vertical-align: baseline;
 }
 .article [role=button] {
@@ -3446,7 +3454,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   direction: ltr;
 }
 .article-body blockquote {
-  border-left: 1px solid var(--surface-stroke);
+  border-inline-start: 1px solid var(--surface-stroke);
   color: var(--type-subheading);
   padding: 0 var(--space-2);
 }
@@ -3972,7 +3980,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   direction: ltr;
 }
 .comment-body blockquote {
-  border-left: 1px solid var(--surface-stroke);
+  border-inline-start: 1px solid var(--surface-stroke);
   color: var(--type-subheading);
   padding: 0 var(--space-2);
 }
@@ -4583,7 +4591,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   direction: ltr;
 }
 .post-body blockquote {
-  border-left: 1px solid var(--surface-stroke);
+  border-inline-start: 1px solid var(--surface-stroke);
   color: var(--type-subheading);
   padding: 0 var(--space-2);
 }
@@ -6734,7 +6742,7 @@ zd-summary-block {
   direction: ltr;
 }
 .service-catalog-description blockquote {
-  border-left: 1px solid var(--surface-stroke);
+  border-inline-start: 1px solid var(--surface-stroke);
   color: var(--type-subheading);
   padding: 0 var(--space-2);
 }
@@ -6789,7 +6797,7 @@ zd-summary-block {
     background: var(--color-white);
     font-size: var(--font-size-xs);
     font-weight: 500;
-    text-align: left;
+    text-align: start;
   }
   .svc-cat-sidebar-toggle-label {
     overflow: hidden;
@@ -6888,7 +6896,9 @@ zd-summary-block {
 }
 
 .svc-home .svc-hero {
+  background-color: var(--color-brand-primary);
   background-position: center calc(50% + 71px / 2);
+  background-repeat: no-repeat;
   box-sizing: border-box;
   margin-top: calc(-1 * 71px);
   padding-top: 71px;
@@ -6956,6 +6966,30 @@ zd-summary-block {
   line-height: var(--line-height-4);
   color: var(--on-dark-text-muted);
   text-align: center;
+}
+
+/* Signed out: heading, one sentence and the one action. Cyan is the action
+   color, so the sign-in link takes it, with indigo text. */
+a.svc-hero-cta,
+a.svc-hero-cta:visited {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-3);
+  padding: var(--space-105) var(--space-4);
+  border-radius: var(--radius-round);
+  background-color: var(--color-brand-secondary);
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+a.svc-hero-cta:hover,
+a.svc-hero-cta:active {
+  background-image: linear-gradient(var(--color-hover-light-10), var(--color-hover-light-10));
+  color: var(--color-brand-primary);
+  text-decoration: none;
 }
 
 /* Hero search bar */
@@ -7483,12 +7517,23 @@ a.svc-help-btn:hover,
   .svc-hero {
     min-height: 0;
   }
+  .svc-home .svc-hero {
+    background-size: auto;
+    background-position: center bottom;
+  }
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner {
     padding: var(--space-5) var(--space-2);
   }
   .svc-hero-subtitle {
     font-size: var(--font-size-xs);
     margin-top: 8px;
+    color: var(--color-white);
+  }
+  .svc-hero-chips-label {
+    color: var(--color-white);
+    background-color: var(--on-dark-chip);
+    padding: 5px 12px;
+    border-radius: var(--radius-round);
   }
   .svc-hero-search {
     margin-top: 18px;
@@ -7583,7 +7628,7 @@ a.svc-help-btn:hover,
   .svc-hero-chips {
     gap: 6px;
   }
-  .svc-hero-chip {
+  .svc-hero-chip, .svc-hero-chips-label {
     padding: 5px 10px;
   }
 }
@@ -7981,6 +8026,12 @@ body {
   min-height: 38px;
 }
 
+/* The width overrides above are for form fields; the module's error screen sits in the
+   same container, so its button keeps its natural size. */
+.svc-form-panel #service-catalog-item [role=alert] button {
+  width: auto !important;
+}
+
 /* The module's form is a flex row of the fields column and the action column,
    which the page script collapses (the custom submit replaces it). With that
    column gone, drop the gutter margins that used to separate the two so the
@@ -8080,6 +8131,12 @@ body {
   color: var(--color-ui-60);
 }
 
+/* The button only proxies a click to the module's real submit button, so with no
+   form (the module showed its error screen) it would do nothing. */
+.svc-form-panel:not(:has(#service-catalog-item :is(input, textarea, select, [role=textbox]))) .svc-custom-submit-wrap {
+  display: none;
+}
+
 /* ---- SUBMIT BUTTON: overlap-aware hiding handled by JS ---- */
 /* Ensure form dropdowns render above the submit wrap */
 .svc-form-panel #service-catalog-item {
@@ -8090,7 +8147,7 @@ body {
 /* ---- FLOATING TRAINING BUTTON ---- */
 .svc-training-fab {
   position: fixed;
-  right: 24px;
+  inset-inline-end: 24px;
   bottom: 24px;
   z-index: 9000;
   display: inline-flex;
@@ -8127,7 +8184,7 @@ body {
 
 .svc-training-fab-label {
   flex: 1 1 auto;
-  padding-right: 20px;
+  padding-inline-end: var(--space-205);
   font-size: var(--font-size-2xs);
   font-weight: 600;
   line-height: 1;
@@ -8338,7 +8395,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
     resize: vertical !important;
   }
   .svc-training-fab {
-    right: 16px;
+    inset-inline-end: 16px;
     bottom: 16px;
   }
 }
@@ -8747,4 +8804,29 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   opacity: 0 !important;
   pointer-events: none !important;
   transform: translateY(-9999px) !important;
+}
+
+/***** Forced colors (Windows High Contrast) *****/
+@media (forced-colors: active) {
+  .header .logo a {
+    background-color: var(--color-brand-primary);
+    border-radius: var(--radius-md);
+    forced-color-adjust: none;
+    padding: var(--space-1) var(--space-105);
+  }
+  .ask-ai,
+  .svc-hero-search-btn,
+  .svc-hero-cta,
+  .svc-custom-submit-btn,
+  .svc-training-fab {
+    border: 1px solid ButtonText;
+  }
+  .svc-hero-search .svc-hero-search-btn {
+    border: 1px solid ButtonText !important;
+  }
+  .service-catalog-sidebar [role=button][aria-current=true]:not(:focus-visible),
+  .svc-search-sidebar .sidenav-item.current {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
 }

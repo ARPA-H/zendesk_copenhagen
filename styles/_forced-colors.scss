@@ -1,0 +1,38 @@
+/***** Forced colors (Windows High Contrast) *****/
+// In forced-colors mode the browser swaps authored colors for the user's system
+// palette and drops shadows. Anything said by a fill alone needs a border, an
+// outline or a surface of its own to survive. Keyboard focus already survives: the
+// ring is a box-shadow plus a transparent outline, and the outline is repainted.
+// The stock USWDS banner brings its own forced-colors rules.
+@media (forced-colors: active) {
+  // The white reverse wordmark sits on the indigo bar, which the palette replaces
+  // with the canvas, so the wordmark disappeared. The logo link keeps a dark tile.
+  .header .logo a {
+    background-color: var(--color-brand-primary);
+    border-radius: var(--radius-md);
+    forced-color-adjust: none;
+    padding: var(--space-1) var(--space-105);
+  }
+
+  // Pill buttons are a fill with no border, so without one they read as bare text.
+  .ask-ai,
+  .svc-hero-search-btn,
+  .svc-hero-cta,
+  .svc-custom-submit-btn,
+  .svc-training-fab {
+    border: 1px solid ButtonText;
+  }
+
+  // The hero pill strips the border from every child with !important.
+  .svc-hero-search .svc-hero-search-btn {
+    border: 1px solid ButtonText !important;
+  }
+
+  // A selected row is a tint, so give it an outline. A focused row keeps the
+  // focus outline instead.
+  .service-catalog-sidebar [role="button"][aria-current="true"]:not(:focus-visible),
+  .svc-search-sidebar .sidenav-item.current {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}

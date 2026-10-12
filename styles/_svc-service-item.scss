@@ -163,6 +163,9 @@ body { background: var(--color-white); }
 }
 .svc-form-panel textarea { resize: both !important; min-width: 100% !important; max-width: 100% !important; overflow: auto; }
 .svc-form-panel select { min-height: 38px; }
+/* The width overrides above are for form fields; the module's error screen sits in the
+   same container, so its button keeps its natural size. */
+.svc-form-panel #service-catalog-item [role="alert"] button { width: auto !important; }
 
 /* The module's form is a flex row of the fields column and the action column,
    which the page script collapses (the custom submit replaces it). With that
@@ -225,6 +228,9 @@ body { background: var(--color-white); }
 .svc-custom-submit-btn:active { background-image: linear-gradient(var(--color-hover-light-10), var(--color-hover-light-10)); }
 .svc-custom-submit-btn:disabled { opacity: 0.4; cursor: wait; }
 .svc-custom-submit-note { margin: 0; font-size: var(--font-size-2xs); color: var(--color-ui-60); }
+/* The button only proxies a click to the module's real submit button, so with no
+   form (the module showed its error screen) it would do nothing. */
+.svc-form-panel:not(:has(#service-catalog-item :is(input, textarea, select, [role="textbox"]))) .svc-custom-submit-wrap { display: none; }
 
 /* ---- SUBMIT BUTTON: overlap-aware hiding handled by JS ---- */
 /* Ensure form dropdowns render above the submit wrap */
@@ -235,7 +241,7 @@ body { background: var(--color-white); }
 
 /* ---- FLOATING TRAINING BUTTON ---- */
 .svc-training-fab {
-  position: fixed; right: 24px; bottom: 24px; z-index: 9000;
+  position: fixed; inset-inline-end: 24px; bottom: 24px; z-index: 9000;
   display: inline-flex; align-items: center; gap: 0;
   height: 52px; width: 52px; max-width: 52px; padding: 0; border-radius: 1000px;
   background-color: var(--color-brand-secondary);
@@ -246,7 +252,7 @@ body { background: var(--color-white); }
 .svc-training-fab-icon { flex: 0 0 52px; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; }
 .svc-training-fab-icon svg { width: 22px; height: 22px; stroke: var(--color-brand-primary); }
 .svc-training-fab-label {
-  flex: 1 1 auto; padding-right: 20px; font-size: var(--font-size-2xs); font-weight: 600; line-height: 1;
+  flex: 1 1 auto; padding-inline-end: var(--space-205); font-size: var(--font-size-2xs); font-weight: 600; line-height: 1;
   opacity: 0; transform: translateX(-4px);
   transition: opacity 0.2s ease 0.06s, transform 0.24s ease 0.06s;
 }
@@ -339,7 +345,7 @@ body > pre, body > code, body > .template-name, body > .editor-label { display: 
 }
 @media (max-width: 960px) {
   .svc-form-panel textarea { resize: vertical !important; }
-  .svc-training-fab { right: 16px; bottom: 16px; }
+  .svc-training-fab { inset-inline-end: 16px; bottom: 16px; }
 }
 @media (max-width: 600px) {
   .svc-form-panel #service-catalog-item h1 {
