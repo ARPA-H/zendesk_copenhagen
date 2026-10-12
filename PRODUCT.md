@@ -49,8 +49,8 @@ Guide knowledge base: categories, sections, articles and search results.
 
 **Success, in this inferred order of priority (unconfirmed):**
 
-1. **The right service or answer in seconds.** Search is the front door;
-   catalog and Knowledge are one experience, not two products.
+1. **The right service or answer in seconds.** The home page leads with search
+   and browsing; catalog and Knowledge are one experience, not two products.
 2. **Requests that arrive complete.** Field validation, preview of related
    articles while typing, and one clear submit path reduce back-and-forth with
    the Service Desk.
@@ -62,10 +62,10 @@ Guide knowledge base: categories, sections, articles and search results.
 A thin presentation and orchestration layer over Zendesk's own primitives:
 Guide articles and search, the Service Catalog API, ticket forms and requests.
 No workflow state lives in the theme; it reads from Zendesk and writes through
-documented public REST APIs only. Its distinct mechanism is a search-first home
-that greets the signed-in person, offers popular searches, and shows the
-catalog beside its category tree, with the same visual system carried into
-Knowledge pages.
+documented public REST APIs only. Its distinct mechanism is a home that greets the
+signed-in person, leads with Zendesk's instant search and popular searches, and
+shows the catalog beside its category tree, with the same visual system carried
+into Knowledge pages.
 
 ## Operating Context
 
@@ -176,8 +176,11 @@ request; Ask AI.
 
 1. **Answers before tickets.** Put the article or service that solves the
    problem in front of the person before asking them to file anything.
-2. **One front door.** Services and Knowledge share one search, one visual
-   system and one vocabulary.
+2. **One front door.** Services and Knowledge share one entry point, one visual
+   system and one vocabulary. Search is not unified today (the hero searches
+   Knowledge articles through Zendesk; the catalog's "Search for services"
+   control uses the Service Catalog API), so every search control must say what
+   it covers.
 3. **Zendesk stays the system of record.** Reskin and extend Guide; derive
    state from Zendesk; hold none of our own.
 4. **Earned familiarity.** Guide conventions and NEXUS tokens carry the

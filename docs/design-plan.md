@@ -38,15 +38,23 @@ decisions were made from the repository and the brief. Each is easy to reverse.
    `overdrive`) are restrained and respect reduced motion.
 5. **Copy.** Microcopy only. Service names, popular-search chips, article
    content and every string that comes from Zendesk stay as they are.
-6. **NEXUS tokens, not USWDS core.** The skill says NEXUS layers on top of the
-   [U.S. Web Design System](https://designsystem.digital.gov/). This work is
-   an explicit token-and-convention restyle of Copenhagen's own structure: it
-   does not add `@uswds/uswds`. Guide generates much of its own markup (search
-   form, breadcrumbs, votes, pagination), so `usa-*` classes cannot be applied,
-   and a second reset, grid and utility layer would put every page at risk
-   without a Zendesk-hosted baseline to compare against. The USWDS-derived
-   parts that matter here (the 8px spacing scale, the breakpoints, Public Sans,
-   the focus convention) come in through the NEXUS tokens.
+6. **NEXUS tokens, not USWDS core.** This is a documented deviation from the
+   skill's rule that every NEXUS web project installs `@uswds/uswds` (NEXUS
+   layers on top of the [U.S. Web Design System](https://designsystem.digital.gov/)).
+   Guide generates much of its own markup (search form, breadcrumbs, votes,
+   pagination), so `usa-*` classes cannot be applied, and a second reset, grid
+   and utility layer would put every page at risk without a Zendesk-hosted
+   baseline to compare against. The prerequisites are met as follows:
+
+   | USWDS prerequisite in the skill | In this theme |
+   | --- | --- |
+   | Reset and normalize | Copenhagen's `normalize.css` stays |
+   | Grid | Copenhagen's containers, with the NEXUS spacing scale and breakpoints |
+   | Fonts | Public Sans and Poppins self-hosted in `assets/`; the skill's Google Fonts CDN option is not used (`AGENTS.md` forbids font CDNs) |
+   | Icon sprite | Inline SVGs in the templates |
+   | Utility classes | Not used |
+   | `.gov` banner | Open decision, see below |
+
 7. **Commits.** Created through GitHub's `createCommitOnBranch` mutation, which
    [signs commits and marks them Verified](https://github.blog/changelog/2021-09-13-a-simpler-api-for-authoring-commits/),
    because the local Secretive key needs Touch ID for every signature.
@@ -61,7 +69,7 @@ decisions were made from the repository and the brief. Each is easy to reverse.
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm | Planned |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
 | 5 | `distill` | Remove dead and duplicated styles and markup, including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
-| 6 | `clarify` | Microcopy (labels, placeholders, empty and error states) | Planned |
+| 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
 | 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Restrained expressive layer and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Planned |
