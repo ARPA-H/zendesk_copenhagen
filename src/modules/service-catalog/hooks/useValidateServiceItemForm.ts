@@ -100,9 +100,9 @@ export function useValidateServiceItemForm(
 
       const hasError = Boolean(
         errors.attachments ||
-          errors.assetType ||
-          errors.asset ||
-          Object.keys(fieldErrors).length > 0
+        errors.assetType ||
+        errors.asset ||
+        Object.keys(fieldErrors).length > 0
       );
 
       return { hasError, errors, fieldErrors };
