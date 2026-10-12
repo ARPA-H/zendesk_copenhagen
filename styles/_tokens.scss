@@ -194,7 +194,9 @@
   /* Selected rows, hovered rail items and quiet info bands. Selection is not
      an action, so it is never cyan. */
   --surface-selected: var(--color-blue-50);
-  --surface-badge: var(--color-cyan-800);
+  /* Static community badges are decorative, so they use the turquoise accent
+     (7.1:1 with white text); the cyan ramp stays on pressable controls. */
+  --surface-badge: var(--color-turquoise-800);
   --color-info-border: var(--color-blue-300);
   /* Request status labels: accents, not feedback. */
   --status-default: var(--color-turquoise-700);

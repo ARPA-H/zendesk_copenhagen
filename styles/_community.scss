@@ -99,13 +99,6 @@
     position: relative;
     width: 100%;
 
-    &:hover { background-color: var(--color-brand-primary); }
-
-    &:hover::after, &:focus::after {
-      border-color: var(--color-white);
-      color: var(--color-white);
-    }
-
     &[data-selected="true"] {
       background-color: var(--color-brand-primary);
       color: var(--color-white);
