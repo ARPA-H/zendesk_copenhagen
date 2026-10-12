@@ -8,15 +8,7 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-const settings: Settings = {
-  background_color: "#ffffff",
-  text_color: "#000000",
-  brand_color: "#0000ff",
-  brand_text_color: "#ffffff",
-  link_color: "#0000ff",
-  hover_link_color: "#0000aa",
-  visited_link_color: "#800080",
-};
+const settings: Settings = {};
 const baseLocale = "en-us";
 
 describe("renderFlashNotifications", () => {

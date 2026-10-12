@@ -72,9 +72,10 @@ into Knowledge pages.
 ## Operating Context
 
 - **Host.** Zendesk Guide serves the theme. `style.css` is processed by
-  Zendesk's ZASS, so Zendesk settings (`$brand_color` and the like) are
-  substituted server-side. Zendesk-rendered components, such as instant
-  search, cannot be restyled beyond the hooks Guide exposes.
+  Zendesk's ZASS, so Zendesk settings (the font, image and alert banner
+  settings) are substituted server-side; colors come from the design tokens,
+  not from settings. Zendesk-rendered components, such as instant search,
+  cannot be restyled beyond the hooks Guide exposes.
 - **Delivery.** GitHub Actions rebuild the theme and upload it through the
   Theme Update Job when changes reach `sandbox` (sandbox Zendesk) or `main`
   (production). Feature branches and pull requests never deploy; this work

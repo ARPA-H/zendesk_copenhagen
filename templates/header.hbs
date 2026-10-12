@@ -8,10 +8,9 @@
 <header class="header">
   <div class="logo">
     {{#link 'help_center'}}
-      {{!-- The NEXUS navigation bar is indigo, so the header always uses the
-           committed reverse (white wordmark) lockup. The Logo setting is not
-           used here: Zendesk blocks SVG uploads, and an uploaded full-color
-           logo would disappear on the indigo bar. --}}
+      {{!-- The NEXUS navigation bar is indigo and specifies the reverse (white
+           wordmark) logo, so the header always uses the committed lockup. There
+           is no Logo setting: a full-color upload would disappear on indigo. --}}
       <img src="{{asset 'arpa-h-logo-reverse.svg'}}" alt="{{t 'home_page' name=help_center.name}}" width="133" height="37" />
       {{#if settings.show_brand_name}}
         <span class="site-title" aria-hidden="true">{{help_center.name}}</span>

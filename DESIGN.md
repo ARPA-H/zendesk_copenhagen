@@ -152,7 +152,7 @@ A restrained palette: indigo and white carry almost everything, cyan marks the o
 
 **The No Raw Color Rule.** Components read alias tokens from `styles/_tokens.scss`, never a hex value and never a palette step such as `--color-blue-700`; when a component needs a step it gets a role alias first (`--surface-selected`, `--status-open`). The gate in the plan checks both. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.
 
-**The One Source Rule.** Tokens own every color. The color settings in `manifest.json` (brand, text, link and background) are kept so existing theme settings still import, but neither the stylesheets nor the React theme applies them; a saved value from an older design cannot override the palette. The React modules cannot read CSS custom properties inside Garden color scales, so `src/modules/shared/garden-theme/nexusPalette.ts` mirrors the primitives it uses and a unit test fails when the two files drift.
+**The One Source Rule.** Tokens own every color and the logo. The brand, text, link and background color settings and the Logo setting are removed from `manifest.json`, so Admin Center no longer offers controls that would do nothing, and a value saved under an older design cannot override the palette or put a full-color logo on the indigo bar; the alert banner keeps its own color settings because an announcement is chosen per use. The React modules cannot read CSS custom properties inside Garden color scales, so `src/modules/shared/garden-theme/nexusPalette.ts` mirrors the primitives it uses and a unit test fails when the two files drift.
 
 ## Typography
 

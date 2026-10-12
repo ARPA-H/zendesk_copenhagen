@@ -85,11 +85,9 @@ describe("createTheme", () => {
     expect(getColor({ theme, variable: "foreground.warning" })).toBe("#7a5d20");
   });
 
-  it("does not apply the legacy color settings", () => {
+  it("takes every color from the NEXUS palette, whatever settings are passed", () => {
     const withSettings = createTheme({
-      brand_color: "#ff00ff",
-      link_color: "#00ff00",
-      text_color: "#ff0000",
+      iconify_api_base: "https://example.test",
     });
     expect(
       getColor({ theme: withSettings, variable: "foreground.default" })

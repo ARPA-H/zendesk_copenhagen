@@ -13,81 +13,6 @@ packages:
 
 parts:
   - translation:
-      key: "txt.help_center_copenhagen_theme.colors_group_label"
-      title: "Label for the color setting group"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Colors"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_color_description"
-      title: "Description for the brand color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand color for major navigational elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_color_label"
-      title: "Label for the brand color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_text_color_description"
-      title: "Description for the brand text color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand color for hover and active states"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_text_color_label"
-      title: "Label for the brand text color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand text color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.text_color_description"
-      title: "Description for the text color settings"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Text color for body and heading elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.text_color_label"
-      title: "Label for the text color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Text color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.link_color_description"
-      title: "Description for the link color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Text color for link elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.link_color_label"
-      title: "Label for the link color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Link color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.visited_link_color_description"
-      title: "Description for the visited link color setting"
-      screenshot: "https://drive.google.com/file/d/1ZOoBb6K_mpYtyd3ulkEKawmSj1dZPuFw/view?usp=sharing"
-      value: "Text color for visited link elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.hover_link_color_label"
-      title: "Label for the hover link color setting"
-      screenshot: "https://drive.google.com/file/d/14Wh8h1I-ej3d2TRrPHFMvydDeEO_8sxr/view?usp=sharing"
-      value: "Hover link color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.hover_link_color_description"
-      title: "Description for the hover link color setting"
-      screenshot: "https://drive.google.com/file/d/14Wh8h1I-ej3d2TRrPHFMvydDeEO_8sxr/view?usp=sharing"
-      value: "Text color for the hover state of link elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.visited_link_color_label"
-      title: "Label for the visited link color setting"
-      screenshot: "https://drive.google.com/file/d/1ZOoBb6K_mpYtyd3ulkEKawmSj1dZPuFw/view?usp=sharing"
-      value: "Visited link color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.background_color_description"
-      title: "Description for the background color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Background color of your Help Center"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.background_color_label"
-      title: "Label for the background color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Background color"
-  - translation:
       key: "txt.help_center_copenhagen_theme.fonts_group_label"
       title: "Label for the fonts setting group"
       screenshot: "https://zendesk.box.com/s/l203jfwo8m7tcurohau3xwdr4gflneo3"
@@ -117,16 +42,6 @@ parts:
       title: "Label for the brand settings group"
       screenshot: "https://zendesk.box.com/s/cffw5at7onzirw9g54kmecdji28zk02x"
       value: "Brand"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.logo_description"
-      title: "Description for the logo setting"
-      screenshot: "https://zendesk.box.com/s/cffw5at7onzirw9g54kmecdji28zk02x"
-      value: "Company logo"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.logo_label"
-      title: "Label for the logo setting"
-      screenshot: "https://zendesk.box.com/s/cffw5at7onzirw9g54kmecdji28zk02x"
-      value: "Logo"
   - translation:
       key: "txt.help_center_copenhagen_theme.favicon_description"
       title: "Description for the favicon setting"

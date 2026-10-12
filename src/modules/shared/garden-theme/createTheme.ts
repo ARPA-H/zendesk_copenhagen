@@ -5,18 +5,6 @@ import { NEXUS_COLORS as c, NEXUS_PALETTE } from "./nexusPalette";
 
 export interface Settings {
   /**
-   * The color settings are still part of the settings payload, but the NEXUS
-   * tokens own every color (see `nexusPalette.ts` and `styles/_tokens.scss`),
-   * so `createTheme` does not apply them.
-   */
-  background_color?: string;
-  text_color?: string;
-  brand_color?: string;
-  brand_text_color?: string;
-  link_color?: string;
-  hover_link_color?: string;
-  visited_link_color?: string;
-  /**
    * Optional base URL of a self-hosted Iconify API used to resolve
    * service-catalog icon references. Empty -> Iconify's public API.
    */
@@ -150,7 +138,7 @@ const anchorStyle = css`
   }
 `;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars -- the render functions keep passing their settings; colors come from the NEXUS tokens
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- the render functions keep passing their settings; every color comes from the NEXUS tokens, so none is read here
 export function createTheme(settings?: Settings): IGardenTheme {
   const { light } = DEFAULT_THEME.colors.variables;
 
