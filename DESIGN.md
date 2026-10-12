@@ -1,12 +1,13 @@
 ---
 name: ARPA-H Service Desk (Help Center theme)
-description: A lit service counter under an indigo sky: one dark gradient hero, bright orderly surfaces, and a single cyan action color, on the ARPA-H NEXUS tokens.
+description: A lit service counter under an indigo sky: one dark gradient hero, bright orderly surfaces, cyan for actions and one hot pink search button, on the ARPA-H NEXUS tokens.
 colors:
   indigo: "#000334"
   indigo-light: "#2a2d56"
   cyan: "#52daf2"
   cyan-light: "#6fe0f4"
   cyan-hover: "#4ac5df" # cyan under the 10% indigo hover overlay, flattened
+  hot-pink: "#fd4497" # the NEXUS Accent Warmer; the search button only
   navy: "#001b5e"
   link: "#0957be"
   link-hover: "#07418f"
@@ -121,6 +122,15 @@ components:
     backgroundColor: "{colors.indigo}"
     textColor: "{colors.on-dark}"
     height: "71px"
+  government-banner:
+    backgroundColor: "{colors.surface-subtle}"
+    textColor: "{colors.indigo}"
+    height: "28px"
+  search-button:
+    backgroundColor: "{colors.hot-pink}"
+    textColor: "{colors.on-dark}" # the magnifier icon; 3.26:1, enough for a graphic
+    rounded: "{rounded.pill}"
+    height: "48px"
   search-pill:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.indigo}"
@@ -147,18 +157,19 @@ The system is NEXUS-aligned, not NEXUS-conformant: it adopts the tokens and comp
 **Key Characteristics:**
 
 - One dark band (the navigation bar flowing into the hero) above bright working surfaces.
-- Cyan is the action color and nothing else; yellow, green and red appear only in messages.
+- Cyan is the action color; the one exception is the hero search button, which is hot pink. Yellow, green and red appear only in messages.
 - Pill-shaped actions, 16px surfaces, hairline strokes, shallow elevation.
 - Public Sans for reading, Poppins for the few big moments.
 
 ## Colors
 
-A restrained palette: indigo and white carry almost everything, cyan marks the one thing to press, and accents appear in artwork and status labels only.
+A restrained palette: indigo and white carry almost everything, cyan marks the thing to press, hot pink marks the search button, and other accents appear in artwork and status labels only.
 
 ### Primary
 
 - **Deep Indigo** (`#000334`): the navigation bar and footer, all body and heading text, outline buttons, the secondary button.
-- **Action Cyan** (`#52daf2`): the primary action: Ask AI, the hero and item-page search buttons, Submit, `.button-primary` and `.button-large`, the training button. Always with indigo text, never with white (white on cyan is 1.6:1).
+- **Action Cyan** (`#52daf2`): the primary action: Ask AI, Submit, `.button-primary` and `.button-large`, the training button. Always with indigo text, never with white (white on cyan is 1.6:1).
+- **Hot Pink** (`#fd4497`, the NEXUS Accent Warmer): the hero and item-page search buttons, the one control that starts a search. The magnifier on it is white: 3.26:1, enough for a graphic (3:1). Text on this pink cannot be white (it needs 4.5:1); indigo reaches 6.07:1. Hover darkens with the same 10% indigo overlay. The owner chose this exception to the NEXUS cyan primary.
 
 ### Secondary
 
@@ -173,7 +184,7 @@ A restrained palette: indigo and white carry almost everything, cyan marks the o
 
 ### Accents and feedback
 
-- **Pink 600** (`#c93678`) marks an open request; **Turquoise 700** (`#188478`) the default status label; **Violet 600** (`#4535a7`) a new request. Pink also lives in the hero artwork, which is an image.
+- **Pink 600** (`#c93678`) marks an open request; **Turquoise 700** (`#188478`) the default status label; **Violet 600** (`#4535a7`) a new request. Pink also lives in the hero artwork, which is an image, and on the search button (hot pink, above).
 - **Error, warning, info** (`#bf2d1d` on `#f4dcd9`; `#7a5d20` on `#fdf3df`; `#cdeafa`) are messages: notifications, form validation and load failures. They are never decoration.
 
 ### Named Rules
@@ -270,11 +281,11 @@ The official [USWDS banner](https://designsystem.digital.gov/components/banner/)
 
 ### Navigation bar
 
-Full-bleed indigo, 71px tall, the reverse logo at 37px, then a thin divider and the Help Center name as the site title (shown when the Show Help Center name setting is on, truncated when long), white text. Ask AI is the only cyan pill. The user menu is a white 16px card. The full bar holds at 768px and wider, as the NEXUS checklist requires; below 768px it keeps the logo and a 44px menu button that opens a white panel.
+Full-bleed indigo, 71px tall, the reverse logo at 37px and white text, with no site title: help.arpa-h.gov serves several audiences (IT and HR among them), and the original theme hid the Help Center name for the same reason. On the home and services pages the bar is transparent and the hero artwork runs behind it, so the bar and the hero read as one dark band; every other page has the solid indigo bar. Ask AI is the only cyan pill in the bar. The user menu is a white 16px card. The full bar holds at 768px and wider, as the NEXUS checklist requires; below 768px it keeps the logo and a 44px menu button that opens a white panel.
 
 ### Hero and search
 
-A dark gradient hero (the hero artwork image) with a Poppins greeting, one white pill search with a cyan circular submit, and popular-search chips: translucent pills over a 55% indigo scrim, so white text stays above 4.5:1 on any part of the artwork. The search pill takes the dark-surface focus ring as a whole.
+A dark gradient hero (the hero artwork image) with a Poppins greeting, one white pill search with a hot pink circular submit and a white magnifier, and popular-search chips: translucent pills over a 55% indigo scrim, so white text stays above 4.5:1 on any part of the artwork. The search pill takes the dark-surface focus ring as a whole.
 
 ### Cards
 

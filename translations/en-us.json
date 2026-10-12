@@ -60,8 +60,6 @@
   "service_catalog_group_label": "Service Catalog",
   "service_catalog_hero_image_description": "Hero image on the service catalog page",
   "service_catalog_hero_image_label": "Service catalog hero image",
-  "show_brand_name_description": "Display the Help Center name next to the logo",
-  "show_brand_name_label": "Show Help Center name",
   "show_suggested_articles_in_new_request_form_description": "Show suggested articles on new request form",
   "show_suggested_articles_label": "Show suggested articles",
   "show_training_fab_description": "Display a floating button that links to Technology Training on Service Catalog request pages",

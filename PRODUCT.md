@@ -35,13 +35,17 @@ catalog items and Knowledge articles in Zendesk and receive the resulting
 requests there. They preview draft items in the theme (`?preview=true`); they
 do not work inside this theme.
 
-*Inferred.* **Signed-out visitors** see the alert banner and sign-in; there is
-no public catalog.
+*Owner-confirmed.* **Visitors and sign-in.** help.arpa-h.gov is a public .gov
+site, and the Help Center has two models: anonymous and authenticated. The
+search hero, the popular-search chips, the service catalog and the Knowledge
+band on the home page stay behind authentication; signed-out visitors see the
+alert banner and sign-in. The `.gov` banner shows to everyone.
 
 ## Product Purpose
 
-*Inferred, from `PLAN.md`.* ARPA-H runs its internal IT service catalog and
-staff self-service portal on Zendesk Guide using this theme. The theme
+*Inferred, from `PLAN.md`.* ARPA-H runs its IT service catalog and staff
+self-service portal on Zendesk Guide, at the public address help.arpa-h.gov,
+using this theme. The theme
 rebrands Copenhagen to ARPA-H's identity and extends it with an agency-specific
 Service Catalog (request forms, a chat launcher, an "Ask AI" link). The home
 page leads with the catalog instead of Copenhagen's stock category blocks and
@@ -121,11 +125,23 @@ into Knowledge pages.
   import `shared`, `test`, `ticket-fields` and `flash-notifications`, which
   import only each other.
 
+### Decided with the owner
+
+- The `.gov` banner is required (the site is public): it is built from the
+  `@uswds/uswds` package in isolation and shown on every page. The rest of the
+  USWDS library stays out.
+- The home page gets a Knowledge entry point (a "Browse help articles" band),
+  for signed-in people only, with the hero, chips and catalog.
+- The service item page is rebuilt: no greeting band, step pills, helper cards
+  or nested shells.
+- Expressive phases are moderate: state motion plus one signature moment per
+  key page, always honoring reduced motion.
+- The Admin Center color and Logo settings stay removed.
+- The hero search button is hot pink with a white magnifier. Ask AI stays cyan
+  with indigo text.
+
 ### Explicitly undecided (do not invent)
 
-- Whether the USWDS `.gov` banner is required. The portal is internal and
-  Zendesk-hosted; no banner is added until confirmed.
-- Whether Knowledge needs its own entry point on the home page.
 - Dark mode (not provided by Guide; none is built).
 - Analytics, usage metrics and service-desk volumes: none were provided.
 
@@ -140,26 +156,31 @@ request; Ask AI.
   is followed for type, shape and component conventions where Guide allows:
   indigo `#000334`, cyan `#52daf2`, navy `#001b5e`; Poppins for display,
   h1 and h2; Public Sans for body and h3 to h6; pill buttons with a cyan
-  primary and indigo text; 16px cards.
+  primary and indigo text (the hero search button is hot pink, an owner
+  exception); 16px cards.
 - **NEXUS-aligned, not NEXUS-conformant.** The skill treats USWDS core as a
-  prerequisite of every NEXUS web project; this theme does not install it, so an
-  owner decision is needed before merge: approve the exception below, or ask for
-  a follow-up that installs `@uswds/uswds` (with the `.gov` banner). NEXUS sits on
-  top of the
+  prerequisite of every NEXUS web project. The owner chose to install
+  `@uswds/uswds` for the `.gov` banner only: the banner is compiled from the
+  package in isolation (no global selectors; 0 of 4,689 measured elements
+  change). NEXUS sits on top of the
   [U.S. Web Design System](https://designsystem.digital.gov/), whose package
   [contains all the styles for USWDS components](https://designsystem.digital.gov/documentation/getting-started/developers/phase-two-compile/).
   This theme adopts the NEXUS tokens (color, type, spacing, radius, elevation,
-  focus) and component conventions through its own SCSS and does not install
-  `@uswds/uswds`: Guide renders much of the markup itself (search form,
-  breadcrumbs, votes, pagination), so `usa-*` classes cannot be applied, and a
-  second reset, grid and utility layer on top of Copenhagen's own would put
-  every page at risk with no Zendesk-hosted baseline to compare against.
-  Revisit together with the `.gov` banner decision.
+  focus) and component conventions through its own SCSS and leaves out the
+  USWDS reset, grid and utilities: the full library would change 17% of
+  rendered elements (it grows the Garden catalog search field from 47 to 54
+  pixels), and Guide renders much of the markup itself (search form,
+  breadcrumbs, votes, pagination), so `usa-*` classes cannot be applied. The
+  measurements are in `docs/design-plan.md`.
 - **Feedback colors are for status only.** Yellow, green and red mark warning,
   success and error messages. Persistent UI, accents and decoration use cyan,
   blue, violet, turquoise and pink only (rule from the skill).
 - **Cyan is the action color.** Static elements do not borrow it (a lesson
   from [ARPA-H/zendesk_onboarding_offboarding#41](https://github.com/ARPA-H/zendesk_onboarding_offboarding/pull/41)).
+  The one exception is the hero search button, which the owner chose to make
+  hot pink (`#fd4497`, the NEXUS Accent Warmer) with a white magnifier: white is
+  3.26:1 on that pink, enough for a graphic but not for text, so Ask AI keeps
+  its cyan and indigo.
 - **Keep the current signature recognizable** (*Task brief*): the dark gradient
   hero with the Poppins greeting, the pill search, the popular-search chips and
   the rounded catalog card are carried forward, not replaced.

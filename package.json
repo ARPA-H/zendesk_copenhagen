@@ -4,8 +4,7 @@
   "repository": "git@github.com:zendesk/copenhagen_theme.git",
   "scripts": {
     "start": "concurrently -k -r 'rollup -c -w' 'wait-on script.js style.css && zcli themes:preview'",
-    "build": "NODE_ENV=production rollup -c",
-    "prebuild": "rm -f assets/*-bundle.js && yarn build:usa-banner",
+    "build": "rm -f assets/*-bundle.js && yarn build:usa-banner && NODE_ENV=production rollup -c",
     "build:usa-banner": "node bin/build-usa-banner.mjs",
     "eslint": "ESLINT_USE_FLAT_CONFIG=false eslint src",
     "lint:md": "markdownlint-cli2 \"**/*.md\"",

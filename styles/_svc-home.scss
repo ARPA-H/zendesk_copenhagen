@@ -26,6 +26,24 @@
   height: auto;
   min-height: 300px;
 }
+/* On hero pages the artwork continues behind the header, so the bar and the hero
+   read as one dark band instead of a flat bar sitting on an image. The header
+   goes transparent (the reverse logo and white text already suit the artwork),
+   and the hero starts at the top of the bar and keeps its content below it.
+   The artwork is nudged down by half the bar's height, which keeps the part
+   behind the content exactly where it was. The header takes the higher z-index
+   because the hero comes later and is positioned, so it would otherwise paint
+   over the bar and its menus. Every other page keeps the solid indigo bar. */
+.svc-home .header {
+  background-color: transparent;
+  z-index: 5;
+}
+.svc-home .svc-hero {
+  background-position: center calc(50% + #{$header-height} / 2);
+  box-sizing: border-box;
+  margin-top: calc(-1 * #{$header-height});
+  padding-top: $header-height;
+}
 .svc-hero .svc-hero-inner,
 .svc-hero .hero-inner {
   display: flex !important;
@@ -138,9 +156,9 @@
   padding: 0;
   border: none;
   cursor: pointer;
-  color: var(--color-brand-primary);
+  color: var(--color-white);
   border-radius: var(--radius-round);
-  background-color: var(--color-brand-secondary);
+  background-color: var(--surface-entry);
 }
 .svc-hero-search-btn svg { width: 20px; height: 20px; }
 .svc-hero-search-btn:hover { background-image: linear-gradient(var(--color-hover-light-10), var(--color-hover-light-10)); }
@@ -174,21 +192,20 @@
 }
 
 /* ---------- CATALOG CARD ---------- */
+/* The rounded white card is the catalog's signature. It shares the page
+   container's edges (header, breadcrumbs, footer) instead of running wider, and
+   its padding steps with the page gutter. */
 .svc-cardwrap {
-  width: 100%;
-  max-width: 1760px;
-  margin: 0 auto;
-  padding: 40px clamp(16px, 3vw, 48px) 64px;
-  box-sizing: border-box;
+  @include max-width-container;
+  padding-block: var(--space-5) var(--space-8);
 }
 .svc-list-shell {
   position: relative;
   z-index: 3;
-  margin-top: -56px;
-  padding: 32px clamp(20px, 2.4vw, 40px) 40px;
-  background: var(--color-white);
-  border-radius: 24px;
-  border: 1px solid var(--color-ui-20);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  background: var(--surface-page);
+  border: 1px solid var(--surface-stroke);
+  border-radius: var(--radius-xl);
 }
 
 /* Catalog text is Public Sans; the cards keep their own title weight. */
@@ -313,14 +330,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-2);
   flex-wrap: wrap;
   width: 100%;
-  margin: 32px 0 4px;
+  margin: var(--space-4) 0 var(--space-05);
   padding: 18px 22px;
   box-sizing: border-box;
   border: 1px solid var(--color-ui-10);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--color-white);
 }
 .svc-help-banner-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -430,8 +447,6 @@ a.svc-help-btn:hover,
 @media (max-width: 960px) {
   .svc-hero { min-height: 240px; }
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner { padding: var(--space-4) var(--space-205); }
-  .svc-cardwrap { padding: 24px 12px 48px; }
-  .svc-list-shell { margin-top: -32px; padding: 20px 14px 28px; }
 }
 
 /* ---------- MOBILE ---------- */
@@ -454,8 +469,8 @@ a.svc-help-btn:hover,
   .svc-hero-input { font-size: var(--font-size-xs); padding: 11px 12px; }
   .svc-hero-search-btn { width: 42px; height: 42px; }
 
-  .svc-cardwrap { padding: 18px 10px 40px; max-width: 100%; overflow-x: hidden; }
-  .svc-list-shell { margin-top: -24px; padding: 16px 12px 24px; border-radius: 16px; overflow: visible; }
+  .svc-cardwrap { padding-block: var(--space-3) var(--space-6); max-width: 100%; overflow-x: hidden; }
+  .svc-list-shell { padding: var(--space-2); border-radius: var(--radius-lg); overflow: visible; }
 
   // Was horizontally scrollable (overflow-x: auto) as a workaround for the
   // fixed-width sidebar squeezing the grid; the sidebar now collapses into a
@@ -518,7 +533,6 @@ a.svc-help-btn:hover,
 @media (max-width: 430px) {
   .svc-hero-chips { gap: 6px; }
   .svc-hero-chip { padding: 5px 10px; }
-  .svc-list-shell { padding: 14px 10px 20px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .svc-tooltip { transition: none !important; }

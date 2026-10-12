@@ -2,7 +2,9 @@
   Home page — hero + combined live search + service catalog. Duplicated
   from templates/service_list_page.hbs (Guide has no partial/include
   mechanism to share markup between top-level templates) so "/" and
-  "/services" render the same experience. Keep both files in sync by hand.
+  "/services" render the same experience. Keep both files in sync by hand,
+  except the Knowledge band at the end: only this template is given
+  `categories`, so the band exists here alone.
 
   Styling: styles/_svc-home.scss (design tokens in _svc-tokens.scss). Do NOT add
   <style> blocks or style="" attributes here — edit the SCSS partials instead.
@@ -126,6 +128,32 @@
     </div>
   </div>
 </div>
+{{/if}}
+
+<!-- ===== KNOWLEDGE ENTRY POINT (browse by topic) =====
+     For people who would rather read than search. It stays behind sign-in with the
+     hero, chips and catalog. Only the home page template exposes `categories`
+     (service_list_page.hbs does not), so this band lives here alone.
+     Styling: styles/_svc-knowledge.scss. -->
+{{#if signed_in}}
+{{#if categories}}
+<section class="svc-knowledge" aria-labelledby="svc-knowledge-title">
+  <div class="svc-knowledge-inner">
+    <h2 id="svc-knowledge-title" class="svc-knowledge-title">Browse help articles</h2>
+    <p class="svc-knowledge-lede">Guides and answers, grouped by topic.</p>
+    <ul class="svc-knowledge-list">
+      {{#each categories}}
+      <li class="svc-knowledge-item">
+        <a class="svc-knowledge-link" href="{{url}}">
+          <span class="svc-knowledge-name">{{name}}</span>
+          {{#if description}}<span class="svc-knowledge-desc">{{description}}</span>{{/if}}
+        </a>
+      </li>
+      {{/each}}
+    </ul>
+  </div>
+</section>
+{{/if}}
 {{/if}}
 
 {{#if signed_in}}

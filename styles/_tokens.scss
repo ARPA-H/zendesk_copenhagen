@@ -197,6 +197,11 @@
   /* Static community badges are decorative, so they use the turquoise accent
      (7.1:1 with white text); the cyan ramp stays on pressable controls. */
   --surface-badge: var(--color-turquoise-800);
+  /* Hot pink (the NEXUS Accent Warmer) marks the hero search button, the one
+     control that starts a search. Its magnifier is white: 3.26:1, enough for a
+     graphic (3:1) but not for text (4.5:1), so a label on this color would have
+     to be indigo (6.07:1). Ask AI and form actions stay cyan with indigo text. */
+  --surface-entry: var(--color-accent-warmer);
   --color-info-border: var(--color-blue-300);
   /* Request status labels: accents, not feedback. */
   --status-default: var(--color-turquoise-700);

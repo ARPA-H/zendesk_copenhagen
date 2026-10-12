@@ -65,12 +65,25 @@ supersede the assumptions below wherever the two differ.
    key page (home hero, catalog card hover, article header, request success),
    all honoring `prefers-reduced-motion`.
 5. **Admin Center color and Logo settings stay removed.**
+6. **Hero search button: hot pink with a white magnifier**, as it was before this
+   work. White on `#fd4497` is 3.26:1, enough for a graphic (3:1) but not for
+   text (4.5:1), so Ask AI stays cyan with indigo text. The hero artwork keeps its
+   original crop and scale.
+7. **No site title in the header.** help.arpa-h.gov serves several audiences (IT
+   and HR among them), and the original CSS hid the Help Center name as well.
+   Phase 1 had added it from the skill's nav bar step ("Add a `| Site Title`
+   text separator"); it is removed, together with the Show Help Center name
+   setting that no longer does anything.
+8. **The header blends into the hero** on the home and services pages: the bar
+   is transparent and the artwork runs behind it, with the part behind the
+   content kept where it was. Every other page keeps the solid indigo bar. The
+   rounded white catalog card, the original signature, is kept.
 
 ## Assumptions
 
 The product owner could not be reached when the work started, so these
 decisions were made from the repository and the brief. Each is easy to reverse.
-Items 3, 4 and 6 are superseded by the owner decisions above.
+Items 3, 4 and 6 are refined by the owner decisions above.
 
 1. **Scope.** Service Catalog (home, list, item), Knowledge (category,
    section, article, search results) and the shared chrome (header, footer,
@@ -80,8 +93,9 @@ Items 3, 4 and 6 are superseded by the owner decisions above.
    information architecture. Cyan is the action color only. Pink, violet,
    turquoise and blue are accents. Yellow, green and red are feedback only.
 3. **Header.** The NEXUS indigo navigation bar with the reverse logo, as the
-   skill's restyling checklist specifies. The `.gov` banner is added above it
-   (owner decision 1).
+   skill's restyling checklist specifies, without the checklist's site title
+   (owner decision 7) and blended into the hero on the home and services pages
+   (owner decision 8). The `.gov` banner is added above it (owner decision 1).
 4. **Phases.** All Impeccable commands except `live`, which needs an
    interactive browser session. `bolder` and `quieter` pull in opposite
    directions, so both are evaluated and each is applied only where the
@@ -122,7 +136,7 @@ Items 3, 4 and 6 are superseded by the owner decisions above.
 | 0 | `init`, `critique`, `audit` | PRODUCT.md, a scored baseline critique ([23/40](design-critique-2026-10-12.md)) and audit ([10/20](design-audit-2026-10-12.md)) | Done |
 | 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
 | 2 | `typeset` | One NEXUS type scale in `rem` tokens (12 to 40 pixels, eight sizes in use): Poppins for the greeting and h1 and h2, Public Sans for everything read or pressed; a 70-character prose measure; tabular numerals; rewritten article, table and heading rhythm; the Garden theme on the same scale; the dead `.svc-hero-results`, `.svc-res-*`, `.svc-mini-*` and `.svc-mr-*` styles removed | Done |
-| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the NEXUS header title separator and Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category and section grids, Device FAQs tiles, overflow fixes and the banner done |
+| 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the header blended into the hero; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category and section grids, Device FAQs tiles, overflow fixes, the banner, the blended header and the Knowledge band done |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
 | 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
@@ -178,7 +192,6 @@ the footer's policy links (help.arpa-h.gov is public, so the public HHS and
 arpa-h.gov policy pages belong there) and the Admin Center settings (decision 5).
 Still open:
 
-- Whether to rename the Help Center so the header reads "ARPA-H | Service Desk": the site title shows the Help Center name, and a name that starts with ARPA-H repeats the logo (the offline render uses "ARPA-H Service Desk"). The name is a Zendesk Admin Center setting; the theme only displays it, and the Show Help Center name setting turns the title off.
 - Whether pages without their own search (requests, profiles) should get a search entry point: the base theme hid the header search on every page (`_svc-tokens.scss` at the base commit), so this work removed dead markup rather than a visible control.
 - Moving the hard-coded OS tile IDs in `category_page.hbs` into settings.
 - The live [arpa-h.gov](https://arpa-h.gov/) still ships the older USWDS 1.x banner copy ("The .gov means it's official."); this theme uses the current official 3.x text. Whether the two should be aligned is a content decision for the main site's owners.

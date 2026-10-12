@@ -364,6 +364,11 @@ template {
   /* Static community badges are decorative, so they use the turquoise accent
      (7.1:1 with white text); the cyan ramp stays on pressable controls. */
   --surface-badge: var(--color-turquoise-800);
+  /* Hot pink (the NEXUS Accent Warmer) marks the hero search button, the one
+     control that starts a search. Its magnifier is white: 3.26:1, enough for a
+     graphic (3:1) but not for text (4.5:1), so a label on this color would have
+     to be indigo (6.07:1). Ask AI and form actions stay cyan with indigo text. */
+  --surface-entry: var(--color-accent-warmer);
   --color-info-border: var(--color-blue-300);
   /* Request status labels: accents, not feedback. */
   --status-default: var(--color-turquoise-700);
@@ -2089,24 +2094,6 @@ html:not(.js) .usa-banner__button {
   display: block;
   height: 37px;
   width: auto;
-}
-.logo .site-title {
-  margin-inline-start: var(--space-2);
-  padding-inline-start: var(--space-2);
-  border-inline-start: 1px solid var(--on-dark-border-strong);
-  color: var(--color-white);
-  font-family: var(--font-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  line-height: var(--line-height-3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-@media (max-width: 767px) {
-  .logo .site-title {
-    display: none;
-  }
 }
 
 /***** Primary action: Ask AI *****/
@@ -6940,6 +6927,26 @@ zd-summary-block {
   min-height: 300px;
 }
 
+/* On hero pages the artwork continues behind the header, so the bar and the hero
+   read as one dark band instead of a flat bar sitting on an image. The header
+   goes transparent (the reverse logo and white text already suit the artwork),
+   and the hero starts at the top of the bar and keeps its content below it.
+   The artwork is nudged down by half the bar's height, which keeps the part
+   behind the content exactly where it was. The header takes the higher z-index
+   because the hero comes later and is positioned, so it would otherwise paint
+   over the bar and its menus. Every other page keeps the solid indigo bar. */
+.svc-home .header {
+  background-color: transparent;
+  z-index: 5;
+}
+
+.svc-home .svc-hero {
+  background-position: center calc(50% + 71px / 2);
+  box-sizing: border-box;
+  margin-top: calc(-1 * 71px);
+  padding-top: 71px;
+}
+
 .svc-hero .svc-hero-inner,
 .svc-hero .hero-inner {
   display: flex !important;
@@ -7089,9 +7096,9 @@ zd-summary-block {
   padding: 0;
   border: none;
   cursor: pointer;
-  color: var(--color-brand-primary);
+  color: var(--color-white);
   border-radius: var(--radius-round);
-  background-color: var(--color-brand-secondary);
+  background-color: var(--surface-entry);
 }
 
 .svc-hero-search-btn svg {
@@ -7150,22 +7157,23 @@ zd-summary-block {
 }
 
 /* ---------- CATALOG CARD ---------- */
+/* The rounded white card is the catalog's signature. It shares the page
+   container's edges (header, breadcrumbs, footer) instead of running wider, and
+   its padding steps with the page gutter. */
 .svc-cardwrap {
-  width: 100%;
-  max-width: 1760px;
-  margin: 0 auto;
-  padding: 40px clamp(16px, 3vw, 48px) 64px;
   box-sizing: border-box;
+  padding-inline: max(var(--page-gutter), (100% - 1160px) / 2);
+  width: 100%;
+  padding-block: var(--space-5) var(--space-8);
 }
 
 .svc-list-shell {
   position: relative;
   z-index: 3;
-  margin-top: -56px;
-  padding: 32px clamp(20px, 2.4vw, 40px) 40px;
-  background: var(--color-white);
-  border-radius: 24px;
-  border: 1px solid var(--color-ui-20);
+  padding: var(--space-4) var(--space-4) var(--space-5);
+  background: var(--surface-page);
+  border: 1px solid var(--surface-stroke);
+  border-radius: var(--radius-xl);
 }
 
 /* Catalog text is Public Sans; the cards keep their own title weight. */
@@ -7309,14 +7317,14 @@ zd-summary-block {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-2);
   flex-wrap: wrap;
   width: 100%;
-  margin: 32px 0 4px;
+  margin: var(--space-4) 0 var(--space-05);
   padding: 18px 22px;
   box-sizing: border-box;
   border: 1px solid var(--color-ui-10);
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   background: var(--color-white);
 }
 
@@ -7518,13 +7526,6 @@ a.svc-help-btn:hover,
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner {
     padding: var(--space-4) var(--space-205);
   }
-  .svc-cardwrap {
-    padding: 24px 12px 48px;
-  }
-  .svc-list-shell {
-    margin-top: -32px;
-    padding: 20px 14px 28px;
-  }
 }
 /* ---------- MOBILE ---------- */
 @media (max-width: 768px) {
@@ -7555,14 +7556,13 @@ a.svc-help-btn:hover,
     height: 42px;
   }
   .svc-cardwrap {
-    padding: 18px 10px 40px;
+    padding-block: var(--space-3) var(--space-6);
     max-width: 100%;
     overflow-x: hidden;
   }
   .svc-list-shell {
-    margin-top: -24px;
-    padding: 16px 12px 24px;
-    border-radius: 16px;
+    padding: var(--space-2);
+    border-radius: var(--radius-lg);
     overflow: visible;
   }
   .service-catalog-main-content {
@@ -7639,9 +7639,6 @@ a.svc-help-btn:hover,
   .svc-hero-chip {
     padding: 5px 10px;
   }
-  .svc-list-shell {
-    padding: 14px 10px 20px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .svc-tooltip {
@@ -7657,6 +7654,79 @@ a.svc-help-btn:hover,
     visibility: visible !important;
   }
 }
+.svc-knowledge {
+  box-sizing: border-box;
+  padding-inline: max(var(--page-gutter), (100% - 1160px) / 2);
+  width: 100%;
+  padding-block: 0 var(--space-8);
+}
+
+.svc-knowledge-inner {
+  border-top: 1px solid var(--surface-stroke);
+  padding-top: var(--space-5);
+}
+
+.svc-knowledge-title {
+  margin-bottom: var(--space-1);
+}
+
+.svc-knowledge-lede {
+  color: var(--type-subheading);
+  margin: 0 0 var(--space-4);
+}
+
+.svc-knowledge-list {
+  display: grid;
+  gap: 0 var(--column-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+}
+
+.svc-knowledge-item {
+  border-bottom: 1px solid var(--surface-stroke);
+  display: flex;
+}
+
+.svc-knowledge-link {
+  color: var(--type-body);
+  display: block;
+  flex: 1;
+  padding: var(--space-2) 0;
+}
+.svc-knowledge-link:visited {
+  color: var(--type-body);
+}
+.svc-knowledge-link:hover {
+  text-decoration: none;
+}
+.svc-knowledge-link:hover .svc-knowledge-name {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+.svc-knowledge-link:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
+}
+
+.svc-knowledge-name {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.svc-knowledge-desc {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--type-subheading);
+  display: -webkit-box;
+  font-size: var(--font-size-2xs);
+  line-height: 1.5;
+  margin-top: var(--space-05);
+  overflow: hidden;
+  text-wrap: pretty;
+}
+
 /* ============================================================
    Category page OS tiles (macOS / iOS / Windows).
    One responsive grid: tiles wrap instead of sitting on fixed pixel

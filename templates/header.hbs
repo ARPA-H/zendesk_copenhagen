@@ -56,9 +56,9 @@
            wordmark) logo, so the header always uses the committed lockup. There
            is no Logo setting: a full-color upload would disappear on indigo. --}}
       <img src="{{asset 'arpa-h-logo-reverse.svg'}}" alt="{{t 'home_page' name=help_center.name}}" width="133" height="37" />
-      {{#if settings.show_brand_name}}
-        <span class="site-title" aria-hidden="true">{{help_center.name}}</span>
-      {{/if}}
+      {{!-- No site title beside the logo: help.arpa-h.gov serves several
+           audiences (IT and HR among them), so a "Service Desk" label would
+           misdescribe it. There is no Show Help Center name setting either. --}}
     {{/link}}
   </div>
 

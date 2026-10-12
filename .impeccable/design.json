@@ -16,6 +16,12 @@
         "canonical": "#52daf2",
         "tonalRamp": ["#296d79", "#44b6ca", "#52daf2", "#6fe0f4", "#8ce6f6", "#c5f3fb", "#e2f9fd"]
       },
+      "hot-pink": {
+        "role": "secondary",
+        "displayName": "Hot Pink",
+        "canonical": "#fd4497",
+        "tonalRamp": ["#6f1e43", "#942859", "#c93678", "#fd4497", "#fd82ba", "#fcc1dc", "#feeff6"]
+      },
       "link": {
         "role": "secondary",
         "displayName": "Link Blue",
@@ -62,7 +68,7 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one action color: cyan pill with indigo text. Ask AI, Submit and the hero search button use it.",
+      "description": "The action color: cyan pill with indigo text. Ask AI and Submit use it.",
       "html": "<button class=\"ds-btn-primary\">Submit a request</button>",
       "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 20px; border: 0; border-radius: 1000px; background: var(--color-brand-secondary, #52daf2); color: var(--color-brand-primary, #000334); font: 500 14px/1.35 'Public Sans', sans-serif; cursor: pointer; } .ds-btn-primary:hover { background-image: linear-gradient(rgba(0, 3, 52, 0.1), rgba(0, 3, 52, 0.1)); } .ds-btn-primary:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
     },
@@ -78,15 +84,23 @@
       "name": "Search Pill",
       "kind": "input",
       "refersTo": "search-pill",
-      "description": "The hero search: a white pill with a cyan circular submit. Sits on the dark hero.",
+      "description": "The hero search: a white pill with a hot pink circular submit and a white magnifier (3.26:1, enough for a graphic). Sits on the dark hero.",
       "html": "<div class=\"ds-search\"><span class=\"ds-search-text\">Search help articles</span><button class=\"ds-search-go\" aria-label=\"Search\"></button></div>",
-      "css": ".ds-search { display: flex; align-items: center; gap: 12px; width: 420px; padding: 9px 9px 9px 26px; border-radius: 1000px; background: #ffffff; } .ds-search-text { flex: 1; color: #6f747a; font: 400 16px 'Public Sans', sans-serif; } .ds-search-go { width: 48px; height: 48px; border: 0; border-radius: 50%; background: #52daf2; }"
+      "css": ".ds-search { display: flex; align-items: center; gap: 12px; width: 420px; padding: 9px 9px 9px 26px; border-radius: 1000px; background: #ffffff; } .ds-search-text { flex: 1; color: #6f747a; font: 400 16px 'Public Sans', sans-serif; } .ds-search-go { width: 48px; height: 48px; border: 0; border-radius: 50%; background: #fd4497; }"
+    },
+    {
+      "name": "Government Banner",
+      "kind": "banner",
+      "refersTo": "government-banner",
+      "description": "The official USWDS banner above the navigation bar on every page: a 28px band on the subtle surface with the flag, the official sentence and a \"Here's how you know\" link that opens the explanation.",
+      "html": "<div class=\"ds-banner\"><span class=\"ds-banner-flag\"></span><span>An official website of the United States government</span><a href=\"#\">Here's how you know</a></div>",
+      "css": ".ds-banner { display: flex; align-items: center; gap: 8px; min-height: 28px; padding: 0 32px; background: #f3f5f8; color: #000334; font: 400 14px 'Public Sans', sans-serif; } .ds-banner-flag { width: 16px; height: 11px; background: linear-gradient(#bf2d1d 50%, #ffffff 50%); } .ds-banner a { color: #0957be; }"
     },
     {
       "name": "Navigation Bar",
       "kind": "nav",
       "refersTo": "nav-bar",
-      "description": "Full-bleed indigo bar with the reverse logo, white links and one cyan pill.",
+      "description": "Indigo bar with the reverse logo, white links and one cyan pill, and no site title. On the home and services pages it is transparent so the hero artwork runs behind it.",
       "html": "<div class=\"ds-nav\"><span class=\"ds-nav-logo\">ARPA-H</span><span class=\"ds-nav-spacer\"></span><button class=\"ds-nav-ai\">Ask AI</button><span class=\"ds-nav-user\">Jordan Lee</span></div>",
       "css": ".ds-nav { display: flex; align-items: center; gap: 16px; height: 71px; padding: 0 32px; background: #000334; color: #ffffff; font: 400 14px 'Public Sans', sans-serif; } .ds-nav-logo { font: 700 24px 'Poppins', sans-serif; letter-spacing: 4px; } .ds-nav-spacer { flex: 1; } .ds-nav-ai { min-height: 40px; padding: 8px 16px; border: 0; border-radius: 1000px; background: #52daf2; color: #000334; font: 600 14px 'Public Sans', sans-serif; }"
     },
@@ -112,7 +126,7 @@
     "overview": "One atmospheric moment, a dark indigo sky with arc artwork and a Poppins greeting, then bright, orderly surfaces where the work happens and exactly one lit button. Atmosphere is spent in the hero; everywhere else the interface is quiet, exact and fast to read.",
     "keyCharacteristics": [
       "One dark band (navigation bar into hero) above bright working surfaces.",
-      "Cyan is the action color and nothing else; yellow, green and red appear only in messages.",
+      "Cyan is the action color; the one exception is the hero search button, which is hot pink. Yellow, green and red appear only in messages.",
       "Pill-shaped actions, 16px surfaces, hairline strokes, shallow elevation.",
       "Public Sans for reading, Poppins for the few big moments."
     ],

@@ -53,27 +53,6 @@ $header-height: 71px;
     height: 37px;
     width: auto;
   }
-
-  // NEXUS site title: a thin divider, then the Help Center name. The name is
-  // customer-defined, so it truncates instead of pushing the actions off the
-  // bar, and the compact bar keeps the logo alone.
-  .site-title {
-    margin-inline-start: var(--space-2);
-    padding-inline-start: var(--space-2);
-    border-inline-start: 1px solid var(--on-dark-border-strong);
-    color: var(--color-white);
-    font-family: var(--font-secondary);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    line-height: var(--line-height-3);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
-    @include header-compact {
-      display: none;
-    }
-  }
 }
 
 /***** Primary action: Ask AI *****/
