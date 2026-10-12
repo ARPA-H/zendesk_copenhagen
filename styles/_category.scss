@@ -30,7 +30,7 @@
 
   &-title {
     margin-bottom: 0;
-    font-size: 18px;
+    font-size: var(--font-size-md);
     font-weight: $font-weight-semibold;
 
     a { color: var(--type-body); }
@@ -55,7 +55,7 @@
 
 .icon-star {
   color: var(--color-brand-primary);
-  font-size: 18px;
+  font-size: var(--font-size-sm);
 }
 
 /***** ARPA-H category/section swirl background *****/

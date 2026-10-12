@@ -140,7 +140,7 @@
     text-align: center;
 
     &-title {
-      font-size: 18px;
+      font-size: var(--font-size-sm);
       font-weight: $font-weight-semibold;
     }
   }

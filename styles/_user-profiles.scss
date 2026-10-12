@@ -226,7 +226,7 @@
   border-radius: 4px;
   color: var(--color-brand-primary);
   padding: 5px 20px;
-  font-size: 12px;
+  font-size: var(--font-size-3xs);
   text-align: center;
 
   .profile-private-icon {
@@ -399,7 +399,7 @@
   margin: 0 0 5px 0;
   display: inline;
   line-height: 21px;
-  font-size: 15px;
+  font-size: var(--font-size-xs);
   vertical-align: middle;
 }
 

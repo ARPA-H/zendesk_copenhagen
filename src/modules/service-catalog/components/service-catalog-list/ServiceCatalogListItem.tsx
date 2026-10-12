@@ -32,7 +32,7 @@ const ItemLink = styled.a`
 `;
 
 const ItemTitle = styled.div`
-  font-size: ${(props) => props.theme.fontSizes.md};
+  font-size: var(--font-size-xs, 1rem);
   font-weight: ${(props) => props.theme.fontWeights.semibold};
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -42,7 +42,7 @@ const ItemTitle = styled.div`
 `;
 
 const ItemDescription = styled.div`
-  font-size: ${(props) => props.theme.fontSizes.sm};
+  font-size: var(--font-size-2xs, 0.875rem);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;

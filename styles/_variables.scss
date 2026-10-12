@@ -1,16 +1,22 @@
 // Variables
 //
 // Colors, type scale, spacing, radius and elevation live in _tokens.scss as
-// NEXUS custom properties; only layout constants and legacy size variables
-// stay here.
+// NEXUS custom properties. The legacy size variables below resolve to that
+// scale, so every partial that still reads them follows it:
+//   base     body text (16px)
+//   small    secondary text: breadcrumbs, labels, counts, metadata (14px)
+//   smaller  micro text, badges only (12px)
+//   bigger   list rows that carry a link (16px, the same step as body; the row
+//            is set apart by padding and weight rather than by size)
 
-$font-size-bigger: 16px;
-$font-size-base: 15px;
-$font-size-navigation: 14px;
-$font-size-small: 13px;
-$font-size-smaller: 11px;
+$font-size-bigger: var(--font-size-xs);
+$font-size-base: var(--font-size-xs);
+$font-size-navigation: var(--font-size-2xs);
+$font-size-small: var(--font-size-2xs);
+$font-size-smaller: var(--font-size-3xs);
 
-$input-font-size: 14px;
+// 16px keeps iOS Safari from zooming the page when a field takes focus.
+$input-font-size: var(--font-size-xs);
 
 // Breakpoints variables
 $tablet-width: 768px;

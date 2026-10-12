@@ -69,10 +69,10 @@ decisions were made from the repository and the brief. Each is easy to reverse.
 | --- | --- | --- | --- |
 | 0 | `init`, `critique`, `audit` | PRODUCT.md, a scored baseline critique ([23/40](design-critique-2026-10-12.md)) and audit ([10/20](design-audit-2026-10-12.md)) | Done |
 | 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
-| 2 | `typeset` | Poppins display and headings, Public Sans body, one type scale | Planned |
+| 2 | `typeset` | One NEXUS type scale in `rem` tokens (12 to 40 pixels, eight sizes in use): Poppins for the greeting and h1 and h2, Public Sans for everything read or pressed; a 70-character prose measure; tabular numerals; rewritten article, table and heading rhythm; the Garden theme on the same scale; the dead `.svc-hero-results`, `.svc-res-*`, `.svc-mini-*` and `.svc-mr-*` styles removed | Done |
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the NEXUS header title separator and Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright) | Planned |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors | Planned |
-| 5 | `distill` | Remove dead and duplicated styles and markup, including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
+| 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
@@ -115,6 +115,7 @@ styles, so the same pages and widths are compared before and after.
 | Phase | Measured result |
 | --- | --- |
 | 1 | Across the home, services, service item, category, article and search pages (12 page views): colors outside the NEXUS palette fell from 456 of 1,264 uses (36.1%) to 0 of 1,262; text pairs below WCAG AA contrast fell from 20 to 0; keyboard-focused controls with no visible ring fell from 10 to 0. Horizontal overflow and small touch targets are unchanged and belong to phases 3 and 7. |
+| 2 | Across the same pages, counting text nodes: distinct font sizes fell from 16 to 8 at 1440 pixels wide (13 to 8 at 768, 16 to 8 at 390); text under 14 pixels fell from 35.1% of nodes to 2.0% (37.3% to 2.1% at 768, 39.5% to 2.6% at 390); an article paragraph went from a 15-pixel, 706-pixel-wide measure of about 102 characters per line to 16 pixels at 70 characters (a 32em cap); body line height is 1.62 and heading line heights are 1.15 and 1.35. Detector findings over `styles` and `templates`, with DESIGN.md loaded, fell from 81 (69 font sizes off the documented ramp, 6 radii, 4 side-stripe borders, 2 layout transitions) to 6 (4 radii and 2 layout transitions, left to phases 3 and 8). |
 
 ## Open decisions
 

@@ -94,6 +94,54 @@
 
   display: flow-root;
 
+  // Prose reads at 16px with generous leading, held to about 70 characters per
+  // line; images, tables and code blocks stay as wide as the column.
+  line-height: var(--line-height-5);
+
+  p,
+  ul,
+  ol,
+  dl,
+  blockquote {
+    max-width: var(--measure-prose);
+  }
+
+  // More room above a heading than below it, so it reads as the start of the
+  // text that follows.
+  h2,
+  h3,
+  h4 {
+    margin: 1.75em 0 0.5em;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  strong,
+  b {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  table {
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    margin: var(--space-3) 0;
+    max-width: 100%;
+
+    th,
+    td {
+      border-bottom: 1px solid var(--surface-stroke);
+      padding: var(--space-1) var(--space-2);
+      text-align: start;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: var(--font-weight-semibold);
+    }
+  }
+
   img {
     height: auto;
     max-width: 100%;
@@ -119,7 +167,7 @@
 
   figcaption {
     padding: 10px 0;
-    font-size: 12px;
+    font-size: var(--font-size-2xs);
     text-align: center;
     background-color: var(--color-ui-10);
   }
@@ -155,7 +203,7 @@
   :not(pre) > code {
     background: var(--surface-subtle);
     border: 1px solid var(--surface-stroke);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     padding: 0 5px;
     margin: 0 2px;
   }
@@ -163,17 +211,18 @@
   pre {
     background: var(--surface-subtle);
     border: 1px solid var(--surface-stroke);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
     padding: 10px 15px;
     overflow: auto;
     white-space: pre;
     direction: ltr;
   }
 
+  // No italic face is loaded, so italics would be synthesized; the quote is
+  // set apart by its rule and a quieter color instead.
   blockquote {
     border-left: 1px solid var(--surface-stroke);
     color: var(--type-subheading);
-    font-style: italic;
     padding: 0 15px;
   }
 }

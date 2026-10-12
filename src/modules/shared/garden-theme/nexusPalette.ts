@@ -3,7 +3,7 @@
  *
  * Garden resolves colors in JavaScript (`getColor`), so the CSS custom
  * properties in `styles/_tokens.scss` cannot feed its color scales. This file
- * mirrors the primitives it needs; `nexusPalette.spec.ts` fails when a value
+ * mirrors the primitives it needs; `createTheme.spec.tsx` fails when a value
  * drifts from `_tokens.scss`.
  */
 export const NEXUS_COLORS = {

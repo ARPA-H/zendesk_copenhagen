@@ -79,6 +79,14 @@ describe("createTheme", () => {
     expect(getColor({ theme, hue: "grey", shade: 600 })).toBe("#6f747a");
   });
 
+  it("leads the system font stack with Public Sans and keeps every Garden size on the NEXUS scale", () => {
+    expect(theme.fonts.system.startsWith('"Public Sans"')).toBe(true);
+    const nexusSizes = [12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48, 80];
+    Object.values(theme.fontSizes).forEach((size) => {
+      expect(nexusSizes).toContain(parseInt(size, 10));
+    });
+  });
+
   it("maps feedback hues to NEXUS feedback colors", () => {
     expect(getColor({ theme, variable: "foreground.danger" })).toBe("#bf2d1d");
     expect(getColor({ theme, variable: "foreground.success" })).toBe("#3c690e");

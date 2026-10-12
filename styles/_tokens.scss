@@ -212,6 +212,8 @@
   /* An indigo scrim keeps white chip text at 4.5:1 over any part of the artwork. */
   --on-dark-chip: rgba(0, 3, 52, 0.55);
 
+  --measure-prose: 32em; /* about 70 characters of body text per line */
+
   /* ----- Typography ----- */
   --font-primary: "Poppins", "Public Sans", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -220,18 +222,20 @@
   --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
     monospace;
 
-  --font-size-3xs: 12px;
-  --font-size-2xs: 14px;
-  --font-size-xs: 16px;
-  --font-size-sm: 18px;
-  --font-size-md: 20px;
-  --font-size-lg: 24px;
-  --font-size-xl: 28px;
-  --font-size-2xl: 32px;
-  --font-size-3xl: 36px;
-  --font-size-4xl: 40px;
-  --font-size-5xl: 48px;
-  --font-size-6xl: 80px;
+  /* Sizes are rem so a user's default font size scales them (1rem = 16px at
+     the browser default); the pixel value is in each comment. */
+  --font-size-3xs: 0.75rem; /* 12px: badges and status labels only */
+  --font-size-2xs: 0.875rem; /* 14px: secondary text, labels, controls */
+  --font-size-xs: 1rem; /* 16px: body and form fields */
+  --font-size-sm: 1.125rem; /* 18px: lead text, emphasized rows */
+  --font-size-md: 1.25rem; /* 20px: h3 */
+  --font-size-lg: 1.5rem; /* 24px: h2 */
+  --font-size-xl: 1.75rem; /* 28px */
+  --font-size-2xl: 2rem; /* 32px: h1 */
+  --font-size-3xl: 2.25rem; /* 36px */
+  --font-size-4xl: 2.5rem; /* 40px: display, the home greeting */
+  --font-size-5xl: 3rem; /* 48px */
+  --font-size-6xl: 5rem; /* 80px */
 
   --font-weight-light: 300;
   --font-weight-regular: 400;
@@ -299,11 +303,11 @@
    (canonical NEXUS behavior); body sizes do not scale. */
 @media (max-width: 640px) {
   :root {
-    --font-size-xl: 22.4px;
-    --font-size-2xl: 25.6px;
-    --font-size-3xl: 28.8px;
-    --font-size-4xl: 32px;
-    --font-size-5xl: 38.4px;
-    --font-size-6xl: 64px;
+    --font-size-xl: 1.4rem; /* 22.4px */
+    --font-size-2xl: 1.6rem; /* 25.6px */
+    --font-size-3xl: 1.8rem; /* 28.8px */
+    --font-size-4xl: 2rem; /* 32px */
+    --font-size-5xl: 2.4rem; /* 38.4px */
+    --font-size-6xl: 4rem; /* 64px */
   }
 }

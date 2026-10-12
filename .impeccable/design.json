@@ -30,10 +30,16 @@
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "The hero greeting and page titles; Poppins." },
-      "heading": { "displayName": "Heading", "purpose": "h1 and h2 in content; Poppins. The NEXUS scale arrives in Phase 2." },
-      "body": { "displayName": "Body", "purpose": "Reading text and controls; Public Sans." },
-      "label": { "displayName": "Label", "purpose": "Buttons, navigation and form labels; Public Sans medium." }
+      "display": { "displayName": "Display", "purpose": "The home greeting only; Poppins 700, 40px (32px small)." },
+      "h1": { "displayName": "Heading 1", "purpose": "Page titles; Poppins 600, 32px (25.6px small)." },
+      "h2": { "displayName": "Heading 2", "purpose": "Section titles; Poppins 600, 24px." },
+      "h3": { "displayName": "Heading 3", "purpose": "Subsections and category names; Public Sans 600, 20px." },
+      "card-title": { "displayName": "Card title", "purpose": "Card and result titles, h4; Public Sans 600, 16px." },
+      "lead": { "displayName": "Lead", "purpose": "The hero subtitle and page descriptions; Public Sans, 18px." },
+      "body": { "displayName": "Body", "purpose": "Reading text and form fields; Public Sans, 16px, held to about 70 characters per line." },
+      "label": { "displayName": "Label", "purpose": "Buttons, navigation and form labels; Public Sans medium, 14px." },
+      "meta": { "displayName": "Meta", "purpose": "Breadcrumbs, counts, dates and hints; Public Sans, 14px, tabular numerals." },
+      "micro": { "displayName": "Micro", "purpose": "Badges, status labels and uppercase overlines only; Public Sans 600, 12px." }
     },
     "shadows": [
       { "name": "shadow-1", "value": "0 1px 4px 0 rgba(0, 0, 0, 0.1)", "purpose": "Resting panels and search results." },
@@ -112,13 +118,15 @@
     ],
     "rules": [
       { "name": "The Cyan Is Action Rule", "body": "Cyan appears only on things that can be pressed. A static element that borrows it reads as interactive.", "section": "colors" },
-      { "name": "The Feedback Only Rule", "body": "Yellow, green and red mark warning, success and error messages; no badge, card or accent uses them.", "section": "colors" },
-      { "name": "The No Raw Color Rule", "body": "Components read alias tokens from styles/_tokens.scss; URL-encoded SVG data URIs carry noted copies of token colors.", "section": "colors" },
+      { "name": "The Feedback Only Rule", "body": "Yellow, green and red mark warning, success and error messages; no badge, card or accent on the in-scope pages uses them.", "section": "colors" },
+      { "name": "The No Raw Color Rule", "body": "Components read alias tokens from styles/_tokens.scss, never a hex value or a palette step; URL-encoded SVG data URIs carry noted copies of token colors.", "section": "colors" },
+      { "name": "The One Source Rule", "body": "Tokens own every color and the logo; the color and logo settings are removed from the manifest, and the React palette mirrors the tokens under a drift test.", "section": "colors" },
       { "name": "The Visible Focus Rule", "body": "Every interactive element shows a ring; the dark-surface ring is cyan with an indigo gap.", "section": "elevation" }
     ],
     "dos": [
       "Do use cyan with indigo text for the single primary action on a page.",
       "Do keep text on the 4.5:1 neutrals (#6f747a or darker) and give every control a visible focus ring.",
+  "Do keep read text at 14px or larger and prose at about 70 characters per line.",
       "Do put new colors in _tokens.scss as aliases first.",
       "Do keep the hero and the navigation bar one continuous dark band."
     ],
@@ -128,7 +136,8 @@
       "Don't nest a card inside a card.",
       "Don't add a colored border on one side of a card, list item or alert wider than 1px.",
       "Don't use outline: none without a replacement ring.",
-      "Don't hard-code hex or rgba values in the stylesheets."
+      "Don't hard-code hex or rgba values in the stylesheets.",
+  "Don't write a font size outside the scale: new text takes a --font-size-* token."
     ]
   }
 }

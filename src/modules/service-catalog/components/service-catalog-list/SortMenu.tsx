@@ -46,6 +46,7 @@ export function getSortParams(option: SortOption): {
 
 const StyledButton = styled(Button)`
   white-space: nowrap;
+  font-size: var(--font-size-2xs, 0.875rem);
 `;
 
 interface SortMenuProps {

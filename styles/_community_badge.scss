@@ -4,7 +4,7 @@
   background-color: var(--surface-badge);
   border-radius: 4px;
   color: var(--color-white);
-  font-size: 12px;
+  font-size: var(--font-size-3xs);
   font-weight: $font-weight-semibold;
   padding: 0px 8px;
   vertical-align: top;
@@ -35,7 +35,7 @@
 }
 
 .community-badge-achievements-rest {
-  font-size: 12px;
+  font-size: var(--font-size-3xs);
   font-weight: $font-weight-semibold;
   line-height: 20px;
   text-align: center;
@@ -59,6 +59,6 @@
 
   .community-badge-achievements-rest {
     line-height: 40px;
-    font-size: 20px;
+    font-size: var(--font-size-md);
   }
 }

@@ -3,10 +3,6 @@
   display: flex;
 }
 
-.split-button button:hover {
-  @extend .button-primary;
-}
-
 .split-button button {
   @extend .button;
   background-color: var(--color-brand-primary);
@@ -15,6 +11,20 @@
   height: 32px;
   line-height: 16px;
   outline-color: var(--color-brand-primary);
+}
+
+// The split button is the solid-indigo secondary kind, so it darkens with the
+// light overlay and keeps its white text; it must not borrow the primary
+// (cyan) style the way the legacy hover rule did.
+.split-button button:hover,
+.split-button button:focus,
+.split-button button:active {
+  background-color: var(--color-brand-primary);
+  background-image: linear-gradient(
+    var(--color-hover-dark-15),
+    var(--color-hover-dark-15)
+  );
+  color: var(--color-white);
 }
 
 .split-button button:not(:only-child) {

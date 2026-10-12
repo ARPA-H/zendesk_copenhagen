@@ -40,10 +40,10 @@
 .svc-hero-title {
   margin: 0;
   font-family: var(--font-primary);
-  font-size: clamp(28px, 4vw, 44px);
-  line-height: 1.08;
+  font-size: var(--font-size-4xl);
+  line-height: var(--line-height-2);
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: var(--letter-spacing-neg-1);
   color: var(--color-white);
 }
 /* Greeting word + name reveal together (avoids "Good evening" flashing
@@ -58,8 +58,8 @@
 .svc-hero-subtitle {
   margin: 10px auto 0;
   max-width: 460px;
-  font-size: clamp(14px, 1.4vw, 17px);
-  line-height: 1.5;
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-4);
   color: var(--on-dark-text-muted);
   text-align: center;
 }
@@ -98,7 +98,7 @@
   outline: none;
   background: transparent;
   font-family: var(--font-secondary);
-  font-size: 18px !important;
+  font-size: var(--font-size-sm) !important;
   color: var(--type-body);
   padding: 13px 16px;
 }
@@ -111,7 +111,7 @@
   outline: none !important;
   background: transparent !important;
   font-family: var(--font-secondary);
-  font-size: 18px !important;
+  font-size: var(--font-size-sm) !important;
   color: var(--type-body);
   padding: 13px 16px !important;
   box-shadow: none !important;
@@ -143,82 +143,12 @@
   box-shadow: var(--shadow-focus-on-dark);
 }
 
-/* Live results dropdown */
-.svc-hero-results {
-  position: fixed;
-  z-index: 99999;
-  max-height: 70vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  background: var(--color-white);
-  border-radius: 16px;
-  border: 1px solid var(--color-ui-10);
-  text-align: left;
-}
-.svc-res-group-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 18px 6px;
-  border-bottom: 0.5px solid var(--color-ui-10);
-}
-.svc-res-group-header.svc-res-docs { border-top: 0.5px solid var(--color-ui-10); background: var(--color-white); }
-.svc-res-group-title { font-size: 11px; font-weight: 600; letter-spacing: 0.6px; text-transform: uppercase; }
-.svc-res-services .svc-res-group-title { color: var(--color-brand-primary); }
-.svc-res-docs .svc-res-group-title { color: var(--type-subheading); }
-.svc-res-group-count { font-size: 11px; color: var(--type-muted); }
-.svc-res-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 18px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background-color 0.14s ease;
-}
-.svc-res-item:hover, .svc-res-item.svc-res-active { background: var(--color-ui-5); }
-.svc-res-item.svc-res-service { border-left: 3px solid var(--color-brand-primary); }
-.svc-res-item.svc-res-doc { border-left: 3px solid var(--color-ui-30); }
-.svc-res-icon {
-  width: 34px; height: 34px;
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 8px;
-}
-.svc-res-service .svc-res-icon { background: var(--surface-selected); color: var(--color-brand-primary); }
-.svc-res-doc .svc-res-icon { background: var(--color-ui-5); color: var(--type-subheading); }
-.svc-res-icon svg { width: 18px; height: 18px; }
-.svc-res-text { flex: 1; min-width: 0; }
-.svc-res-title, .svc-res-sub {
-  display: block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.svc-res-title { font-size: 14px; color: var(--type-body); }
-.svc-res-sub { font-size: 12px; color: var(--type-muted); }
-.svc-res-badge { flex-shrink: 0; font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 1000px; }
-.svc-res-service .svc-res-badge { color: var(--color-brand-primary); background: var(--surface-selected); }
-.svc-res-doc .svc-res-badge { color: var(--type-subheading); background: var(--color-ui-10); }
-.svc-res-empty, .svc-res-loading { padding: 18px; font-size: 13px; color: var(--type-muted); text-align: center; }
-.svc-res-footer {
-  display: block;
-  padding: 11px 18px;
-  border-top: 0.5px solid var(--color-ui-10);
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--color-brand-primary);
-  text-align: center;
-  text-decoration: none;
-}
-.svc-res-footer:hover { background: var(--color-ui-5); }
-
 /* Hero chips */
 .svc-hero-chips { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
-.svc-hero-chips-label { font-family: var(--font-secondary); font-size: 12.5px; color: var(--on-dark-text-muted); }
+.svc-hero-chips-label { font-family: var(--font-secondary); font-size: var(--font-size-2xs); color: var(--on-dark-text-muted); }
 .svc-hero-chip {
   font-family: var(--font-secondary);
-  font-size: 12.5px;
+  font-size: var(--font-size-2xs);
   color: var(--color-white);
   cursor: pointer;
   padding: 5px 12px;
@@ -250,14 +180,10 @@
   border: 1px solid var(--color-ui-20);
 }
 
-/* Poppins + normal weight inside the catalog */
+/* Catalog text is Public Sans; the cards keep their own title weight. */
 .svc-cardwrap, .svc-cardwrap *,
 .service-catalog-main-content, .service-catalog-main-content *,
 .svc-tooltip { font-family: var(--font-secondary) !important; }
-.service-catalog-main-content a[href*="/services/"],
-.service-catalog-main-content a[href*="/services/"] *,
-.service-catalog-main-content [class*="card"] *,
-.service-catalog-main-content [class*="Card"] * { font-weight: 400 !important; }
 
 /* SERVICE ICONS — NEVER CLIP */
 .service-catalog-main-content figure,
@@ -353,8 +279,8 @@
   border-radius: 8px;
   background: var(--type-body);
   color: var(--color-white);
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-3);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.16s ease;
@@ -387,8 +313,8 @@
   background: var(--color-white);
 }
 .svc-help-banner-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.svc-help-banner-title { font-family: var(--font-secondary); font-size: 15px; font-weight: 600; color: var(--type-body); }
-.svc-help-banner-sub { font-family: var(--font-secondary); font-size: 13px; color: var(--type-subheading); }
+.svc-help-banner-title { font-family: var(--font-secondary); font-size: var(--font-size-xs); font-weight: 600; color: var(--type-body); }
+.svc-help-banner-sub { font-family: var(--font-secondary); font-size: var(--font-size-2xs); color: var(--type-subheading); }
 a.svc-help-btn,
 .service-catalog-main-content a.svc-help-btn {
   display: inline-flex;
@@ -399,7 +325,7 @@ a.svc-help-btn,
   padding: 10px 20px;
   border-radius: 1000px;
   font-family: var(--font-secondary);
-  font-size: 13.5px;
+  font-size: var(--font-size-2xs);
   font-weight: 600;
   text-align: center;
   color: var(--color-brand-primary) !important;
@@ -415,7 +341,7 @@ a.svc-help-btn:hover,
 }
 
 /* Category description under the heading */
-.svc-cat-description { margin: 6px 0 0; max-width: 640px; font-size: 13.5px; line-height: 1.5; color: var(--type-subheading); }
+.svc-cat-description { margin: 6px 0 0; max-width: var(--measure-prose); font-size: var(--font-size-xs); line-height: var(--line-height-4); color: var(--type-subheading); }
 
 /* Fallback message when the catalog module can't load */
 .svc-catalog-fallback { padding: 12px; color: var(--type-subheading); font-family: var(--font-secondary); }
@@ -425,7 +351,7 @@ a.svc-help-btn:hover,
 .service-catalog-main-content input[type="search"] {
   border-radius: 16px !important;
   padding: 2px 8px !important;
-  font-size: 14px !important;
+  font-size: var(--font-size-xs) !important;
   caret-color: var(--type-body) !important;
   box-shadow: none !important;
   outline: none !important;
@@ -510,10 +436,9 @@ a.svc-help-btn:hover,
   html.svc-home, body.svc-home { overflow-x: hidden !important; max-width: 100% !important; }
 
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner { min-height: 160px; padding: 22px 16px; }
-  .svc-hero-title { font-size: clamp(24px, 7vw, 32px); }
-  .svc-hero-subtitle { font-size: 14px; margin-top: 8px; }
+  .svc-hero-subtitle { font-size: var(--font-size-xs); margin-top: 8px; }
   .svc-hero-search { margin-top: 18px; padding: 6px 6px 6px 18px; }
-  .svc-hero-input { font-size: 16px; padding: 11px 12px; }
+  .svc-hero-input { font-size: var(--font-size-xs); padding: 11px 12px; }
   .svc-hero-search-btn { width: 42px; height: 42px; }
 
   .svc-cardwrap { padding: 18px 10px 40px; max-width: 100%; overflow-x: hidden; }
@@ -579,9 +504,8 @@ a.svc-help-btn:hover,
 
 @media (max-width: 430px) {
   .svc-hero-chips { gap: 6px; }
-  .svc-hero-chip { font-size: 12px; padding: 5px 10px; }
+  .svc-hero-chip { padding: 5px 10px; }
   .svc-list-shell { padding: 14px 10px 20px; }
-  .svc-cat-description { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .svc-tooltip { transition: none !important; }

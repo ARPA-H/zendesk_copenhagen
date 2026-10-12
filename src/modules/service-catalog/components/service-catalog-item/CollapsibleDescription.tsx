@@ -29,7 +29,7 @@ const ItemTitle = styled(XXXL)`
 `;
 
 const CollapsibleText = styled.div<{ isCollapsed: boolean }>`
-  font-size: ${(props) => props.theme.fontSizes.md};
+  font-size: var(--font-size-xs, 1rem);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: ${(props) => (props.isCollapsed ? 3 : "none")};
@@ -45,7 +45,7 @@ const CollapsibleText = styled.div<{ isCollapsed: boolean }>`
 
 const ToggleButton = styled(Button)`
   margin-top: ${(props) => props.theme.space.sm};
-  font-size: ${(props) => props.theme.fontSizes.md};
+  font-size: var(--font-size-2xs, 0.875rem);
   &:hover {
     text-decoration: none;
   }

@@ -6,10 +6,12 @@
 .svc-search-container .svc-search-results,
 .svc-search-container .svc-search-results * { font-family: var(--font-secondary); }
 
-/* Results heading */
-.svc-search-subheading {
-  font-size: clamp(20px, 2.4vw, 26px);
-  font-weight: 700;
+/* Results heading: the page title, so it takes the h1 voice (Poppins) even
+   though the results area is set in Public Sans. */
+.svc-search-container .svc-search-results .svc-search-subheading {
+  font-family: var(--font-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
   color: var(--type-body);
   margin-bottom: 18px;
 }
@@ -17,7 +19,7 @@
 /* Native sidebar filters (restyled) */
 .svc-search-sidebar .sidenav-title,
 .svc-search-sidebar .collapsible-sidebar-title {
-  font-size: 12px;
+  font-size: var(--font-size-3xs);
   font-weight: 600;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -47,12 +49,12 @@
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .svc-result:hover { border-color: var(--color-ui-30); box-shadow: var(--shadow-2); }
-.svc-result-title { font-size: 16px; font-weight: 600; margin: 0 0 4px; }
+.svc-result-title { font-size: var(--font-size-xs); font-weight: 600; margin: 0 0 4px; }
 .svc-result-title a { color: var(--color-brand-primary); text-decoration: none; }
 .svc-result-title a:hover { text-decoration: underline; }
-.svc-result-breadcrumbs { font-size: 12px; }
+.svc-result-breadcrumbs { font-size: var(--font-size-2xs); }
 .svc-result-breadcrumbs a { color: var(--type-subheading); }
-.svc-result-desc { color: var(--type-subheading); font-size: 13.5px; line-height: 1.55; margin: 8px 0 0; }
+.svc-result-desc { color: var(--type-subheading); font-size: var(--font-size-2xs); line-height: var(--line-height-5); margin: 8px 0 0; max-width: var(--measure-prose); }
 
 /* Search-results: sub-nav row + search pill */
 .svc-search-container .sub-nav {
@@ -107,7 +109,7 @@
   border: none !important;
   outline: none !important;
   background: transparent !important;
-  font-size: 14px !important;
+  font-size: var(--font-size-xs) !important;
   color: var(--type-body) !important;
   padding: 0 8px !important;
   box-shadow: none !important;

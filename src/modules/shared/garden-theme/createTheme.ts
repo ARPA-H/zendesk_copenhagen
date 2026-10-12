@@ -19,6 +19,15 @@ interface ButtonStyleProps {
   $isPrimary?: boolean;
 }
 
+/**
+ * Garden's default system stack puts the platform font on some components;
+ * the product's body face is Public Sans, so it leads the stack. Sizes stay in
+ * pixels because Garden's own sizing math needs them; the three values that
+ * fall between NEXUS steps (10, 22 and 26) move to the nearest step.
+ */
+const FONT_STACK =
+  '"Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
 const INDIGO_OVERLAY_5 = "rgba(0, 3, 52, 0.05)";
 const INDIGO_OVERLAY_10 = "rgba(0, 3, 52, 0.1)";
 const overlay = (color: string) => `linear-gradient(${color}, ${color})`;
@@ -145,6 +154,16 @@ export function createTheme(settings?: Settings): IGardenTheme {
   return {
     ...DEFAULT_THEME,
     rtl: document.dir === "rtl",
+    fonts: {
+      ...DEFAULT_THEME.fonts,
+      system: FONT_STACK,
+    },
+    fontSizes: {
+      ...DEFAULT_THEME.fontSizes,
+      xs: "12px",
+      xl: "24px",
+      xxl: "28px",
+    },
     palette: {
       ...DEFAULT_THEME.palette,
       ...NEXUS_PALETTE,

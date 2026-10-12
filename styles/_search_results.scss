@@ -61,7 +61,7 @@
         .label {
           font-style: normal;
           font-weight: 600;
-          font-size: 12px;
+          font-size: var(--font-size-3xs);
           line-height: 24px;
           text-align: center;
           letter-spacing: -0.000427656px;
@@ -122,7 +122,7 @@
   }
 
   &-subheading {
-    font-size: 18px;
+    font-size: var(--font-size-sm);
     font-weight: $font-weight-semibold;
   }
 
@@ -145,17 +145,17 @@
     .headline {
       color: var(--type-body);
       font-weight: 400;
-      font-size: 18px;
-      line-height: 24px;
-      letter-spacing: -0.45px;
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-3);
+      letter-spacing: var(--letter-spacing-neg-05);
     }
 
     .action-prompt {
-      color: var(--color-ui-60);
+      color: var(--type-muted);
       font-weight: 400;
-      font-size: 14px;
-      line-height: 20px;
-      letter-spacing: -0.154px;
+      font-size: var(--font-size-2xs);
+      line-height: var(--line-height-4);
+      letter-spacing: 0;
 
       a {
         color: var(--color-link);
@@ -241,15 +241,16 @@
   }
 }
 
-/* By default use bold instead of italic to highlight */
-.search-results-description em {
+/* By default use bold instead of italic to highlight. The markup uses the
+   singular class (search-result-description), so the selector has to as well. */
+.search-result-description em {
   font-style: normal;
   font-weight: bold;
 }
 
 /* Add a yellow background for Chinese */
 html[lang|="zh"] {
-  .search-results-description em {
+  .search-result-description em {
     font-style: normal;
     background: yellow;
   }

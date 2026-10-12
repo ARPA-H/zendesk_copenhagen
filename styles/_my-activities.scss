@@ -176,7 +176,7 @@
       position: absolute;
       left: calc(100% + 3px);
       bottom: 0;
-      font-size: 10px;
+      font-size: var(--font-size-3xs);
     }
   }
 }

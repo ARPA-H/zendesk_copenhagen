@@ -110,6 +110,7 @@ const SidebarItemName = styled.span`
 
 const ItemCount = styled.span`
   flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
   color: ${({ theme }) => getColor({ theme, variable: "foreground.subtle" })};
 `;
 

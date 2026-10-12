@@ -33,24 +33,56 @@ colors:
 typography:
   display:
     fontFamily: "Poppins, 'Public Sans', sans-serif"
-    fontSize: "clamp(28px, 4vw, 44px)"
+    fontSize: "40px"
     fontWeight: 700
-    lineHeight: 1.08
-    letterSpacing: "-0.5px"
-  heading:
+    lineHeight: 1.15
+    letterSpacing: "-1px"
+  h1:
     fontFamily: "Poppins, 'Public Sans', sans-serif"
     fontSize: "32px"
-    fontWeight: 700
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "-0.5px"
+  h2:
+    fontFamily: "Poppins, 'Public Sans', sans-serif"
+    fontSize: "24px"
+    fontWeight: 600
+    lineHeight: 1.15
+    letterSpacing: "-0.5px"
+  h3:
+    fontFamily: "'Public Sans', sans-serif"
+    fontSize: "20px"
+    fontWeight: 600
+    lineHeight: 1.35
+  card-title:
+    fontFamily: "'Public Sans', sans-serif"
+    fontSize: "16px"
+    fontWeight: 600
+    lineHeight: 1.35
+  lead:
+    fontFamily: "'Public Sans', sans-serif"
+    fontSize: "18px"
+    fontWeight: 400
     lineHeight: 1.5
   body:
     fontFamily: "'Public Sans', sans-serif"
-    fontSize: "15px"
+    fontSize: "16px"
     fontWeight: 400
     lineHeight: 1.5
   label:
     fontFamily: "'Public Sans', sans-serif"
     fontSize: "14px"
     fontWeight: 500
+    lineHeight: 1.35
+  meta:
+    fontFamily: "'Public Sans', sans-serif"
+    fontSize: "14px"
+    fontWeight: 400
+    lineHeight: 1.5
+  micro:
+    fontFamily: "'Public Sans', sans-serif"
+    fontSize: "12px"
+    fontWeight: 600
     lineHeight: 1.35
 rounded:
   sm: "4px"
@@ -102,7 +134,7 @@ components:
 
 # Design System: ARPA-H Service Desk
 
-Status: Phase 1 of the [design plan](docs/design-plan.md). The color, shape, elevation and component sections describe what is built, in the stylesheets and in the React modules. Sections marked *planned* land in later phases and are updated then; type and layout today are still Copenhagen's scale. Remaining gaps are listed in the [audit](docs/design-audit-2026-10-12.md).
+Status: Phase 2 of the [design plan](docs/design-plan.md). The color, type, shape, elevation and component sections describe what is built, in the stylesheets and in the React modules. Sections marked *planned* land in later phases and are updated then; layout is still Copenhagen's. Remaining gaps are listed in the [audit](docs/design-audit-2026-10-12.md).
 
 ## Overview
 
@@ -156,11 +188,37 @@ A restrained palette: indigo and white carry almost everything, cyan marks the o
 
 ## Typography
 
-**Display and h1/h2:** Poppins (fallback Public Sans). **Body, h3 to h6, controls:** Public Sans. Both are self-hosted woff2 in `assets/` with `font-display: swap`; there is no font CDN.
+**Display, h1 and h2:** Poppins (fallback Public Sans). **Body, h3 to h6, controls:** Public Sans. Both are self-hosted woff2 in `assets/` with `font-display: swap`; there is no font CDN. Two families, no italics (no italic face is loaded, so italics would be synthesized and the theme avoids them).
 
 **Character:** Poppins is the confident voice of the greeting and page titles; Public Sans is the plain, legible voice of everything you read and press.
 
-*Planned (Phase 2):* the NEXUS scale (body 16px; h1 48px, h2 36px, h3 32px; 0.8x on mobile), tabular numerals for counts and dates, a 680px article measure, and removal of the 11 to 13px microtext.
+### The scale
+
+Eight NEXUS steps carry every role. Sizes are `rem` tokens (`--font-size-*` in `styles/_tokens.scss`), so a user's default font size scales them; the pixel values below assume the 16px browser default. Display, h1 and the larger steps scale down about 0.8x below 640px; body and secondary sizes do not.
+
+| Role | Size | Weight and face | Line height | Used for |
+| --- | --- | --- | --- | --- |
+| Display | 40px (32px small) | Poppins 700, -1px | 1.15 | The home greeting only |
+| h1 | 32px (25.6px small) | Poppins 600, -0.5px | 1.15 | Page titles |
+| h2 | 24px | Poppins 600, -0.5px | 1.15 | Section titles |
+| h3 | 20px | Public Sans 600 | 1.35 | Subsections, category names |
+| Title | 16px | Public Sans 600 | 1.35 | Card titles, result titles, h4 |
+| Lead | 18px | Public Sans 400 | 1.5 | The hero subtitle, page descriptions |
+| Body | 16px | Public Sans 400 | 1.5 (prose 1.62) | Reading text, form fields |
+| Label and meta | 14px | Public Sans 500 or 400 | 1.35 or 1.5 | Buttons, breadcrumbs, counts, dates, hints |
+| Micro | 12px | Public Sans 600 | 1.35 | Badges, status labels and uppercase overlines only |
+
+Page titles and section titles sit one step below the NEXUS marketing scale (h1 48px, h2 36px): these are working pages and a long article title has to stay on two lines. The deviation is deliberate; the display step carries the large moment.
+
+### Rules
+
+- **Measure.** Prose is held to `32em` (about 70 characters; `--measure-prose`) and set at 1.62 leading. Images, tables and code blocks stay as wide as their column.
+- **Floor.** Nothing that is read is smaller than 14px. Twelve pixels is for badges, status labels and uppercase overlines.
+- **Rhythm.** A heading gets more space above than below, so it reads as the start of the text that follows.
+- **Numerals.** Counts, dates and table figures use tabular numerals so columns line up.
+- **Resilience.** Headings balance their lines and may break inside a long unbroken token instead of widening the page.
+- **Inputs.** Form fields are 16px, which also stops iOS Safari from zooming the page on focus.
+- **React.** Garden's sizes stay in pixels because its sizing math needs them, with the three off-scale values (10, 22 and 26px) moved to the nearest step; the Garden system font stack leads with Public Sans, and the hand-styled catalog text reads the same `--font-size-*` tokens.
 
 ## Layout
 
@@ -232,6 +290,7 @@ Notifications and validation use the feedback tokens only, as soft fills with da
 
 - **Do** use cyan with indigo text for the single primary action on a page.
 - **Do** keep text on the 4.5:1 neutrals (`#6f747a` or darker) and give every control a visible focus ring.
+- **Do** keep read text at 14px or larger and prose at about 70 characters per line.
 - **Do** put new colors in `_tokens.scss` as aliases first.
 - **Do** keep the hero and the navigation bar one continuous dark band.
 
@@ -243,3 +302,4 @@ Notifications and validation use the feedback tokens only, as soft fills with da
 - **Don't** add a colored border on one side of a card, list item or alert wider than 1px.
 - **Don't** use `outline: none` without a replacement ring.
 - **Don't** hard-code hex or rgba values in the stylesheets.
+- **Don't** write a font size outside the scale: new text takes a `--font-size-*` token.
