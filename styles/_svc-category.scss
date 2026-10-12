@@ -1,46 +1,60 @@
 /* ============================================================
-   ARPA-H custom — category page OS tiles (macOS / iOS / Windows)
-   Replaces the former inline style="" attributes on the tiles.
-   NOTE: the negative margin on the Windows tile preserves the
-   original hand-tuned centering; revisit with a proper grid later.
+   Category page OS tiles (macOS / iOS / Windows).
+   One responsive grid: tiles wrap instead of sitting on fixed pixel
+   boxes, each carries a visible label, and the logo is decorative, so a
+   missing image still leaves a readable, linked tile.
    ============================================================ */
 
 .custom-os-tile-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* was the invalid `align-items: left` */
-  margin-top: 50px;
-  gap: 40px;
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  margin-top: var(--space-4);
 }
 
-.custom-os-tile-group .top-row {
-  display: flex;
-  justify-content: center; /* was the invalid `justify-content center` (missing colon) */
-  gap: 100px;
-}
-
+/* The row wrappers stay in the markup; the grid ignores them. */
+.custom-os-tile-group .top-row,
 .custom-os-tile-group .bottom-row {
-  display: flex;
-  justify-content: center;
+  display: contents;
 }
 
 .custom-os-tile {
-  display: flex;
   align-items: center;
+  background-color: var(--surface-page);
+  border: 1px solid var(--surface-stroke);
+  border-radius: var(--radius-lg);
+  color: var(--type-body);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   justify-content: center;
+  min-height: 12rem;
+  padding: var(--space-3);
   text-align: center;
+
+  &:hover {
+    background-color: var(--surface-selected);
+    border-color: var(--color-info-border);
+    text-decoration: none;
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+
+  img {
+    height: auto;
+    margin: 0;
+    max-height: 6rem;
+    max-width: 100%;
+    object-fit: contain;
+    width: auto;
+  }
 }
 
-.custom-os-tile img {
-  height: auto;
-  margin: 0;
+.custom-os-tile-label {
+  font-family: var(--font-primary);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  line-height: 1.3;
 }
-
-.custom-os-tile--macos { width: 300px; height: 150px; }
-.custom-os-tile--macos img { width: 80%; }
-
-.custom-os-tile--ios { width: 150px; height: 150px; }
-.custom-os-tile--ios img { width: 150%; }
-
-.custom-os-tile--windows { width: 400px; height: 200px; margin-left: -275px; }
-.custom-os-tile--windows img { width: 100%; }

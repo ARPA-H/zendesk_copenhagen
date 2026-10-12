@@ -17,15 +17,13 @@
   }
 }
 
+// Content is at most 1160px wide and never closer than the page gutter to the
+// viewport edge. The padding does the centering, so the box stays full width
+// and the header, pages and footer share one left edge at every width.
 @mixin max-width-container {
-  @media (min-width: #{$max-width-container}) {
-    padding: 0;
-    width: 90%;
-  }
-
-  max-width: $max-width-container;
-  margin: 0 auto;
-  padding: 0 5%;
+  box-sizing: border-box;
+  padding-inline: max(var(--page-gutter), calc((100% - #{$max-width-container}) / 2));
+  width: 100%;
 }
 
 @mixin vertical-align {
@@ -139,6 +137,25 @@
 
     th {
       font-weight: var(--font-weight-semibold);
+    }
+  }
+
+  // src/domFixups.js wraps each article table so one that is wider than the
+  // column scrolls inside this box instead of widening the page.
+  .table-scroll {
+    margin: var(--space-3) 0;
+    max-width: 100%;
+    overflow-x: auto;
+
+    > table {
+      margin: 0;
+    }
+
+    &:focus-visible {
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-focus);
+      outline: 2px solid transparent;
+      outline-offset: 2px;
     }
   }
 

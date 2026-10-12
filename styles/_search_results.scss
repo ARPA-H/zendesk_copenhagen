@@ -171,6 +171,7 @@
 .search-result {
   &-title-container {
     display: flex;
+    gap: var(--space-2);
     justify-content: space-between;
     align-items: center;
   }
@@ -178,6 +179,14 @@
   &-title {
     font-size: $font-size-bigger;
     margin-bottom: 0;
+    min-width: 0;
+  }
+
+  // Vote and comment counts stay on one line; the title gives way instead.
+  &-icons {
+    display: flex;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   &-votes,

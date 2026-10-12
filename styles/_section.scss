@@ -2,15 +2,12 @@
 .section {
   &-container {
     display: flex;
-    justify-content: flex-end;
   }
 
   &-content {
-    @include desktop {
-      flex: 0 0 80%;
-    }
     flex: 1;
-    max-width: 100%
+    max-width: var(--column-reading);
+    min-width: 0;
   }
 
   &-subscribe button {
@@ -22,13 +19,13 @@
 }
 
 .section-list {
-  margin: 40px 0;
+  margin: var(--space-4) 0;
 }
 
 .section-list-item {
   border-bottom: 1px solid var(--surface-stroke);
   font-size: $font-size-bigger;
-  padding: 15px 0;
+  padding: var(--space-105) 0;
 
   &:first-child {
     border-top: 1px solid var(--surface-stroke);

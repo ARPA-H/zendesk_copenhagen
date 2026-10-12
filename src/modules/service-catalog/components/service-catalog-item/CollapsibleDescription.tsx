@@ -24,6 +24,7 @@ const DescriptionWrapper = styled.div`
 const ItemTitle = styled(XXXL)`
   font-weight: ${(props) => props.theme.fontWeights.semibold};
   margin-bottom: 0;
+  min-width: 0;
   overflow-wrap: break-word;
   max-width: 100%;
 `;
@@ -56,6 +57,11 @@ const HeaderContainer = styled.div`
   flex-direction: row;
   align-items: center;
   gap: ${(props) => props.theme.space.md};
+
+  /* A long service name wraps; it never squeezes the icon. */
+  > :first-child {
+    flex-shrink: 0;
+  }
 `;
 
 interface CollapsibleDescriptionProps {

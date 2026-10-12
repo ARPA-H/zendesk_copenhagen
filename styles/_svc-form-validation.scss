@@ -47,7 +47,7 @@
      visibly thicker border (1px -> 2px, dashed outline for
      checkboxes), so the state reads as a shape change too, not
      just a color/hue change.
-   - Contrast (WCAG 1.4.3 / 1.4.11): --svc-error (var(--color-error)) is a
+   - Contrast (WCAG 1.4.3 / 1.4.11): --color-error (defined in _tokens.scss) is a
      5.8:1 contrast ratio against white — well past the 4.5:1 text
      and 3:1 non-text/UI-component minimums.
    - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus

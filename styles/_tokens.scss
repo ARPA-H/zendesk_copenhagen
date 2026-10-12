@@ -280,6 +280,13 @@
   --space-9: 72px;
   --space-10: 80px;
 
+  /* ----- Layout: one container, one left edge ----- */
+  --page-gutter: var(--space-2); /* 16px; 32px from 768px, see below */
+  --column-reading: 45rem; /* 720px: article, section list, search, form */
+  --column-aside: 20rem; /* 320px: the item page help rail */
+  --column-rail: 15rem; /* 240px: filter and navigation rails */
+  --column-gap: var(--space-6); /* 48px between a rail and its column */
+
   /* ----- Corner radius ----- */
   --radius-none: 0;
   --radius-xs: 2px;
@@ -303,6 +310,12 @@
      ring with an indigo gap. */
   --shadow-focus-on-dark: 0 0 0 2px var(--color-brand-primary),
     0 0 0 4px var(--color-brand-secondary);
+}
+
+@media (min-width: 768px) {
+  :root {
+    --page-gutter: var(--space-4); /* 32px */
+  }
 }
 
 /* Headings and display sizes scale down about 0.8x on small screens

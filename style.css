@@ -439,6 +439,12 @@ template {
   --space-8: 64px;
   --space-9: 72px;
   --space-10: 80px;
+  /* ----- Layout: one container, one left edge ----- */
+  --page-gutter: var(--space-2); /* 16px; 32px from 768px, see below */
+  --column-reading: 45rem; /* 720px: article, section list, search, form */
+  --column-aside: 20rem; /* 320px: the item page help rail */
+  --column-rail: 15rem; /* 240px: filter and navigation rails */
+  --column-gap: var(--space-6); /* 48px between a rail and its column */
   /* ----- Corner radius ----- */
   --radius-none: 0;
   --radius-xs: 2px;
@@ -463,6 +469,11 @@ template {
     0 0 0 4px var(--color-brand-secondary);
 }
 
+@media (min-width: 768px) {
+  :root {
+    --page-gutter: var(--space-4); /* 32px */
+  }
+}
 /* Headings and display sizes scale down about 0.8x on small screens
    (canonical NEXUS behavior); body sizes do not scale. */
 @media (max-width: 640px) {
@@ -760,15 +771,9 @@ a:hover, a:active, a:focus {
 }
 
 .container {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 0 5%;
-}
-@media (min-width: 1160px) {
-  .container {
-    padding: 0;
-    width: 90%;
-  }
+  box-sizing: border-box;
+  padding-inline: max(var(--page-gutter), (100% - 1160px) / 2);
+  width: 100%;
 }
 
 .container-divider {
@@ -783,15 +788,9 @@ ul {
 }
 
 .error-page {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 0 5%;
-}
-@media (min-width: 1160px) {
-  .error-page {
-    padding: 0;
-    width: 90%;
-  }
+  box-sizing: border-box;
+  padding-inline: max(var(--page-gutter), (100% - 1160px) / 2);
+  width: 100%;
 }
 
 .visibility-hidden {
@@ -1129,7 +1128,7 @@ ul {
   align-items: center;
   justify-content: space-between;
   height: 71px;
-  padding-inline: max(5%, (100% - 1160px) / 2);
+  padding-inline: max(var(--page-gutter), (100% - 1160px) / 2);
   background-color: var(--color-brand-primary);
   color: var(--color-white);
 }
@@ -1364,7 +1363,7 @@ ul {
   line-height: var(--line-height-3);
 }
 .nav-wrapper-mobile .menu-list-mobile-items .my-profile .my-profile-tooltip {
-  font-size: var(--font-size-3xs);
+  font-size: var(--font-size-2xs);
   color: var(--type-subheading);
 }
 .nav-wrapper-mobile .menu-list-mobile-items .menu-profile-avatar {
@@ -1475,18 +1474,12 @@ ul {
   box-shadow: var(--shadow-focus-on-dark);
 }
 .footer-inner {
-  max-width: 1160px;
-  margin: 0 auto;
-  padding: 0 5%;
+  box-sizing: border-box;
+  padding-inline: max(var(--page-gutter), (100% - 1160px) / 2);
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-}
-@media (min-width: 1160px) {
-  .footer-inner {
-    padding: 0;
-    width: 90%;
-  }
 }
 .footer-top {
   display: flex;
@@ -1596,6 +1589,8 @@ ul {
   margin: 0 0 15px 0;
   padding: 0;
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 @media (min-width: 768px) {
   .breadcrumbs {
@@ -1606,7 +1601,7 @@ ul {
   display: inline-block;
   color: var(--type-subheading);
   font-size: var(--font-size-2xs);
-  max-width: 450px;
+  max-width: min(100%, 450px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1828,24 +1823,27 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 }
 
 .sub-nav {
-  align-items: baseline;
+  align-items: stretch;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  gap: 15px 30px;
+  gap: var(--space-2) var(--space-4);
   justify-content: space-between;
-  margin-bottom: 55px;
+  margin-bottom: var(--space-5);
 }
 @media (min-width: 768px) {
   .sub-nav {
+    align-items: center;
     flex-direction: row;
   }
 }
 .sub-nav .breadcrumbs {
   margin: 0;
 }
+.sub-nav nav {
+  min-width: 0;
+}
 .sub-nav .search-container {
-  max-width: 300px;
   width: 100%;
 }
 @media (min-width: 768px) {
@@ -2207,37 +2205,25 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 /***** Category pages *****/
 .category-container {
   display: flex;
-  justify-content: flex-end;
 }
 .category-content {
   flex: 1;
   max-width: 100%;
-}
-@media (min-width: 1024px) {
-  .category-content {
-    flex: 0 0 80%;
-  }
+  min-width: 0;
 }
 
 .section-tree {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  gap: var(--space-6) var(--column-gap);
+  grid-template-columns: minmax(0, 1fr);
 }
 @media (min-width: 768px) {
   .section-tree {
-    flex-direction: row;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 .section-tree .section {
-  flex: initial;
   max-width: 100%;
-}
-@media (min-width: 768px) {
-  .section-tree .section {
-    flex: 0 0 45%; /* Two columns for tablet and desktop. Leaving 5% separation between columns */
-  }
 }
 .section-tree-title {
   margin-bottom: 0;
@@ -2249,12 +2235,12 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 }
 .section-tree .see-all-articles {
   display: block;
-  padding: 15px 0;
+  padding: var(--space-105) 0;
 }
 
 .article-list-item {
   font-size: var(--font-size-xs);
-  padding: 15px 0;
+  padding: var(--space-105) 0;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -2267,46 +2253,32 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   font-size: var(--font-size-sm);
 }
 
-/***** ARPA-H category/section swirl background *****/
-body.category-page .container,
-body.section-page .container {
-  background-image: url($homepage_background_image);
-  background-repeat: no-repeat;
-  background-position: top center;
-  background-size: cover;
-}
-
 /***** Custom OS tile image zoom *****/
-.custom-os-tile img {
-  transition: transform 0.4s ease;
+@media (prefers-reduced-motion: no-preference) {
+  .custom-os-tile img {
+    transition: transform 0.4s ease;
+  }
+  .custom-os-tile:hover img {
+    transform: scale(1.1);
+  }
 }
-
-.custom-os-tile:hover img {
-  transform: scale(1.1);
-}
-
 /***** Section pages *****/
 .section-container {
   display: flex;
-  justify-content: flex-end;
 }
 .section-content {
   flex: 1;
-  max-width: 100%;
-}
-@media (min-width: 1024px) {
-  .section-content {
-    flex: 0 0 80%;
-  }
+  max-width: var(--column-reading);
+  min-width: 0;
 }
 .section-list {
-  margin: 40px 0;
+  margin: var(--space-4) 0;
 }
 
 .section-list-item {
   border-bottom: 1px solid var(--surface-stroke);
   font-size: var(--font-size-xs);
-  padding: 15px 0;
+  padding: var(--space-105) 0;
 }
 .section-list-item:first-child {
   border-top: 1px solid var(--surface-stroke);
@@ -2456,6 +2428,20 @@ body.section-page .container {
 }
 .article-body table th {
   font-weight: var(--font-weight-semibold);
+}
+.article-body .table-scroll {
+  margin: var(--space-3) 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.article-body .table-scroll > table {
+  margin: 0;
+}
+.article-body .table-scroll:focus-visible {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 .article-body img {
   height: auto;
@@ -2970,6 +2956,20 @@ body.section-page .container {
 }
 .comment-body table th {
   font-weight: var(--font-weight-semibold);
+}
+.comment-body .table-scroll {
+  margin: var(--space-3) 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.comment-body .table-scroll > table {
+  margin: 0;
+}
+.comment-body .table-scroll:focus-visible {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 .comment-body img {
   height: auto;
@@ -3569,6 +3569,20 @@ body.section-page .container {
 }
 .post-body table th {
   font-weight: var(--font-weight-semibold);
+}
+.post-body .table-scroll {
+  margin: var(--space-3) 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.post-body .table-scroll > table {
+  margin: 0;
+}
+.post-body .table-scroll:focus-visible {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 .post-body img {
   height: auto;
@@ -5229,12 +5243,19 @@ body.section-page .container {
 
 .search-result-title-container {
   display: flex;
+  gap: var(--space-2);
   justify-content: space-between;
   align-items: center;
 }
 .search-result-title {
   font-size: var(--font-size-xs);
   margin-bottom: 0;
+  min-width: 0;
+}
+.search-result-icons {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .search-result-votes, .search-result-meta-count {
   color: var(--type-subheading);
@@ -5725,6 +5746,20 @@ zd-summary-block {
 .service-catalog-description table th {
   font-weight: var(--font-weight-semibold);
 }
+.service-catalog-description .table-scroll {
+  margin: var(--space-3) 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.service-catalog-description .table-scroll > table {
+  margin: 0;
+}
+.service-catalog-description .table-scroll:focus-visible {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-focus);
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
 .service-catalog-description img {
   height: auto;
   max-width: 100%;
@@ -5859,7 +5894,12 @@ zd-summary-block {
 .service-catalog-breadcrumbs {
   display: flex;
   align-items: center;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+}
+.service-catalog-breadcrumbs nav {
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
@@ -6684,68 +6724,62 @@ a.svc-help-btn:hover,
   }
 }
 /* ============================================================
-   ARPA-H custom — category page OS tiles (macOS / iOS / Windows)
-   Replaces the former inline style="" attributes on the tiles.
-   NOTE: the negative margin on the Windows tile preserves the
-   original hand-tuned centering; revisit with a proper grid later.
+   Category page OS tiles (macOS / iOS / Windows).
+   One responsive grid: tiles wrap instead of sitting on fixed pixel
+   boxes, each carries a visible label, and the logo is decorative, so a
+   missing image still leaves a readable, linked tile.
    ============================================================ */
 .custom-os-tile-group {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* was the invalid `align-items: left` */
-  margin-top: 50px;
-  gap: 40px;
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  margin-top: var(--space-4);
 }
 
-.custom-os-tile-group .top-row {
-  display: flex;
-  justify-content: center; /* was the invalid `justify-content center` (missing colon) */
-  gap: 100px;
-}
-
+/* The row wrappers stay in the markup; the grid ignores them. */
+.custom-os-tile-group .top-row,
 .custom-os-tile-group .bottom-row {
-  display: flex;
-  justify-content: center;
+  display: contents;
 }
 
 .custom-os-tile {
-  display: flex;
   align-items: center;
+  background-color: var(--surface-page);
+  border: 1px solid var(--surface-stroke);
+  border-radius: var(--radius-lg);
+  color: var(--type-body);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   justify-content: center;
+  min-height: 12rem;
+  padding: var(--space-3);
   text-align: center;
 }
-
+.custom-os-tile:hover {
+  background-color: var(--surface-selected);
+  border-color: var(--color-info-border);
+  text-decoration: none;
+}
+.custom-os-tile:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
+}
 .custom-os-tile img {
   height: auto;
   margin: 0;
+  max-height: 6rem;
+  max-width: 100%;
+  object-fit: contain;
+  width: auto;
 }
 
-.custom-os-tile--macos {
-  width: 300px;
-  height: 150px;
-}
-
-.custom-os-tile--macos img {
-  width: 80%;
-}
-
-.custom-os-tile--ios {
-  width: 150px;
-  height: 150px;
-}
-
-.custom-os-tile--ios img {
-  width: 150%;
-}
-
-.custom-os-tile--windows {
-  width: 400px;
-  height: 200px;
-  margin-left: -275px;
-}
-
-.custom-os-tile--windows img {
-  width: 100%;
+.custom-os-tile-label {
+  font-family: var(--font-primary);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 /* ==========================================================
@@ -7700,7 +7734,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
      visibly thicker border (1px -> 2px, dashed outline for
      checkboxes), so the state reads as a shape change too, not
      just a color/hue change.
-   - Contrast (WCAG 1.4.3 / 1.4.11): --svc-error (var(--color-error)) is a
+   - Contrast (WCAG 1.4.3 / 1.4.11): --color-error (defined in _tokens.scss) is a
      5.8:1 contrast ratio against white — well past the 4.5:1 text
      and 3:1 non-text/UI-component minimums.
    - Focus is never hidden (WCAG 2.4.7): the shared NEXUS focus
@@ -7996,7 +8030,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   html, body {
     max-width: 100% !important;
   }
-  .svc-cardwrap, #main-content {
+  .svc-cardwrap {
     overflow-x: clip !important;
     max-width: 100% !important;
   }

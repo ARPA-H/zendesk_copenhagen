@@ -832,6 +832,69 @@
     document.addEventListener("DOMContentLoaded", setFooterYear);
   }
 
+  // ---------------------------------------------------------------------------
+  // 5. Let a table that is wider than its column scroll sideways inside its own
+  //    region. Without this the page either widens or, where it is clipped, the
+  //    last columns cannot be reached. Each table in an article body gets a
+  //    wrapper; the wrapper becomes a focusable, labelled region only while the
+  //    table actually overflows, so keyboard users can scroll it and tables that
+  //    fit add no tab stop.
+  // ---------------------------------------------------------------------------
+  function wrapWideTables(root) {
+    var scope = document;
+    var tables = scope.querySelectorAll(".article-body table");
+    for (var i = 0; i < tables.length; i++) {
+      var table = tables[i];
+      if (
+        table.parentNode &&
+        table.parentNode.classList.contains("table-scroll")
+      ) {
+        continue;
+      }
+      var wrapper = document.createElement("div");
+      wrapper.className = "table-scroll";
+      var caption = table.querySelector("caption");
+      wrapper.setAttribute(
+        "data-label",
+        (caption && caption.textContent.trim()) || "Scrollable table"
+      );
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+    }
+    updateScrollableTables(scope);
+  }
+
+  function updateScrollableTables(root) {
+    var scope = root || document;
+    var wrappers = scope.querySelectorAll(".table-scroll");
+    for (var i = 0; i < wrappers.length; i++) {
+      var wrapper = wrappers[i];
+      if (wrapper.scrollWidth > wrapper.clientWidth) {
+        wrapper.setAttribute("role", "region");
+        wrapper.setAttribute("tabindex", "0");
+        wrapper.setAttribute("aria-label", wrapper.getAttribute("data-label"));
+      } else {
+        wrapper.removeAttribute("role");
+        wrapper.removeAttribute("tabindex");
+        wrapper.removeAttribute("aria-label");
+      }
+    }
+  }
+
+  if (document.readyState !== "loading") {
+    wrapWideTables();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      wrapWideTables();
+    });
+  }
+  window.addEventListener("load", function () {
+    updateScrollableTables();
+  });
+  window.addEventListener("resize", function () {
+    updateScrollableTables();
+  });
+
   /*
    * Shared "live search" widget logic for the Service Catalog mini search
    * (service_page.hbs) and hero search (service_list_page.hbs).

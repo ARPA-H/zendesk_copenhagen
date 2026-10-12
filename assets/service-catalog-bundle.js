@@ -27,6 +27,7 @@ import{r as e,p as t,aK as n,q as s,T as r,aL as a,j as o,aM as i,aN as l,K as c
 `,Pe=r(m)`
   font-weight: ${e=>e.theme.fontWeights.semibold};
   margin-bottom: 0;
+  min-width: 0;
   overflow-wrap: break-word;
   max-width: 100%;
 `,Ue=r.div`
@@ -53,6 +54,11 @@ import{r as e,p as t,aK as n,q as s,T as r,aL as a,j as o,aM as i,aN as l,K as c
   flex-direction: row;
   align-items: center;
   gap: ${e=>e.theme.space.md};
+
+  /* A long service name wraps; it never squeezes the icon. */
+  > :first-child {
+    flex-shrink: 0;
+  }
 `,Oe=({title:n,description:s,thumbnailUrl:r})=>{const[a,i]=e.useState(!0),[l,c]=e.useState(!1),{t:m}=u(),p=e.useRef(null),b=e.useMemo((()=>{return e=d(s),t.sanitize(e,{ADD_TAGS:["iframe"],ADD_ATTR:["allow","allowfullscreen","frameborder","scrolling","target","title"]});var e}),[s]);e.useEffect((()=>{const e=p.current;if(e){requestAnimationFrame((()=>{const t=e.getBoundingClientRect().height,n=e.scrollHeight-t>1;c(n),n||i(!1)}))}}),[b]);return o.jsxs(Fe,{children:[o.jsxs(Ne,{children:[o.jsx(Re,{size:"large",name:n,description:s,url:r}),o.jsx(Pe,{tag:"h1",children:n})]}),b&&o.jsx(Ue,{ref:p,className:"service-catalog-description",isCollapsed:a,dangerouslySetInnerHTML:{__html:b}}),l&&o.jsxs(Me,{isLink:!0,onClick:()=>{i(!a)},children:[a?m("service-catalog.item.read-more","Read more"):m("service-catalog.item.read-less","Read less"),o.jsx(h.EndIcon,{children:a?o.jsx(j,{}):o.jsx(f,{})})]})]})};const He=r(b.Header)`
   color: ${({theme:e})=>s({theme:e,hue:"successHue",shade:700})};
 `,De=r.div`
