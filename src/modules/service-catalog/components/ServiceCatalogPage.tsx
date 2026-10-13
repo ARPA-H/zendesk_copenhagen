@@ -63,13 +63,13 @@ export const ServiceCatalogPage: React.FC<ServiceCatalogPageProps> = ({
           />
         </aside>
       )}
-      <main className="service-catalog-list">
+      <div className="service-catalog-list">
         <ServiceCatalogList
           helpCenterPath={helpCenterPath}
           selectedCategoryId={hasCategories ? selectedCategoryId : null}
           selectedCategoryName={selectedCategoryName}
         />
-      </main>
+      </div>
     </>
   );
 };

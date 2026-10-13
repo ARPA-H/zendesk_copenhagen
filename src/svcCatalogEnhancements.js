@@ -33,7 +33,9 @@
 
   const tip = document.createElement("div");
   tip.className = "svc-tooltip";
-  tip.setAttribute("role", "tooltip");
+  // A visual copy of the card description, which describeCards() ties to the
+  // card for assistive technology.
+  tip.setAttribute("aria-hidden", "true");
   tip.style.left = "-9999px";
   tip.style.top = "-9999px";
   document.body.appendChild(tip);
@@ -95,6 +97,35 @@
         if (el && !el.classList.contains("svc-desc-hidden"))
           el.classList.add("svc-desc-hidden");
       });
+  }
+  // The description is hidden by CSS (a hover tooltip shows it), which also
+  // hides it from assistive technology, so each card is described by it
+  // explicitly; aria-describedby may point at hidden content. Where the
+  // description is shown inside the card (a device that cannot hover) it is
+  // already read as part of the link, so nothing is added there.
+  const cannotHover = window.matchMedia
+    ? window.matchMedia("(hover: none)")
+    : null;
+  let describedCount = 0;
+  function describeCards() {
+    const shownInCard = !!cannotHover && cannotHover.matches;
+    main.querySelectorAll('a[href*="/services/"]').forEach((card) => {
+      if (inSidebar(card)) return;
+      const el = findDescEl(card);
+      if (!shownInCard && el && descText(card)) {
+        if (!el.id) el.id = "svc-card-desc-" + ++describedCount;
+        card.setAttribute("aria-describedby", el.id);
+      } else if (
+        /^svc-card-desc-/.test(card.getAttribute("aria-describedby") || "")
+      ) {
+        card.removeAttribute("aria-describedby");
+      }
+    });
+  }
+  if (cannotHover) {
+    if (cannotHover.addEventListener)
+      cannotHover.addEventListener("change", describeCards);
+    else if (cannotHover.addListener) cannotHover.addListener(describeCards);
   }
   function positionTip(card) {
     const rect = card.getBoundingClientRect();
@@ -222,13 +253,15 @@
   }
 
   function enhance() {
-    [hideDescriptions, applyCategoryDescription].forEach((fn) => {
-      try {
-        fn();
-      } catch (e) {
-        console.warn("enhance step failed:", e);
+    [hideDescriptions, describeCards, applyCategoryDescription].forEach(
+      (fn) => {
+        try {
+          fn();
+        } catch (e) {
+          console.warn("enhance step failed:", e);
+        }
       }
-    });
+    );
   }
   enhance();
   new MutationObserver(enhance).observe(main, {

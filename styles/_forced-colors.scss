@@ -43,10 +43,15 @@
   }
 
   // A selected row is a tint, so give it an outline. A focused row keeps the
-  // focus outline instead.
-  .service-catalog-sidebar [role="button"][aria-current="true"]:not(:focus-visible),
+  // focus outline instead. Both sit on the select button's overlay, which is
+  // the size of the whole row.
+  .service-catalog-sidebar button[aria-current="true"]:not(:focus-visible)::after,
   .svc-search-sidebar .sidenav-item.current {
     outline: 2px solid Highlight;
     outline-offset: -2px;
+  }
+
+  .service-catalog-sidebar button:focus-visible::after {
+    outline-color: Highlight;
   }
 }

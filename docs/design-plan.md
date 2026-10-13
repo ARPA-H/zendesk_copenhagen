@@ -151,7 +151,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done, reviewed: the Device FAQs heading (and a corrected heading probe), the signed-out hero, locale-aware empty states, failed loads (prompt error, no dead button), forced colors (both palettes), RTL logical properties, unclamped service names and the mobile hero artwork ("zoomed to fill": its own layer, no strip, the original colors) |
 | 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Done apart from review: the widget removed (its one used helper kept in `src/safeHref.js`), the dead partials, rules and selector parts removed, the base `.button` dimmed for a native `disabled`; every page, form state and catalog interaction compared pixel for pixel with the build before |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Done apart from review: the search placeholders and accessible names, the catalog's search-miss message, three sets of control names (sidebar row, sidebar toggle, sort button), "Service Hub" to "Service Desk" (owner decision), and two wording fixes |
-| 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Done apart from review: the audit and its fixes (the category toggle's hit area, tap areas for list links on touch, the skip link's text), service descriptions on devices that cannot hover (owner decision), a print stylesheet, the "Popular:" label, and the "Read more" measurement found in Phase 5; reflow, landscape phones and text spacing checked with nothing to change |
+| 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Done, with two review rounds answered: the audit and its fixes (the category toggle's hit area and structure, tap areas for list links on touch, the skip link's text and tab order), service descriptions on devices that cannot hover (owner decision) and for screen readers on desktop, a print stylesheet, the "Popular:" label, the "Read more" measurement found in Phase 5, English copy limited to English locales, and an axe-core pass over every page state; reflow, landscape phones and text spacing checked with nothing to change |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
 | 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Moderate expressive layer (state motion plus one signature moment per key page, reduced-motion safe) and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Planned |
 | 10 | `polish`, `audit` | Final pass, final score, docs | Planned |
@@ -408,11 +408,13 @@ Clarify decisions made during Phase 6 (each is easy to reverse):
   The browser's accessibility tree showed three problems in the catalog: a
   category row whose action is to select it was named "Expand Hardware 4" (it
   swallowed the nested toggle's label), every toggle was a bare "Expand", and the
-  sort button was just "A-Z". They are now "Hardware 4", "Expand Hardware" and
-  "Sort services: A-Z". The names are translatable messages with `{{name}}` and
-  `{{option}}` placeholders (three new keys; the two replaced keys are marked
-  obsolete), so translators can reorder them; until a locale translates them, it
-  falls back to the English default. Nothing visible changes.
+  sort button was just "A-Z". They are now "Hardware 4", "Hardware subcategories"
+  (a constant name; Phase 7 added `aria-expanded` to say whether it is open and
+  made it a sibling of the row's button) and "Sort services: A-Z". The names are
+  translatable messages with `{{name}}` and `{{option}}` placeholders (two new
+  keys; the two replaced keys are marked obsolete), so translators can reorder
+  them; until a locale translates them, it falls back to the English default.
+  Nothing visible changes.
 - **"Service Hub" becomes "Service Desk"** (an owner decision in session). The last
   line of the request page's "What happens after you submit?" now matches the three
   other lines that name the Service Desk. The two words are joined with a
@@ -468,15 +470,73 @@ Adapt decisions made during Phase 7 (each is easy to reverse):
   (29 pixels), the breadcrumbs (16), the popular chips (33) and the form controls,
   which meet the 24 pixel minimum on their own or by spacing; they are left alone
   because growing them would move the footer, the pills and the form. Making the
-  inline links `inline-block` would not change these numbers: the padding of an
-  inline box already takes taps, and the overlap comes from the 40 pixel pitch.
-- **The category toggle ignored the keyboard.** The category row selects its category
-  on Enter and Space and cancelled the default action of every such key that bubbled
-  up to it, including the nested toggle's, so a keyboard user could not expand or
-  collapse a category. The handler is in the original code; Phases 6 and 7 named and
-  sized the toggle without touching it, and review found it. The row now acts only
-  on keys pressed on the row itself. Four specs cover Enter and Space on the toggle
-  (two of them failed before the fix) and on the row.
+  links `inline-block` was measured too: with the padding in the layout every row
+  grows by 25 pixels (the category page from 2,460 to 2,985 pixels tall, the
+  section page from 1,645 to 1,945, an article from 4,188 to 4,363); with negative
+  margins that cancel the growth the areas barely change (48 in article lists,
+  where the item's clip stops them, and still 40 in the related and recently
+  viewed lists, because the overlap comes from their 40 pixel pitch).
+- **The category toggle sat inside a button, and the keyboard could not use it.**
+  The catalog sidebar's row was a `div` with `role="button"` that held the expand
+  button, and its key handler cancelled the default action of every Enter and
+  Space that bubbled up from the toggle, so a keyboard user could not expand or
+  collapse a category. Review found the keyboard half (the handler is in the
+  original code). Running axe-core over every page state then found the structural
+  half, `nested-interactive`, which it rates serious: the ARIA [`button`
+  role](https://www.w3.org/TR/wai-aria-1.2/#button) has "Children Presentational:
+  True", and axe's rule description says nested controls "are not always announced
+  by screen readers or can cause focus problems". The row is now two siblings: the
+  toggle, which reports `aria-expanded` and points `aria-controls` at the rows it
+  shows, and a select button (still "Hardware 4", with `aria-current` when
+  selected) whose `::after` overlay stretches over the whole row, so a click
+  anywhere on the row still selects it and the toggle sits above the overlay. The
+  toggle's name is now constant, "Hardware subcategories", because the
+  [button pattern](https://www.w3.org/WAI/ARIA/apg/patterns/button/) says a
+  toggle's label must not change when its state does; `aria-expanded` carries the
+  state. The row-wide focus ring moved to the overlay, the theme's own ring on the
+  select button is switched off so there is one ring, and the forced-colors
+  selectors follow the new element. Nothing visible changes: 12 of 13 sidebar
+  captures (hover, selected, expanded, a nested selection, focus rings, forced
+  colors in both palettes, the open phone list) are pixel-identical, and the 13th
+  differs by at most 2 of 255 on 24 pixels of the toggle's focus ring. Clicking a
+  toggle expands without selecting, clicking a nested row selects it, and Enter on
+  the toggle collapses it. Nine specs cover the names, the state, the sibling
+  structure and both keys on both controls; the two that press Enter and Space on
+  the toggle failed on the original code.
+- **Card descriptions reach screen readers on desktop.** The description is hidden
+  by CSS and shown in a hover tooltip, and `display: none` also hides it from
+  assistive technology; the tooltip was a bare `role="tooltip"` that nothing
+  referenced, so a screen reader heard only the card's title (axe: `aria-tooltip-name`,
+  serious). Each card is now described by its own description element through
+  `aria-describedby` (the target may be hidden; the accessible name computation
+  still uses it), the visual tooltip is `aria-hidden`, and nothing is added where
+  the description is already shown inside the card (`hover: none`), so a phone does
+  not read it twice. Six specs; three fail on the old script.
+- **New English copy no longer overrides other locales.** Review noted that the
+  signed-out hero sentences, the Knowledge band's heading and lede, and the search
+  fields' placeholder and `aria-label` are English literals; the `aria-label`
+  replaced a name Zendesk's search helper localizes. They now apply only where
+  `help_center.locale` contains `en-` (Zendesk's [`contains`
+  helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#contains-helper),
+  the same pattern as the empty states). Other locales keep Zendesk's placeholder
+  and accessible name, get the translated sign-in action alone in the signed-out
+  band, and keep the Knowledge band's topic list under an unseen region label. A
+  second harness server in a non-English locale showed all three; English renders
+  as before.
+- **Skip link, landmarks and the OS tiles.** axe-core also flagged a positive
+  `tabindex="1"` on the skip link on every page. It is already the first element
+  in the document, so the attribute only reorders focus for what follows it and is
+  gone. The catalog rendered its own `<main>` inside the platform's, which made
+  three landmark findings on the home and services pages; it is a `div` now (no
+  CSS or test depended on the tag). The OS-tile category page had no
+  `id="main-content"` for the skip link to land on, so it has one.
+- **An independent check.** [axe-core](https://github.com/dequelabs/axe-core/blob/develop/doc/rule-descriptions.md)
+  4.13 over the nine page states at 1440 pixels with a mouse and 390 with touch:
+  all 18 had findings before this round (`tabindex` on all 18, `nested-interactive`
+  and `aria-tooltip-name` on the two desktop catalog states, the duplicate landmark
+  rules on the four catalog states, a skip link without a target on the two OS-tile
+  states); none do now. Axe finds a subset of what is wrong, so this is not a
+  conformance claim.
 - **Service descriptions show on devices that cannot hover** (owner decision). On
   desktop, hovering a catalog card shows its description in a tooltip; a phone has
   no hover, so the cards showed only an icon and a title, and the tooltip was
@@ -575,7 +635,7 @@ styles, so the same pages and widths are compared before and after.
 | 2 | Across the same pages, counting text nodes: distinct font sizes fell from 16 to 8 at 1440 pixels wide (13 to 8 at 768, 16 to 8 at 390); text under 14 pixels fell from 35.1% of nodes to 2.0% (37.3% to 2.1% at 768, 39.5% to 2.6% at 390); an article paragraph went from a 15-pixel, 706-pixel-wide measure of about 102 characters per line to 16 pixels at 70 characters (a 32em cap); body line height is 1.62 and heading line heights are 1.15 and 1.35. Detector findings over `styles` and `templates`, with DESIGN.md loaded, fell from 81 (69 font sizes off the documented ramp, 6 radii, 4 side-stripe borders, 2 layout transitions) to 6 (4 radii and 2 layout transitions, left to phases 3 and 8). |
 | 5 | Generated files: `style.css` fell from 226,208 to 220,756 bytes (2.4%) and `script.js` from 61,166 to 42,664 bytes (30.2%); `!important` in the compiled CSS fell from 207 to 190 and `[class*=` attribute selectors from 65 to 15 (the rest match Garden's generated class names); the compiled CSS has 26 fewer blocks (counted as closing braces). Source (styles, scripts and templates): 867 lines deleted and 16 added in existing files, plus 75 lines in the two new helper files. Unit tests: 91 suites and 871 tests (874 before: the widget's spec went, the helper's eight tests came). Renders: no visible change, checked pixel for pixel (see the distill decisions). |
 | 6 | Search boxes whose placeholder promised services on an articles-only search: 3 pages, now none (all say "Search help articles", with a matching accessible name); the old text was clipped at every phone width and the new one fits at 375 pixels and wider. Catalog accessibility names: the sidebar row, the sidebar toggle and the sort button went from "Expand Hardware 4", "Expand" and "A-Z" to "Hardware 4", "Expand Hardware" and "Sort services: A-Z". Renders: 20 of 55 differ (home, services, signed-out home and the request page, each at the changed words) and the other 35, including every Knowledge page, are identical. Unit tests: 92 suites and 877 tests (871 before; six new). |
-| 7 | Target size (WCAG 2.5.8, with the nested-target and spacing rules applied): failures on the nine page states went from 1 control on 2 pages (the 12 pixel category toggle) to 0 in all 18 combinations (touch at 390 pixels, mouse at 1440); a padded search title that would have made 18 breadcrumb links fail was caught and left out. Touch targets under 44 pixels: category page 41 to 20, section 32 to 20, article 36 to 34 (36 to 29 by box size; the related and recently viewed lists keep a 40 pixel area because neighbors overlap by 4). Keyboard on the catalog's category toggle: Enter and Space did nothing, because the row cancelled them (a review finding, present in the original code); both now expand and collapse. Skip link on focus: 2.2:1 (dark blue on black) to 21:1. "Popular:" label at the lightest pixel: 3.4 to 4.2:1 to 4.0 to 5.1:1 at 600 to 768 pixels (typical 6.8 to 7.8:1 to 8.7 to 10.1:1). False "Read more" at 1024 pixels: 4 of 8 loads to 0 of 12. Catalog at 390 pixels on a device that cannot hover: descriptions visible, page 3,721 to 4,389 pixels tall. Print: a stylesheet where there was none, checked on all nine page states. The 45 combinations of nine pages at five widths: no overflow, no contrast failures, no colors outside the palette and no control without a focus ring. Renders on a desktop pointer: 45 of 55 identical to Phase 6, and the other 10 (home and services at five widths) differ only in the 52 by 15 pixel patch of the "Popular:" label; the "Read more" timing difference that showed in earlier comparisons is gone. Unit tests: 92 suites and 886 tests (877 before; five new for "Read more", four for the toggle's keyboard use). |
+| 7 | Target size (WCAG 2.5.8, with the nested-target and spacing rules applied): failures on the nine page states went from 1 control on 2 pages (the 12 pixel category toggle) to 0 in all 18 combinations (touch at 390 pixels, mouse at 1440); a padded search title that would have made 18 breadcrumb links fail was caught and left out. Touch targets under 44 pixels: category page 41 to 20, section 32 to 20, article 36 to 34 (36 to 29 by box size; the related and recently viewed lists keep a 40 pixel area because neighbors overlap by 4). Keyboard on the catalog's category toggle: Enter and Space did nothing, because the row cancelled them (a review finding, present in the original code); both now expand and collapse, and the toggle is no longer inside a button. axe-core 4.13 over the nine page states at 1440 (mouse) and 390 (touch): findings in all 18 before, none after. Renders on a desktop pointer after this round: 54 of 55 identical to the build before; the 55th (home at 1440) differs by 18 pixels of at most 8 of 255 on one icon edge, with identical geometry to three decimals. Skip link on focus: 2.2:1 (dark blue on black) to 21:1. "Popular:" label at the lightest pixel: 3.4 to 4.2:1 to 4.0 to 5.1:1 at 600 to 768 pixels (typical 6.8 to 7.8:1 to 8.7 to 10.1:1). False "Read more" at 1024 pixels: 4 of 8 loads to 0 of 12. Catalog at 390 pixels on a device that cannot hover: descriptions visible, page 3,721 to 4,389 pixels tall. Print: a stylesheet where there was none, checked on all nine page states. The 45 combinations of nine pages at five widths: no overflow, no contrast failures, no colors outside the palette and no control without a focus ring. Renders on a desktop pointer: 45 of 55 identical to Phase 6, and the other 10 (home and services at five widths) differ only in the 52 by 15 pixel patch of the "Popular:" label; the "Read more" timing difference that showed in earlier comparisons is gone. Unit tests: 93 suites and 894 tests (877 before; five new for "Read more", six for the sidebar's controls, six for the card descriptions). |
 
 ## Open decisions
 
@@ -590,6 +650,7 @@ Still open:
 - Two theme settings read by nothing that renders: `community_image` ("Community banner"; its only consumer, the `.community-image` rule, was dead and is removed in Phase 5) and `service_catalog_hero_image` (its consumer, `.service-catalog-hero`, is used by no template). The hero artwork comes from `homepage_background_image`. Both stay in `manifest.json`, because removing a setting changes the Admin Center, which is the owner's call.
 - The live [arpa-h.gov](https://arpa-h.gov/) still ships the older USWDS 1.x banner copy ("The .gov means it's official."); this theme uses the current official 3.x text. Whether the two should be aligned is a content decision for the main site's owners.
 - The banner copy is English only, because a theme cannot add Help Center translation keys; USWDS publishes Spanish text if a Spanish locale is ever enabled.
+- The copy this work wrote (the signed-out hero sentences, the Knowledge band's heading and lede, the "Search help articles" placeholder and label) is English and shows only in `en-` locales, for the same reason; every other locale gets the fallbacks described under Phase 7. If a second locale is ever enabled, each of those strings needs a translation route: a theme cannot add `{{t}}` keys, so the options are Zendesk Dynamic Content (the [`dc` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#dc-dynamic-content-helper), "translated according to the current locale") or one `contains` branch per locale.
 - Where suggested articles belong on the request page on a phone. They update as someone types, but the help rail follows the form, so a phone user sees them only below the Submit button. Putting the rail first would push the form down and shift the page as results arrive; an alternative is a compact "Related articles" strip just above Submit. Left as is until the owner chooses.
 - A desktop window narrowed below 769 pixels, with a mouse, gets neither the card tooltip (hidden below 769 pixels by an older rule) nor the inline description (shown only where `hover: none`). Showing the description below 769 pixels as well would close that gap at the cost of a taller list in narrow windows.
 - At 768 pixels exactly, the lightest pixel behind the "Popular:" label reads 4.0:1 (typical 8.7:1). A 55% indigo scrim, as the chips have, would clear 4.5:1 and show as a pill; the owner prefers the original look, so none is added.

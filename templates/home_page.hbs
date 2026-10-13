@@ -68,10 +68,14 @@
     </div>
     {{else}}
     {{!-- Signed out: the greeting, search and catalog stay behind sign-in, so the
-          band says why and offers the one action instead of sitting empty. --}}
+          band says why and offers the one action instead of sitting empty. The
+          sentences are English copy; every other locale gets the translated
+          sign-in action alone. --}}
     <div class="svc-hero-greeting svc-hero-signed-out">
+      {{#contains help_center.locale 'en-'}}
       <h2 class="svc-hero-title svc-greeting-ready">Sign in to get help</h2>
       <p class="svc-hero-subtitle">Use your ARPA-H account to search help articles, submit a request and track it.</p>
+      {{/contains}}
       {{#link "sign_in" class="svc-hero-cta"}}{{t 'sign_in'}}{{/link}}
     </div>
     {{/if}}
@@ -145,10 +149,14 @@
      Styling: styles/_svc-knowledge.scss. -->
 {{#if signed_in}}
 {{#if categories}}
-<section class="svc-knowledge" aria-labelledby="svc-knowledge-title">
+{{!-- The heading and lede are English copy; every other locale keeps the topic
+      list (its names come from the Help Center) and a region label. --}}
+<section class="svc-knowledge" {{#contains help_center.locale 'en-'}}aria-labelledby="svc-knowledge-title"{{else}}aria-label="{{help_center.name}}"{{/contains}}>
   <div class="svc-knowledge-inner">
+    {{#contains help_center.locale 'en-'}}
     <h2 id="svc-knowledge-title" class="svc-knowledge-title">Browse help articles</h2>
     <p class="svc-knowledge-lede">Guides and answers, grouped by topic.</p>
+    {{/contains}}
     <ul class="svc-knowledge-list">
       {{#each categories}}
       <li class="svc-knowledge-item">
@@ -260,11 +268,14 @@
 
     // This search finds help articles, not services (the catalog has its own
     // "Search for services" field), so the field says so, visibly and to
-    // assistive technology.
+    // assistive technology. The wording is English; other locales keep the
+    // placeholder and accessible name Zendesk's search helper localizes.
+    {{#contains help_center.locale 'en-'}}
     if (input) {
       input.setAttribute('placeholder', 'Search help articles');
       input.setAttribute('aria-label', 'Search help articles');
     }
+    {{/contains}}
 
     if (btn && form) {
       btn.addEventListener('click', function () {

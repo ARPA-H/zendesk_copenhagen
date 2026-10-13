@@ -201,15 +201,10 @@ parts:
       value: "Expand"
       obsolete: "2026-10-13"
   - translation:
-      key: "service-catalog-sidebar.collapse-category-named"
-      title: "[A11Y] Hidden label for screen readers for the collapse button of one category in the service catalog sidebar. {{name}} is the category name"
+      key: "service-catalog-sidebar.subcategories-named"
+      title: "[A11Y] Hidden label for screen readers for the button that shows or hides the subcategories of one category in the service catalog sidebar. {{name}} is the category name; whether they are showing is announced separately"
       screenshot: ""
-      value: "Collapse {{name}}"
-  - translation:
-      key: "service-catalog-sidebar.expand-category-named"
-      title: "[A11Y] Hidden label for screen readers for the expand button of one category in the service catalog sidebar. {{name}} is the category name"
-      screenshot: ""
-      value: "Expand {{name}}"
+      value: "{{name}} subcategories"
   - translation:
       key: "service-catalog-sidebar.all-services"
       title: "Label for the navigation item in the service catalog sidebar that shows all services"

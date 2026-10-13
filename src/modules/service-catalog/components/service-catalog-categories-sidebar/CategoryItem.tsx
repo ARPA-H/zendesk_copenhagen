@@ -32,6 +32,7 @@ const StyledSidebarItem = styled.div<{
   $nestingLevel: number;
   $hasChildren: boolean;
 }>`
+  position: relative;
   display: flex;
   align-items: center;
   height: 40px;
@@ -54,23 +55,12 @@ const StyledSidebarItem = styled.div<{
         ? getColor({ theme: props.theme, hue: "blue", shade: 200 })
         : getColor({ theme: props.theme, hue: "grey", shade: 100 })};
   }
-
-  &:focus {
-    outline: none;
-  }
-
-  &:focus-visible {
-    /* The transparent outline is repainted in forced-colors mode, where the
-       box-shadow ring is dropped. */
-    outline: 2px solid transparent;
-    outline-offset: -2px;
-    box-shadow: inset 0 0 0 2px
-      ${(props) =>
-        getColor({ theme: props.theme, variable: "border.primaryEmphasis" })};
-  }
 `;
 
 const ExpandButton = styled.button`
+  position: relative;
+  /* Above the select button's overlay, so the toggle takes its own clicks. */
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -97,12 +87,47 @@ const ExpandButton = styled.button`
   }
 `;
 
-const ItemContent = styled.div`
+/* The row's control. It is a sibling of the expand button, never its parent:
+   a button must not contain another control, and assistive technology may
+   flatten one that does. Its ::after stretches over the whole row, so a click
+   anywhere on the row still selects the category. */
+const SelectButton = styled.button`
   display: flex;
-  align-items: center;
   flex: 1;
+  align-items: center;
   min-width: 0;
   gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+  }
+
+  &:focus-visible {
+    /* The row-wide ring below replaces the theme's own ring on the button. */
+    outline: none;
+    box-shadow: none;
+  }
+
+  &:focus-visible::after {
+    /* The transparent outline is repainted in forced-colors mode, where the
+       box-shadow ring is dropped. */
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    box-shadow: inset 0 0 0 2px
+      ${(props) =>
+        getColor({ theme: props.theme, variable: "border.primaryEmphasis" })};
+  }
 `;
 
 const SidebarItemName = styled.span`
@@ -144,6 +169,7 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
   const { t } = useTranslation();
   const nameId = useId();
   const countId = useId();
+  const childrenId = useId();
   const hasCount = typeof category.items_count === "number";
 
   const displayName = isAllServices
@@ -153,23 +179,13 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
       : category.name;
 
   // Name the toggle after its category, so a list of buttons does not read
-  // "Expand, Expand, Expand".
-  const toggleLabel = isExpanded
-    ? t(
-        "service-catalog-sidebar.collapse-category-named",
-        "Collapse {{name}}",
-        {
-          name: displayName,
-        }
-      )
-    : t("service-catalog-sidebar.expand-category-named", "Expand {{name}}", {
-        name: displayName,
-      });
-
-  const handleExpandClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggleExpand(category.id);
-  };
+  // "Expand, Expand, Expand". The name stays the same when the state changes;
+  // aria-expanded says whether the subcategories are showing.
+  const toggleLabel = t(
+    "service-catalog-sidebar.subcategories-named",
+    "{{name}} subcategories",
+    { name: displayName }
+  );
 
   return (
     <>
@@ -178,22 +194,6 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
           $active={isSelected}
           $nestingLevel={nestingLevel}
           $hasChildren={hasChildren}
-          aria-current={isSelected ? "true" : undefined}
-          // The row selects the category; without this its name would swallow
-          // the nested toggle's label ("Expand Hardware 4").
-          aria-labelledby={hasCount ? `${nameId} ${countId}` : nameId}
-          onClick={() => onSelect(category.id)}
-          tabIndex={0}
-          role="button"
-          onKeyDown={(e) => {
-            // Keys pressed on the nested toggle belong to the toggle; without
-            // this check the row cancels its native Enter and Space click.
-            if (e.target !== e.currentTarget) return;
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onSelect(category.id);
-            }
-          }}
           data-test-id={
             isAllServices
               ? "sidebar-all-services"
@@ -203,24 +203,32 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
           <CategoryItemContainer $nestingLevel={hasChildren ? nestingLevel : 0}>
             {hasChildren && (
               <ExpandButton
-                onClick={handleExpandClick}
+                onClick={() => onToggleExpand(category.id)}
                 aria-label={toggleLabel}
+                aria-expanded={isExpanded}
+                aria-controls={isExpanded ? childrenId : undefined}
                 type="button"
               >
                 {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ExpandButton>
             )}
-            <ItemContent>
+            <SelectButton
+              onClick={() => onSelect(category.id)}
+              aria-current={isSelected ? "true" : undefined}
+              // Name it after the category and its count only.
+              aria-labelledby={hasCount ? `${nameId} ${countId}` : nameId}
+              type="button"
+            >
               <SidebarItemName id={nameId}>{displayName}</SidebarItemName>
               {hasCount && (
                 <ItemCount id={countId}>{category.items_count}</ItemCount>
               )}
-            </ItemContent>
+            </SelectButton>
           </CategoryItemContainer>
         </StyledSidebarItem>
       </CategoryItemWrapper>
       {hasChildren && isExpanded && (
-        <>
+        <div id={childrenId}>
           {category.children?.map((child) => (
             <CategoryItem
               key={child.id}
@@ -232,7 +240,7 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
               onToggleExpand={onToggleExpand}
             />
           ))}
-        </>
+        </div>
       )}
     </>
   );

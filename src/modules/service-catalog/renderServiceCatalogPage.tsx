@@ -86,9 +86,9 @@ export async function renderServiceCatalogPage(
       <ErrorBoundary
         helpCenterPath={safeHelpCenterPath}
         fallback={
-          <main className="service-catalog-list">
+          <div className="service-catalog-list">
             <ErrorScreen helpCenterPath={safeHelpCenterPath} />
-          </main>
+          </div>
         }
       >
         <ServiceCatalogPage

@@ -79,20 +79,28 @@ describe("CategoryItem with subcategories", () => {
     );
   }
 
-  it("names the expand button after its category", () => {
+  it("names the toggle after its category and reports that it is collapsed", () => {
     renderParent(false);
 
     expect(
-      screen.getByRole("button", { name: "Expand Hardware" })
-    ).toBeInTheDocument();
+      screen.getByRole("button", { name: "Hardware subcategories" })
+    ).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("names the collapse button after its category", () => {
+  it("keeps the toggle's name when expanded and points it at the subcategories", () => {
     renderParent(true);
 
-    expect(
-      screen.getByRole("button", { name: "Collapse Hardware" })
-    ).toBeInTheDocument();
+    const toggle = screen.getByRole("button", {
+      name: "Hardware subcategories",
+    });
+
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    const controlled = document.getElementById(
+      toggle.getAttribute("aria-controls") ?? ""
+    );
+    expect(controlled).toContainElement(
+      screen.getByRole("button", { name: "Laptops 2" })
+    );
   });
 
   it("names the row after the category and its count, not after the toggle", () => {
@@ -101,6 +109,41 @@ describe("CategoryItem with subcategories", () => {
     expect(
       screen.getByRole("button", { name: "Hardware 4" })
     ).toBeInTheDocument();
+  });
+
+  it("does not nest the toggle inside the row's button", () => {
+    renderParent(false);
+
+    const toggle = screen.getByRole("button", {
+      name: "Hardware subcategories",
+    });
+    const row = screen.getByRole("button", { name: "Hardware 4" });
+
+    expect(row).not.toContainElement(toggle);
+    expect(toggle).not.toContainElement(row);
+  });
+
+  it("toggles without selecting when the toggle is clicked", async () => {
+    const onSelect = jest.fn();
+    const onToggleExpand = jest.fn();
+
+    render(
+      <CategoryItem
+        category={parent}
+        nestingLevel={0}
+        selectedCategoryId={null}
+        onSelect={onSelect}
+        expandedCategories={new Set<string>()}
+        onToggleExpand={onToggleExpand}
+      />
+    );
+
+    await userEvent.click(
+      screen.getByRole("button", { name: "Hardware subcategories" })
+    );
+
+    expect(onToggleExpand).toHaveBeenCalledWith("hardware");
+    expect(onSelect).not.toHaveBeenCalled();
   });
 
   describe("with the keyboard", () => {
@@ -130,7 +173,7 @@ describe("CategoryItem with subcategories", () => {
       async (_name, key) => {
         const { onSelect, onToggleExpand } = renderWithSpies();
 
-        screen.getByRole("button", { name: "Expand Hardware" }).focus();
+        screen.getByRole("button", { name: "Hardware subcategories" }).focus();
         await userEvent.keyboard(key);
 
         expect(onToggleExpand).toHaveBeenCalledWith("hardware");

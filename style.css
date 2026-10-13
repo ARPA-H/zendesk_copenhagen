@@ -7127,7 +7127,8 @@ a.svc-hero-cta:active {
 }
 
 /* Card descriptions are hidden (src/svcCatalogEnhancements.js adds the class)
-   and shown in a hover tooltip instead. */
+   and shown in a hover tooltip instead. The script also ties each one to its
+   card with aria-describedby, so a screen reader still hears it. */
 .service-catalog-main-content .svc-desc-hidden {
   display: none !important;
 }
@@ -8778,9 +8779,12 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   .svc-hero-search .svc-hero-search-btn {
     border: 1px solid ButtonText !important;
   }
-  .service-catalog-sidebar [role=button][aria-current=true]:not(:focus-visible),
+  .service-catalog-sidebar button[aria-current=true]:not(:focus-visible)::after,
   .svc-search-sidebar .sidenav-item.current {
     outline: 2px solid Highlight;
     outline-offset: -2px;
+  }
+  .service-catalog-sidebar button:focus-visible::after {
+    outline-color: Highlight;
   }
 }

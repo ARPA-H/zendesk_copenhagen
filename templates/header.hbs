@@ -3,7 +3,9 @@
   (ARPA-H custom — header section).
 --}}
 
-<a class="skip-navigation" tabindex="1" href="#main-content">{{t 'skip_navigation' }}</a>
+{{!-- First in the document, so it is the first Tab stop without a positive
+      tabindex (which would also reorder focus for everything after it). --}}
+<a class="skip-navigation" href="#main-content">{{t 'skip_navigation' }}</a>
 
 {{!--
   Official U.S. government banner, markup from the USWDS 3.14 component

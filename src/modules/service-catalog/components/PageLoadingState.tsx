@@ -69,8 +69,8 @@ export const PageLoadingState: React.FC = () => (
     <aside className="service-catalog-sidebar">
       <SidebarSkeleton />
     </aside>
-    <main className="service-catalog-list">
+    <div className="service-catalog-list">
       <ContentSkeleton />
-    </main>
+    </div>
   </>
 );

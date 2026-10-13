@@ -134,11 +134,15 @@
     var btn   = document.getElementById('svc-hero-search-btn');
 
     // This search finds help articles, not services, so the field says so,
-    // visibly and to assistive technology.
+    // visibly and to assistive technology. The wording is English; other
+    // locales keep the placeholder and accessible name Zendesk's search helper
+    // localizes.
+    {{#contains help_center.locale 'en-'}}
     if (input) {
       input.setAttribute('placeholder', 'Search help articles');
       input.setAttribute('aria-label', 'Search help articles');
     }
+    {{/contains}}
 
     if (btn && form) {
       btn.addEventListener('click', function () {

@@ -295,7 +295,8 @@ a.svc-hero-cta:active {
 }
 
 /* Card descriptions are hidden (src/svcCatalogEnhancements.js adds the class)
-   and shown in a hover tooltip instead. */
+   and shown in a hover tooltip instead. The script also ties each one to its
+   card with aria-describedby, so a screen reader still hears it. */
 .service-catalog-main-content .svc-desc-hidden { display: none !important; }
 
 /* Without hover there is no tooltip, so devices that cannot hover (phones and

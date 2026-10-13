@@ -1,9 +1,8 @@
 {
   "service-catalog-sidebar.all-services": "All services",
   "service-catalog-sidebar.collapse-category": "Collapse",
-  "service-catalog-sidebar.collapse-category-named": "Collapse {{name}}",
   "service-catalog-sidebar.expand-category": "Expand",
-  "service-catalog-sidebar.expand-category-named": "Expand {{name}}",
+  "service-catalog-sidebar.subcategories-named": "{{name}} subcategories",
   "service-catalog-sidebar.uncategorized": "Uncategorized",
   "service-catalog.asset-required-error": "Select an asset",
   "service-catalog.asset-type-required-error": "Select an asset type",
