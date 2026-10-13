@@ -143,10 +143,22 @@ if (document.readyState !== "loading") {
 // 5. Let a table that is wider than its column scroll sideways inside its own
 //    region. Without this the page either widens or, where it is clipped, the
 //    last columns cannot be reached. Each table in an article body gets a
-//    wrapper; the wrapper becomes a focusable, labelled region only while the
-//    table actually overflows, so keyboard users can scroll it and tables that
-//    fit add no tab stop.
+//    wrapper; the wrapper becomes a focusable region only while the table
+//    actually overflows, so keyboard users can scroll it and tables that fit
+//    add no tab stop. The region is named by the table's caption, which is the
+//    article's own text. A table without one gets a fixed English name, so that
+//    fallback applies to English pages only (any other language would hear it in
+//    the wrong one), and it is numbered when several tables need it so the
+//    regions stay distinguishable. Elsewhere the region stays focusable and
+//    unnamed.
 // ---------------------------------------------------------------------------
+var SCROLLABLE_TABLE_LABEL = "Scrollable table";
+
+function isEnglishPage() {
+  var lang = document.documentElement.getAttribute("lang") || "en";
+  return /^en(-|$)/i.test(lang);
+}
+
 export function wrapWideTables(root) {
   var scope = root || document;
   var tables = scope.querySelectorAll(".article-body table");
@@ -161,10 +173,10 @@ export function wrapWideTables(root) {
     var wrapper = document.createElement("div");
     wrapper.className = "table-scroll";
     var caption = table.querySelector("caption");
-    wrapper.setAttribute(
-      "data-label",
-      (caption && caption.textContent.trim()) || "Scrollable table"
-    );
+    var captionText = caption && caption.textContent.trim();
+    if (captionText) {
+      wrapper.setAttribute("data-label", captionText);
+    }
     table.parentNode.insertBefore(wrapper, table);
     wrapper.appendChild(table);
   }
@@ -174,16 +186,43 @@ export function wrapWideTables(root) {
 export function updateScrollableTables(root) {
   var scope = root || document;
   var wrappers = scope.querySelectorAll(".table-scroll");
+  var overflowing = [];
+  var unnamed = [];
   for (var i = 0; i < wrappers.length; i++) {
     var wrapper = wrappers[i];
     if (wrapper.scrollWidth > wrapper.clientWidth) {
-      wrapper.setAttribute("role", "region");
-      wrapper.setAttribute("tabindex", "0");
-      wrapper.setAttribute("aria-label", wrapper.getAttribute("data-label"));
+      overflowing.push(wrapper);
+      if (!wrapper.getAttribute("data-label")) {
+        unnamed.push(wrapper);
+      }
     } else {
       wrapper.removeAttribute("role");
       wrapper.removeAttribute("tabindex");
       wrapper.removeAttribute("aria-label");
+    }
+  }
+
+  var english = isEnglishPage();
+  for (var j = 0; j < overflowing.length; j++) {
+    var scroller = overflowing[j];
+    var label = scroller.getAttribute("data-label");
+    if (!label && english) {
+      label =
+        unnamed.length > 1
+          ? SCROLLABLE_TABLE_LABEL +
+            " " +
+            (unnamed.indexOf(scroller) + 1) +
+            " of " +
+            unnamed.length
+          : SCROLLABLE_TABLE_LABEL;
+    }
+    scroller.setAttribute("tabindex", "0");
+    if (label) {
+      scroller.setAttribute("role", "region");
+      scroller.setAttribute("aria-label", label);
+    } else {
+      scroller.removeAttribute("role");
+      scroller.removeAttribute("aria-label");
     }
   }
 }

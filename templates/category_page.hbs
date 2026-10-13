@@ -31,22 +31,24 @@
 
       {{#is category.id 19382827542427}}
         <div id="main-content" class="custom-os-tile-group">
+          {{!-- The product names need no translation; "FAQs" is English, so it is
+                added on English locales only and other locales read just the name. --}}
           {{!-- Row 1: macOS and iOS --}}
           <div class="top-row">
             <a href="/hc/{{help_center.base_locale}}/sections/39463348119451-macOS" class="custom-os-tile custom-os-tile--macos">
               <img src="{{asset 'macos.png'}}" class="macos-icon" alt="" />
-              <span class="custom-os-tile-label">macOS FAQs</span>
+              <span class="custom-os-tile-label">macOS{{#contains help_center.locale 'en-'}} FAQs{{/contains}}</span>
             </a>
             <a href="/hc/{{help_center.base_locale}}/sections/39748766960283" class="custom-os-tile custom-os-tile--ios">
               <img src="{{asset 'ios.png'}}" class="ios-icon" alt="" />
-              <span class="custom-os-tile-label">iOS FAQs</span>
+              <span class="custom-os-tile-label">iOS{{#contains help_center.locale 'en-'}} FAQs{{/contains}}</span>
             </a>
           </div>
           {{!-- Row 2: Windows --}}
           <div class="bottom-row">
             <a href="/hc/{{help_center.base_locale}}/sections/19383045462299-Windows" class="custom-os-tile custom-os-tile--windows">
               <img src="{{asset 'windows.png'}}" class="windows-icon" alt="" />
-              <span class="custom-os-tile-label">Windows FAQs</span>
+              <span class="custom-os-tile-label">Windows{{#contains help_center.locale 'en-'}} FAQs{{/contains}}</span>
             </a>
           </div>
         </div>
