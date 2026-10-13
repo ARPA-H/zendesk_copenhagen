@@ -217,14 +217,16 @@
       skeletonId: "svc-catalog-skeleton",
       skeletonHideClass: "svc-cat-skel-hide",
       readyClasses: ["svc-cat-ready"],
-      // "Complete" = real service links rendered, or the module's error
-      // screen (role="alert") or the fallback written when the module itself
-      // cannot load (.svc-catalog-fallback, whose link has no trailing slash)
-      // took their place, so a failure shows at once instead of after the 6s
-      // hard cap.
+      // "Complete" = real service links rendered, or the count announcer
+      // (data-service-count) holding text, which a catalog that loaded with
+      // nothing in it has instead of links (it stays empty while the list
+      // loads), or the module's error screen (role="alert") or the fallback
+      // written when the module itself cannot load (.svc-catalog-fallback,
+      // whose link has no trailing slash) took their place, so a failure shows
+      // at once instead of after the 6s hard cap.
       isComplete: (main) =>
         !!main.querySelector(
-          'a[href*="/services/"], [role="alert"], .svc-catalog-fallback'
+          'a[href*="/services/"], [data-service-count]:not(:empty), [role="alert"], .svc-catalog-fallback'
         ),
     });
   } catch (e) {

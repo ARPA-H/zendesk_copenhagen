@@ -263,7 +263,7 @@ export function ServiceCatalogList({
         isLoading={isLoading}
         onChange={handleInputChange}
       />
-      <CountAnnouncer role="status">
+      <CountAnnouncer role="status" data-service-count>
         {isSettled ? serviceCountMessage : ""}
       </CountAnnouncer>
       {!isCategoryChanging && (
