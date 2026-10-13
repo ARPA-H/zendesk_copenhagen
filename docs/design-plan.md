@@ -153,7 +153,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Done apart from review: the search placeholders and accessible names, the catalog's search-miss message, three sets of control names (sidebar row, sidebar toggle, sort button), "Service Hub" to "Service Desk" (owner decision), and two wording fixes |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Done, with its review rounds answered: the audit and its fixes (the category toggle's hit area and structure, tap areas for list links on touch, the skip link's text and tab order), service descriptions on devices that cannot hover (owner decision) and for screen readers on desktop, a print stylesheet, the "Popular:" label, the "Read more" measurement found in Phase 5, English copy limited to English locales, fixed-English blocks marked `lang="en"`, and an axe-core pass over every page state; reflow, landscape phones and text spacing checked with nothing to change |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Done: the hero artwork re-encoded without changing a pixel (1.85 to 0.93 MB), the catalog skeleton pinned (layout shift 0.148 to 0.027), the toast host loaded only where something can toast (Knowledge pages lose 249 KB of script), `shared-bundle.js` preloaded where a page has a module, and the training button, fonts and interaction speed measured and left |
-| 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Moderate expressive layer (state motion plus one signature moment per key page, reduced-motion safe) and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Planned |
+| 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Moderate expressive layer (state motion plus one signature moment per key page, reduced-motion safe) and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Done apart from review: `extract` put twelve literal durations onto four motion tokens that fall to almost nothing under reduced motion (nothing the theme owns still moves for a visitor who asks for that, and Garden's one chevron turn is held still), `animate` eased the service cards' hover shadow along with their border and gave an article heading reached by a link a one-time wash, and `delight`, `bolder` and `quieter` found nothing further that earns its place; `onboard` (a first-use state for My requests) and `overdrive` (three directions) are recorded as open decisions |
 | 10 | `polish`, `audit` | Final pass, final score, docs | Planned |
 
 Layout decisions made during Phase 3 (each is easy to reverse):
@@ -814,7 +814,9 @@ Optimize decisions made during Phase 8 (each is easy to reverse):
     transform-based version would change how the label opens, so it stays.
   - The stock `.notification` rule `transition: height .2s`. Nothing sets a
     height and an `auto` height cannot be interpolated, so it never runs; it is
-    an upstream rule for a page this site does not use.
+    an upstream rule for a page this site does not use. (Phase 9 removed it while
+    it moved the durations onto tokens, since it was the one literal duration
+    that could not run.)
   - Preloading the hero image (`<link rel="preload" as="image">`, with and without
     `fetchpriority="high"`). LCP stayed at 7.08 seconds, first paint came 76 to
     232 ms later and the catalog 240 to 290 ms later: the download is bound by
@@ -822,6 +824,107 @@ Optimize decisions made during Phase 8 (each is easy to reverse):
   - The shared bundle itself (254 KB gzipped: React, Garden, i18next) is the
     upstream architecture; splitting it per module would change the build, and
     pages that need it load it once.
+
+Expressive decisions made during Phase 9 (each is easy to reverse):
+
+- **What each command came to.** The catalog is an Operate surface and the
+  Knowledge pages are Read, and [Impeccable](https://impeccable.style)'s guidance
+  for both is that motion serves feedback, state and continuity, with no page-load
+  choreography, and that delight is concentrated at meaningful moments rather than
+  spread around. So: `extract` moved every literal duration onto four tokens, and
+  `animate` made two changes (the card hover and the anchor arrival, both below).
+  `delight` found nothing further to add, and a celebration for a submitted
+  request would be manufactured. `bolder` and `quieter` found no target: the
+  Knowledge pages are meant to recede, and nothing is too loud (the one hot pink
+  button is the owner's decision).
+  `onboard` and `overdrive` became open decisions. The owner's decision names four
+  moments (home hero, catalog card hover, article header, request success), and
+  they came to this. **Home hero:** the greeting's authored fade, kept and now a
+  token; a sequence for the search pill and the chips after it would make people
+  wait for the control they came to use. **Catalog card hover:** the shadow now
+  eases with the border, and the original's no-lift stays. **Article header:** the
+  title is not animated, because a Read page that animates its title on load only
+  delays the text; the cue goes to a heading reached by a link instead, which is
+  where a reader loses their place. **Request success:** submitting already
+  redirects to the new request with a "Service request submitted" toast waiting for
+  it, which is the completion moment, and the page has no state of its own to
+  animate. The category, section and search pages were not in the list and have
+  none, because there a flourish only slows someone down.
+- **Twelve durations become four, and every one of them falls to almost nothing
+  under reduced motion.** The theme wrote its transition lengths by hand: twelve
+  different ones from 0.1 to 0.45 seconds, across seven style files and two React
+  components. They are now `--motion-fast` (150 ms: color, border and opacity under
+  a pointer), `--motion-base` (200 ms: a routine state change), `--motion-slow`
+  (340 ms: a change big enough to move something) and `--motion-arrive` (450 ms:
+  the greeting), plus `--ease-out` for the training button's width. No duration
+  moved by more than 60 ms (0.4 to 0.34 seconds on the tile zoom is the largest).
+  Across the 18 page states there are 45 distinct transitions: 24 are exactly as
+  before, 20 changed length by 60 ms at most, and one, the service cards', now also
+  eases its shadow (below). Under
+  [`prefers-reduced-motion`](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)
+  the four tokens are 0.01 ms. That is a hundredth of a millisecond and not zero
+  because, in the [CSS Transitions spec](https://www.w3.org/TR/css-transitions-1/#starting),
+  a transition starts only when its combined duration is "greater than 0s": with
+  zero no `transitionend` ever fires for a script that waits on it, and with 0.01
+  the change is instant and the event still arrives. The original author had
+  already written overrides for the greeting, tooltips, skeletons, the training
+  button and the search results, and gated the tile zoom. Measured with the page
+  states loaded and the preference on, 12 theme-owned rules still ran before: ten
+  color or border fades (buttons, chips, search borders, pagination, votes), the
+  submit area's fade-in and the sidebar chevron's turn. None runs now. The one
+  hand-written transition time left is the training button's 0.06 second label
+  delay, which is a delay and not a duration. The authored animations keep their
+  own timings and are each already off under reduced motion (the skeleton shimmer,
+  the training button's pulse, the validation shake) or become a static highlight
+  (the wash below).
+- **Garden's chevron was the last movement, and it is held still.** WCAG's
+  [Animation from Interactions](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)
+  (2.3.3, Level AAA) says "Motion animation does not include changes of color,
+  blurring, or opacity which do not change the perceived size, shape, or position of
+  the element", so what remains inside Garden's components (22 rules: color,
+  border, shadow, opacity, visibility and stacking order) is not motion. One was: Garden turns
+  a select's chevron 180 degrees over 0.25 seconds, and on the request form it did so
+  with the preference on (sampled as the menu opened: about 6, 60 and 153 degrees on
+  the way to 180). One rule in `_svc-tokens.scss` now limits Garden icons'
+  transitions to color under reduced motion, and the chevron arrives turned. No
+  rule on any of the 18 page states, as loaded, transitions `transform` or a layout
+  property under the preference now. The rule matches Garden's generated
+  `StyledBaseIcon` class name, as the theme already does for avatars and menus; if a
+  Garden upgrade renames it the rule stops matching and the turn returns, which is a
+  mild failure.
+- **Service cards: the hover shadow now eases with the border.** The one visible
+  change at rest or on hover. The card's border faded over 0.2 seconds while its
+  raised shadow snapped on at the first frame, which read as two events; both now
+  ease over 200 ms. The cards still do not lift: the original author forced
+  `transform: none !important` on them and that stays. Static pages are identical.
+- **A heading reached by a link gets a wash.** A shared deep link, a table of
+  contents entry or an in-article anchor scrolls a heading to the top of the window
+  with nothing to say it was the one asked for. The heading
+  (`.article-body` `h1` to `h6` that is the [`:target`](https://developer.mozilla.org/en-US/docs/Web/CSS/:target),
+  or contains one) is washed with the selection tint (`--surface-selected`, the one
+  the sidebar already uses for a selected row, so it is not a new color): it holds
+  for 720 ms, long enough to be found after the jump, then fades to nothing by 1.8
+  seconds and stays gone. It runs once per arrival and never on a page with no
+  hash. With reduced motion the tint stays as a plain highlight for as long as the
+  heading is the target; in forced colors, where authored fills are dropped, it is a
+  2 pixel `Highlight` outline. Measured in headless Chrome by stepping the
+  animation: the background at 0, 500 and 720 ms is the tint, then 61% at 1,000 ms,
+  19% at 1,400 ms and clear at 1,800 ms; a heading that is not the target and every
+  heading on a page with no hash have no animation; an anchor nested inside a
+  heading also triggers it. The `:has(:target)` half of the selector sits inside a
+  forgiving `:is()`, because [MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/:has)
+  says "If the `:has()` pseudo-class itself is not supported in a browser, the
+  entire selector block will fail unless `:has()` is in a forgiving selector list,
+  such as in `:is()` and `:where()`". In Chrome, a selector list with an unsupported
+  pseudo-class is dropped whole (a `SyntaxError` on insertion) and the `:is()` form
+  is accepted and still styles a heading that is itself the target.
+- **Left as they were.** The tile zoom (the original author's, already gated on
+  `no-preference`), the greeting's fade, the training button's width transition
+  (Phase 8 measured its cost) and the validation shake (the original's, once, and
+  `no-preference` only).
+- **Weight.** `style.css` grew by 2.7 KB raw (1.2%) and 0.78 KB gzipped (2.0%) for
+  the tokens, the wash, the forced-colors outline and the chevron rule, comments
+  included; the two React bundles changed by 13 bytes each.
 
 ## Gates
 
@@ -867,6 +970,7 @@ styles, so the same pages and widths are compared before and after.
 | 6 | Search boxes whose placeholder promised services on an articles-only search: 3 pages, now none (all say "Search help articles", with a matching accessible name); the old text was clipped at every phone width and the new one fits at 375 pixels and wider. Catalog accessibility names: the sidebar row, the sidebar toggle and the sort button went from "Expand Hardware 4", "Expand" and "A-Z" to "Hardware 4", "Expand Hardware" and "Sort services: A-Z". Renders: 20 of 55 differ (home, services, signed-out home and the request page, each at the changed words) and the other 35, including every Knowledge page, are identical. Unit tests: 92 suites and 877 tests (871 before; six new). |
 | 7 | Target size (WCAG 2.5.8, with the nested-target and spacing rules applied): failures on the nine page states went from 1 control on 2 pages (the 12 pixel category toggle) to 0 in all 18 combinations (touch at 390 pixels, mouse at 1440); a padded search title that would have made 18 breadcrumb links fail was caught and left out. Touch targets under 44 pixels: category page 41 to 20, section 32 to 20, article 36 to 34 (36 to 29 by box size; the related and recently viewed lists keep a 40 pixel area because neighbors overlap by 4). Keyboard on the catalog's category toggle: Enter and Space did nothing, because the row cancelled them (a review finding, present in the original code); both now expand and collapse, and the toggle is no longer inside a button. axe-core 4.13 over the nine page states at 1440 (mouse) and 390 (touch): findings in all 18 before, none after. Renders on a desktop pointer after this round: 54 of 55 identical to the build before; the 55th (home at 1440) differs by 18 pixels of at most 8 of 255 on one icon edge, with identical geometry to three decimals. Skip link on focus: 2.2:1 (dark blue on black) to 21:1. "Popular:" label at the lightest pixel: 3.4 to 4.2:1 to 4.0 to 5.1:1 at 600 to 768 pixels (typical 6.8 to 7.8:1 to 8.7 to 10.1:1). False "Read more" at 1024 pixels: 4 of 8 loads to 0 of 12. Catalog at 390 pixels on a device that cannot hover: descriptions visible, page 3,721 to 4,389 pixels tall. Print: a stylesheet where there was none, checked on all nine page states; the interactive elements visible in print went from 9 on the services page (6 category rows, a toggle, the search field and the sort menu) and 6 on the request page to none on the catalog pages and the request form's own 5 fields, and the home and services pages print about 320 pixels shorter. The 45 combinations of nine pages at five widths: no overflow, no contrast failures, no colors outside the palette and no control without a focus ring. Renders on a desktop pointer: 45 of 55 identical to Phase 6, and the other 10 (home and services at five widths) differ only in the 52 by 15 pixel patch of the "Popular:" label; the "Read more" timing difference that showed in earlier comparisons is gone. Language of parts: on a French page the `.gov` banner, the footer's policy block and the footer navigation's name resolved to French before and resolve to English now (the translated footer links stay French), with the screens identical (22 of 22) and axe clean on all 18 states. Scrollable tables: three captionless wide tables in an article were all named "Scrollable table" (axe: `landmark-unique`, moderate) and are now numbered 1 to 3 of 3 with a captioned one untouched (axe clean); on a French page they stay focusable and unnamed. OS tiles: English identical, French links named "macOS", "iOS" and "Windows". Unit tests: 94 suites and 902 tests (877 before; five new for "Read more", six for the sidebar's controls, six for the card descriptions, two for the print hooks, six for the table names). |
 | 8 | Phone profile (Slow 4G, 4x CPU slowdown, cache off, median of three), before to after. Home: LCP 11.5 to 7.1 s, layout shift 0.148 to 0.027, blocking time 179 to 86 ms, 2,278 to 1,378 KB; services: LCP 11.5 to 7.1 s, layout shift 0.148 to 0.027, blocking time 204 to 79 ms, 2,280 to 1,382 KB. Signed-out home: LCP 10.9 to 5.5 s, 2,162 to 1,014 KB, script 261 to 12 KB, blocking time 92 to 0 ms. Knowledge pages (category, OS tiles, section, article, search): LCP 764 to 920 ms down to 688 to 852 ms, script 261 to 12 KB, transferred 334 to 382 KB down to 86 to 134 KB (65 to 74% less), blocking time 63 to 139 ms down to 0 to 12 ms, load event 2.1 to 2.4 s down to 0.9 to 1.1 s. Request form: first paint 760 to 856 ms and LCP 780 to 872 ms (the price of the preload; the form is ready as fast as before, 3,563 and 3,546 ms in the five-run comparison), blocking time 80 to 57 ms. Catalog ready on home: 5,255 to 4,562 ms. Interactions at 4x CPU slowdown: 56 ms at worst on a phone and 48 ms on desktop (good is 200). Desktop, after (no earlier desktop baseline was taken): home LCP 1.20 s, signed-out home 0.96 s, Knowledge pages 168 to 192 ms, layout shift at most 0.048. Pixels: the re-encoded hero differs from the original in none of its 7.7 million pixels, and 22 of 22 captures are identical across the phase. Unit tests: 95 suites and 908 tests (94 and 902 before this phase; two new for the translation guard, four for the localized control names after review). |
+| 9 | Computed transitions and animations across the 18 page states (nine pages at 1440 pixels with a mouse and 390 with touch): 45 distinct rules, of which 24 are unchanged, 20 changed in length by 60 ms at most and one (the service cards') now also eases its shadow; twelve literal durations became four tokens. With the reduced-motion preference on: theme-owned rules that still ran went from 12 to 0, and no rule transitions `transform` or a layout property (Garden's chevron turn ran for 0.25 seconds with the preference on and is now instant); the 22 rules left are Garden's color, border, shadow, opacity, visibility and stacking-order changes, which WCAG does not count as motion. The anchor wash, stepped frame by frame: the full tint at 0, 500 and 720 ms, 61% at 1,000 ms, 19% at 1,400 ms and clear at 1,800 ms; no animation on a heading that is not the target or on any page with no hash; a static tint under reduced motion; a 2 pixel `Highlight` outline in forced colors; an anchor nested in a heading also triggers it. Pixels: 22 of 22 page captures identical to the build before Phases 8 and 9 (nothing here changes a resting page). axe-core over the 18 page states: no findings. Generated files: `style.css` +2,661 bytes raw (+780 gzipped), the two React bundles +13 bytes each. Unit tests: 95 suites and 908 tests, unchanged: the changes are CSS and two token references in React, and the computed-style probes above are the check. |
 
 ## Open decisions
 
@@ -894,3 +998,5 @@ Still open:
 - The hero artwork's format. The lossless PNG (929 KB) is kept so that nothing visible changes. On the phone profile the home page is bound by that one download: WebP at quality 95 is 312 KB (LCP about 3.7 s against 7.1 s) with a mean error of about 0.5 in 255 and 99.9% of pixels within 9; lossless WebP is 740 KB (6.2 s). I could not confirm from Zendesk's documentation that a settings upload accepts WebP, so the owner would need to try it in the sandbox first.
 - Three copies of the old hero and one unused asset. `settings/community_background_image.png`, `settings/community_image.png` and `settings/service_catalog_hero_image.png` are byte-identical copies of the original 1.85 MB hero (the defaults of three settings), and `assets/Finder_Icon_macOS_Tahoe.png` (280 KB) is referenced by nothing in the theme; an article might reference it by its theme asset URL, which cannot be checked offline. None loads on the pages measured, so they cost package size (about 5.5 MB and 0.3 MB), not page weight. Replacing a default changes Admin Center and deleting an asset could break an article, so both are left to the owner.
 - The greeting's extra line. When a signed-in user's first name arrives from the API the greeting can wrap onto a second line and move the content below it by 37 pixels, which is the remaining 0.027 of layout shift on the home and services pages. Reserving the line leaves a blank gap for short names; keeping the name in browser storage so the first paint can include it raises a privacy question. It is left for the owner.
+- Three bigger motion ideas, recorded and not built, because `overdrive` pushes past conventional limits and which direction (if any) is the owner's call. Each would be a progressive enhancement behind `prefers-reduced-motion: no-preference`, so a browser without the feature simply keeps today's behavior. (1) Cards that glide to their new places when the catalog is sorted or filtered, using [same-document view transitions](https://developer.chrome.com/docs/web-platform/view-transitions/same-document) ("supported in Chrome as of Chrome 111"). (2) A short cross-fade between pages, using [cross-document view transitions](https://developer.chrome.com/docs/web-platform/view-transitions/cross-document) ("supported in Chrome from Chrome 126"; "Both pages need to opt-in", with `@view-transition { navigation: auto; }`). (3) A reading-progress line on articles, driven by [scroll-driven animations](https://developer.chrome.com/docs/css-ui/scroll-driven-animations) (Chrome and Edge 115, Safari 26; that page's own reading-progress demo is the pattern). The line would need a color that is not cyan, under the Cyan Is Action Rule.
+- My requests has no first-use state. `RequestsTable` renders the bare text "No requests found" whenever the list is empty, so a person who has never submitted a request meets a dead end, and so does someone whose search matched nothing. The `request-list` module knows whether a search or filter is active, so a first-use message with a link to the service catalog is feasible (`onboard`). The page is outside this work's scope (pages outside the catalog and Knowledge inherit tokens only) and has no offline fixture to check it against, so it is left for the owner.

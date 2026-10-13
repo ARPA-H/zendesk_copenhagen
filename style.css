@@ -472,6 +472,17 @@ template {
      ring with an indigo gap. */
   --shadow-focus-on-dark: 0 0 0 2px var(--color-brand-primary),
     0 0 0 4px var(--color-brand-secondary);
+  /* ----- Motion ----- */
+  /* Durations say how much a change costs the visitor: feedback under a
+     finger, a routine state change, a change to the layout, an authored
+     arrival. They fall to almost nothing under prefers-reduced-motion (the end
+     of this file), so a transition written with them needs no media query. */
+  --motion-fast: 150ms; /* color, border and opacity on hover or press */
+  --motion-base: 200ms; /* a state change: selected, revealed, lifted */
+  --motion-slow: 340ms; /* a change big enough to move something */
+  --motion-arrive: 450ms; /* a deliberate arrival, such as the greeting */
+  /* Deceleration for things that arrive or open. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (min-width: 768px) {
@@ -489,6 +500,17 @@ template {
     --font-size-4xl: 2rem; /* 32px */
     --font-size-5xl: 2.4rem; /* 38.4px */
     --font-size-6xl: 4rem; /* 64px */
+  }
+}
+/* A visitor who asks for less motion gets none from anything written with the
+   motion tokens. A hundredth of a millisecond rather than zero keeps
+   transitionend firing for scripts that wait on it. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0.01ms;
+    --motion-base: 0.01ms;
+    --motion-slow: 0.01ms;
+    --motion-arrive: 0.01ms;
   }
 }
 /* ============================================================
@@ -770,7 +792,7 @@ a:hover, a:active, a:focus {
 .hbs-form input, .search input {
   max-width: 100%;
   box-sizing: border-box;
-  transition: border 0.12s ease-in-out;
+  transition: border var(--motion-fast) ease-in-out;
   /* We use the :where selector to not increase the specificity of the selector */
 }
 .hbs-form input:where(:not([type=checkbox])):focus, .search input:where(:not([type=checkbox])):focus {
@@ -870,7 +892,7 @@ ul {
   min-height: 40px;
   padding: var(--space-1) var(--space-205);
   text-align: center;
-  transition: background-color 0.12s ease-in-out, border-color 0.12s ease-in-out, color 0.15s ease-in-out;
+  transition: background-color var(--motion-fast) ease-in-out, border-color var(--motion-fast) ease-in-out, color var(--motion-fast) ease-in-out;
   user-select: none;
   white-space: nowrap;
   width: 100%;
@@ -2569,7 +2591,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   border-width: 1px;
   display: flex;
   position: relative;
-  transition: border 0.12s ease-in-out;
+  transition: border var(--motion-fast) ease-in-out;
 }
 .search:focus-within {
   border-color: var(--color-brand-primary);
@@ -3113,7 +3135,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 /***** Custom OS tile image zoom *****/
 @media (prefers-reduced-motion: no-preference) {
   .custom-os-tile img {
-    transition: transform 0.4s ease;
+    transition: transform var(--motion-slow) ease;
   }
   .custom-os-tile:hover img {
     transform: scale(1.1);
@@ -3384,6 +3406,16 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 .article-body > p:last-child {
   margin-bottom: 0;
 }
+.article-body :is(h1, h2, h3, h4, h5, h6):is(:target, :has(:target)) {
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-selected);
+  box-shadow: 0 0 0 var(--space-1) var(--surface-selected);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .article-body :is(h1, h2, h3, h4, h5, h6):is(:target, :has(:target)) {
+    animation: article-target-wash 1800ms ease-out 1 forwards;
+  }
+}
 .article-content {
   margin: var(--space-4) 0;
   word-wrap: break-word;
@@ -3529,6 +3561,16 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   margin-bottom: var(--space-2);
 }
 
+@keyframes article-target-wash {
+  0%, 40% {
+    background-color: var(--surface-selected);
+    box-shadow: 0 0 0 var(--space-1) var(--surface-selected);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 var(--space-1) transparent;
+  }
+}
 /***** Attachments *****/
 /* Styles attachments inside posts, articles and comments */
 .attachments .attachment-item {
@@ -6133,7 +6175,6 @@ html[lang|=zh] .search-result-description em {
   font-family: var(--font-secondary);
   font-size: var(--font-size-2xs);
   padding: 13px 15px;
-  transition: height 0.2s;
   width: 100%;
   color: var(--type-subheading);
 }
@@ -6209,7 +6250,7 @@ html[lang|=zh] .search-result-description em {
   color: var(--type-subheading);
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity 100ms ease;
+  transition: opacity var(--motion-fast) ease;
   text-decoration: none !important;
 }
 
@@ -6739,6 +6780,14 @@ zd-summary-block {
   box-sizing: border-box !important;
 }
 
+/* Garden turns a menu's chevron over a quarter of a second, the one movement the
+   motion tokens do not reach. Under reduced motion it snaps to its end state; the color
+   change stays, since WCAG's "motion animation" excludes color and opacity changes. */
+@media (prefers-reduced-motion: reduce) {
+  svg[class*=StyledBaseIcon] {
+    transition-property: color;
+  }
+}
 /* Applied by src/domFixups.js to elements whose only text is "empty". */
 .svc-empty-hidden {
   display: none !important;
@@ -6867,7 +6916,7 @@ zd-summary-block {
    line can never stay hidden if the fetch stalls or JS is unavailable. */
 .svc-hero-title {
   opacity: 0;
-  transition: opacity 0.45s ease;
+  transition: opacity var(--motion-arrive) ease;
 }
 
 .svc-hero-title.svc-greeting-ready {
@@ -7037,7 +7086,7 @@ a.svc-hero-cta:active {
   border-radius: 1000px;
   background-color: var(--on-dark-chip);
   border: 1px solid var(--on-dark-border);
-  transition: background-color 0.18s ease, border-color 0.18s ease;
+  transition: background-color var(--motion-base) ease, border-color var(--motion-base) ease;
 }
 
 .svc-hero-chip:hover {
@@ -7115,7 +7164,7 @@ a.svc-hero-cta:active {
   border-radius: 16px !important;
   background: var(--color-white) !important;
   border: 2px solid var(--color-ui-10) !important;
-  transition: border-color 0.2s ease !important;
+  transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease !important;
   overflow: visible !important;
 }
 
@@ -7160,7 +7209,7 @@ a.svc-hero-cta:active {
   line-height: var(--line-height-3);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.16s ease;
+  transition: opacity var(--motion-fast) ease;
 }
 
 .svc-tooltip.svc-tooltip-visible {
@@ -7238,7 +7287,7 @@ a.svc-help-btn,
   text-decoration: none !important;
   background: var(--color-white) !important;
   border: 1.5px solid var(--color-brand-primary) !important;
-  transition: background-color 0.16s ease, color 0.16s ease !important;
+  transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease !important;
 }
 
 a.svc-help-btn:hover,
@@ -7305,7 +7354,7 @@ a.svc-help-btn:hover,
 
 #service-catalog-main-content {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-slow) ease;
 }
 
 .svc-cat-ready #service-catalog-main-content {
@@ -7337,7 +7386,7 @@ a.svc-help-btn:hover,
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   gap: var(--space-4);
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-slow) ease;
   z-index: 1;
 }
 
@@ -7994,7 +8043,7 @@ body {
   overflow: hidden;
   white-space: nowrap;
   box-shadow: var(--shadow-3);
-  transition: max-width 0.34s cubic-bezier(0.22, 1, 0.36, 1), width 0.34s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.24s ease, transform 0.24s ease;
+  transition: max-width var(--motion-slow) var(--ease-out), width var(--motion-slow) var(--ease-out), box-shadow var(--motion-base) ease, transform var(--motion-base) ease;
 }
 
 .svc-training-fab-icon {
@@ -8020,7 +8069,7 @@ body {
   line-height: 1;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.2s ease 0.06s, transform 0.24s ease 0.06s;
+  transition: opacity var(--motion-base) ease 0.06s, transform var(--motion-base) ease 0.06s;
 }
 
 .svc-training-fab:hover, .svc-training-fab:focus-visible {
@@ -8053,7 +8102,7 @@ body {
 /* ---- PAGE LOAD (skeleton placeholder) ---- */
 #service-catalog-item {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-slow) ease;
 }
 
 .svc-form-ready #service-catalog-item {
@@ -8071,7 +8120,7 @@ body {
 
 .svc-custom-submit-wrap {
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-slow) ease;
 }
 
 .svc-form-ready .svc-custom-submit-wrap {
@@ -8087,7 +8136,7 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-slow) ease;
   z-index: 1;
 }
 
@@ -8434,7 +8483,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 
 .svc-search-sidebar .sidenav-item {
   border-radius: var(--radius-md);
-  transition: background-color 0.14s ease, color 0.14s ease;
+  transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease;
 }
 
 .svc-search-sidebar .sidenav-item:hover {
@@ -8478,7 +8527,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   border: 1px solid var(--color-ui-10);
   border-radius: var(--radius-lg);
   padding: var(--space-2) var(--space-3);
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease;
 }
 
 .svc-result:hover {
@@ -8808,5 +8857,10 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   }
   .service-catalog-sidebar button:focus-visible::after {
     outline-color: Highlight;
+  }
+  .article-body :is(h1, h2, h3, h4, h5, h6):is(:target, :has(:target)) {
+    animation: none;
+    outline: 2px solid Highlight;
+    outline-offset: var(--space-05);
   }
 }

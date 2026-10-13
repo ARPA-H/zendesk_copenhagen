@@ -71,4 +71,12 @@
   .service-catalog-sidebar button:focus-visible::after {
     outline-color: Highlight;
   }
+
+  // A heading reached through a link is tinted in the normal palette, and the
+  // tint is dropped here, so it gets an outline and no wash to fade.
+  .article-body :is(h1, h2, h3, h4, h5, h6):is(:target, :has(:target)) {
+    animation: none;
+    outline: 2px solid Highlight;
+    outline-offset: var(--space-05);
+  }
 }

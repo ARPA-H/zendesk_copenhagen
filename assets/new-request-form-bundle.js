@@ -38,7 +38,7 @@ import{r as e,j as n,F as t,C as s,O as r,p as a,aa as o,ab as i,T as l,ac as u,
   }
 `,qe=l.div`
   display: grid;
-  animation: ${ge} 200ms forwards;
+  animation: ${ge} var(--motion-base) forwards;
 `,xe=l.div`
   overflow: hidden;
 `,ve=l.ul`

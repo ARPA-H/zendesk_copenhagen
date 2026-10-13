@@ -61,7 +61,7 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .custom-os-tile img {
-    transition: transform 0.4s ease;
+    transition: transform var(--motion-slow) ease;
   }
 
   .custom-os-tile:hover img {

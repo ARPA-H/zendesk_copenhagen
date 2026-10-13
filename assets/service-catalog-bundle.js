@@ -309,7 +309,7 @@ import{r as e,p as t,aL as n,q as s,T as r,aM as a,j as o,aN as i,aO as l,K as c
 
   svg {
     transform: rotate(${e=>e.$isOpen?"180deg":"0deg"});
-    transition: transform 0.15s ease;
+    transition: transform var(--motion-fast) ease;
   }
 
   @media (max-width: 768px) {

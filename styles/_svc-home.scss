@@ -97,7 +97,7 @@
 /* Greeting word + name reveal together (avoids "Good evening" flashing
    before the name-resolution fetch finishes), with a failsafe so the
    line can never stay hidden if the fetch stalls or JS is unavailable. */
-.svc-hero-title { opacity: 0; transition: opacity 0.45s ease; }
+.svc-hero-title { opacity: 0; transition: opacity var(--motion-arrive) ease; }
 .svc-hero-title.svc-greeting-ready { opacity: 1; }
 .svc-hero-title { animation: svcFormFailsafe 0s linear 2.5s forwards; }
 @media (prefers-reduced-motion: reduce) {
@@ -214,7 +214,7 @@ a.svc-hero-cta:active {
   border-radius: 1000px;
   background-color: var(--on-dark-chip);
   border: 1px solid var(--on-dark-border);
-  transition: background-color 0.18s ease, border-color 0.18s ease;
+  transition: background-color var(--motion-base) ease, border-color var(--motion-base) ease;
 }
 .svc-hero-chip:hover {
   background-image: linear-gradient(var(--color-hover-dark-15), var(--color-hover-dark-15));
@@ -284,7 +284,7 @@ a.svc-hero-cta:active {
   border-radius: 16px !important;
   background: var(--color-white) !important;
   border: 2px solid var(--color-ui-10) !important;
-  transition: border-color 0.2s ease !important;
+  transition: border-color var(--motion-base) ease, box-shadow var(--motion-base) ease !important;
   overflow: visible !important;
 }
 .service-catalog-main-content a[href*="/services/"]:hover {
@@ -324,7 +324,7 @@ a.svc-hero-cta:active {
   line-height: var(--line-height-3);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.16s ease;
+  transition: opacity var(--motion-fast) ease;
 }
 .svc-tooltip.svc-tooltip-visible { opacity: 1; }
 .svc-tooltip::after {
@@ -373,7 +373,7 @@ a.svc-help-btn,
   text-decoration: none !important;
   background: var(--color-white) !important;
   border: 1.5px solid var(--color-brand-primary) !important;
-  transition: background-color 0.16s ease, color 0.16s ease !important;
+  transition: background-color var(--motion-fast) ease, color var(--motion-fast) ease !important;
 }
 a.svc-help-btn:hover,
 .service-catalog-main-content a.svc-help-btn:hover {
@@ -420,7 +420,7 @@ a.svc-help-btn:hover,
 
 /* ---------- CATALOG SKELETON + FADE-IN ---------- */
 .svc-catalog-stage { --svc-stage-floor: 460px; position: relative; min-height: var(--svc-stage-floor); }
-#service-catalog-main-content { opacity: 0; transition: opacity 0.3s ease; }
+#service-catalog-main-content { opacity: 0; transition: opacity var(--motion-slow) ease; }
 .svc-cat-ready #service-catalog-main-content { opacity: 1; }
 @keyframes svcCatFailsafe { to { opacity: 1; } }
 #service-catalog-main-content { animation: svcCatFailsafe 0s linear 6.5s forwards; }
@@ -437,7 +437,7 @@ a.svc-help-btn:hover,
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   gap: var(--space-4);
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-slow) ease;
   z-index: 1;
 }
 .svc-cat-skeleton.svc-cat-skel-hide { opacity: 0; pointer-events: none; }

@@ -15,6 +15,15 @@
   box-sizing: border-box !important;
 }
 
+/* Garden turns a menu's chevron over a quarter of a second, the one movement the
+   motion tokens do not reach. Under reduced motion it snaps to its end state; the color
+   change stays, since WCAG's "motion animation" excludes color and opacity changes. */
+@media (prefers-reduced-motion: reduce) {
+  svg[class*="StyledBaseIcon"] {
+    transition-property: color;
+  }
+}
+
 /* Applied by src/domFixups.js to elements whose only text is "empty". */
 .svc-empty-hidden {
   display: none !important;

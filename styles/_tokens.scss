@@ -315,6 +315,18 @@
      ring with an indigo gap. */
   --shadow-focus-on-dark: 0 0 0 2px var(--color-brand-primary),
     0 0 0 4px var(--color-brand-secondary);
+
+  /* ----- Motion ----- */
+  /* Durations say how much a change costs the visitor: feedback under a
+     finger, a routine state change, a change to the layout, an authored
+     arrival. They fall to almost nothing under prefers-reduced-motion (the end
+     of this file), so a transition written with them needs no media query. */
+  --motion-fast: 150ms; /* color, border and opacity on hover or press */
+  --motion-base: 200ms; /* a state change: selected, revealed, lifted */
+  --motion-slow: 340ms; /* a change big enough to move something */
+  --motion-arrive: 450ms; /* a deliberate arrival, such as the greeting */
+  /* Deceleration for things that arrive or open. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (min-width: 768px) {
@@ -333,5 +345,17 @@
     --font-size-4xl: 2rem; /* 32px */
     --font-size-5xl: 2.4rem; /* 38.4px */
     --font-size-6xl: 4rem; /* 64px */
+  }
+}
+
+/* A visitor who asks for less motion gets none from anything written with the
+   motion tokens. A hundredth of a millisecond rather than zero keeps
+   transitionend firing for scripts that wait on it. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 0.01ms;
+    --motion-base: 0.01ms;
+    --motion-slow: 0.01ms;
+    --motion-arrive: 0.01ms;
   }
 }

@@ -83,6 +83,23 @@
     > p:last-child {
       margin-bottom: 0;
     }
+
+    // A link to a heading (a shared deep link, or one inside the article) puts it
+    // at the top of the window with nothing to say it is the one asked for. A
+    // wash of the selection tint says so: it holds long enough to be found, then
+    // fades. With reduced motion it stays, as a plain highlight, for as long as
+    // the heading is the target. `:has(:target)` covers an anchor nested inside
+    // the heading; it sits inside a forgiving `:is()` so a browser without
+    // `:has()` still highlights a heading that is itself the target.
+    :is(h1, h2, h3, h4, h5, h6):is(:target, :has(:target)) {
+      border-radius: var(--radius-sm);
+      background-color: var(--surface-selected);
+      box-shadow: 0 0 0 var(--space-1) var(--surface-selected);
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: article-target-wash 1800ms ease-out 1 forwards;
+      }
+    }
   }
 
   &-content {
@@ -254,5 +271,18 @@
 
   li {
     margin-bottom: var(--space-2);
+  }
+}
+
+@keyframes article-target-wash {
+  0%,
+  40% {
+    background-color: var(--surface-selected);
+    box-shadow: 0 0 0 var(--space-1) var(--surface-selected);
+  }
+
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 var(--space-1) transparent;
   }
 }

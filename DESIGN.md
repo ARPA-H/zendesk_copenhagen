@@ -162,6 +162,7 @@ The system is NEXUS-aligned, not NEXUS-conformant: it adopts the tokens and comp
 - Cyan is the action color; the one exception is the hero search button, which is hot pink. Yellow, green and red appear only in messages.
 - Pill-shaped actions, 16px surfaces, hairline strokes, shallow elevation.
 - Public Sans for reading, Poppins for the few big moments.
+- Motion reports a change of state, in four durations (`--motion-*`), and a visitor who asks for less gets none.
 
 ## Colors
 
@@ -262,6 +263,8 @@ Flat by default. Service cards and search result cards rest on a stroke alone; t
 
 **The Load Rule.** A page loads only what it can use. A page with no React module of its own (every Knowledge page and the signed-out home page) requests no script bundle at all beyond `script.js`: the notifications host in `document_head.hbs` loads only when a flash notification is waiting in `sessionStorage` or the page has an inline module script, and a page with a module preloads `shared-bundle.js` ahead of it so the download starts while the page is parsed. A new template with a module gets the same preload link. The hero artwork stays a lossless PNG under 1 MB (`settings/homepage_background_image.png`, pixel-identical to the original), since on a phone the home page is bound by that one download. The catalog skeleton is pinned to the stage's minimum height (`--svc-stage-floor`), so rendering the cards never carries it down the page. Measured on a phone profile (Slow 4G, 4x CPU slowdown): Knowledge pages 86 to 134 KB, home 7.1 s to the hero, layout shift 0.027 on the home pages and 0 on Knowledge pages, every interaction under 60 ms (`docs/design-plan.md`, Phase 8).
 
+**The Motion Rule.** Motion reports a change of state and never decorates. Every transition length is a token: `--motion-fast` (150ms: color, border and opacity under a pointer), `--motion-base` (200ms: a routine state change), `--motion-slow` (340ms: a change big enough to move something) and `--motion-arrive` (450ms: the greeting), with `--ease-out` for things that open. Under `prefers-reduced-motion` the four fall to 0.01ms (not zero, which would stop `transitionend` from firing), so nothing written with them needs its own media query. Authored animations (the skeleton shimmer, the training button's pulse, the validation shake) are switched off under reduced motion, and the one arrival cue, the wash on an article heading reached by a link, holds the selection tint for 720ms and fades by 1.8s, then stays as a plain tinted highlight under reduced motion and becomes a 2px `Highlight` outline in forced colors. Color, border, shadow and opacity fades are not "motion animation" ([WCAG 2.3.3](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)); anything that moves, turns or resizes has to stop under the preference, Garden's chevron included.
+
 ## Shapes
 
 Actions are pills (`1000px`). Surfaces are 16px, with the large catalog panel at 24px. Selects and textareas use 8px. Chips and the search field are pills.
@@ -322,6 +325,7 @@ A failed load replaces its skeleton at once. The module's error screen is announ
 - **Do** keep text on the 4.5:1 neutrals (`#6f747a` or darker) and give every control a visible focus ring.
 - **Do** keep read text at 14px or larger and prose at about 70 characters per line.
 - **Do** put new colors in `_tokens.scss` as aliases first.
+- **Do** write every transition length with a `--motion-*` token, so reduced motion reaches it.
 - **Do** keep the hero and the navigation bar one continuous dark band.
 
 ### Don't
@@ -334,4 +338,5 @@ A failed load replaces its skeleton at once. The module's error screen is announ
 - **Don't** hard-code hex, rgba or named color values (such as `yellow`) in the stylesheets. The one exception is the generated stock USWDS banner (`styles/_usa-banner-generated.scss`).
 - **Don't** restyle the `.gov` banner: no color, type, spacing, container or focus changes. NEXUS styling stops at its edge.
 - **Don't** write a font size outside the scale: new text takes a `--font-size-*` token.
+- **Don't** hard-code a transition length, and don't animate `transform` or a layout property without a way for `prefers-reduced-motion` to stop it.
 - **Don't** add USWDS reset, grid or utility CSS: the banner is the only USWDS component, compiled in isolation, because the full library changes 17% of rendered elements (it grows the Garden catalog search field from 47 to 54px, which shifts everything below it).

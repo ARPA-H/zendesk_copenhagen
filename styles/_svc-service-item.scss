@@ -226,14 +226,14 @@ body { background: var(--color-white); }
   background-color: var(--color-brand-secondary);
   color: var(--color-brand-primary) !important; text-decoration: none !important;
   overflow: hidden; white-space: nowrap; box-shadow: var(--shadow-3);
-  transition: max-width 0.34s cubic-bezier(0.22, 1, 0.36, 1), width 0.34s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.24s ease, transform 0.24s ease;
+  transition: max-width var(--motion-slow) var(--ease-out), width var(--motion-slow) var(--ease-out), box-shadow var(--motion-base) ease, transform var(--motion-base) ease;
 }
 .svc-training-fab-icon { flex: 0 0 52px; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; }
 .svc-training-fab-icon svg { width: 22px; height: 22px; stroke: var(--color-brand-primary); }
 .svc-training-fab-label {
   flex: 1 1 auto; padding-inline-end: var(--space-205); font-size: var(--font-size-2xs); font-weight: 600; line-height: 1;
   opacity: 0; transform: translateX(-4px);
-  transition: opacity 0.2s ease 0.06s, transform 0.24s ease 0.06s;
+  transition: opacity var(--motion-base) ease 0.06s, transform var(--motion-base) ease 0.06s;
 }
 .svc-training-fab:hover, .svc-training-fab:focus-visible {
   width: auto; max-width: 320px; transform: translateY(-2px); box-shadow: var(--shadow-4);
@@ -247,19 +247,19 @@ body { background: var(--color-white); }
 }
 
 /* ---- PAGE LOAD (skeleton placeholder) ---- */
-#service-catalog-item { opacity: 0; transition: opacity 0.3s ease; }
+#service-catalog-item { opacity: 0; transition: opacity var(--motion-slow) ease; }
 .svc-form-ready #service-catalog-item { opacity: 1; }
 @keyframes svcFormFailsafe { to { opacity: 1; } }
 #service-catalog-item { animation: svcFormFailsafe 0s linear 6.5s forwards; }
 
-.svc-custom-submit-wrap { opacity: 0; transition: opacity 0.3s ease; }
+.svc-custom-submit-wrap { opacity: 0; transition: opacity var(--motion-slow) ease; }
 .svc-form-ready .svc-custom-submit-wrap { opacity: 1; }
 .svc-custom-submit-wrap { animation: svcFormFailsafe 0s linear 6.5s forwards; }
 
 .svc-skeleton {
   position: absolute;
   top: 0; left: 0; right: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--motion-slow) ease;
   z-index: 1;
 }
 .svc-skeleton.svc-skel-hide { opacity: 0; pointer-events: none; }
