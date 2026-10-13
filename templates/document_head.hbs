@@ -107,11 +107,27 @@
   // 120 ms later, because the bundle now shares the connection with the
   // stylesheet and fonts.
   const flashWaiting = (() => {
+    const key = "HC_FLASH_NOTIFICATIONS";
+    let raw;
     try {
-      return !!window.sessionStorage.getItem("HC_FLASH_NOTIFICATIONS");
+      raw = window.sessionStorage.getItem(key);
     } catch (e) {
       return true;
     }
+    if (!raw) return false;
+    // The host leaves a value it cannot use in place, which would load it on every
+    // page for the rest of the tab session, so only a non-empty array counts.
+    let waiting = false;
+    try {
+      const parsed = JSON.parse(raw);
+      waiting = Array.isArray(parsed) && parsed.length > 0;
+    } catch (e) {}
+    if (!waiting) {
+      try {
+        window.sessionStorage.removeItem(key);
+      } catch (e) {}
+    }
+    return waiting;
   })();
   const hasPageModule = !!document.querySelector(
     'script[type="module"]:not([src]):not([data-toast-host])'
