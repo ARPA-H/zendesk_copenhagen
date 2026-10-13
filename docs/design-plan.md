@@ -452,12 +452,31 @@ Adapt decisions made during Phase 7 (each is easy to reverse):
 - **Tap areas for the links people tap through lists.** Where the pointer is coarse,
   article lists, related articles and recently viewed articles take 12.5 pixels of
   vertical padding, which makes a 19 pixel line a 44 pixel target without moving
-  anything (padding on an inline box grows the area, not the line). That takes the
-  category page from 41 targets under 44 pixels on a phone to 20, the section page
-  from 32 to 20 and the article page from 36 to 29. The rest are the footer links
+  anything (padding on an inline box grows the area, not the line). Review asked
+  whether that area is real, so I measured where a tap lands, scanning a vertical
+  line through every link with `elementFromPoint` (which honors overflow clipping
+  and paint order) at 390 pixels wide. The 33 links in the category and section
+  article lists hit over the full 44 pixels: the link overhangs its 24 pixel line by
+  10.5 pixels, inside the item's own 12 pixel padding, so the item's `overflow:
+  hidden` clips nothing (that padding must stay at 11 pixels or more). In the related
+  and recently viewed lists the links sit 40 pixels apart, so each area gives its last
+  4 pixels to the link below it and measures 40 pixels, except the last link of a
+  list, which keeps 44. Counting that overlap, the touch targets under 44 pixels go
+  from 41 to 20 on the category page, 32 to 20 on the section page and 36 to 34 on
+  an article (36 to 29 by box size alone, which treats the overlapped 4 pixels as
+  tappable). The rest are the footer links
   (29 pixels), the breadcrumbs (16), the popular chips (33) and the form controls,
   which meet the 24 pixel minimum on their own or by spacing; they are left alone
-  because growing them would move the footer, the pills and the form.
+  because growing them would move the footer, the pills and the form. Making the
+  inline links `inline-block` would not change these numbers: the padding of an
+  inline box already takes taps, and the overlap comes from the 40 pixel pitch.
+- **The category toggle ignored the keyboard.** The category row selects its category
+  on Enter and Space and cancelled the default action of every such key that bubbled
+  up to it, including the nested toggle's, so a keyboard user could not expand or
+  collapse a category. The handler is in the original code; Phases 6 and 7 named and
+  sized the toggle without touching it, and review found it. The row now acts only
+  on keys pressed on the row itself. Four specs cover Enter and Space on the toggle
+  (two of them failed before the fix) and on the row.
 - **Service descriptions show on devices that cannot hover** (owner decision). On
   desktop, hovering a catalog card shows its description in a tooltip; a phone has
   no hover, so the cards showed only an icon and a title, and the tooltip was
@@ -556,7 +575,7 @@ styles, so the same pages and widths are compared before and after.
 | 2 | Across the same pages, counting text nodes: distinct font sizes fell from 16 to 8 at 1440 pixels wide (13 to 8 at 768, 16 to 8 at 390); text under 14 pixels fell from 35.1% of nodes to 2.0% (37.3% to 2.1% at 768, 39.5% to 2.6% at 390); an article paragraph went from a 15-pixel, 706-pixel-wide measure of about 102 characters per line to 16 pixels at 70 characters (a 32em cap); body line height is 1.62 and heading line heights are 1.15 and 1.35. Detector findings over `styles` and `templates`, with DESIGN.md loaded, fell from 81 (69 font sizes off the documented ramp, 6 radii, 4 side-stripe borders, 2 layout transitions) to 6 (4 radii and 2 layout transitions, left to phases 3 and 8). |
 | 5 | Generated files: `style.css` fell from 226,208 to 220,756 bytes (2.4%) and `script.js` from 61,166 to 42,664 bytes (30.2%); `!important` in the compiled CSS fell from 207 to 190 and `[class*=` attribute selectors from 65 to 15 (the rest match Garden's generated class names); the compiled CSS has 26 fewer blocks (counted as closing braces). Source (styles, scripts and templates): 867 lines deleted and 16 added in existing files, plus 75 lines in the two new helper files. Unit tests: 91 suites and 871 tests (874 before: the widget's spec went, the helper's eight tests came). Renders: no visible change, checked pixel for pixel (see the distill decisions). |
 | 6 | Search boxes whose placeholder promised services on an articles-only search: 3 pages, now none (all say "Search help articles", with a matching accessible name); the old text was clipped at every phone width and the new one fits at 375 pixels and wider. Catalog accessibility names: the sidebar row, the sidebar toggle and the sort button went from "Expand Hardware 4", "Expand" and "A-Z" to "Hardware 4", "Expand Hardware" and "Sort services: A-Z". Renders: 20 of 55 differ (home, services, signed-out home and the request page, each at the changed words) and the other 35, including every Knowledge page, are identical. Unit tests: 92 suites and 877 tests (871 before; six new). |
-| 7 | Target size (WCAG 2.5.8, with the nested-target and spacing rules applied): failures on the nine page states went from 1 control on 2 pages (the 12 pixel category toggle) to 0 in all 18 combinations (touch at 390 pixels, mouse at 1440); a padded search title that would have made 18 breadcrumb links fail was caught and left out. Touch targets under 44 pixels: category page 41 to 20, section 32 to 20, article 36 to 29. Skip link on focus: 2.2:1 (dark blue on black) to 21:1. "Popular:" label at the lightest pixel: 3.4 to 4.2:1 to 4.0 to 5.1:1 at 600 to 768 pixels (typical 6.8 to 7.8:1 to 8.7 to 10.1:1). False "Read more" at 1024 pixels: 4 of 8 loads to 0 of 12. Catalog at 390 pixels on a device that cannot hover: descriptions visible, page 3,721 to 4,389 pixels tall. Print: a stylesheet where there was none, checked on all nine page states. The 45 combinations of nine pages at five widths: no overflow, no contrast failures, no colors outside the palette and no control without a focus ring. Renders on a desktop pointer: 45 of 55 identical to Phase 6, and the other 10 (home and services at five widths) differ only in the 52 by 15 pixel patch of the "Popular:" label; the "Read more" timing difference that showed in earlier comparisons is gone. Unit tests: 92 suites and 882 tests (877 before; five new). |
+| 7 | Target size (WCAG 2.5.8, with the nested-target and spacing rules applied): failures on the nine page states went from 1 control on 2 pages (the 12 pixel category toggle) to 0 in all 18 combinations (touch at 390 pixels, mouse at 1440); a padded search title that would have made 18 breadcrumb links fail was caught and left out. Touch targets under 44 pixels: category page 41 to 20, section 32 to 20, article 36 to 34 (36 to 29 by box size; the related and recently viewed lists keep a 40 pixel area because neighbors overlap by 4). Keyboard on the catalog's category toggle: Enter and Space did nothing, because the row cancelled them (a review finding, present in the original code); both now expand and collapse. Skip link on focus: 2.2:1 (dark blue on black) to 21:1. "Popular:" label at the lightest pixel: 3.4 to 4.2:1 to 4.0 to 5.1:1 at 600 to 768 pixels (typical 6.8 to 7.8:1 to 8.7 to 10.1:1). False "Read more" at 1024 pixels: 4 of 8 loads to 0 of 12. Catalog at 390 pixels on a device that cannot hover: descriptions visible, page 3,721 to 4,389 pixels tall. Print: a stylesheet where there was none, checked on all nine page states. The 45 combinations of nine pages at five widths: no overflow, no contrast failures, no colors outside the palette and no control without a focus ring. Renders on a desktop pointer: 45 of 55 identical to Phase 6, and the other 10 (home and services at five widths) differ only in the 52 by 15 pixel patch of the "Popular:" label; the "Read more" timing difference that showed in earlier comparisons is gone. Unit tests: 92 suites and 886 tests (877 before; five new for "Read more", four for the toggle's keyboard use). |
 
 ## Open decisions
 

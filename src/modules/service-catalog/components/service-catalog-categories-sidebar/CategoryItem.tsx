@@ -186,6 +186,9 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
           tabIndex={0}
           role="button"
           onKeyDown={(e) => {
+            // Keys pressed on the nested toggle belong to the toggle; without
+            // this check the row cancels its native Enter and Space click.
+            if (e.target !== e.currentTarget) return;
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               onSelect(category.id);

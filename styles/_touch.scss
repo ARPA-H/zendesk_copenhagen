@@ -3,8 +3,15 @@
 // Devices whose main pointer is a finger get a larger tap area on the links
 // people tap through lists, without moving anything: vertical padding on an
 // inline link grows the area that takes the tap but not the line it sits on.
-// A 19 pixel line plus 12.5 pixels each side makes 44. The closest neighbors
-// are 21 pixels apart, so two areas overlap by 4 pixels at most.
+// A 19 pixel text area plus 12.5 pixels each side makes 44.
+//
+// Measured with elementFromPoint (which honors clipping and paint order) at 390
+// pixels wide. Article lists get the whole 44: the link overhangs its 24 pixel
+// line by 10.5 pixels, inside the item's own 12 pixel padding, so the item's
+// `overflow: hidden` clips nothing; keep that padding at 11 pixels or more. In
+// the related and recently viewed lists the links sit 40 pixels apart, so each
+// area gives its last 4 pixels to the link below it and measures 40; the last
+// link of a list keeps 44.
 //
 // Search results are left out on purpose: their titles are far apart already,
 // and a taller area would come within 24 pixels of the breadcrumb links above
