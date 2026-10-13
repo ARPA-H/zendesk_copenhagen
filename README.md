@@ -25,7 +25,7 @@ Agentic coding skills for GitHub Copilot, maintained centrally by ARPA-H and dis
 
 ### Downstream (skills → consumers)
 
-On every push to `main`, the [sync-to-consumers workflow](.github/workflows/sync-to-consumers.yml) reads [`.github/subtree-consumers.json`](.github/subtree-consumers.json), clones each registered repo, and runs `git subtree pull --squash` to apply the latest skills content at that repo's configured prefix. No PR — changes land on the consumer's default branch immediately so all repos operate from current standards.
+On every push to `main`, the [sync-to-consumers workflow](.github/workflows/sync-to-consumers.yml) reads [`.github/subtree-consumers.json`](.github/subtree-consumers.json), clones each registered repo at its configured `branch`, and runs `git subtree pull --squash` to apply the latest skills content at that repo's configured prefix. No PR — changes are pushed to that branch immediately so all repos operate from current standards. If that branch is protected, the sync GitHub App must be exempt from every ruleset that applies to it. Classic branch protection cannot exempt an app, so convert such rules to rulesets first.
 
 ### Upstream (consumers → skills)
 
@@ -73,6 +73,8 @@ Add an entry to [`.github/subtree-consumers.json`](.github/subtree-consumers.jso
   }
 ]
 ```
+
+`branch` is the branch the sync clones and pushes to. It must already exist and may differ from the repo's default branch (for example `sandbox`).
 
 #### Copy the sync-back workflow
 
