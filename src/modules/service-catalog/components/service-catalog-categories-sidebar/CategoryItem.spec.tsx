@@ -52,3 +52,54 @@ describe("CategoryItem", () => {
     expect(onSelect).toHaveBeenCalledWith("hardware");
   });
 });
+
+describe("CategoryItem with subcategories", () => {
+  const parent: Category = {
+    ...category,
+    children: [
+      {
+        id: "laptops",
+        name: "Laptops",
+        items_count: 2,
+        updated_at: "2025-01-01T00:00:00Z",
+      },
+    ],
+  };
+
+  function renderParent(expanded: boolean) {
+    render(
+      <CategoryItem
+        category={parent}
+        nestingLevel={0}
+        selectedCategoryId={null}
+        onSelect={jest.fn()}
+        expandedCategories={new Set<string>(expanded ? ["hardware"] : [])}
+        onToggleExpand={jest.fn()}
+      />
+    );
+  }
+
+  it("names the expand button after its category", () => {
+    renderParent(false);
+
+    expect(
+      screen.getByRole("button", { name: "Expand Hardware" })
+    ).toBeInTheDocument();
+  });
+
+  it("names the collapse button after its category", () => {
+    renderParent(true);
+
+    expect(
+      screen.getByRole("button", { name: "Collapse Hardware" })
+    ).toBeInTheDocument();
+  });
+
+  it("names the row after the category and its count, not after the toggle", () => {
+    renderParent(false);
+
+    expect(
+      screen.getByRole("button", { name: "Hardware 4" })
+    ).toBeInTheDocument();
+  });
+});

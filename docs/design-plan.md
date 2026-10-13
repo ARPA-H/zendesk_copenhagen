@@ -150,7 +150,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the header blended into the hero; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category, section, article and search grids, Device FAQs tiles, overflow fixes, the banner, the blended header, the Knowledge band, the service item rebuild, the spacing sweep and the catalog title handling done; the Phase 3 review and polish remain |
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done, reviewed: the Device FAQs heading (and a corrected heading probe), the signed-out hero, locale-aware empty states, failed loads (prompt error, no dead button), forced colors (both palettes), RTL logical properties, unclamped service names and the mobile hero artwork ("zoomed to fill": its own layer, no strip, the original colors) |
 | 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Done apart from review: the widget removed (its one used helper kept in `src/safeHref.js`), the dead partials, rules and selector parts removed, the base `.button` dimmed for a native `disabled`; every page, form state and catalog interaction compared pixel for pixel with the build before |
-| 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
+| 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Done apart from review: the search placeholders and accessible names, the catalog's search-miss message, three sets of control names (sidebar row, sidebar toggle, sort button), "Service Hub" to "Service Desk" (owner decision), and two wording fixes |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
 | 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Moderate expressive layer (state motion plus one signature moment per key page, reduced-motion safe) and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Planned |
@@ -191,8 +191,8 @@ Hardening decisions made during Phase 4 (each is easy to reverse):
   a heading (an `h2`, like the greeting it replaces), one sentence and a cyan
   sign-in action instead of sitting empty.
   The wording ("Sign in to get help", "Use your ARPA-H account to search help
-  articles, submit a request and follow it.") is a placeholder for the
-  `clarify` phase to review; it avoids naming a service desk, because
+  articles, submit a request and track it.", refined in Phase 6 from "follow it")
+  avoids naming a service desk, because
   help.arpa-h.gov also serves HR.
 - **Empty category and section pages say so**, in a styled paragraph rather than
   the stock italic link. English locales get a sentence ("There are no sections in
@@ -282,8 +282,8 @@ Hardening decisions made during Phase 4 (each is easy to reverse):
   stretch); the description keeps its three-line clamp. Real names are short, so
   most cards look unchanged.
 - **Not changed:** the current page's breadcrumb is still link-colored (stock
-  behavior), and the catalog's "No services in sight" copy still says "Enter
-  your keywords" after someone has typed some; both are for `clarify`.
+  behavior), which Phase 6 also leaves alone. The catalog's "Enter your keywords"
+  message, which read oddly after someone had typed some, is fixed in Phase 6.
 
 Distill decisions made during Phase 5 (each is easy to reverse):
 
@@ -369,6 +369,67 @@ Distill decisions made during Phase 5 (each is easy to reverse):
   not rendered offline, so pixels cannot vouch for rules that only they use; the
   provenance check stands in for that.
 
+Clarify decisions made during Phase 6 (each is easy to reverse):
+
+- **Every search says what it covers.** Zendesk's search box finds help articles:
+  the [`search` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#search-helper)
+  enables Instant Search to provide "HC article suggestions", and the hero
+  template's own comment says "articles". The placeholders on the home, services
+  and request pages said "Search by service or keyword (e.g., Software, Device,
+  SharePoint)…" and "Search by service or keyword…", which promised services. All
+  three now say "Search help articles", and the inline script sets the field's
+  accessible name to the same words, so the two cannot disagree whatever label the
+  platform's markup carries (a visible label should match or be contained in the
+  accessible name, [SC 2.5.3](https://www.w3.org/WAI/WCAG22/Understanding/label-in-name.html)).
+  The catalog's own field keeps its "Search for services". The example keywords
+  are gone: the popular chips just below already show examples, and the 66
+  characters of the old text were clipped at every phone width ("Search by service
+  or ke" at 390 pixels). The new text fits at 375 pixels and wider and still reads
+  "Search help ar…" at 320. A placeholder doing double duty as the label is the
+  least harmful case for a one-field search box, [as Nielsen Norman Group
+  notes](https://www.nngroup.com/articles/form-design-placeholders/). The
+  Knowledge pages keep Zendesk's stock "Search": no services search competes with
+  it there, and it follows the Admin Center scope setting.
+- **A search that finds nothing says what to do next.** After someone typed,
+  the catalog said "Enter your keywords in the search field." under "No services
+  in sight". It now says "Try a different keyword, or clear the search to see all
+  services.", which points at the clear button visible in the field; an empty
+  state should give a direct pathway ([Nielsen Norman Group on empty
+  states](https://www.nngroup.com/articles/empty-state-interface-design/)). The
+  empty catalog with no query keeps its own text. This is a React module string,
+  so it changed in the code default, `en-us.yml` and `locales/en-us.json` together,
+  as this fork's earlier string changes did; other locales keep their existing
+  translation of the old sentence until it is retranslated.
+- **Controls that sound alike are told apart** (descriptive labels, [SC
+  2.4.6](https://www.w3.org/WAI/WCAG22/Understanding/headings-and-labels.html)).
+  The browser's accessibility tree showed three problems in the catalog: a
+  category row whose action is to select it was named "Expand Hardware 4" (it
+  swallowed the nested toggle's label), every toggle was a bare "Expand", and the
+  sort button was just "A-Z". They are now "Hardware 4", "Expand Hardware" and
+  "Sort services: A-Z". The names are translatable messages with `{{name}}` and
+  `{{option}}` placeholders (three new keys; the two replaced keys are marked
+  obsolete), so translators can reorder them; until a locale translates them, it
+  falls back to the English default. Nothing visible changes.
+- **"Service Hub" becomes "Service Desk"** (an owner decision in session). The last
+  line of the request page's "What happens after you submit?" now matches the three
+  other lines that name the Service Desk. The two words are joined with a
+  non-breaking space, because they split across lines at 1440 pixels ("Service /
+  Desk"). The owner chose this over neutral wording even though HR also uses the
+  site; the header still shows no site title.
+- **Two wording fixes.** The signed-out line says "track" instead of "follow"
+  ("follow" reads as subscribing, and the request page says "track progress"). The
+  request page's empty suggestions line says "help articles" instead of "knowledge
+  base articles", matching the hero and the home page's "Browse help articles".
+- **Kept on purpose.** "Related content appears as you type." and the line under it
+  say nearly the same thing; a rewrite wrapped to a second line with an orphaned
+  word and was reverted, since the repetition is mild. The "Still can't find what
+  you need?" banner repeats "general request" in its line and its button; the
+  button names the catalog item it opens. "Request or ticket number", the
+  category descriptions and the popular chips are the owner's wording. The
+  current page's breadcrumb stays link-colored (stock behavior). Zendesk's own
+  strings are untouched ("Knowledge Base" in the results filter, "Follow",
+  pagination, the share links).
+
 ## Gates
 
 Run from the repository root; each should hold at the end of the work.
@@ -410,6 +471,7 @@ styles, so the same pages and widths are compared before and after.
 | 1 | Across the home, services, service item, category, article and search pages (12 page views): colors outside the NEXUS palette fell from 456 of 1,264 uses (36.1%) to 0 of 1,262; text pairs below WCAG AA contrast fell from 20 to 0; keyboard-focused controls with no visible ring fell from 10 to 0. Horizontal overflow and small touch targets are unchanged and belong to phases 3 and 7. |
 | 2 | Across the same pages, counting text nodes: distinct font sizes fell from 16 to 8 at 1440 pixels wide (13 to 8 at 768, 16 to 8 at 390); text under 14 pixels fell from 35.1% of nodes to 2.0% (37.3% to 2.1% at 768, 39.5% to 2.6% at 390); an article paragraph went from a 15-pixel, 706-pixel-wide measure of about 102 characters per line to 16 pixels at 70 characters (a 32em cap); body line height is 1.62 and heading line heights are 1.15 and 1.35. Detector findings over `styles` and `templates`, with DESIGN.md loaded, fell from 81 (69 font sizes off the documented ramp, 6 radii, 4 side-stripe borders, 2 layout transitions) to 6 (4 radii and 2 layout transitions, left to phases 3 and 8). |
 | 5 | Generated files: `style.css` fell from 226,208 to 220,756 bytes (2.4%) and `script.js` from 61,166 to 42,664 bytes (30.2%); `!important` in the compiled CSS fell from 207 to 190 and `[class*=` attribute selectors from 65 to 15 (the rest match Garden's generated class names); the compiled CSS has 26 fewer blocks (counted as closing braces). Source (styles, scripts and templates): 867 lines deleted and 16 added in existing files, plus 75 lines in the two new helper files. Unit tests: 91 suites and 871 tests (874 before: the widget's spec went, the helper's eight tests came). Renders: no visible change, checked pixel for pixel (see the distill decisions). |
+| 6 | Search boxes whose placeholder promised services on an articles-only search: 3 pages, now none (all say "Search help articles", with a matching accessible name); the old text was clipped at every phone width and the new one fits at 375 pixels and wider. Catalog accessibility names: the sidebar row, the sidebar toggle and the sort button went from "Expand Hardware 4", "Expand" and "A-Z" to "Hardware 4", "Expand Hardware" and "Sort services: A-Z". Renders: 20 of 55 differ (home, services, signed-out home and the request page, each at the changed words) and the other 35, including every Knowledge page, are identical. Unit tests: 92 suites and 877 tests (871 before; six new). |
 
 ## Open decisions
 

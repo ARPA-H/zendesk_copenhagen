@@ -80,14 +80,14 @@
             <p class="svc-article-subtitle">Related content appears as you type.</p>
           </div>
           <div id="svc-suggested-articles" class="svc-article-list" aria-live="polite">
-            <div class="svc-article-empty">Start typing in the request form to see related knowledge base articles.</div>
+            <div class="svc-article-empty">Start typing in the request form to see related help articles.</div>
           </div>
           <div class="svc-next-steps">
             <h2 class="svc-card-title">What happens after you submit?</h2>
             <ul class="svc-card-list">
               <li>You'll receive an email confirmation with your request or ticket number.</li>
               <li>You can reply to that email at any time to add updates or attachments.</li>
-              <li>You can track progress in the Service Hub under <strong>{{t 'my_requests'}}</strong>.</li>
+              <li>You can track progress in the Service&nbsp;Desk under <strong>{{t 'my_requests'}}</strong>.</li>
             </ul>
           </div>
         </section>
@@ -123,8 +123,8 @@
 </script>
 
 {{!-- Native instant-search wiring: the pink button submits the native
-     {{search}} form; placeholder text is set to match this page. The
-     real-time suggestions + results page are provided by Zendesk's platform. --}}
+     {{search}} form; the field names what it covers. The real-time
+     suggestions + results page are provided by Zendesk's platform. --}}
 <script>
   (function () {
     var wrap = document.getElementById('svc-hero-search');
@@ -133,7 +133,12 @@
     var input = wrap.querySelector('input[type="search"]');
     var btn   = document.getElementById('svc-hero-search-btn');
 
-    if (input) input.setAttribute('placeholder', 'Search by service or keyword…');
+    // This search finds help articles, not services, so the field says so,
+    // visibly and to assistive technology.
+    if (input) {
+      input.setAttribute('placeholder', 'Search help articles');
+      input.setAttribute('aria-label', 'Search help articles');
+    }
 
     if (btn && form) {
       btn.addEventListener('click', function () {
@@ -344,7 +349,7 @@
       searching: 'Searching for related articles...',
       loadError: "We couldn't load suggested articles right now.",
       noResults: 'No related articles found yet. Try adding more detail in the request description.',
-      empty: 'Start typing in the request form to see related knowledge base articles.',
+      empty: 'Start typing in the request form to see related help articles.',
       untitledArticle: 'Untitled article',
       openForDetails: 'Open this article for more details.',
       sectionPrefix: 'Section: '

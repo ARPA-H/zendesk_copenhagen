@@ -162,7 +162,7 @@ parts:
       key: "service-catalog.empty-state.search-description"
       title: "Empty state with search description"
       screenshot: "https://drive.google.com/file/d/10DiQB3DDf9x13owivlJs9QMNWVXCKdOd/view?usp=drive_link"
-      value: "Enter your keywords in the search field."
+      value: "Try a different keyword, or clear the search to see all services."
   - translation:
       key: "service-catalog.item.serial-number-label"
       title: "Label prefix for serial number shown in lookup field options. Serial number (SN) abbreviation can be translated as per language"
@@ -193,11 +193,23 @@ parts:
       title: "[A11Y] Hidden label for screen readers for the collapse category button in the service catalog sidebar"
       screenshot: "https://drive.google.com/file/d/1QaRvkzKPV1ptp6fQ2JLeUJV91p6vBftE/view?usp=sharing"
       value: "Collapse"
+      obsolete: "2026-10-13"
   - translation:
       key: "service-catalog-sidebar.expand-category"
       title: "[A11Y] Hidden label for screen readers for the expand category button in the service catalog sidebar"
       screenshot: "https://drive.google.com/file/d/1QaRvkzKPV1ptp6fQ2JLeUJV91p6vBftE/view?usp=sharing"
       value: "Expand"
+      obsolete: "2026-10-13"
+  - translation:
+      key: "service-catalog-sidebar.collapse-category-named"
+      title: "[A11Y] Hidden label for screen readers for the collapse button of one category in the service catalog sidebar. {{name}} is the category name"
+      screenshot: ""
+      value: "Collapse {{name}}"
+  - translation:
+      key: "service-catalog-sidebar.expand-category-named"
+      title: "[A11Y] Hidden label for screen readers for the expand button of one category in the service catalog sidebar. {{name}} is the category name"
+      screenshot: ""
+      value: "Expand {{name}}"
   - translation:
       key: "service-catalog-sidebar.all-services"
       title: "Label for the navigation item in the service catalog sidebar that shows all services"
@@ -332,6 +344,11 @@ parts:
       title: "[A11Y] Hidden label for screen readers describing the sort options group in the service catalog list"
       screenshot: ""
       value: "Sort services"
+  - translation:
+      key: "service-catalog.sort.button-label"
+      title: "[A11Y] Hidden label for screen readers for the button that opens the sort options of the service catalog list. {{option}} is the current sort order"
+      screenshot: ""
+      value: "Sort services: {{option}}"
   - translation:
       key: "service-catalog.item.user"
       title: "Label above the requester's name in the service request form"

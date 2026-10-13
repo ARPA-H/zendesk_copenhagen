@@ -212,7 +212,8 @@ request; Ask AI.
    system and one vocabulary. Search is not unified today (the hero searches
    Knowledge articles through Zendesk; the catalog's "Search for services"
    control uses the Service Catalog API), so every search control must say what
-   it covers.
+   it covers: the hero and the request page say "Search help articles", the
+   catalog says "Search for services".
 3. **Zendesk stays the system of record.** Reskin and extend Guide; derive
    state from Zendesk; hold none of our own.
 4. **Earned familiarity.** Guide conventions and NEXUS tokens carry the

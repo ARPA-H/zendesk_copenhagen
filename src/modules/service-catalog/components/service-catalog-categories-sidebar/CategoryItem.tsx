@@ -1,4 +1,5 @@
 import type React from "react";
+import { useId } from "react";
 import styled from "styled-components";
 import { getColor } from "@zendeskgarden/react-theming";
 import ChevronDownIcon from "@zendeskgarden/svg-icons/src/12/chevron-down-fill.svg";
@@ -138,12 +139,29 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
   const isSelected = selectedCategoryId === category.id;
 
   const { t } = useTranslation();
+  const nameId = useId();
+  const countId = useId();
+  const hasCount = typeof category.items_count === "number";
 
   const displayName = isAllServices
     ? t("service-catalog-sidebar.all-services", "All services")
     : isUncategorized
       ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
       : category.name;
+
+  // Name the toggle after its category, so a list of buttons does not read
+  // "Expand, Expand, Expand".
+  const toggleLabel = isExpanded
+    ? t(
+        "service-catalog-sidebar.collapse-category-named",
+        "Collapse {{name}}",
+        {
+          name: displayName,
+        }
+      )
+    : t("service-catalog-sidebar.expand-category-named", "Expand {{name}}", {
+        name: displayName,
+      });
 
   const handleExpandClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -158,6 +176,9 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
           $nestingLevel={nestingLevel}
           $hasChildren={hasChildren}
           aria-current={isSelected ? "true" : undefined}
+          // The row selects the category; without this its name would swallow
+          // the nested toggle's label ("Expand Hardware 4").
+          aria-labelledby={hasCount ? `${nameId} ${countId}` : nameId}
           onClick={() => onSelect(category.id)}
           tabIndex={0}
           role="button"
@@ -177,26 +198,16 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
             {hasChildren && (
               <ExpandButton
                 onClick={handleExpandClick}
-                aria-label={
-                  isExpanded
-                    ? t(
-                        "service-catalog-sidebar.collapse-category",
-                        "Collapse category"
-                      )
-                    : t(
-                        "service-catalog-sidebar.expand-category",
-                        "Expand category"
-                      )
-                }
+                aria-label={toggleLabel}
                 type="button"
               >
                 {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ExpandButton>
             )}
             <ItemContent>
-              <SidebarItemName>{displayName}</SidebarItemName>
-              {typeof category.items_count === "number" && (
-                <ItemCount>{category.items_count}</ItemCount>
+              <SidebarItemName id={nameId}>{displayName}</SidebarItemName>
+              {hasCount && (
+                <ItemCount id={countId}>{category.items_count}</ItemCount>
               )}
             </ItemContent>
           </CategoryItemContainer>

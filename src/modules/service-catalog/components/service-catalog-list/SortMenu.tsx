@@ -66,7 +66,16 @@ export function SortMenu({ selectedOption, onChange }: SortMenuProps) {
   return (
     <Menu
       button={(props) => (
-        <StyledButton {...props} isBasic size="small">
+        <StyledButton
+          {...props}
+          isBasic
+          size="small"
+          aria-label={t(
+            "service-catalog.sort.button-label",
+            "Sort services: {{option}}",
+            { option: optionLabels[selectedOption] }
+          )}
+        >
           {optionLabels[selectedOption]}
           <Button.EndIcon>
             <ChevronIcon />
