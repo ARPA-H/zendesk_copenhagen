@@ -74,6 +74,7 @@
     }
   }
 
+  &[disabled],
   &[data-disabled] {
     @include nexus-disabled;
   }

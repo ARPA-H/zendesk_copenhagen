@@ -148,8 +148,8 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
 | 2 | `typeset` | One NEXUS type scale in `rem` tokens (12 to 40 pixels, eight sizes in use): Poppins for the greeting and h1 and h2, Public Sans for everything read or pressed; a 70-character prose measure; tabular numerals; rewritten article, table and heading rhythm; the Garden theme on the same scale; the dead `.svc-hero-results`, `.svc-res-*`, `.svc-mini-*` and `.svc-mr-*` styles removed | Done |
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the header blended into the hero; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category, section, article and search grids, Device FAQs tiles, overflow fixes, the banner, the blended header, the Knowledge band, the service item rebuild, the spacing sweep and the catalog title handling done; the Phase 3 review and polish remain |
-| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done apart from review: the Device FAQs heading (and a corrected heading probe), the signed-out hero, locale-aware empty states, failed loads (prompt error, no dead button), forced colors, RTL logical properties, unclamped service names and the mobile hero artwork ("zoomed to fill": its own layer, no strip, the original colors) |
-| 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
+| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done, reviewed: the Device FAQs heading (and a corrected heading probe), the signed-out hero, locale-aware empty states, failed loads (prompt error, no dead button), forced colors (both palettes), RTL logical properties, unclamped service names and the mobile hero artwork ("zoomed to fill": its own layer, no strip, the original colors) |
+| 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Done apart from review: the widget removed (its one used helper kept in `src/safeHref.js`), the dead partials, rules and selector parts removed, the base `.button` dimmed for a native `disabled`; every page, form state and catalog interaction compared pixel for pixel with the build before |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
@@ -285,6 +285,75 @@ Hardening decisions made during Phase 4 (each is easy to reverse):
   behavior), and the catalog's "No services in sight" copy still says "Enter
   your keywords" after someone has typed some; both are for `clarify`.
 
+Distill decisions made during Phase 5 (each is easy to reverse):
+
+- **The unused live-search widget is gone; the one helper that is used stays.**
+  `src/svcSearch.js` held `initSvcSearch`, a cache-backed live-search widget that
+  no template calls (the home hero uses Zendesk's native instant search), and
+  `svcSafeHref`, which `templates/service_page.hbs` uses to vet the training
+  button's URL and every suggested-article link. The widget (591 lines) and its
+  spec are deleted; the helper moved to `src/safeHref.js` with a spec of its own
+  (eight tests). A first search for the helper's callers was case-sensitive and
+  missed `svcSafeHref`, which would have turned every suggested-article link into
+  `#`; reading the template before deleting caught it.
+- **A rule counted as dead only when three checks agreed.** None of its class
+  tokens appears in a template, a script or the React sources (exact tokens, so
+  `community-hero` does not count as `community`); its selector matched no element
+  on any offline page, including a "kitchen sink" service with every field type,
+  open dropdowns and focus states; and Chrome's CSS coverage across those pages
+  showed it never applied. What went:
+  - the whole `_recent-activity.scss` partial;
+  - the `.blocks-item-img` hover scale, `.home-section h2`, the `.community` block
+    with its image, `.centered-buttons` and `.hero-inner .submit-a-request`;
+  - `.see-all-sections-trigger`, `#user #user-name`, `.heading-centered` and
+    `.form-centered`;
+  - `.svc-hero-input` (the hero search is Zendesk's native one);
+  - the catalog's duplicate card selectors (`[class*="card"]`, `[class*="Card"]`,
+    and the heading and paragraph rules inside cards): a card is a link holding a
+    thumbnail and two `div`s, and the script hides the description by class;
+  - the `StyledMedia` substring (Garden's class is `StyledTextMediaInput`, which
+    does not contain it);
+  - the item form's width overrides for inline styles and for generated class
+    names (`imWYAI`, `hkLxcw`, `dIeWIF`, `sc-jEACwC`), which change whenever the
+    component library does and so could never be relied on.
+- **A rule that looked dead and was not.** The first pass also removed the two
+  catalog-search focus rules keyed on `[class*="StyledTextFauxInput"]`. The class
+  does exist on the field's wrapper, but the rules apply only while the field has
+  focus (`:focus-within`), so a count of matching elements at rest read zero. The
+  pixel comparison caught it (the focused search drew a gray border inside a blue
+  ring); both rules are restored. The method is amended: a selector that carries
+  a state (`:focus-within`, `:hover`, `:checked`) is judged by its base selector,
+  or measured in that state.
+- **Kept on purpose.** Classes the platform or the content generates and no
+  template names: pagination, `nesty-input`, the multiselect, the stock `usa-*`
+  banner, CKEditor's `image-style-*` and `ck-*`, status labels, notifications,
+  related and recent articles, avatars and `request-form`; styles gated by a
+  setting (the training button); the selectors for Zendesk's editor chrome; and the
+  Garden override selectors that still match live markup (floating menus and
+  listboxes, avatars and icons in the catalog and the item form; the rule for SVG
+  icons was left alone because the offline mock has none). The header search stays
+  hidden (see Open decisions).
+- **The base `.button` dims for a native `disabled`.** A Copilot note on Phase 4:
+  only `data-disabled` was covered, while `.button-large` and `.button-secondary`
+  already handled both.
+- **Found on the way, not changed here:** `CollapsibleDescription` decides whether
+  to offer "Read more" from one measurement taken in the frame after the first
+  render. If the web fonts settle afterwards, a description that fits in two lines
+  keeps a "Read more" that reveals nothing. At 1024 pixels about half of the offline
+  loads show it with identical CSS, and each is pixel-identical to the build before
+  this phase. It depends on width and font timing, so it is a job for `adapt`
+  (measure again when the fonts load and when the box resizes).
+- **How it was checked.** Each of 81 captures was compared pixel for pixel with
+  the same capture taken before any edit: 55 pages (11 pages at 1440, 1024, 768,
+  390 and 320 pixels), 16 states of a kitchen-sink request form (initial, every
+  dropdown open, the date picker, focus; at 1440 and 390) and 10 catalog
+  interactions (hover, search focus, sort menu, tab focus). The capture is
+  deterministic (two baselines are identical). Every capture is identical except for
+  timing races that also vary between repeated runs of the same build: the "Read
+  more" measurement above, the card tooltip (visible in some runs and not in
+  others) and, in one run of five, 283 antialiasing-level pixels in the 3,700 pixel
+  tall list at 390 pixels.
+
 ## Gates
 
 Run from the repository root; each should hold at the end of the work.
@@ -325,6 +394,7 @@ styles, so the same pages and widths are compared before and after.
 | --- | --- |
 | 1 | Across the home, services, service item, category, article and search pages (12 page views): colors outside the NEXUS palette fell from 456 of 1,264 uses (36.1%) to 0 of 1,262; text pairs below WCAG AA contrast fell from 20 to 0; keyboard-focused controls with no visible ring fell from 10 to 0. Horizontal overflow and small touch targets are unchanged and belong to phases 3 and 7. |
 | 2 | Across the same pages, counting text nodes: distinct font sizes fell from 16 to 8 at 1440 pixels wide (13 to 8 at 768, 16 to 8 at 390); text under 14 pixels fell from 35.1% of nodes to 2.0% (37.3% to 2.1% at 768, 39.5% to 2.6% at 390); an article paragraph went from a 15-pixel, 706-pixel-wide measure of about 102 characters per line to 16 pixels at 70 characters (a 32em cap); body line height is 1.62 and heading line heights are 1.15 and 1.35. Detector findings over `styles` and `templates`, with DESIGN.md loaded, fell from 81 (69 font sizes off the documented ramp, 6 radii, 4 side-stripe borders, 2 layout transitions) to 6 (4 radii and 2 layout transitions, left to phases 3 and 8). |
+| 5 | Generated files: `style.css` fell from 226,208 to 218,330 bytes (3.5%) and `script.js` from 61,166 to 42,664 bytes (30.2%); `!important` in the compiled CSS fell from 207 to 190 and `[class*=` attribute selectors from 65 to 15 (the rest match Garden's generated class names); the compiled CSS has 55 fewer blocks (counted as closing braces). Source: 982 lines deleted and 20 added in existing files, plus 75 lines in the two new helper files. Unit tests: 91 suites and 871 tests (874 before: the widget's spec went, the helper's eight tests came). Renders: no visible change, checked pixel for pixel (see the distill decisions). |
 
 ## Open decisions
 
@@ -335,6 +405,7 @@ arpa-h.gov policy pages belong there) and the Admin Center settings (decision 5)
 Still open:
 
 - Whether pages without their own search should get a search entry point. Nine templates render no page-level search (applications, approval request and approval request list, contributions, error, request, requests, subscriptions and user profile). They had none before this work either: the base theme hid the header search on every page (`html body .header .search-wrapper { display: none !important; }` in `styles/_svc-tokens.scss`, still the case on the `sandbox` tip), so this work removed dead markup rather than a visible control. A compact search in the header on those pages is the cheapest fix if the owner wants one.
-- Moving the hard-coded OS tile IDs in `category_page.hbs` into settings.
+- Moving the hard-coded OS tile IDs in `category_page.hbs` into settings. (It would need a number-type setting, because the [`is` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#is-helper) "is always based on the `===` JS operator"; left as is, since `distill` removes code and does not add Admin Center settings.)
+- Two theme settings read by nothing that renders: `community_image` ("Community banner"; its only consumer, the `.community-image` rule, was dead and is removed in Phase 5) and `service_catalog_hero_image` (its consumer, `.service-catalog-hero`, is used by no template). The hero artwork comes from `homepage_background_image`. Both stay in `manifest.json`, because removing a setting changes the Admin Center, which is the owner's call.
 - The live [arpa-h.gov](https://arpa-h.gov/) still ships the older USWDS 1.x banner copy ("The .gov means it's official."); this theme uses the current official 3.x text. Whether the two should be aligned is a content decision for the main site's owners.
 - The banner copy is English only, because a theme cannot add Help Center translation keys; USWDS publishes Spanish text if a Spanish locale is ever enabled.

@@ -121,37 +121,18 @@ body { background: var(--color-white); }
 .svc-form-panel form > * > * > * {
   width: 100% !important; max-width: none !important; min-width: 0 !important; box-sizing: border-box !important;
 }
-.svc-form-panel [style*="max-width"],
-.svc-form-panel [style*="width: 320"], .svc-form-panel [style*="width:320"],
-.svc-form-panel [style*="width: 360"], .svc-form-panel [style*="width:360"],
-.svc-form-panel [style*="width: 400"], .svc-form-panel [style*="width:400"],
-.svc-form-panel [style*="width: 480"], .svc-form-panel [style*="width:480"],
-.svc-form-panel [style*="width: 500"], .svc-form-panel [style*="width:500"],
-.svc-form-panel [style*="width: 560"], .svc-form-panel [style*="width:560"] {
-  max-width: none !important; width: 100% !important;
-}
 .svc-form-panel * { box-sizing: border-box; }
 .svc-form-panel .form-field, .svc-form-panel .field, .svc-form-panel .request-form,
 .svc-form-panel fieldset, .svc-form-panel section, .svc-form-panel article,
 .svc-form-panel div, .svc-form-panel div[role="group"],
-.svc-form-panel [class*="field"], .svc-form-panel [class*="Field"],
-.svc-form-panel [class*="form"], .svc-form-panel [class*="Form"],
-.svc-form-panel [class*="layout"], .svc-form-panel [class*="Layout"],
-.svc-form-panel [class*="grid"], .svc-form-panel [class*="Grid"],
-.svc-form-panel [class*="row"], .svc-form-panel [class*="Row"],
-.svc-form-panel [class*="column"], .svc-form-panel [class*="Column"] {
+.svc-form-panel [class*="Field"] {
   max-width: none !important; min-width: 0 !important;
 }
 .svc-form-panel figure,
 .svc-form-panel [data-garden-id="avatars.avatar"],
-.svc-form-panel [class*="StyledAvatar"],
-.svc-form-panel [class*="imWYAI"],
-.svc-form-panel [class*="hkLxcw"] {
+.svc-form-panel [class*="StyledAvatar"] {
   background: transparent !important; background-color: transparent !important;
   box-shadow: none !important; border: none !important;
-}
-.svc-form-panel [class*="dIeWIF"], .svc-form-panel .sc-jEACwC {
-  flex: 1 1 100% !important; min-width: 0 !important; width: 100% !important;
 }
 .svc-form-panel label { display: block; width: 100%; }
 .svc-form-panel input[type],
@@ -191,9 +172,6 @@ body { background: var(--color-white); }
 .svc-form-panel #service-catalog-item [data-garden-id="avatars.avatar"],
 .svc-form-panel #service-catalog-item [class*="StyledAvatar"],
 .svc-form-panel #service-catalog-item [class*="Avatar"],
-.svc-form-panel #service-catalog-item [class*="imWYAI"],
-.svc-form-panel #service-catalog-item [class*="hkLxcw"],
-.svc-form-panel #service-catalog-item [class*="icon"],
 .svc-form-panel #service-catalog-item [class*="Icon"] {
   overflow: visible !important;
   height: auto !important;

@@ -7,5 +7,5 @@ import "./search";
 import "./forms";
 import "./domFixups";
 import "./govBanner";
-import "./svcSearch";
+import "./safeHref";
 import "./svcCatalogEnhancements";

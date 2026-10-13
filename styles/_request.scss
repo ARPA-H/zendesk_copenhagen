@@ -186,22 +186,6 @@
 
 /***** Request form ARPA-H overrides *****/
 
-.heading-centered {
-  text-align: center;
-  font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-bold);
-  line-height: 40px;
-}
-
-.form-centered {
-  margin-left: auto;
-  margin-right: auto;
-
-  footer {
-    text-align: center;
-  }
-}
-
 .request-form {
   .nesty-input {
     font-weight: 600;

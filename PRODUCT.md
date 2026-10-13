@@ -91,10 +91,10 @@ into Knowledge pages.
   by using logical properties.
 - **Rhythm.** Visits are short and task-driven. The home hero uses Zendesk's
   native instant search; the catalog page fetches categories on load and items
-  for each search, filter, sort and page. (`src/svcSearch.js` still contains a
-  cache-backed live-search widget, `initSvcSearch`, that no template calls;
-  only its `svcSafeHref` helper is used. It is a removal candidate for the
-  distill phase.)
+  for each search, filter, sort and page. (The cache-backed live-search widget
+  that no template called was removed in the distill phase; its one live
+  piece, the `svcSafeHref` helper that `service_page.hbs` uses for the
+  training link and the suggested articles, now lives in `src/safeHref.js`.)
 
 ## Capabilities and Constraints
 

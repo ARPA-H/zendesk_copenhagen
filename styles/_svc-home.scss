@@ -162,18 +162,6 @@ a.svc-hero-cta:active {
   display: flex !important;
   align-items: center !important;
 }
-.svc-hero-input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  outline: none;
-  background: transparent;
-  font-family: var(--font-secondary);
-  font-size: var(--font-size-sm) !important;
-  color: var(--type-body);
-  padding: 13px 16px;
-}
-.svc-hero-input::placeholder { color: var(--type-muted); }
 .svc-hero-search input[type="search"] {
   flex: 1 1 auto !important;
   width: 100% !important;
@@ -292,8 +280,6 @@ a.svc-hero-cta:active {
 }
 
 /* Service cards */
-.service-catalog-main-content [class*="card"],
-.service-catalog-main-content [class*="Card"],
 .service-catalog-main-content a[href*="/services/"] {
   border-radius: 16px !important;
   background: var(--color-white) !important;
@@ -301,46 +287,16 @@ a.svc-hero-cta:active {
   transition: border-color 0.2s ease !important;
   overflow: visible !important;
 }
-.service-catalog-main-content a[href*="/services/"]:hover,
-.service-catalog-main-content [class*="card"]:hover,
-.service-catalog-main-content [class*="Card"]:hover {
+.service-catalog-main-content a[href*="/services/"]:hover {
   border-color: var(--color-link) !important;
   background: var(--color-white) !important;
   box-shadow: var(--shadow-2) !important;
   transform: none !important;
 }
 
-/* Service-card label text */
-.service-catalog-main-content a[href*="/services/"] h1,
-.service-catalog-main-content a[href*="/services/"] h2,
-.service-catalog-main-content a[href*="/services/"] h3,
-.service-catalog-main-content a[href*="/services/"] h4,
-.service-catalog-main-content a[href*="/services/"] h5,
-.service-catalog-main-content a[href*="/services/"] h6,
-.service-catalog-main-content [class*="card"] h1,
-.service-catalog-main-content [class*="card"] h2,
-.service-catalog-main-content [class*="card"] h3,
-.service-catalog-main-content [class*="card"] h4,
-.service-catalog-main-content [class*="card"] h5,
-.service-catalog-main-content [class*="card"] h6,
-.service-catalog-main-content [class*="Card"] h1,
-.service-catalog-main-content [class*="Card"] h2,
-.service-catalog-main-content [class*="Card"] h3,
-.service-catalog-main-content [class*="Card"] h4,
-.service-catalog-main-content [class*="Card"] h5,
-.service-catalog-main-content [class*="Card"] h6 {
-  white-space: normal !important;
-  overflow-wrap: normal !important;
-  word-break: keep-all !important;
-  hyphens: none !important;
-  text-align: center !important;
-}
-
-/* Hidden card descriptions + hover tooltip */
-.service-catalog-main-content .svc-desc-hidden,
-.service-catalog-main-content a[href*="/services/"] p,
-.service-catalog-main-content [class*="card"] p,
-.service-catalog-main-content [class*="Card"] p { display: none !important; }
+/* Card descriptions are hidden (src/svcCatalogEnhancements.js adds the class)
+   and shown in a hover tooltip instead. */
+.service-catalog-main-content .svc-desc-hidden { display: none !important; }
 .svc-tooltip {
   position: fixed;
   z-index: 10000;
@@ -433,8 +389,7 @@ a.svc-help-btn:hover,
 .service-catalog-main-content [data-garden-id*="forms"],
 .service-catalog-main-content [data-garden-id*="forms"] *,
 .service-catalog-main-content [data-garden-id*="mediaInput"],
-.service-catalog-main-content [data-garden-id*="mediaInput"] *,
-.service-catalog-main-content [class*="StyledMedia"] {
+.service-catalog-main-content [data-garden-id*="mediaInput"] * {
   border-color: var(--color-ui-60) !important;
 }
 .service-catalog-main-content [class*="StyledTextFauxInput"]:focus-within {
@@ -508,7 +463,6 @@ a.svc-help-btn:hover,
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner { padding: var(--space-5) var(--space-2); }
   .svc-hero-subtitle { font-size: var(--font-size-xs); margin-top: 8px; }
   .svc-hero-search { margin-top: 18px; padding: 6px 6px 6px 18px; }
-  .svc-hero-input { font-size: var(--font-size-xs); padding: 11px 12px; }
   .svc-hero-search-btn { width: 42px; height: 42px; }
 
   .svc-cardwrap { padding-block: var(--space-3) var(--space-6); max-width: 100%; overflow-x: hidden; }
@@ -524,39 +478,12 @@ a.svc-help-btn:hover,
     overflow-y: visible !important;
   }
 
-  .service-catalog-main-content a[href*="/services/"],
-  .service-catalog-main-content [class*="card"],
-  .service-catalog-main-content [class*="Card"] {
+  .service-catalog-main-content a[href*="/services/"] {
     min-width: 0 !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
     padding: var(--space-2) var(--space-105) !important;
     overflow: visible !important;
-  }
-  .service-catalog-main-content a[href*="/services/"] h1,
-  .service-catalog-main-content a[href*="/services/"] h2,
-  .service-catalog-main-content a[href*="/services/"] h3,
-  .service-catalog-main-content a[href*="/services/"] h4,
-  .service-catalog-main-content a[href*="/services/"] h5,
-  .service-catalog-main-content a[href*="/services/"] h6,
-  .service-catalog-main-content [class*="card"] h1,
-  .service-catalog-main-content [class*="card"] h2,
-  .service-catalog-main-content [class*="card"] h3,
-  .service-catalog-main-content [class*="card"] h4,
-  .service-catalog-main-content [class*="card"] h5,
-  .service-catalog-main-content [class*="card"] h6,
-  .service-catalog-main-content [class*="Card"] h1,
-  .service-catalog-main-content [class*="Card"] h2,
-  .service-catalog-main-content [class*="Card"] h3,
-  .service-catalog-main-content [class*="Card"] h4,
-  .service-catalog-main-content [class*="Card"] h5,
-  .service-catalog-main-content [class*="Card"] h6 {
-    white-space: normal !important;
-    overflow-wrap: normal !important;
-    word-break: keep-all !important;
-    hyphens: none !important;
-    max-width: 100% !important;
-    text-align: center !important;
   }
 
   .svc-help-banner { flex-direction: column; align-items: stretch; text-align: center; padding: 16px 16px; }

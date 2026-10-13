@@ -8,11 +8,6 @@
   margin-bottom: 40px;
 }
 
-.home-section h2 {
-  margin-bottom: 10px;
-  text-align: center;
-}
-
 /***** Promoted articles *****/
 
 .promoted-articles {
@@ -58,59 +53,8 @@
 
 }
 
-/***** Community section in homepage *****/
-.community {
-  text-align: center;
-
-  &-image {
-    min-height: 300px;
-    margin-top: 32px;
-    background-image: url($community_image);
-    background-position: center;
-    background-repeat: no-repeat;
-    max-width: 100%;
-  }
-
-  @include standalone-link;
-}
-
-.community,
+/***** Community and topic activity *****/
 .activity {
   border-top: 1px solid var(--surface-stroke);
   padding: 30px 0;
-}
-
-/***** Hero "Report an issue" button *****/
-
-.centered-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 24px;
-}
-
-.hero-inner .submit-a-request {
-  background-color: var(--color-white);
-  border: 1px solid var(--color-link-visited);
-  border-radius: 8px;
-  box-sizing: border-box;
-  color: var(--color-brand-primary);
-  display: inline-block;
-  font-size: var(--font-size-sm);
-  min-width: 250px;
-  padding: 36px 42px;
-  text-align: center;
-  text-transform: uppercase;
-
-  &:hover {
-    text-decoration: none;
-    transform: scale(1.03);
-  }
-
-  &:focus,
-  &:active {
-    background-color: var(--surface-stroke);
-    color: var(--type-body);
-    text-decoration: none;
-  }
 }

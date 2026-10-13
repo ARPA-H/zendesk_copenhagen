@@ -1,12 +1,3 @@
-// Selector is this strong to override the styles set with ids
-#user #user-name {
-  @include tablet { display: inline-block; }
-  display: none;
-  font-size: 14px;
-
-  &:hover { text-decoration: underline; }
-}
-
 /***** User avatar *****/
 .user-avatar {
   height: 25px;

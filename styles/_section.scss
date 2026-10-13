@@ -38,14 +38,3 @@
     justify-content: space-between;
   }
 }
-
-.see-all-sections-trigger {
-  cursor: pointer;
-  display: block;
-  padding: var(--space-2);
-  text-align: center;
-
-  &[aria-hidden="true"] {
-    display: none;
-  }
-}

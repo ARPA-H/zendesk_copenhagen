@@ -84,10 +84,6 @@
       box-shadow: var(--shadow-1);
     }
 
-    &:hover .blocks-item-img {
-      transform: scale(1.1);
-    }
-
     &:focus {
       @include focus-ring;
       text-decoration: none;
@@ -111,17 +107,6 @@
 
   &-item-description:not(:empty) {
     margin-top: 10px;
-  }
-
-  &-item-img {
-    @include tablet {
-      height: 64px;
-      width: 64px;
-    }
-
-    height: 40px;
-    width: 40px;
-    transition: transform .2s;
   }
 }
 

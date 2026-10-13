@@ -335,11 +335,11 @@
     var lastQuery = '';
     var activeController = null;
 
-    // ARPA-H-specific copy (no Help Center "stock" {{t}} key covers these —
-    // see src/svcSearch.js header comment for why). Centralized here as the
-    // single source of truth for this widget; the "empty" string must match
-    // the server-rendered placeholder in the markup above (shown before JS
-    // runs / when the query is too short).
+    // ARPA-H-specific copy: no Help Center "stock" {{t}} key covers these, and
+    // a theme cannot add keys the {{t}} helper resolves (see AGENTS.md).
+    // Centralized here as the single source of truth for this widget; the
+    // "empty" string must match the server-rendered placeholder in the markup
+    // above (shown before JS runs / when the query is too short).
     var STRINGS = {
       searching: 'Searching for related articles...',
       loadError: "We couldn't load suggested articles right now.",
