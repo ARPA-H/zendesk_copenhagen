@@ -78,7 +78,11 @@ jobs:
           # Configure credential helper so the token is used for all git operations
           git config --global url."https://x-access-token:${GH_TOKEN}@github.com/".insteadOf "https://github.com/"
 
+          # Clone the branch we push to. A plain clone checks out the default branch, so a
+          # consumer whose configured branch differs (e.g. sandbox) fails with non-fast-forward.
           git clone \
+            --branch "${BRANCH}" \
+            --single-branch \
             "https://github.com/${CONSUMER_REPO}.git" \
             consumer-repo
 

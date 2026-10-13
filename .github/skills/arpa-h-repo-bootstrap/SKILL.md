@@ -1,6 +1,6 @@
 ---
 name: arpa-h-repo-bootstrap
-description: "ARPA-H repo bootstrap — devcontainer, .gitignore, GitHub Actions security, environment file setup, PLAN.md, and AGENTS.md. Use when creating or updating any ARPA-H internal repo's foundational configuration. Examines the repo's language stack, frameworks, tooling, and services, then generates a complete devcontainer config with ARPA-H standard extensions, picks a safe install method for every CLI (feature vs. checksum-verified binary) and verifies the tools actually landed, validates .gitignore coverage, enforces GitHub Actions SHA pinning, wires up environment file conventions, maintains a PLAN.md tracking stack decisions and work items, and produces an AGENTS.md with repo and developer-specific agent directives. Use for: new repo setup, adding Codespaces support, updating devcontainer to match current stack, adding missing extensions, debugging a devcontainer where a tool is missing or broken after rebuild, auditing repo hygiene."
+description: "ARPA-H repo bootstrap — devcontainer, .gitignore, GitHub Actions security, environment file setup, PLAN.md, and AGENTS.md. Use when creating or updating any ARPA-H internal repo's foundational configuration. Examines the repo's language stack, frameworks, tooling, and services, then generates a complete devcontainer config with ARPA-H standard extensions, picks a safe install method for every CLI (feature vs. checksum-verified binary) and verifies the tools actually landed, validates .gitignore coverage, enforces GitHub Actions SHA pinning, builds a per-repo grouped dependabot.yml, wires up environment file conventions, maintains a PLAN.md tracking stack decisions and work items, and produces an AGENTS.md with repo and developer-specific agent directives. Use for: new repo setup, adding Codespaces support, updating devcontainer to match current stack, adding missing extensions, debugging a devcontainer where a tool is missing or broken after rebuild, auditing repo hygiene."
 ---
 
 # ARPA-H GitHub Repo Setup
@@ -721,16 +721,97 @@ Apply this to all triggers that support path filtering (`push`, `pull_request`, 
 
 ### Keeping pins up to date
 
-[Dependabot](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/keeping-your-actions-up-to-date-with-dependabot) can automate SHA updates. Add to `.github/dependabot.yml`:
+Dependabot automates SHA updates through the `github-actions` ecosystem. Build the full `.github/dependabot.yml` per the next section — do not drop in a standalone `github-actions` block.
+
+---
+
+## Dependabot — Build `dependabot.yml` Per Repo
+
+Every ARPA-H repo must have `.github/dependabot.yml`, **generated from the ecosystems detected in Step 1**. Never copy another repo's file. The goal is the fewest PRs a maintainer must review.
+
+Why grouping is mandatory: separate PRs from one Dependabot cycle each rewrite the same lockfile (`bun.lock`). Merging one conflicts the rest, so a maintainer ends up rebasing and re-running CI for every PR.
+
+### 1. Map detected signals to ecosystems
+
+One `updates` entry per ecosystem **actually present**. Do not add ecosystems the repo does not use.
+
+| Signal | `package-ecosystem` |
+| --- | --- |
+| `package.json` with `bun.lock` / `bun.lockb` | `bun` (the ARPA-H default; do not use `npm`) |
+| `package-lock.json` / `yarn.lock` / `pnpm-lock.yaml` | `npm` (covers npm, yarn, pnpm) |
+| `requirements.txt` / `pyproject.toml` / `Pipfile` | `pip` (`uv` when `uv.lock` exists) |
+| `go.mod` / `Cargo.toml` | `gomod` / `cargo` |
+| `pom.xml` / `build.gradle*` | `maven` / `gradle` |
+| `*.csproj` | `nuget` |
+| `*.tf` | `terraform` |
+| `Dockerfile` / `docker-compose.yml` | `docker` / `docker-compose` |
+| `.devcontainer/` | `devcontainers` — always (this skill always creates one) |
+| `.github/workflows/` | `github-actions` — always when workflows exist |
+
+For any other signal, look up the identifier in the [options reference](https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#package-ecosystem-).
+
+- `directory: /` for `github-actions` and `devcontainers`; otherwise the folder holding the manifest.
+- Several manifest folders for one ecosystem (e.g. root and `api/`): use a single entry with `directories:`, not repeated entries. Entries for the same ecosystem and branch must not overlap.
+
+### 2. Bundle minor and patch updates with `groups`
+
+Every entry gets:
+
+- A group of all dependencies limited to `minor` and `patch`. **Major updates stay as individual PRs** — they are breaking and need separate review.
+- A group for security updates (`applies-to: security-updates`) so a burst of advisories lands as one PR.
+- Group names that start and end with a letter and use only letters, `-`, `_` (they become branch names and PR titles).
+- `commit-message.prefix: "chore(deps)"` to match the Conventional Commits rule in `AGENTS.md`.
+
+### 3. Fold low-risk ecosystems together with `multi-ecosystem-groups`
+
+When the repo has two or more ecosystems, put the low-risk ones (`github-actions`, `devcontainers`, `docker`, `terraform`, etc.) into one top-level `multi-ecosystem-groups` entry so they arrive as a single PR. Keep the primary application ecosystem (`bun`, `pip`, `gomod`, …) on its own `groups` so its major bumps stay separate.
+
+- Each folded entry must set `patterns` (use `["*"]` for all) and `multi-ecosystem-group`, with the same group name everywhere.
+- The group owns the `schedule`; folded entries omit theirs.
+- The documented filter for these entries is name `patterns` only. Major bumps ride along in the combined PR, which is why the primary ecosystem is kept out.
 
 ```yaml
 version: 2
+
+multi-ecosystem-groups:
+  tooling:
+    schedule:
+      interval: weekly
+
 updates:
-  - package-ecosystem: github-actions
+  # Primary ecosystem — minor/patch bundled, majors individual
+  - package-ecosystem: bun
     directory: /
     schedule:
       interval: weekly
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      bun-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      bun-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  # Low-risk ecosystems — one combined PR
+  - package-ecosystem: github-actions
+    directory: /
+    patterns: ["*"]
+    multi-ecosystem-group: tooling
+
+  - package-ecosystem: devcontainers
+    directory: /
+    patterns: ["*"]
+    multi-ecosystem-group: tooling
 ```
+
+With a single ecosystem, omit `multi-ecosystem-groups` and use step 2 only.
+
+### 4. Verify
+
+- Confirm the file parses: **Insights → Dependency graph → Dependabot** lists each ecosystem and group without errors.
+- After the first cycle, check the PR count. If sibling PRs still touch the same lockfile, widen the `patterns` or merge the entries into one group.
 
 ---
 
