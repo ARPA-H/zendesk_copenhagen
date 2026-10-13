@@ -102,6 +102,12 @@ describe("SortMenu", () => {
     ).toBeInTheDocument();
   });
 
+  it("carries the class the print stylesheet hides", () => {
+    render(<SortMenu selectedOption="name_asc" onChange={jest.fn()} />);
+
+    expect(screen.getByRole("button")).toHaveClass("service-catalog-sort");
+  });
+
   it("renders all sort options when the menu is opened", async () => {
     render(<SortMenu selectedOption="name_asc" onChange={jest.fn()} />);
 

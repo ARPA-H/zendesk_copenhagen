@@ -5,7 +5,11 @@
 // after its text (paper cannot be clicked). Browsers drop background colors
 // when printing, which would leave the white logo, footer and hero text
 // unreadable (Chrome pales it to light gray), so the header and footer are
-// left out and the hero keeps only its dark greeting.
+// left out and the hero keeps only its dark greeting. The catalog prints its
+// services without the category list, search field and sort menu, which only
+// work on a screen. A request form prints as a paper form, its labels and
+// boxes without the Submit button or the suggested-articles rail, because the
+// fields are what that page is.
 @page {
   margin: 2cm;
 }
@@ -19,6 +23,12 @@
   .svc-hero-search,
   .svc-hero-chips,
   .svc-hero-cta,
+  .service-catalog-sidebar,
+  .service-catalog-search,
+  .service-catalog-sort,
+  .svc-custom-submit-wrap,
+  .svc-fallback,
+  .svc-side-column,
   .article-sidebar,
   .collapsible-sidebar,
   .article-subscribe,
@@ -62,8 +72,8 @@
     color: var(--color-black) !important;
   }
 
-  // The category list stacks above the services, so the cards get the whole
-  // width of the paper instead of narrow columns that break words.
+  // With the category list gone the services take the whole width of the paper,
+  // instead of the column that sat beside it.
   .service-catalog-main-content {
     display: block;
   }

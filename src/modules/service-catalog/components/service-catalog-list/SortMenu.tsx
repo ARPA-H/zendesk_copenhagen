@@ -68,6 +68,8 @@ export function SortMenu({ selectedOption, onChange }: SortMenuProps) {
       button={(props) => (
         <StyledButton
           {...props}
+          // The print stylesheet hides this menu (styles/_print.scss).
+          className="service-catalog-sort"
           isBasic
           size="small"
           aria-label={t(
