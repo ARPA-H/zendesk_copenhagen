@@ -361,10 +361,33 @@ describe("ServiceCatalogList results count", () => {
       />
     );
 
-    expect(await screen.findByText("3 services")).toHaveAttribute(
-      "role",
-      "status"
+    const region = await screen.findByRole("status");
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
+
+    // The visible count is hidden from assistive technology so the number is
+    // not read twice.
+    const visible = screen
+      .getAllByText("3 services")
+      .find((element) => element !== region);
+    expect(visible).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("has the status region in the page before the first count arrives", async () => {
+    mockFetchCounts(3);
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
     );
+
+    const region = screen.getByRole("status");
+    expect(region).toBeEmptyDOMElement();
+
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
+    expect(screen.getByRole("status")).toBe(region);
   });
 
   it("changes the text of the same status region when a new count arrives", async () => {
@@ -378,7 +401,8 @@ describe("ServiceCatalogList results count", () => {
       />
     );
 
-    const region = await screen.findByText("3 services");
+    const region = await screen.findByRole("status");
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
 
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /A-Z/ }));
@@ -386,6 +410,57 @@ describe("ServiceCatalogList results count", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
 
     await waitFor(() => expect(region).toHaveTextContent("1 service"));
-    expect(region).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBe(region);
+  });
+
+  it("keeps the status region through a category change and never announces the old count", async () => {
+    let respondToSecondFetch: () => void = () => undefined;
+    const response = (count: number) => ({
+      json: () => Promise.resolve({ ...emptyResponse, count }),
+      status: 200,
+      ok: true,
+    });
+    const fetchMock = jest
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve(response(3)))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            respondToSecondFetch = () => resolve(response(1));
+          })
+      );
+    global.fetch = fetchMock;
+
+    const { rerender } = render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
+    );
+
+    const region = await screen.findByRole("status");
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
+
+    rerender(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId="7"
+        selectedCategoryName="Hardware"
+      />
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    // The same node, and empty while the new category loads: the stale count
+    // is not spoken.
+    expect(screen.getByRole("status")).toBe(region);
+    expect(region).toBeEmptyDOMElement();
+
+    await act(async () => {
+      respondToSecondFetch();
+    });
+
+    await waitFor(() => expect(region).toHaveTextContent("1 service"));
+    expect(screen.getByRole("status")).toBe(region);
   });
 });

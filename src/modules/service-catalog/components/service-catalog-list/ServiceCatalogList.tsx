@@ -55,6 +55,24 @@ const CountAndSortRow = styled.div`
   flex-wrap: wrap;
 `;
 
+// The live region that speaks the count. It stays in the page for as long as
+// the list does, because a screen reader registers a status region before it
+// changes and may miss one that is inserted already holding text; the visible
+// count below is hidden from assistive technology so the number is not read
+// twice. Out of flow, so it adds no gap to the column.
+const CountAnnouncer = styled.span`
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+`;
+
 function getApiCategoryId(selectedCategoryId: string | null): string | null {
   if (!selectedCategoryId) return null;
   if (selectedCategoryId === ALL_SERVICES_ID) return null;
@@ -225,6 +243,18 @@ export function ServiceCatalogList({
         ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
         : selectedCategoryName;
 
+  const serviceCountMessage = t(
+    "service-catalog.service-count",
+    "{{count}} services",
+    {
+      "defaultValue.one": "{{count}} service",
+      count,
+    }
+  );
+  // The count is the previous list's until a response arrives, so the region
+  // holds nothing while the list loads and speaks only the settled number.
+  const isSettled = !isLoading && !isCategoryChanging;
+
   return (
     <Container>
       {categoryHeading && <CategoryHeading>{categoryHeading}</CategoryHeading>}
@@ -233,14 +263,12 @@ export function ServiceCatalogList({
         isLoading={isLoading}
         onChange={handleInputChange}
       />
+      <CountAnnouncer role="status">
+        {isSettled ? serviceCountMessage : ""}
+      </CountAnnouncer>
       {!isCategoryChanging && (
         <CountAndSortRow>
-          <span role="status">
-            {t("service-catalog.service-count", "{{count}} services", {
-              "defaultValue.one": "{{count}} service",
-              count,
-            })}
-          </span>
+          <span aria-hidden="true">{serviceCountMessage}</span>
           <SortMenu selectedOption={sortOption} onChange={handleSortChange} />
         </CountAndSortRow>
       )}

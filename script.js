@@ -839,17 +839,51 @@
   //    wrapper; the wrapper becomes a focusable region only while the table
   //    actually overflows, so keyboard users can scroll it and tables that fit
   //    add no tab stop. The region is named by the table's caption, which is the
-  //    article's own text. A table without one gets a fixed English name, so that
-  //    fallback applies to English pages only (any other language would hear it in
-  //    the wrong one), and it is numbered when several tables need it so the
-  //    regions stay distinguishable. Elsewhere the region stays focusable and
-  //    unnamed.
+  //    article's own text. A table without one gets a fixed English name, and it
+  //    is numbered when several tables need it so the regions stay
+  //    distinguishable. On an English page that name is the region's aria-label.
+  //    On any other page it comes from a hidden element marked lang="en"
+  //    (aria-labelledby), so the region still has a name and a role there, and
+  //    the English words are not passed off as the page's own language.
   // ---------------------------------------------------------------------------
   var SCROLLABLE_TABLE_LABEL = "Scrollable table";
+  var SCROLLABLE_LABEL_ATTR = "data-table-scroll-label";
+  var scrollableLabelCount = 0;
 
   function isEnglishPage() {
     var lang = document.documentElement.getAttribute("lang") || "en";
     return /^en(-|$)/i.test(lang);
+  }
+
+  function findFallbackLabel(wrapper) {
+    for (var i = 0; i < wrapper.children.length; i++) {
+      if (wrapper.children[i].hasAttribute(SCROLLABLE_LABEL_ATTR)) {
+        return wrapper.children[i];
+      }
+    }
+    return null;
+  }
+
+  function removeFallbackLabel(wrapper) {
+    var label = findFallbackLabel(wrapper);
+    if (label) {
+      wrapper.removeChild(label);
+    }
+    wrapper.removeAttribute("aria-labelledby");
+  }
+
+  function setFallbackLabel(wrapper, text) {
+    var label = findFallbackLabel(wrapper);
+    if (!label) {
+      label = document.createElement("span");
+      label.hidden = true;
+      label.setAttribute("lang", "en");
+      label.setAttribute(SCROLLABLE_LABEL_ATTR, "");
+      label.id = "table-scroll-label-" + ++scrollableLabelCount;
+      wrapper.insertBefore(label, wrapper.firstChild);
+    }
+    label.textContent = text;
+    wrapper.setAttribute("aria-labelledby", label.id);
   }
 
   function wrapWideTables(root) {
@@ -892,6 +926,7 @@
         wrapper.removeAttribute("role");
         wrapper.removeAttribute("tabindex");
         wrapper.removeAttribute("aria-label");
+        removeFallbackLabel(wrapper);
       }
     }
 
@@ -899,7 +934,8 @@
     for (var j = 0; j < overflowing.length; j++) {
       var scroller = overflowing[j];
       var label = scroller.getAttribute("data-label");
-      if (!label && english) {
+      var captioned = !!label;
+      if (!captioned) {
         label =
           unnamed.length > 1
             ? SCROLLABLE_TABLE_LABEL +
@@ -910,12 +946,13 @@
             : SCROLLABLE_TABLE_LABEL;
       }
       scroller.setAttribute("tabindex", "0");
-      if (label) {
-        scroller.setAttribute("role", "region");
+      scroller.setAttribute("role", "region");
+      if (captioned || english) {
         scroller.setAttribute("aria-label", label);
+        removeFallbackLabel(scroller);
       } else {
-        scroller.removeAttribute("role");
         scroller.removeAttribute("aria-label");
+        setFallbackLabel(scroller, label);
       }
     }
   }

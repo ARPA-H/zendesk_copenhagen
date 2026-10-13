@@ -1,4 +1,4 @@
-import { afterEach, describe, it, expect } from "@jest/globals";
+import { afterEach, beforeEach, describe, it, expect } from "@jest/globals";
 import {
   setFooterYear,
   wrapWideTables,
@@ -179,8 +179,113 @@ describe("wrapWideTables", () => {
     expect(wrapper.getAttribute("aria-label")).toBe("Scrollable table");
   });
 
-  it("leaves a captionless table unnamed on a page in another language", () => {
-    document.documentElement.setAttribute("lang", "fr");
+  describe("on a page in another language", () => {
+    beforeEach(() => {
+      document.documentElement.setAttribute("lang", "fr");
+    });
+
+    // The accessible name comes from a hidden element marked as English, so it
+    // is not passed off as the page's own language.
+    const hiddenLabel = (wrapper) =>
+      document.getElementById(wrapper.getAttribute("aria-labelledby"));
+
+    it("names a captionless table through a hidden English label", () => {
+      document.body.innerHTML = articleWithTable();
+      wrapWideTables();
+      const wrapper = document.querySelector(".table-scroll");
+      setOverflow(wrapper, true);
+
+      updateScrollableTables();
+
+      expect(wrapper.getAttribute("tabindex")).toBe("0");
+      expect(wrapper.getAttribute("role")).toBe("region");
+      expect(wrapper.hasAttribute("aria-label")).toBe(false);
+      const label = hiddenLabel(wrapper);
+      expect(label.textContent).toBe("Scrollable table");
+      expect(label.getAttribute("lang")).toBe("en");
+      expect(label.hidden).toBe(true);
+      expect(wrapper.contains(label)).toBe(true);
+    });
+
+    it("numbers the hidden labels when several captionless tables overflow", () => {
+      document.body.innerHTML =
+        articleWithTable() +
+        articleWithTable("<caption>Certificats</caption>") +
+        articleWithTable();
+      wrapWideTables();
+      const wrappers = [...document.querySelectorAll(".table-scroll")];
+      wrappers.forEach((wrapper) => setOverflow(wrapper, true));
+
+      updateScrollableTables();
+
+      expect(hiddenLabel(wrappers[0]).textContent).toBe(
+        "Scrollable table 1 of 2"
+      );
+      expect(wrappers[1].getAttribute("aria-label")).toBe("Certificats");
+      expect(wrappers[1].hasAttribute("aria-labelledby")).toBe(false);
+      expect(hiddenLabel(wrappers[2]).textContent).toBe(
+        "Scrollable table 2 of 2"
+      );
+      expect(hiddenLabel(wrappers[0]).id).not.toBe(hiddenLabel(wrappers[2]).id);
+    });
+
+    it("keeps one hidden label per table however often it is measured", () => {
+      document.body.innerHTML = articleWithTable() + articleWithTable();
+      wrapWideTables();
+      const wrappers = [...document.querySelectorAll(".table-scroll")];
+      wrappers.forEach((wrapper) => setOverflow(wrapper, true));
+
+      updateScrollableTables();
+      updateScrollableTables();
+      updateScrollableTables();
+      expect(
+        document.querySelectorAll("[data-table-scroll-label]")
+      ).toHaveLength(2);
+
+      setOverflow(wrappers[1], false);
+      updateScrollableTables();
+
+      expect(hiddenLabel(wrappers[0]).textContent).toBe("Scrollable table");
+      expect(
+        document.querySelectorAll("[data-table-scroll-label]")
+      ).toHaveLength(1);
+    });
+
+    it("takes the region and its label away when the table stops overflowing", () => {
+      document.body.innerHTML = articleWithTable();
+      wrapWideTables();
+      const wrapper = document.querySelector(".table-scroll");
+      setOverflow(wrapper, true);
+      updateScrollableTables();
+      expect(wrapper.hasAttribute("aria-labelledby")).toBe(true);
+
+      setOverflow(wrapper, false);
+      updateScrollableTables();
+
+      expect(wrapper.hasAttribute("aria-labelledby")).toBe(false);
+      expect(wrapper.hasAttribute("role")).toBe(false);
+      expect(wrapper.hasAttribute("tabindex")).toBe(false);
+      expect(wrapper.querySelector("[data-table-scroll-label]")).toBeNull();
+    });
+
+    it("still uses the article's own caption", () => {
+      document.body.innerHTML = articleWithTable(
+        "<caption>Certificats</caption>"
+      );
+      wrapWideTables();
+      const wrapper = document.querySelector(".table-scroll");
+      setOverflow(wrapper, true);
+
+      updateScrollableTables();
+
+      expect(wrapper.getAttribute("role")).toBe("region");
+      expect(wrapper.getAttribute("aria-label")).toBe("Certificats");
+      expect(wrapper.querySelector("[data-table-scroll-label]")).toBeNull();
+    });
+  });
+
+  it("adds no hidden label on an English page", () => {
+    document.documentElement.setAttribute("lang", "en-GB");
     document.body.innerHTML = articleWithTable();
     wrapWideTables();
     const wrapper = document.querySelector(".table-scroll");
@@ -188,23 +293,8 @@ describe("wrapWideTables", () => {
 
     updateScrollableTables();
 
-    expect(wrapper.getAttribute("tabindex")).toBe("0");
-    expect(wrapper.hasAttribute("aria-label")).toBe(false);
-    expect(wrapper.hasAttribute("role")).toBe(false);
-  });
-
-  it("still uses the article's own caption on a page in another language", () => {
-    document.documentElement.setAttribute("lang", "fr");
-    document.body.innerHTML = articleWithTable(
-      "<caption>Certificats</caption>"
-    );
-    wrapWideTables();
-    const wrapper = document.querySelector(".table-scroll");
-    setOverflow(wrapper, true);
-
-    updateScrollableTables();
-
-    expect(wrapper.getAttribute("role")).toBe("region");
-    expect(wrapper.getAttribute("aria-label")).toBe("Certificats");
+    expect(wrapper.getAttribute("aria-label")).toBe("Scrollable table");
+    expect(wrapper.hasAttribute("aria-labelledby")).toBe(false);
+    expect(wrapper.querySelector("[data-table-scroll-label]")).toBeNull();
   });
 });
