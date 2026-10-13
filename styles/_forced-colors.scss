@@ -5,9 +5,11 @@
 // ring is a box-shadow plus a transparent outline, and the outline is repainted.
 // The stock USWDS banner brings its own forced-colors rules.
 @media (forced-colors: active) {
-  // The white reverse wordmark sits on the indigo bar, which the palette replaces
-  // with the canvas, so the wordmark disappeared. The logo link keeps a dark tile.
-  .header .logo a {
+  // The white reverse wordmark sits on the indigo bar and the indigo footer, which
+  // the palette replaces with the canvas, so on a light canvas it disappeared. Each
+  // logo link keeps a dark tile.
+  .header .logo a,
+  .footer-logo {
     background-color: var(--color-brand-primary);
     border-radius: var(--radius-md);
     forced-color-adjust: none;
@@ -16,6 +18,9 @@
 
   // Pill buttons are a fill with no border, so without one they read as bare text.
   .ask-ai,
+  .button-large,
+  .hbs-form input[type="submit"],
+  .split-button button,
   .svc-hero-search-btn,
   .svc-hero-cta,
   .svc-custom-submit-btn,

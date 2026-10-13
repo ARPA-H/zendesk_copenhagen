@@ -254,7 +254,7 @@ Flat by default. Service cards and search result cards rest on a stroke alone; t
 
 **The Visible Focus Rule.** Every interactive element shows a ring. The ring is a box-shadow plus a transparent 2px outline, so forced-colors mode repaints it.
 
-**The Forced Colors Rule.** Meaning never rests on a fill alone. In forced-colors mode the palette replaces authored colors, so a pill button keeps a border, a selected row an outline, the white wordmark its own dark tile, and the mobile menu button a surface of its own, because the transparent header sits over dark artwork and a bare icon would turn dark on dark (`styles/_forced-colors.scss`). Selected state is also exposed in markup (`aria-current`), not just painted.
+**The Forced Colors Rule.** Meaning never rests on a fill alone. In forced-colors mode the palette replaces authored colors, so a pill button keeps a border (the shared primary buttons, the form submit and the split button included), a selected row an outline, each white wordmark (header and footer) its own dark tile, and the mobile menu button a surface of its own, because the transparent header sits over dark artwork and a bare icon would turn dark on dark (`styles/_forced-colors.scss`). Check both palettes: the dark one hides the wordmark problem, the light one shows it. Selected state is also exposed in markup (`aria-current`), not just painted.
 
 ## Shapes
 

@@ -202,18 +202,27 @@ Hardening decisions made during Phase 4 (each is easy to reverse):
   on `help_center.locale`. The split exists because `src/domFixups.js` hides any
   element whose only text is the English word "empty" (a placeholder that had
   leaked onto pages), so a bare translated word would paint nothing in English, and
-  a theme cannot add Help Center translation keys. A first version of this change
-  was checked by reading the DOM, not the pixels, and the category message was
-  hidden by that fixup; both pages are now checked by what is painted.
+  a theme cannot add Help Center translation keys. The bare `{{t 'empty'}}` was
+  tried first and did exactly that: the text was in the DOM but its wrapper was
+  hidden, which only showed up when the page was checked by what is painted rather
+  than by its DOM text. Both pages are now checked that way.
 - **Forced colors:** the white reverse wordmark vanished on the plain header
   (the palette replaces the indigo bar), pill buttons lost their shape, and a
   selected row lost its tint. Each now keeps a dark logo tile, a border or an
   outline. A later check of the hero found one more: on the home and services
   pages the header is transparent over dark artwork, so the mobile menu button's
   icon (the only navigation on phones) turned dark on dark and vanished; it now
-  has a button face and a border. This was checked with Chrome's forced-colors
-  emulation, not on Windows itself, and the Garden form controls were not
-  re-themed.
+  has a button face and a border. A Copilot review then found two gaps in the
+  first pass, both confirmed: the footer uses the same white wordmark on indigo
+  and vanished on a light canvas (it shares the header's dark tile now), and the
+  shared primary controls (`.button-large`, the `.hbs-form` submit and the
+  split button) set `border: 0`, so with the fill replaced they had no boundary
+  (they get the same 1px `ButtonText` border as the other pills). The first
+  pass had been checked only in Chrome's dark palette, where the wordmark stays
+  visible; the audit now runs both palettes. A static scan of the compiled CSS
+  for borderless filled rules found no other control that relies on its fill.
+  This was checked with Chrome's forced-colors emulation, not on Windows itself,
+  and the Garden form controls were not re-themed.
 - **RTL:** pages were rendered with `dir="rtl"` at 1440 pixels and the grids,
   rails, header and footer mirror. The remaining physical properties in the
   Knowledge and catalog partials (blockquote border, the training button, the

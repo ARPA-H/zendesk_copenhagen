@@ -8814,13 +8814,17 @@ body > pre, body > code, body > .template-name, body > .editor-label {
 
 /***** Forced colors (Windows High Contrast) *****/
 @media (forced-colors: active) {
-  .header .logo a {
+  .header .logo a,
+  .footer-logo {
     background-color: var(--color-brand-primary);
     border-radius: var(--radius-md);
     forced-color-adjust: none;
     padding: var(--space-1) var(--space-105);
   }
   .ask-ai,
+  .button-large,
+  .hbs-form input[type=submit],
+  .split-button button,
   .svc-hero-search-btn,
   .svc-hero-cta,
   .svc-custom-submit-btn,
