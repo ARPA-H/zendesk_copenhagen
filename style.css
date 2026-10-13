@@ -8802,7 +8802,7 @@ body > pre, body > code, body > .template-name, body > .editor-label {
     outline-offset: -3px;
   }
   .service-catalog-sidebar button[aria-current=true]:not(:focus-visible)::after,
-  .svc-search-sidebar .sidenav-item.current {
+  .svc-search-sidebar .sidenav-item.current:not(:focus-visible) {
     outline: 2px solid Highlight;
     outline-offset: -2px;
   }

@@ -596,6 +596,15 @@ Adapt decisions made during Phase 7 (each is easy to reverse):
   states then differ by 496 pixels for the votes, 248 for the comment arrow and 484
   for follow. The earlier Phase 4 scan had looked for missing boundaries, not
   missing states. Chrome's emulation, not Windows.
+- **A focused selected filter keeps its focus ring.** The Phase 8 review found that
+  the selected-row ring I added for the search results' filter list lacked the
+  `:not(:focus-visible)` guard the catalog row's had, and as the more specific,
+  later rule it replaced the global focus outline with an inside ring. Measured: a
+  keyboard-focused selected filter was pixel-identical to the unfocused one in
+  both palettes (no differing pixels), so focus was invisible on it. It is now the
+  outside focus ring, like every other link, and the two states differ by 2,144
+  pixels. Every `Highlight` outline in the file is now either guarded or the focus
+  rule itself.
 - **A failed catalog import shows at once.** When the catalog module cannot load,
   the template writes a one-line fallback (`.svc-catalog-fallback`) with a link to
   the services page, but the completion selector looked for links containing
