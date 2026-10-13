@@ -166,7 +166,7 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
   const isUncategorized = category.id === UNCATEGORIZED_ID;
   const isSelected = selectedCategoryId === category.id;
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const nameId = useId();
   const countId = useId();
   const childrenId = useId();
@@ -179,13 +179,23 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
       : category.name;
 
   // Name the toggle after its category, so a list of buttons does not read
-  // "Expand, Expand, Expand". The name stays the same when the state changes;
-  // aria-expanded says whether the subcategories are showing.
-  const toggleLabel = t(
-    "service-catalog-sidebar.subcategories-named",
-    "{{name}} subcategories",
-    { name: displayName }
-  );
+  // "Expand, Expand, Expand". Where the locale has the name-bearing message
+  // (English only: a theme cannot add Help Center translations), the name stays
+  // the same when the state changes and aria-expanded says whether the
+  // subcategories are showing. Every other locale keeps the Expand or Collapse
+  // message it already translates, followed by the category's own name, rather
+  // than an English phrase read in the wrong language.
+  const toggleLabel = i18n.exists("service-catalog-sidebar.subcategories-named")
+    ? t(
+        "service-catalog-sidebar.subcategories-named",
+        "{{name}} subcategories",
+        { name: displayName }
+      )
+    : `${
+        isExpanded
+          ? t("service-catalog-sidebar.collapse-category", "Collapse")
+          : t("service-catalog-sidebar.expand-category", "Expand")
+      } ${displayName}`;
 
   return (
     <>

@@ -62,6 +62,10 @@ export function SortMenu({ selectedOption, onChange }: SortMenuProps) {
     name_desc: t("service-catalog.sort.name-desc", "Z-A"),
     created_at_desc: t("service-catalog.sort.newest", "Newest"),
   };
+  const sortLabel = t("service-catalog.sort.aria-label", "Sort services");
+  // Built from messages every locale already translates, so the name is never a
+  // mix of languages. The button's visible text is only the option.
+  const buttonLabel = `${sortLabel}: ${optionLabels[selectedOption]}`;
 
   return (
     <Menu
@@ -72,11 +76,7 @@ export function SortMenu({ selectedOption, onChange }: SortMenuProps) {
           className="service-catalog-sort"
           isBasic
           size="small"
-          aria-label={t(
-            "service-catalog.sort.button-label",
-            "Sort services: {{option}}",
-            { option: optionLabels[selectedOption] }
-          )}
+          aria-label={buttonLabel}
         >
           {optionLabels[selectedOption]}
           <Button.EndIcon>
@@ -90,10 +90,7 @@ export function SortMenu({ selectedOption, onChange }: SortMenuProps) {
         }
       }}
     >
-      <ItemGroup
-        type="radio"
-        aria-label={t("service-catalog.sort.aria-label", "Sort services")}
-      >
+      <ItemGroup type="radio" aria-label={sortLabel}>
         <Item value="name_asc" isSelected={selectedOption === "name_asc"}>
           {optionLabels.name_asc}
         </Item>

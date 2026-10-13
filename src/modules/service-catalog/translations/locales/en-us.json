@@ -57,7 +57,6 @@
   "service-catalog.service-list-error-message": "Give it a moment and try it again",
   "service-catalog.service-list-error-title": "Services couldn't be loaded",
   "service-catalog.sort.aria-label": "Sort services",
-  "service-catalog.sort.button-label": "Sort services: {{option}}",
   "service-catalog.sort.name-asc": "A-Z",
   "service-catalog.sort.name-desc": "Z-A",
   "service-catalog.sort.newest": "Newest",

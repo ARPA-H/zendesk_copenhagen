@@ -4,6 +4,11 @@ import { userEvent } from "@testing-library/user-event";
 import { CategoryItem } from "./CategoryItem";
 import type { Category } from "../../data-types/Categories";
 
+// The toggle's name-bearing message exists only in the English locale file.
+const ENGLISH = {
+  "service-catalog-sidebar.subcategories-named": "{{name}} subcategories",
+};
+
 const category: Category = {
   id: "hardware",
   name: "Hardware",
@@ -66,7 +71,10 @@ describe("CategoryItem with subcategories", () => {
     ],
   };
 
-  function renderParent(expanded: boolean) {
+  function renderParent(
+    expanded: boolean,
+    translations: Record<string, string> = ENGLISH
+  ) {
     render(
       <CategoryItem
         category={parent}
@@ -75,7 +83,8 @@ describe("CategoryItem with subcategories", () => {
         onSelect={jest.fn()}
         expandedCategories={new Set<string>(expanded ? ["hardware"] : [])}
         onToggleExpand={jest.fn()}
-      />
+      />,
+      translations
     );
   }
 
@@ -135,7 +144,8 @@ describe("CategoryItem with subcategories", () => {
         onSelect={onSelect}
         expandedCategories={new Set<string>()}
         onToggleExpand={onToggleExpand}
-      />
+      />,
+      ENGLISH
     );
 
     await userEvent.click(
@@ -144,6 +154,44 @@ describe("CategoryItem with subcategories", () => {
 
     expect(onToggleExpand).toHaveBeenCalledWith("hardware");
     expect(onSelect).not.toHaveBeenCalled();
+  });
+
+  describe("in a locale without the English toggle name", () => {
+    it("uses the locale's own Expand message and the category's name when collapsed", () => {
+      renderParent(false, {
+        "service-catalog-sidebar.expand-category": "Élargir",
+        "service-catalog-sidebar.collapse-category": "Réduire",
+      });
+
+      const toggle = screen.getByRole("button", { name: "Élargir Hardware" });
+
+      expect(toggle).toHaveAttribute("aria-expanded", "false");
+      expect(
+        screen.queryByRole("button", { name: /subcategories/ })
+      ).not.toBeInTheDocument();
+    });
+
+    it("uses the locale's own Collapse message when expanded", () => {
+      renderParent(true, {
+        "service-catalog-sidebar.expand-category": "Élargir",
+        "service-catalog-sidebar.collapse-category": "Réduire",
+      });
+
+      expect(
+        screen.getByRole("button", { name: "Réduire Hardware" })
+      ).toHaveAttribute("aria-expanded", "true");
+    });
+
+    it("never announces the English phrase", () => {
+      renderParent(false, {});
+
+      expect(
+        screen.queryByRole("button", { name: "Hardware subcategories" })
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Expand Hardware" })
+      ).toBeInTheDocument();
+    });
   });
 
   describe("with the keyboard", () => {
@@ -159,7 +207,8 @@ describe("CategoryItem with subcategories", () => {
           onSelect={onSelect}
           expandedCategories={new Set<string>()}
           onToggleExpand={onToggleExpand}
-        />
+        />,
+        ENGLISH
       );
 
       return { onSelect, onToggleExpand };
