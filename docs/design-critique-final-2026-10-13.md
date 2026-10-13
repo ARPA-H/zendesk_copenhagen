@@ -107,7 +107,7 @@ Facts only, from the Impeccable detector and the offline measurements (headless 
 | On the search page at 390 the breadcrumb is centered while it is left-aligned elsewhere | Fixed in Phase 10: the search page's own override removed below the tablet width |
 | The "Community" type filter and per-result vote and comment counts add clutter for an IT knowledge base | Left: Zendesk settings and the stock results markup |
 | Home and Services are hand-synced template clones | Left: structure, with a refactor risk and no visible gain |
-| The footer's nine policy links carry the same weight as the three functional links; short pages leave white space below the footer at tablet heights | Left: the links are required, and the footer structure follows the owner's reference |
+| The footer's nine policy links carry the same weight as the three functional links; short pages leave white space below the footer at tablet heights | Left: the links are required, and the footer structure follows the owner's reference. The owner later dropped the Adobe plugin link as not needed in a Help Center, so there are eight |
 | Share-to-social icons (about 11 pixels) on internal how-tos | Left: the `show_article_sharing` setting, on by default, is the owner's |
 | The alert banner's raspberry fill for a maintenance notice reads as an error; the default text misspells "inquiries" | The typo is fixed in Phase 10; the fill is an Admin Center setting (the alert keeps its own color settings by design) |
 | The 404 keeps the stock "Oops!" tone and has no search or Service Desk route | Left: a copy decision |

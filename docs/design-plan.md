@@ -90,6 +90,13 @@ supersede the assumptions below wherever the two differ.
    is transparent and the artwork runs behind it, with the part behind the
    content kept where it was. Every other page keeps the solid indigo bar. The
    rounded white catalog card, the original signature, is kept.
+9. **The footer has no "Download Adobe Plugin" link.** The public
+   [arpa-h.gov](https://arpa-h.gov/) footer, and the NEXUS list that copies it, end
+   their auxiliary links with a link to `https://get.adobe.com/reader/`. A Help
+   Center has no use for a PDF reader download, so it is removed (requested after
+   the last phase) and the footer carries the other eight policy links. The skill's
+   list is a read-only copy from another repository and is not edited; this is a
+   deliberate departure from it.
 
 ## Assumptions
 
@@ -1179,7 +1186,8 @@ styles, so the same pages and widths are compared before and after.
 Resolved with the product owner: the USWDS exception and the `.gov` banner
 (owner decision 1), the Knowledge entry point on the home page (decision 2),
 the footer's policy links (help.arpa-h.gov is public, so the public HHS and
-arpa-h.gov policy pages belong there), the Admin Center settings (decision 5) and,
+arpa-h.gov policy pages belong there, less the public footer's "Download Adobe
+Plugin" link, which the owner dropped as not needed: owner decision 9), the Admin Center settings (decision 5) and,
 in the Phase 7 review, the "Popular:" label at 768 pixels, which reads 4.0:1 at its
 lightest pixel and stays as it is: a dark pill like the chips would clear 4.5:1
 (10.7:1 at the worst pixel) but adds a visible capsule that could read as a sixth,

@@ -309,7 +309,7 @@ White with a 2px `#e5eaf0` stroke (carried over from the current catalog) and a 
 
 ### Footer
 
-Full-bleed indigo with white text, in the order the NEXUS spec sets for a portal: the reverse logo with a row of site links (Service catalog, Submit a request, and My requests when signed in) and the language menu when the Help Center has alternate languages; a hairline divider (`--on-dark-stroke`); the nine policy links the public arpa-h.gov footer carries, wrapped and centered; then the copyright line at 60% opacity, with the year kept current by script. Links are 14px white with an underline on hover and the dark-surface focus ring. The policy labels are fixed English text, because a theme cannot add Help Center translation keys, so the block is marked `lang="en"` and reads as English on every locale.
+Full-bleed indigo with white text, in the order the NEXUS spec sets for a portal: the reverse logo with a row of site links (Service catalog, Submit a request, and My requests when signed in) and the language menu when the Help Center has alternate languages; a hairline divider (`--on-dark-stroke`); the eight policy links the public arpa-h.gov footer carries before its ninth, "Download Adobe Plugin", which a Help Center has no use for and leaves out (an owner decision, and a deliberate departure from the NEXUS list), wrapped and centered; then the copyright line at 60% opacity, with the year kept current by script. Links are 14px white with an underline on hover and the dark-surface focus ring. The policy labels are fixed English text, because a theme cannot add Help Center translation keys, so the block is marked `lang="en"` and reads as English on every locale.
 
 ### Messages
 

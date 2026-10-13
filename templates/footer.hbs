@@ -40,11 +40,13 @@
       {{/if}}
     </div>
 
-    {{!-- NEXUS auxiliary navigation: the same nine policy links the public
-         arpa-h.gov footer carries, centered, then the copyright line. The
-         labels are fixed English text because the Help Center translation
-         keys cannot be extended from a theme, so the block is marked lang="en"
-         for assistive technology on every locale (WCAG 3.1.2). --}}
+    {{!-- NEXUS auxiliary navigation: the policy links the public arpa-h.gov
+         footer carries, centered, then the copyright line. That footer's ninth
+         link, "Download Adobe Plugin", is left out on purpose: a Help Center
+         has no use for a PDF reader download (owner decision). The labels are
+         fixed English text because the Help Center translation keys cannot be
+         extended from a theme, so the block is marked lang="en" for assistive
+         technology on every locale (WCAG 3.1.2). --}}
     <div class="footer-bottom" lang="en">
       <nav class="footer-aux-nav" aria-label="Policies and information">
         <ul class="footer-aux-nav-list">
@@ -56,7 +58,6 @@
           <li><a href="https://www.hhs.gov/about/agencies/asa/eeo/no-fear-act/index.html">No FEAR Act</a></li>
           <li><a href="https://oig.hhs.gov/">Inspector General</a></li>
           <li><a href="https://arpa-h.gov/logo">Logo Guidance</a></li>
-          <li><a href="https://get.adobe.com/reader/">Download Adobe Plugin</a></li>
         </ul>
       </nav>
       <p class="footer-copyright">&copy; <span data-footer-year>2026</span> ARPA-H All Rights Reserved.</p>
