@@ -81,6 +81,7 @@ export async function renderServiceCatalogPage(
     fetchCategoryTree({ publishedOnly: !isPreviewMode() }),
   ]);
 
+  // The fallback is a div, not a main, for the reason given in ServiceCatalogPage.
   root.render(
     <ThemeProviders theme={theme}>
       <ErrorBoundary

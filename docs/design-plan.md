@@ -541,7 +541,21 @@ Adapt decisions made during Phase 7 (each is easy to reverse):
   in the document, so the attribute only reorders focus for what follows it and is
   gone. The catalog rendered its own `<main>` inside the platform's, which made
   three landmark findings on the home and services pages; it is a `div` now (no
-  CSS or test depended on the tag). The OS-tile category page had no
+  CSS or test depended on the tag). Help Center supplies the outer one: no template
+  in this theme or in [upstream Copenhagen](https://github.com/zendesk/copenhagen_theme/tree/master/templates)
+  emits a `<main>`, yet upstream's [`styles/_base.scss`](https://github.com/zendesk/copenhagen_theme/blob/master/styles/_base.scss)
+  styles `body > main`, and saved pages of two real help centers show
+  `<main role="main">` between the theme's header and footer with the theme's
+  `#main-content` inside it ([one](https://github.com/genieck/genieck.github.io/blob/b4cd91e4a97468d2ba175c48f8fe8609aba0140f/support.digg.com/index.html#L55),
+  [two](https://github.com/anishjana-star/LearnIndia/blob/caa2d4c83a90ce64b54826d7f4a5b42f50d99058/pricing.html#L46)).
+  A Phase 10 review read the repository's templates as the whole page and asked for
+  the `main` back. Measured in the offline render, which wraps pages the same way:
+  as rendered the page has one main and axe is clean; with the catalog's wrapper made
+  a main again it has two, and axe reports `landmark-main-is-top-level`,
+  `landmark-no-duplicate-main` and `landmark-unique`. The wrappers (the page, its
+  loading state and its error fallback) now carry a comment saying so. What cannot be
+  checked offline is the live sandbox itself, where one `main` on the home and
+  services pages is worth confirming. The OS-tile category page had no
   `id="main-content"` for the skip link to land on, so it has one.
 - **Fixed-English blocks say so.** Review noted that the `.gov` banner and the
   footer's policy block are English on every locale, so on a non-English page
@@ -1116,9 +1130,12 @@ is checked for WCAG contrast, and the offline render checks below run at 1440,
 Zendesk previews (`zcli themes:preview`) read from a live instance, so they are
 not used. Instead the theme's real templates are rendered offline with stubbed
 Zendesk helpers and mocked API responses, then screenshotted in headless
-Chrome with every non-local request blocked. Instant search is a Zendesk web
-component and is not emulated; it still needs a look in the sandbox after the
-pull request is merged.
+Chrome with every non-local request blocked. Pages are wrapped in
+`<main role="main">` between the header and the footer, as Help Center does (see
+the landmark decision under Phase 7). Instant search is a Zendesk web component
+and is not emulated; it still needs a look in the sandbox after the pull request
+is merged, and so does that wrapper: the home and services pages should have
+exactly one `main` landmark.
 
 ## Results by phase
 
