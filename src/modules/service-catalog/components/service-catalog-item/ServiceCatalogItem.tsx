@@ -350,13 +350,17 @@ export function ServiceCatalogItem({
     // so we must merge via a functional update rather than replacing it with
     // a mapped copy of `requestFields` (the visible subset) — otherwise any
     // field currently hidden by an end-user condition would be dropped.
-    setRequestFields((prevFields) =>
-      prevFields.map((field) => {
-        const errorField = invalidFieldErrors.find(
-          (errorField) => errorField.field_id === field.id
-        );
-        return { ...field, error: errorField?.description || null };
-      })
+    // Committed at once (flushSync) so the errors are on screen when the
+    // caller hands focus to the first of them.
+    flushSync(() =>
+      setRequestFields((prevFields) =>
+        prevFields.map((field) => {
+          const errorField = invalidFieldErrors.find(
+            (errorField) => errorField.field_id === field.id
+          );
+          return { ...field, error: errorField?.description || null };
+        })
+      )
     );
   }
 
@@ -473,6 +477,14 @@ export function ServiceCatalogItem({
       }
 
       await handleSubmitError(response);
+      if (response?.status === 422) {
+        // The server's field errors are on screen now (handleValidationErrors
+        // commits them), so hand focus to the first, as for the client-side
+        // check above. Without it focus is left on the body: the Submit
+        // button was disabled for the attempt.
+        flushSync(() => setIsSubmitting(false));
+        focusFirstInvalidField(form);
+      }
     } catch {
       // caught by handleSubmitError in most cases, this handles unexpected errors
     }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-13T18:17:00.000Z",
+  "generatedAt": "2026-10-13T18:37:00.000Z",
   "title": "Design System: ARPA-H Service Desk",
   "extensions": {
     "colorMeta": {
@@ -121,7 +121,7 @@
       "name": "Footer",
       "kind": "nav",
       "refersTo": "footer",
-      "description": "The NEXUS portal footer: the reverse logo and a row of site links, a hairline, centered policy links and a muted copyright line on the same indigo as the navigation bar.",
+      "description": "The NEXUS portal footer: the reverse logo and, for signed-in visitors, a row of site links, a hairline, centered policy links and a muted copyright line on the same indigo as the navigation bar.",
       "html": "<footer class=\"ds-footer\"><div class=\"ds-footer-top\"><span class=\"ds-footer-logo\">ARPA-H</span><nav class=\"ds-footer-nav\"><a href=\"#\">Service catalog</a><a href=\"#\">Submit a request</a><a href=\"#\">My requests</a></nav></div><div class=\"ds-footer-bottom\"><nav class=\"ds-footer-aux\"><a href=\"#\">Accessibility</a><a href=\"#\">Privacy Policy</a><a href=\"#\">No FEAR Act</a></nav><p class=\"ds-footer-copy\">&copy; 2026 ARPA-H All Rights Reserved.</p></div></footer>",
       "css": ".ds-footer { padding: 64px 32px 40px; background: #000334; color: #ffffff; font: 400 14px 'Public Sans', sans-serif; } .ds-footer a { display: inline-block; padding: 4px 0; border-radius: 4px; color: #ffffff; text-decoration: none; } .ds-footer a:hover { text-decoration: underline; } .ds-footer a:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 2px #000334, 0 0 0 4px #52daf2; } .ds-footer-top { display: flex; align-items: center; gap: 24px 40px; } .ds-footer-logo { font: 700 24px 'Poppins', sans-serif; letter-spacing: 4px; } .ds-footer-nav { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-inline-start: auto; } .ds-footer-bottom { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.2); } .ds-footer-aux { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; } .ds-footer-copy { margin: 0; opacity: 0.6; text-align: center; }"
     },

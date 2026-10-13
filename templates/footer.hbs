@@ -5,19 +5,24 @@
         <img src="{{asset 'arpa-h-logo-reverse.svg'}}" alt="{{t 'home_page' name=help_center.name}}" width="180" height="50" />
       {{/link}}
 
-      {{!-- The name is fixed English, and the links below it are translated, so the
-           language mark goes on the name alone: a hidden element that
-           aria-labelledby can still read. --}}
-      <nav class="footer-nav" aria-labelledby="footer-nav-name">
-        <span id="footer-nav-name" lang="en" hidden>Footer</span>
-        <ul class="footer-nav-list">
-          <li>{{link 'service_catalog'}}</li>
-          <li>{{link 'new_request'}}</li>
-          {{#if signed_in}}
+      {{!-- Site links are for signed-in visitors only: anonymous visitors cannot
+           submit requests (owner decision) and the services page asks them to
+           sign in. The whole navigation sits inside the condition, so a
+           signed-out footer has no empty landmark. The link helper still
+           decides whether each link shows (it returns nothing when the service
+           catalog is not available). The name is fixed English, and the links
+           below it are translated, so the language mark goes on the name
+           alone: a hidden element that aria-labelledby can still read. --}}
+      {{#if signed_in}}
+        <nav class="footer-nav" aria-labelledby="footer-nav-name">
+          <span id="footer-nav-name" lang="en" hidden>Footer</span>
+          <ul class="footer-nav-list">
+            <li>{{link 'service_catalog'}}</li>
+            <li>{{link 'new_request'}}</li>
             <li>{{link 'requests'}}</li>
-          {{/if}}
-        </ul>
-      </nav>
+          </ul>
+        </nav>
+      {{/if}}
 
       {{#if alternative_locales}}
         <div class="footer-language-selector">

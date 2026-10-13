@@ -45,6 +45,14 @@
     }
   }
 
+  // A signed-out footer has no site links, so the language menu follows the
+  // logo directly and pushes itself to the end of the row.
+  &-logo + &-language-selector {
+    @include tablet {
+      margin-inline-start: auto;
+    }
+  }
+
   &-logo {
     display: inline-flex;
     border-radius: var(--radius-sm);

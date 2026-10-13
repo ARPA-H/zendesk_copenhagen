@@ -2452,6 +2452,11 @@ html:not(.js) .usa-banner__button {
     margin-inline-start: auto;
   }
 }
+@media (min-width: 768px) {
+  .footer-logo + .footer-language-selector {
+    margin-inline-start: auto;
+  }
+}
 .footer-logo {
   display: inline-flex;
   border-radius: var(--radius-sm);

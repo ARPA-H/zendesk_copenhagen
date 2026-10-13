@@ -727,6 +727,75 @@ describe("ServiceCatalogItem", () => {
       ]);
     });
 
+    it("hands focus to the first field the server's errors show, once they are set, and frees the submit button", async () => {
+      const setRequestFields = jest.fn();
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: mockRequestFields,
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields,
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      mockSubmitServiceItemRequest.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "RecordInvalid",
+            description: "Record validation errors",
+            details: {
+              base: [
+                {
+                  description: "Product name: cannot be blank",
+                  error: "cannot be blank",
+                  field_id: 1,
+                },
+              ],
+            },
+          }),
+      } as unknown as Response);
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() =>
+        expect(mockFocusFirstInvalidField).toHaveBeenCalledWith(form)
+      );
+
+      // The field errors have to be set before focus is asked for, or the
+      // field it would land on is not marked yet.
+      const lastErrorUpdate = Math.max(
+        ...setRequestFields.mock.invocationCallOrder
+      );
+      expect(lastErrorUpdate).toBeLessThan(
+        mockFocusFirstInvalidField.mock.invocationCallOrder[0]
+      );
+      expect(screen.getByTestId("submit-button")).not.toBeDisabled();
+    });
+
+    it("does not ask for a focus handoff when the failure is not a validation error", async () => {
+      mockSubmitServiceItemRequest.mockResolvedValue({
+        ok: false,
+        status: 500,
+      } as unknown as Response);
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      fireEvent.submit(screen.getByTestId("item-request-form"));
+
+      await waitFor(() => expect(mockNotify).toHaveBeenCalled());
+      expect(mockFocusFirstInvalidField).not.toHaveBeenCalled();
+    });
+
     const renderLastNotifyMessage = () => {
       const lastCall =
         mockNotify.mock.calls[mockNotify.mock.calls.length - 1]?.[0];
