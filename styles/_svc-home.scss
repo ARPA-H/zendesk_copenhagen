@@ -511,7 +511,9 @@ a.svc-help-btn:hover,
   .svc-help-banner-text { align-items: center; }
   .svc-help-banner a.svc-help-btn { width: 100%; padding: 13px 22px; }
 
-  .svc-tooltip { display: none !important; }
+  // No tooltip rule here: a window's width does not say whether the device can
+  // hover (a narrowed desktop window can), so `(hover: none)` above decides, for
+  // the tooltip and the inline description alike, and a mouse still gets one of the two.
 
   // Match the real sidebar/grid stacking below (styles/_service_catalog.scss)
   // so the loading skeleton doesn't flash a halved-width grid before swapping in.

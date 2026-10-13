@@ -7515,9 +7515,6 @@ a.svc-help-btn:hover,
     width: 100%;
     padding: 13px 22px;
   }
-  .svc-tooltip {
-    display: none !important;
-  }
   .svc-cat-skeleton {
     grid-template-columns: 1fr;
     gap: 16px;
