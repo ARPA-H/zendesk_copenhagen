@@ -146,7 +146,7 @@ components:
 
 # Design System: ARPA-H Service Desk
 
-Status: Phase 2 of the [design plan](docs/design-plan.md). The color, type, shape, elevation and component sections describe what is built, in the stylesheets and in the React modules. Sections marked *planned* land in later phases and are updated then; layout is still Copenhagen's. Remaining gaps are listed in the [audit](docs/design-audit-2026-10-12.md).
+Status: the last phase of the [design plan](docs/design-plan.md). Every section describes what is built, in the stylesheets, the templates and the React modules. The baseline scores are in the [critique](docs/design-critique-2026-10-12.md) and [audit](docs/design-audit-2026-10-12.md); the final ones, with what is left for the owner, are in the [final critique](docs/design-critique-final-2026-10-13.md) and [final audit](docs/design-audit-final-2026-10-13.md).
 
 ## Overview
 

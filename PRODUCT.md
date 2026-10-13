@@ -200,7 +200,9 @@ request; Ask AI.
 - A scored baseline critique ([`docs/design-critique-2026-10-12.md`](docs/design-critique-2026-10-12.md))
   and audit ([`docs/design-audit-2026-10-12.md`](docs/design-audit-2026-10-12.md)),
   both built on offline renders of the real templates (Zendesk helpers stubbed,
-  API mocked); later phases add their own.
+  API mocked), and the same two again at the end of the work
+  ([`docs/design-critique-final-2026-10-13.md`](docs/design-critique-final-2026-10-13.md),
+  [`docs/design-audit-final-2026-10-13.md`](docs/design-audit-final-2026-10-13.md)).
 - Absent, and not to be fabricated: usage analytics, user research,
   testimonials, support volumes, and visual-regression goldens.
 

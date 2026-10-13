@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-12T18:30:00.000Z",
+  "generatedAt": "2026-10-13T09:47:00.000Z",
   "title": "Design System: ARPA-H Service Desk",
   "extensions": {
     "colorMeta": {
@@ -55,7 +55,12 @@
       { "name": "focus-on-dark", "value": "0 0 0 2px #000334, 0 0 0 4px #52daf2", "purpose": "Keyboard focus inside the navigation bar, footer and hero." }
     ],
     "motion": [
-      { "name": "ease-state", "value": "0.12s ease-in-out", "purpose": "Button and border state changes." }
+      { "name": "motion-fast", "value": "150ms", "purpose": "Color, border and opacity changes under a pointer or a press." },
+      { "name": "motion-base", "value": "200ms", "purpose": "A routine state change: selected, revealed, lifted." },
+      { "name": "motion-slow", "value": "340ms", "purpose": "A change big enough to move something." },
+      { "name": "motion-arrive", "value": "450ms", "purpose": "A deliberate arrival, such as the home greeting." },
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Deceleration for things that open or arrive." },
+      { "name": "reduced-motion", "value": "0.01ms", "purpose": "The four durations under prefers-reduced-motion: instant, but not zero, so transitionend still fires." }
     ],
     "breakpoints": [
       { "name": "tablet", "value": "768px" },
@@ -70,7 +75,7 @@
       "refersTo": "button-primary",
       "description": "The action color: cyan pill with indigo text. Ask AI and Submit use it.",
       "html": "<button class=\"ds-btn-primary\">Submit a request</button>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 20px; border: 0; border-radius: 1000px; background: var(--color-brand-secondary, #52daf2); color: var(--color-brand-primary, #000334); font: 500 14px/1.35 'Public Sans', sans-serif; cursor: pointer; } .ds-btn-primary:hover { background-image: linear-gradient(rgba(0, 3, 52, 0.1), rgba(0, 3, 52, 0.1)); } .ds-btn-primary:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 20px; border: 0; border-radius: 1000px; background: var(--color-brand-secondary, #52daf2); color: var(--color-brand-primary, #000334); font: 500 14px/1.35 'Public Sans', sans-serif; cursor: pointer; transition: background-color var(--motion-fast, 150ms) ease-in-out; } .ds-btn-primary:hover { background-image: linear-gradient(rgba(0, 3, 52, 0.1), rgba(0, 3, 52, 0.1)); } .ds-btn-primary:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
     },
     {
       "name": "Outline Button",
@@ -78,7 +83,7 @@
       "refersTo": "button-outline",
       "description": "The default Guide button: transparent with a 2px indigo border. General request and Follow use it.",
       "html": "<button class=\"ds-btn-outline\">General request</button>",
-      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 20px; border: 2px solid var(--color-brand-primary, #000334); border-radius: 1000px; background: transparent; color: var(--color-brand-primary, #000334); font: 500 14px/1.35 'Public Sans', sans-serif; cursor: pointer; } .ds-btn-outline:hover { background-image: linear-gradient(rgba(0, 3, 52, 0.05), rgba(0, 3, 52, 0.05)); } .ds-btn-outline:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; min-height: 40px; padding: 8px 20px; border: 2px solid var(--color-brand-primary, #000334); border-radius: 1000px; background: transparent; color: var(--color-brand-primary, #000334); font: 500 14px/1.35 'Public Sans', sans-serif; cursor: pointer; transition: background-color var(--motion-fast, 150ms) ease-in-out; } .ds-btn-outline:hover { background-image: linear-gradient(rgba(0, 3, 52, 0.05), rgba(0, 3, 52, 0.05)); } .ds-btn-outline:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
     },
     {
       "name": "Search Pill",
@@ -108,9 +113,17 @@
       "name": "Service Card",
       "kind": "card",
       "refersTo": "catalog-card",
-      "description": "A catalog tile: white, 2px light stroke, 16px radius; hover raises it and takes a link-blue border.",
+      "description": "A catalog tile: white, 2px light stroke, 16px radius; hover raises it and takes a link-blue border, the two easing together over 200ms. It does not lift.",
       "html": "<a class=\"ds-card\" href=\"#\"><span class=\"ds-card-icon\"></span><span>Laptop and monitor</span></a>",
-      "css": ".ds-card { display: flex; flex-direction: column; gap: 12px; width: 220px; padding: 20px; border: 2px solid #e5eaf0; border-radius: 16px; background: #ffffff; color: #000334; font: 400 16px 'Public Sans', sans-serif; text-decoration: none; } .ds-card-icon { width: 36px; height: 36px; border: 2px solid #4a4d52; border-radius: 8px; } .ds-card:hover { border-color: #0957be; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }"
+      "css": ".ds-card { display: flex; flex-direction: column; gap: 12px; width: 220px; padding: 20px; border: 2px solid #e5eaf0; border-radius: 16px; background: #ffffff; color: #000334; font: 400 16px 'Public Sans', sans-serif; text-decoration: none; transition: border-color var(--motion-base, 200ms) ease, box-shadow var(--motion-base, 200ms) ease; } .ds-card-icon { width: 36px; height: 36px; border: 2px solid #4a4d52; border-radius: 8px; } .ds-card:hover { border-color: #0957be; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); } .ds-card:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 1px #0957be, 0 0 3px 1px #0957be; }"
+    },
+    {
+      "name": "Footer",
+      "kind": "nav",
+      "refersTo": "footer",
+      "description": "The NEXUS portal footer: the reverse logo and a row of site links, a hairline, centered policy links and a muted copyright line on the same indigo as the navigation bar.",
+      "html": "<footer class=\"ds-footer\"><div class=\"ds-footer-top\"><span class=\"ds-footer-logo\">ARPA-H</span><nav class=\"ds-footer-nav\"><a href=\"#\">Service catalog</a><a href=\"#\">Submit a request</a><a href=\"#\">My requests</a></nav></div><div class=\"ds-footer-bottom\"><nav class=\"ds-footer-aux\"><a href=\"#\">Accessibility</a><a href=\"#\">Privacy Policy</a><a href=\"#\">No FEAR Act</a></nav><p class=\"ds-footer-copy\">&copy; 2026 ARPA-H All Rights Reserved.</p></div></footer>",
+      "css": ".ds-footer { padding: 64px 32px 40px; background: #000334; color: #ffffff; font: 400 14px 'Public Sans', sans-serif; } .ds-footer a { display: inline-block; padding: 4px 0; border-radius: 4px; color: #ffffff; text-decoration: none; } .ds-footer a:hover { text-decoration: underline; } .ds-footer a:focus-visible { outline: 2px solid transparent; box-shadow: 0 0 0 2px #000334, 0 0 0 4px #52daf2; } .ds-footer-top { display: flex; align-items: center; gap: 24px 40px; } .ds-footer-logo { font: 700 24px 'Poppins', sans-serif; letter-spacing: 4px; } .ds-footer-nav { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-inline-start: auto; } .ds-footer-bottom { display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 40px; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.2); } .ds-footer-aux { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; } .ds-footer-copy { margin: 0; opacity: 0.6; text-align: center; }"
     },
     {
       "name": "Error Notification",
@@ -123,35 +136,45 @@
   ],
   "narrative": {
     "northStar": "The Lit Service Counter",
-    "overview": "One atmospheric moment, a dark indigo sky with arc artwork and a Poppins greeting, then bright, orderly surfaces where the work happens and exactly one lit button. Atmosphere is spent in the hero; everywhere else the interface is quiet, exact and fast to read.",
+    "overview": "A person arrives mid-task, often stressed, needing a device or an access fixed. The portal answers with one atmospheric moment, a dark indigo sky with arc artwork and a Poppins greeting, and then gets out of the way: bright, orderly surfaces where the work happens, and exactly one lit button. Atmosphere is spent in the hero; everywhere else the interface is quiet, exact and fast to read.\n\nThe system is NEXUS-aligned, not NEXUS-conformant: it adopts the tokens and component conventions of the [arpa-h-web-design skill](.github/skills/arpa-h-web-design/SKILL.md) through the theme's own SCSS, without USWDS core (see the plan's assumption 6). It inherits Zendesk Guide's markup and cannot restyle Zendesk's instant-search web component.",
     "keyCharacteristics": [
-      "One dark band (navigation bar into hero) above bright working surfaces.",
+      "One dark band (the navigation bar flowing into the hero) above bright working surfaces.",
       "Cyan is the action color; the one exception is the hero search button, which is hot pink. Yellow, green and red appear only in messages.",
       "Pill-shaped actions, 16px surfaces, hairline strokes, shallow elevation.",
-      "Public Sans for reading, Poppins for the few big moments."
+      "Public Sans for reading, Poppins for the few big moments.",
+      "Motion reports a change of state, in four durations (`--motion-*`), and a visitor who asks for less gets none."
     ],
     "rules": [
-      { "name": "The Cyan Is Action Rule", "body": "Cyan appears only on things that can be pressed. A static element that borrows it reads as interactive.", "section": "colors" },
-      { "name": "The Feedback Only Rule", "body": "Yellow, green and red mark warning, success and error messages; no badge, card or accent on the in-scope pages uses them.", "section": "colors" },
-      { "name": "The No Raw Color Rule", "body": "Components read alias tokens from styles/_tokens.scss, never a hex or rgb value, a named color or a palette step; URL-encoded SVG data URIs carry noted copies of token colors.", "section": "colors" },
-      { "name": "The One Source Rule", "body": "Tokens own every color and the logo; the color and logo settings are removed from the manifest, and the React palette mirrors the tokens under a drift test.", "section": "colors" },
-      { "name": "The Visible Focus Rule", "body": "Every interactive element shows a ring; the dark-surface ring is cyan with an indigo gap.", "section": "elevation" }
+      { "name": "The Cyan Is Action Rule", "body": "Cyan appears only on things that can be pressed. A static element that borrows it reads as interactive. ([ARPA-H/zendesk_onboarding_offboarding#41](https://github.com/ARPA-H/zendesk_onboarding_offboarding/pull/41) reached the same rule after review.)", "section": "colors" },
+      { "name": "The Feedback Only Rule", "body": "Yellow, green and red mark warning, success and error messages. No badge, card or accent on the in-scope pages uses them; request status tags use pink, blue and grey, and the approvals module keeps its red new-comment divider until it is designed.", "section": "colors" },
+      { "name": "The No Raw Color Rule", "body": "Components read alias tokens from `styles/_tokens.scss`, never a hex or rgb value, never a named color such as `yellow`, and never a palette step such as `--color-blue-700`; when a component needs a step it gets a role alias first (`--surface-selected`, `--status-open`). The gate in the plan checks all three. URL-encoded SVG data URIs cannot use `var()`; their colors are copies of tokens and are noted where they occur.", "section": "colors" },
+      { "name": "The One Source Rule", "body": "Tokens own every color and the logo, apart from the stock `.gov` banner, which keeps USWDS's own colors. The brand, text, link and background color settings and the Logo setting are removed from `manifest.json`, so Admin Center no longer offers controls that would do nothing, and a value saved under an older design cannot override the palette or put a full-color logo on the indigo bar; the alert banner keeps its own color settings because an announcement is chosen per use. The React modules cannot read CSS custom properties inside Garden color scales, so `src/modules/shared/garden-theme/nexusPalette.ts` mirrors the primitives it uses and a unit test fails when the two files drift.", "section": "colors" },
+      { "name": "The Visible Focus Rule", "body": "Every interactive element shows a ring. The ring is a box-shadow plus a transparent 2px outline, so forced-colors mode repaints it. The skip link slides over the dark header, so it takes the dark-surface ring and keeps its white text; the global link focus color would otherwise turn it dark blue on black (2.2:1, first seen in the Phase 7 audit).", "section": "elevation" },
+      { "name": "The Touch Rule", "body": "Every target is at least 24 by 24 pixels or spaced so a 24 pixel circle around it meets no other target ([WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)); a target nested inside another does not qualify for the spacing exception, so the catalog's category toggle has a 24 pixel hit area around its 12 pixel chevron (and sits beside the row's select button, never inside it, because a button must not contain another control). Where the pointer is coarse (`pointer: coarse`), the links people tap through lists (article lists, related and recently viewed articles) take 12.5 pixels of vertical padding, which grows the tap area to 44 pixels but not the line. Measured where a tap lands, article lists get all 44; the related and recently viewed lists keep 40 for every link but the last, because their links sit 40 pixels apart and each area gives its last 4 pixels to the link below. Search-result titles do not: a taller area would bring the breadcrumb links above them inside the 24 pixel circles.", "section": "elevation" },
+      { "name": "The Forced Colors Rule", "body": "Meaning never rests on a fill alone. In forced-colors mode the palette replaces authored colors, so a pill button keeps a border (the shared primary buttons, the form submit and the split button included; a transparent border is itself forced to a system color, because [CSS Color Adjust](https://www.w3.org/TR/css-color-adjust-1/#forced-colors-properties) forces every color that is not already a system color, which is why the primary variant of the outline button keeps its edge), a selected row an outline (in the catalog and in the search filters; a focused row shows the focus outline instead, never the selected ring, or focus would be invisible on the selected item), a selected vote or follow button and a voted comment arrow a ring inside their edge (a focused one shows the focus outline outside it instead), each white wordmark (header and footer) its own dark tile, and the mobile menu button a surface of its own, because the transparent header sits over dark artwork and a bare icon would turn dark on dark (`styles/_forced-colors.scss`). Check both palettes: the dark one hides the wordmark problem, the light one shows it. Selected state is also exposed in markup (`aria-current`), not just painted.", "section": "elevation" },
+      { "name": "The Print Rule", "body": "A printed page is its content: no site chrome or screen-only controls (the banner, header, footer, skip link, rails, votes, comments, and on the catalog the category list, search field and sort menu), dark text on white at the width of the paper, the address of each outside link after its text, and no page break inside a figure, table, code block or quote (`styles/_print.scss`). A request form is the exception that proves the rule: its fields are its content, so it prints as a paper form, labels and boxes without the Submit button. Browsers drop background colors when printing: the default, [`print-color-adjust: economy`](https://developer.mozilla.org/en-US/docs/Web/CSS/print-color-adjust), lets them \"leave out all background images and adjust text colors\". So anything white on a dark fill is left out or recolored rather than trusted to survive; in Chrome's print output the hero's white text came out light gray on white.", "section": "elevation" },
+      { "name": "The Load Rule", "body": "A page loads only what it can use. A page with no React module of its own (every Knowledge page and the signed-out home page) requests no script bundle at all beyond `script.js`: the notifications host in `document_head.hbs` loads only when a flash notification is waiting in `sessionStorage` (a non-empty array; any other value is dropped, since the host would leave it there and reload on every page) or the page has an inline module script, and a page with a module preloads `shared-bundle.js` ahead of it so the download starts while the page is parsed. A new template with a module gets the same preload link. The hero artwork stays a lossless PNG under 1 MB (`settings/homepage_background_image.png`, pixel-identical to the original), since on a phone the home page is bound by that one download. The catalog skeleton is pinned to the stage's minimum height (`--svc-stage-floor`), so rendering the cards never carries it down the page. Measured on a phone profile (Slow 4G, 4x CPU slowdown): Knowledge pages 86 to 134 KB, home 7.1 s to the hero, layout shift 0.027 on the home pages and 0 on Knowledge pages, every interaction under 60 ms (`docs/design-plan.md`, Phase 8).", "section": "elevation" },
+      { "name": "The Motion Rule", "body": "Motion reports a change of state and never decorates. Every transition length is a token: `--motion-fast` (150ms: color, border and opacity under a pointer), `--motion-base` (200ms: a routine state change), `--motion-slow` (340ms: a change big enough to move something) and `--motion-arrive` (450ms: the greeting), with `--ease-out` for things that open. Under `prefers-reduced-motion` the four fall to 0.01ms (not zero, which would stop `transitionend` from firing), so nothing written with them needs its own media query. Authored animations (the skeleton shimmer, the training button's pulse, the validation shake) are switched off under reduced motion, and the one arrival cue, the wash on an article heading reached by a link, holds the selection tint for 720ms and fades by 1.8s, then stays as a plain tinted highlight under reduced motion and becomes a 2px `Highlight` outline in forced colors. Color, border, shadow and opacity fades are not \"motion animation\" ([WCAG 2.3.3](https://www.w3.org/WAI/WCAG22/Understanding/animation-from-interactions.html)); anything that moves, turns or resizes has to stop under the preference, Garden's chevron included.", "section": "elevation" }
     ],
     "dos": [
       "Do use cyan with indigo text for the single primary action on a page.",
-      "Do keep text on the 4.5:1 neutrals (#6f747a or darker) and give every control a visible focus ring.",
-  "Do keep read text at 14px or larger and prose at about 70 characters per line.",
-      "Do put new colors in _tokens.scss as aliases first.",
+      "Do keep text on the 4.5:1 neutrals (`#6f747a` or darker) and give every control a visible focus ring.",
+      "Do keep read text at 14px or larger and prose at about 70 characters per line.",
+      "Do put new colors in `_tokens.scss` as aliases first.",
+      "Do write every transition length with a `--motion-*` token, so reduced motion reaches it.",
       "Do keep the hero and the navigation bar one continuous dark band."
     ],
     "donts": [
       "Don't use cyan for anything that cannot be pressed, and don't put white text on it.",
       "Don't use yellow, green or red outside a message.",
-      "Don't nest a card inside a card.",
+      "Don't nest a card inside a card. The catalog's large panel is the one container for the grid and is not itself a card.",
       "Don't add a colored border on one side of a card, list item or alert wider than 1px.",
-      "Don't use outline: none without a replacement ring.",
-      "Don't hard-code hex, rgba or named color values (such as yellow) in the stylesheets.",
-  "Don't write a font size outside the scale: new text takes a --font-size-* token."
+      "Don't use `outline: none` without a replacement ring.",
+      "Don't hard-code hex, rgba or named color values (such as `yellow`) in the stylesheets. The one exception is the generated stock USWDS banner (`styles/_usa-banner-generated.scss`).",
+      "Don't restyle the `.gov` banner: no color, type, spacing, container or focus changes. NEXUS styling stops at its edge.",
+      "Don't write a font size outside the scale: new text takes a `--font-size-*` token.",
+      "Don't hard-code a transition length, and don't animate `transform` or a layout property without a way for `prefers-reduced-motion` to stop it.",
+      "Don't add USWDS reset, grid or utility CSS: the banner is the only USWDS component, compiled in isolation, because the full library changes 17% of rendered elements (it grows the Garden catalog search field from 47 to 54px, which shifts everything below it)."
     ]
   }
 }
