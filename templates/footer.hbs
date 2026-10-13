@@ -5,7 +5,11 @@
         <img src="{{asset 'arpa-h-logo-reverse.svg'}}" alt="{{t 'home_page' name=help_center.name}}" width="180" height="50" />
       {{/link}}
 
-      <nav class="footer-nav" aria-label="Footer">
+      {{!-- The name is fixed English, and the links below it are translated, so the
+           language mark goes on the name alone: a hidden element that
+           aria-labelledby can still read. --}}
+      <nav class="footer-nav" aria-labelledby="footer-nav-name">
+        <span id="footer-nav-name" lang="en" hidden>Footer</span>
         <ul class="footer-nav-list">
           <li>{{link 'service_catalog'}}</li>
           <li>{{link 'new_request'}}</li>
@@ -39,8 +43,9 @@
     {{!-- NEXUS auxiliary navigation: the same nine policy links the public
          arpa-h.gov footer carries, centered, then the copyright line. The
          labels are fixed English text because the Help Center translation
-         keys cannot be extended from a theme. --}}
-    <div class="footer-bottom">
+         keys cannot be extended from a theme, so the block is marked lang="en"
+         for assistive technology on every locale (WCAG 3.1.2). --}}
+    <div class="footer-bottom" lang="en">
       <nav class="footer-aux-nav" aria-label="Policies and information">
         <ul class="footer-aux-nav-list">
           <li><a href="https://www.hhs.gov/web/section-508/index.html">Accessibility</a></li>

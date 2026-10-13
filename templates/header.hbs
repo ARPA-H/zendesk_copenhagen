@@ -16,9 +16,11 @@
   does. src/govBanner.js toggles it. Without script, or if script.js
   never starts the controller (see document_head.hbs), the panel stays visible
   (see styles/_usa-banner.scss). The copy is the official English
-  text, which is not a Help Center string, so it is not translated here.
+  text, which is not a Help Center string, so it is not translated here; lang="en"
+  on the section, the element that carries the aria-label, keeps assistive
+  technology reading it as English on every locale (WCAG 3.1.2).
 --}}
-<section class="usa-banner" aria-label="Official website of the United States government">
+<section class="usa-banner" lang="en" aria-label="Official website of the United States government">
   <div class="usa-accordion">
     <header class="usa-banner__header">
       <div class="usa-banner__inner">
