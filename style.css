@@ -2339,6 +2339,19 @@ html:not(.js) .usa-banner__button {
   display: none;
 }
 
+#user #user-name {
+  display: none;
+  font-size: 14px;
+}
+@media (min-width: 768px) {
+  #user #user-name {
+    display: inline-block;
+  }
+}
+#user #user-name:hover {
+  text-decoration: underline;
+}
+
 /***** User avatar *****/
 .user-avatar {
   height: 25px;
@@ -2936,6 +2949,110 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 .activity {
   border-top: 1px solid var(--surface-stroke);
   padding: 30px 0;
+}
+
+/***** Recent activity *****/
+.recent-activity-header {
+  margin-bottom: 10px;
+  text-align: center;
+}
+.recent-activity-list {
+  padding: 0;
+}
+.recent-activity-item {
+  border-bottom: 1px solid var(--surface-stroke);
+  overflow: auto;
+  padding: 20px 0;
+}
+.recent-activity-item h3 {
+  margin: 0;
+}
+.recent-activity-item-parent {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+.recent-activity-item-parent, .recent-activity-item-link {
+  margin: 6px 0;
+  display: inline-block;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .recent-activity-item-parent, .recent-activity-item-link {
+    width: 70%;
+    margin: 0;
+  }
+}
+.recent-activity-item-link {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.recent-activity-item-meta {
+  color: var(--type-body);
+  margin: 15px 0 0 0;
+  float: none;
+}
+@media (min-width: 768px) {
+  .recent-activity-item-meta {
+    margin: 0;
+    float: right;
+  }
+  [dir=rtl] .recent-activity-item-meta {
+    float: left;
+  }
+}
+.recent-activity-item-time, .recent-activity-item-comment {
+  display: inline-block;
+  font-size: var(--font-size-2xs);
+}
+.recent-activity-item-comment {
+  padding-left: 5px;
+}
+[dir=rtl] .recent-activity-item-comment {
+  padding: 0 5px 0 0;
+}
+.recent-activity-item-comment::before {
+  display: inline-block;
+}
+.recent-activity-controls {
+  padding-top: 15px;
+}
+.recent-activity-controls a {
+  color: var(--color-link);
+  text-decoration: underline;
+}
+.recent-activity-controls a:visited {
+  color: var(--color-link-visited);
+}
+.recent-activity-controls a:hover, .recent-activity-controls a:active, .recent-activity-controls a:focus {
+  color: var(--color-link-hover);
+}
+.recent-activity-accessibility-label {
+  border: 0;
+  clip: rect(0 0 0 0);
+  -webkit-clip-path: inset(50%);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  white-space: nowrap;
+}
+.recent-activity-comment-icon svg {
+  vertical-align: middle;
+  color: var(--color-brand-primary);
+  width: 16px;
+  height: 16px;
+}
+.recent-activity-comment-icon:after {
+  content: attr(data-comment-count);
+  margin-left: 3px;
+}
+[dir=rtl] .recent-activity-comment-icon:after {
+  margin-left: 0;
+  margin-right: 3px;
 }
 
 /***** Category pages *****/

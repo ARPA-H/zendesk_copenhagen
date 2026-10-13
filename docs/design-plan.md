@@ -296,17 +296,18 @@ Distill decisions made during Phase 5 (each is easy to reverse):
   (eight tests). A first search for the helper's callers was case-sensitive and
   missed `svcSafeHref`, which would have turned every suggested-article link into
   `#`; reading the template before deleting caught it.
-- **A rule counted as dead only when three checks agreed.** None of its class
+- **A rule counted as dead only when four checks agreed.** None of its class
   tokens appears in a template, a script or the React sources (exact tokens, so
   `community-hero` does not count as `community`); its selector matched no element
   on any offline page, including a "kitchen sink" service with every field type,
-  open dropdowns and focus states; and Chrome's CSS coverage across those pages
-  showed it never applied. What went:
-  - the whole `_recent-activity.scss` partial;
+  open dropdowns and focus states; Chrome's CSS coverage across those pages
+  showed it never applied; and the markup it styled was written by a theme rather
+  than emitted by Zendesk: the class sat in a template of [upstream's Copenhagen
+  theme](https://github.com/zendesk/copenhagen_theme) or of this fork's history
+  and was dropped from it. What went:
   - the `.blocks-item-img` hover scale, `.home-section h2`, the `.community` block
     with its image, `.centered-buttons` and `.hero-inner .submit-a-request`;
-  - `.see-all-sections-trigger`, `#user #user-name`, `.heading-centered` and
-    `.form-centered`;
+  - `.see-all-sections-trigger`, `.heading-centered` and `.form-centered`;
   - `.svc-hero-input` (the hero search is Zendesk's native one);
   - the catalog's duplicate card selectors (`[class*="card"]`, `[class*="Card"]`,
     and the heading and paragraph rules inside cards): a card is a link holding a
@@ -316,18 +317,30 @@ Distill decisions made during Phase 5 (each is easy to reverse):
   - the item form's width overrides for inline styles and for generated class
     names (`imWYAI`, `hkLxcw`, `dIeWIF`, `sc-jEACwC`), which change whenever the
     component library does and so could never be relied on.
-- **A rule that looked dead and was not.** The first pass also removed the two
-  catalog-search focus rules keyed on `[class*="StyledTextFauxInput"]`. The class
-  does exist on the field's wrapper, but the rules apply only while the field has
-  focus (`:focus-within`), so a count of matching elements at rest read zero. The
-  pixel comparison caught it (the focused search drew a gray border inside a blue
-  ring); both rules are restored. The method is amended: a selector that carries
-  a state (`:focus-within`, `:hover`, `:checked`) is judged by its base selector,
-  or measured in that state.
+- **Rules that looked dead and were not.** The first pass removed three live
+  things, found two different ways; all are restored byte for byte.
+  - The two catalog-search focus rules keyed on `[class*="StyledTextFauxInput"]`.
+    The class exists on the field's wrapper, but the rules apply only while the
+    field has focus (`:focus-within`), so a count of matching elements at rest read
+    zero. The pixel comparison caught it (the focused search drew a gray border
+    inside a blue ring). A selector that carries a state (`:focus-within`,
+    `:hover`, `:checked`) is now judged by its base selector, or measured in that
+    state.
+  - The whole `_recent-activity.scss` partial, which a Copilot review caught. Two
+    community templates (`community_topic_list_page.hbs` line 92 and
+    `community_post_list_page.hbs` line 150) render Zendesk's `{{recent_activity}}`
+    helper, and the markup it emits carries the `.recent-activity*` classes, so no
+    template ever names them (upstream's templates do not either, though its styles
+    do). No offline page renders those templates, so neither the pixel comparison
+    nor the element counts could see it; the fourth check above exists because of
+    this.
+  - `#user #user-name`, which also appears in upstream's styles but in none of its
+    templates, so it may style platform markup. Restored without proof either way.
 - **Kept on purpose.** Classes the platform or the content generates and no
   template names: pagination, `nesty-input`, the multiselect, the stock `usa-*`
   banner, CKEditor's `image-style-*` and `ck-*`, status labels, notifications,
-  related and recent articles, avatars and `request-form`; styles gated by a
+  related and recent articles, the `.recent-activity*` markup of the
+  `{{recent_activity}}` helper, avatars and `request-form`; styles gated by a
   setting (the training button); the selectors for Zendesk's editor chrome; and the
   Garden override selectors that still match live markup (floating menus and
   listboxes, avatars and icons in the catalog and the item form; the rule for SVG
@@ -352,7 +365,9 @@ Distill decisions made during Phase 5 (each is easy to reverse):
   timing races that also vary between repeated runs of the same build: the "Read
   more" measurement above, the card tooltip (visible in some runs and not in
   others) and, in one run of five, 283 antialiasing-level pixels in the 3,700 pixel
-  tall list at 390 pixels.
+  tall list at 390 pixels. The community, user profile and request templates are
+  not rendered offline, so pixels cannot vouch for rules that only they use; the
+  provenance check stands in for that.
 
 ## Gates
 
@@ -394,7 +409,7 @@ styles, so the same pages and widths are compared before and after.
 | --- | --- |
 | 1 | Across the home, services, service item, category, article and search pages (12 page views): colors outside the NEXUS palette fell from 456 of 1,264 uses (36.1%) to 0 of 1,262; text pairs below WCAG AA contrast fell from 20 to 0; keyboard-focused controls with no visible ring fell from 10 to 0. Horizontal overflow and small touch targets are unchanged and belong to phases 3 and 7. |
 | 2 | Across the same pages, counting text nodes: distinct font sizes fell from 16 to 8 at 1440 pixels wide (13 to 8 at 768, 16 to 8 at 390); text under 14 pixels fell from 35.1% of nodes to 2.0% (37.3% to 2.1% at 768, 39.5% to 2.6% at 390); an article paragraph went from a 15-pixel, 706-pixel-wide measure of about 102 characters per line to 16 pixels at 70 characters (a 32em cap); body line height is 1.62 and heading line heights are 1.15 and 1.35. Detector findings over `styles` and `templates`, with DESIGN.md loaded, fell from 81 (69 font sizes off the documented ramp, 6 radii, 4 side-stripe borders, 2 layout transitions) to 6 (4 radii and 2 layout transitions, left to phases 3 and 8). |
-| 5 | Generated files: `style.css` fell from 226,208 to 218,330 bytes (3.5%) and `script.js` from 61,166 to 42,664 bytes (30.2%); `!important` in the compiled CSS fell from 207 to 190 and `[class*=` attribute selectors from 65 to 15 (the rest match Garden's generated class names); the compiled CSS has 55 fewer blocks (counted as closing braces). Source: 982 lines deleted and 20 added in existing files, plus 75 lines in the two new helper files. Unit tests: 91 suites and 871 tests (874 before: the widget's spec went, the helper's eight tests came). Renders: no visible change, checked pixel for pixel (see the distill decisions). |
+| 5 | Generated files: `style.css` fell from 226,208 to 220,756 bytes (2.4%) and `script.js` from 61,166 to 42,664 bytes (30.2%); `!important` in the compiled CSS fell from 207 to 190 and `[class*=` attribute selectors from 65 to 15 (the rest match Garden's generated class names); the compiled CSS has 26 fewer blocks (counted as closing braces). Source (styles, scripts and templates): 867 lines deleted and 16 added in existing files, plus 75 lines in the two new helper files. Unit tests: 91 suites and 871 tests (874 before: the widget's spec went, the helper's eight tests came). Renders: no visible change, checked pixel for pixel (see the distill decisions). |
 
 ## Open decisions
 
