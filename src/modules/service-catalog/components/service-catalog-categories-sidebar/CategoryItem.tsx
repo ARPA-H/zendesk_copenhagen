@@ -78,9 +78,12 @@ const ExpandButton = styled.button`
   border: none;
   cursor: pointer;
   padding: 0;
-  width: 12px;
-  height: 12px;
-  margin-right: 8px;
+  /* A 24px hit area around the 12px chevron (WCAG 2.5.8 target size); the
+     negative margins keep the chevron exactly where it was. */
+  width: 24px;
+  height: 24px;
+  margin-block: -6px;
+  margin-inline: -6px 2px;
   color: ${({ theme }) => getColor({ theme, hue: "grey", shade: 600 })};
   flex-shrink: 0;
 

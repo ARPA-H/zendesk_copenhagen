@@ -252,9 +252,13 @@ Flat by default. Service cards and search result cards rest on a stroke alone; t
 
 ### Named Rules
 
-**The Visible Focus Rule.** Every interactive element shows a ring. The ring is a box-shadow plus a transparent 2px outline, so forced-colors mode repaints it.
+**The Visible Focus Rule.** Every interactive element shows a ring. The ring is a box-shadow plus a transparent 2px outline, so forced-colors mode repaints it. The skip link slides over the dark header, so it takes the dark-surface ring and keeps its white text; the global link focus color would otherwise turn it dark blue on black (2.2:1, first seen in the Phase 7 audit).
+
+**The Touch Rule.** Every target is at least 24 by 24 pixels or spaced so a 24 pixel circle around it meets no other target ([WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)); a target nested inside another does not qualify for the spacing exception, so the catalog's category toggle has a 24 pixel hit area around its 12 pixel chevron. Where the pointer is coarse (`pointer: coarse`), the links people tap through lists (article lists, related and recently viewed articles) take 12.5 pixels of vertical padding for a 44 pixel tap area, which grows the area but not the line. Search-result titles do not: a taller area would bring the breadcrumb links above them inside the 24 pixel circles.
 
 **The Forced Colors Rule.** Meaning never rests on a fill alone. In forced-colors mode the palette replaces authored colors, so a pill button keeps a border (the shared primary buttons, the form submit and the split button included), a selected row an outline, each white wordmark (header and footer) its own dark tile, and the mobile menu button a surface of its own, because the transparent header sits over dark artwork and a bare icon would turn dark on dark (`styles/_forced-colors.scss`). Check both palettes: the dark one hides the wordmark problem, the light one shows it. Selected state is also exposed in markup (`aria-current`), not just painted.
+
+**The Print Rule.** A printed page is its content: no site chrome (the banner, header, footer, skip link, rails, votes, comments, controls), dark text on white at the width of the paper, the address of each outside link after its text, and no page break inside a figure, table, code block or quote (`styles/_print.scss`). Browsers drop background colors when printing: the default, [`print-color-adjust: economy`](https://developer.mozilla.org/en-US/docs/Web/CSS/print-color-adjust), lets them "leave out all background images and adjust text colors". So anything white on a dark fill is left out or recolored rather than trusted to survive; in Chrome's print output the hero's white text came out light gray on white.
 
 ## Shapes
 
@@ -296,7 +300,7 @@ The artwork is a layer of its own (`.svc-hero::before`), as wide as the hero and
 
 ### Cards
 
-White with a 2px `#e5eaf0` stroke (carried over from the current catalog) and a 16px radius. Link cards raise to `--shadow-2` and take a link-blue border on hover. A service name and a category heading wrap in full instead of truncating, because cut-off text cannot be read at 320 pixels and a native `title` tooltip is out of reach of keyboard and touch users; cards in a row stretch to the tallest, and only the secondary description clamps (three lines).
+White with a 2px `#e5eaf0` stroke (carried over from the current catalog) and a 16px radius. Link cards raise to `--shadow-2` and take a link-blue border on hover. A service name and a category heading wrap in full instead of truncating, because cut-off text cannot be read at 320 pixels and a native `title` tooltip is out of reach of keyboard and touch users; cards in a row stretch to the tallest, and only the secondary description clamps (three lines). On the catalog, a card's description is hidden and shown in a hover tooltip; where the device cannot hover (`hover: none`: phones and most tablets) the tooltip never appears, so the description shows under the title in muted text, two lines at most.
 
 ### Footer
 

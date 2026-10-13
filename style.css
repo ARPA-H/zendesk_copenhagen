@@ -2323,6 +2323,7 @@ html:not(.js) .usa-banner__button {
   right: -999px;
 }
 .skip-navigation:focus, .skip-navigation:active {
+  color: var(--color-white);
   left: auto;
   overflow: auto;
   text-align: center;
@@ -2333,6 +2334,9 @@ html:not(.js) .usa-banner__button {
 [dir=rtl] .skip-navigation:focus, [dir=rtl] .skip-navigation:active {
   left: initial;
   right: auto;
+}
+.skip-navigation:focus-visible {
+  box-shadow: var(--shadow-focus-on-dark);
 }
 
 #zd-modal-container ~ .skip-navigation {
@@ -3146,9 +3150,11 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
 /***** Article *****/
 .article {
   /*
-  * The article grid: a navigation rail, the reading column, then free space.
-  * The widths are the shared column tokens (240 | 48 gap | 720), so the page
-  * lines up with the section and search pages.
+  * The article grid: a navigation rail, then the reading column. The widths
+  * are the shared column tokens (240 | 48 gap | 720), so the page lines up with
+  * the section and search pages. Only the rail is fixed: the reading column is
+  * minmax(0, 720px) and shrinks when the container is narrower (672px at a
+  * 1024px viewport), so the grid never reaches past its container.
   */
   flex: 1 0 auto;
   min-width: 0;
@@ -7019,7 +7025,7 @@ a.svc-hero-cta:active {
 .svc-hero-chips-label {
   font-family: var(--font-secondary);
   font-size: var(--font-size-2xs);
-  color: var(--on-dark-text-muted);
+  color: var(--color-white);
 }
 
 .svc-hero-chip {
@@ -7126,6 +7132,21 @@ a.svc-hero-cta:active {
   display: none !important;
 }
 
+/* Without hover there is no tooltip, so devices that cannot hover (phones and
+   most tablets) show the description under the title instead, two lines at most. */
+@media (hover: none) {
+  .service-catalog-main-content .svc-desc-hidden {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden;
+    line-height: 1.45;
+    color: var(--type-muted);
+  }
+  .svc-tooltip {
+    display: none !important;
+  }
+}
 .svc-tooltip {
   position: fixed;
   z-index: 10000;
@@ -8607,6 +8628,130 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   transform: translateY(-9999px) !important;
 }
 
+/***** Touch *****/
+@media (pointer: coarse) {
+  .article-list-link,
+  .recent-articles a,
+  .related-articles a {
+    padding-block: 12.5px;
+  }
+}
+/***** Print *****/
+@page {
+  margin: 2cm;
+}
+@media print {
+  .usa-banner,
+  .skip-navigation,
+  .header,
+  .footer,
+  .sub-nav .search-container,
+  .svc-hero-search,
+  .svc-hero-chips,
+  .svc-hero-cta,
+  .article-sidebar,
+  .collapsible-sidebar,
+  .article-subscribe,
+  .article-share,
+  .article-votes,
+  .article-more-questions,
+  .article-comments,
+  .article-relatives,
+  .article-return-to-top,
+  .section-subscribe,
+  .pagination,
+  .alert-banner,
+  .svc-training-fab,
+  .svc-tooltip {
+    display: none !important;
+  }
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  body {
+    background: none;
+    color: var(--color-black);
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+  .svc-hero {
+    background: none !important;
+    min-height: 0;
+  }
+  .svc-hero::before {
+    display: none !important;
+  }
+  .svc-hero-title,
+  .svc-hero-subtitle {
+    color: var(--color-black) !important;
+  }
+  .service-catalog-main-content {
+    display: block;
+  }
+  .container,
+  .article,
+  .article-container,
+  .article-content {
+    display: block;
+    margin: 0;
+    max-width: none;
+    padding: 0;
+    width: auto;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    break-after: avoid;
+    color: var(--color-black);
+  }
+  .article-title {
+    font-size: 20pt;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+  a {
+    text-decoration: underline;
+  }
+  .article-body a[href^=http]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    overflow-wrap: anywhere;
+  }
+  img,
+  figure,
+  table,
+  pre,
+  blockquote {
+    break-inside: avoid;
+    max-width: 100% !important;
+  }
+  pre,
+  code {
+    background: none !important;
+  }
+  pre {
+    border: 1px solid var(--surface-stroke);
+    padding: 0.5em;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  table {
+    border-collapse: collapse;
+  }
+  th,
+  td {
+    border: 1px solid var(--surface-stroke);
+  }
+}
 /***** Forced colors (Windows High Contrast) *****/
 @media (forced-colors: active) {
   .header .logo a,

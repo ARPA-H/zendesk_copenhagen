@@ -314,6 +314,9 @@ $header-height: 71px;
 
   &:focus,
   &:active {
+    // The global link focus color (a:focus) would otherwise win and turn the
+    // text dark blue on black.
+    color: var(--color-white);
     left: auto;
     overflow: auto;
     text-align: center;
@@ -325,6 +328,11 @@ $header-height: 71px;
       left: initial;
       right: auto;
     }
+  }
+
+  // It appears over the dark header, so it gets the dark-surface ring.
+  &:focus-visible {
+    box-shadow: var(--shadow-focus-on-dark);
   }
 }
 

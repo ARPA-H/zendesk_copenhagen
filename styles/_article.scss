@@ -1,9 +1,11 @@
 /***** Article *****/
 .article {
   /*
-  * The article grid: a navigation rail, the reading column, then free space.
-  * The widths are the shared column tokens (240 | 48 gap | 720), so the page
-  * lines up with the section and search pages.
+  * The article grid: a navigation rail, then the reading column. The widths
+  * are the shared column tokens (240 | 48 gap | 720), so the page lines up with
+  * the section and search pages. Only the rail is fixed: the reading column is
+  * minmax(0, 720px) and shrinks when the container is narrower (672px at a
+  * 1024px viewport), so the grid never reaches past its container.
   */
   flex: 1 0 auto; //Explicit values needed whith flex-direction: column for IE11
   min-width: 0;

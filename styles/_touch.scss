@@ -1,0 +1,19 @@
+/***** Touch *****/
+
+// Devices whose main pointer is a finger get a larger tap area on the links
+// people tap through lists, without moving anything: vertical padding on an
+// inline link grows the area that takes the tap but not the line it sits on.
+// A 19 pixel line plus 12.5 pixels each side makes 44. The closest neighbors
+// are 21 pixels apart, so two areas overlap by 4 pixels at most.
+//
+// Search results are left out on purpose: their titles are far apart already,
+// and a taller area would come within 24 pixels of the breadcrumb links above
+// them, which would turn those 16 pixel links from compliant (WCAG 2.5.8,
+// spacing exception) to non-compliant.
+@media (pointer: coarse) {
+  .article-list-link,
+  .recent-articles a,
+  .related-articles a {
+    padding-block: 12.5px;
+  }
+}

@@ -204,7 +204,7 @@ a.svc-hero-cta:active {
 
 /* Hero chips */
 .svc-hero-chips { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
-.svc-hero-chips-label { font-family: var(--font-secondary); font-size: var(--font-size-2xs); color: var(--on-dark-text-muted); }
+.svc-hero-chips-label { font-family: var(--font-secondary); font-size: var(--font-size-2xs); color: var(--color-white); }
 .svc-hero-chip {
   font-family: var(--font-secondary);
   font-size: var(--font-size-2xs);
@@ -297,6 +297,20 @@ a.svc-hero-cta:active {
 /* Card descriptions are hidden (src/svcCatalogEnhancements.js adds the class)
    and shown in a hover tooltip instead. */
 .service-catalog-main-content .svc-desc-hidden { display: none !important; }
+
+/* Without hover there is no tooltip, so devices that cannot hover (phones and
+   most tablets) show the description under the title instead, two lines at most. */
+@media (hover: none) {
+  .service-catalog-main-content .svc-desc-hidden {
+    display: -webkit-box !important;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden;
+    line-height: 1.45;
+    color: var(--type-muted);
+  }
+  .svc-tooltip { display: none !important; }
+}
 .svc-tooltip {
   position: fixed;
   z-index: 10000;

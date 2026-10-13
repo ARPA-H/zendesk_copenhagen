@@ -89,19 +89,34 @@ export const CollapsibleDescription = ({
 
   useEffect(() => {
     const el = contentRef.current;
-    if (el) {
-      const checkClamped = () => {
-        const visibleBoxHeight = el.getBoundingClientRect().height;
-        const fullContentHeight = el.scrollHeight;
-        const clamped = fullContentHeight - visibleBoxHeight > 1;
-        setIsClamped(clamped);
-        if (!clamped) {
-          setIsCollapsed(false);
-        }
-      };
-      requestAnimationFrame(checkClamped);
-    }
-  }, [displayDescription]);
+    // While the text is expanded there is no clamped box to measure.
+    if (!el || !isCollapsed) return;
+
+    const checkClamped = () => {
+      const visibleBoxHeight = el.getBoundingClientRect().height;
+      const fullContentHeight = el.scrollHeight;
+      setIsClamped(fullContentHeight - visibleBoxHeight > 1);
+    };
+
+    const frame = requestAnimationFrame(checkClamped);
+    // The first measurement can run before the web fonts have loaded, when a
+    // fallback font wraps the lines differently, and a description that fits
+    // would keep a "Read more" that reveals nothing. Measure again when fonts
+    // finish loading and whenever the box changes size.
+    const fonts = document.fonts;
+    fonts?.addEventListener("loadingdone", checkClamped);
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(checkClamped);
+    observer?.observe(el);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      fonts?.removeEventListener("loadingdone", checkClamped);
+      observer?.disconnect();
+    };
+  }, [displayDescription, isCollapsed]);
 
   const toggleDescription = () => {
     setIsCollapsed(!isCollapsed);

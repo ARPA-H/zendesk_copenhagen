@@ -151,7 +151,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done, reviewed: the Device FAQs heading (and a corrected heading probe), the signed-out hero, locale-aware empty states, failed loads (prompt error, no dead button), forced colors (both palettes), RTL logical properties, unclamped service names and the mobile hero artwork ("zoomed to fill": its own layer, no strip, the original colors) |
 | 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Done apart from review: the widget removed (its one used helper kept in `src/safeHref.js`), the dead partials, rules and selector parts removed, the base `.button` dimmed for a native `disabled`; every page, form state and catalog interaction compared pixel for pixel with the build before |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Done apart from review: the search placeholders and accessible names, the catalog's search-miss message, three sets of control names (sidebar row, sidebar toggle, sort button), "Service Hub" to "Service Desk" (owner decision), and two wording fixes |
-| 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
+| 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Done apart from review: the audit and its fixes (the category toggle's hit area, tap areas for list links on touch, the skip link's text), service descriptions on devices that cannot hover (owner decision), a print stylesheet, the "Popular:" label, and the "Read more" measurement found in Phase 5; reflow, landscape phones and text spacing checked with nothing to change |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Planned |
 | 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Moderate expressive layer (state motion plus one signature moment per key page, reduced-motion safe) and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Planned |
 | 10 | `polish`, `audit` | Final pass, final score, docs | Planned |
@@ -258,10 +258,13 @@ Hardening decisions made during Phase 4 (each is easy to reverse):
   (z-index 2, holding Zendesk's instant search) and the catalog card (z-index 3)
   keep their order. The indigo background remains only as the fallback while the
   artwork loads. The subtitle and "Popular:" label changes that came with the
-  native-size version are reverted. Open: at 600 to 768 pixels the "Popular:" label
-  sits over the artwork's cyan glow, 6.8 to 7.8:1 for the typical pixel and 3.4 to
-  4.2:1 at the single lightest one; that is the original design, and `adapt` can
-  decide whether it needs a scrim.
+  native-size version are reverted. Open (updated in Phase 7): at 600 to 768 pixels
+  the "Popular:" label sits over the artwork's cyan glow, 6.8 to 7.8:1 for the
+  typical pixel and 3.4 to 4.2:1 at the single lightest one; that is the original
+  design. Phase 7 made the label full white, like the chips beside it, which
+  lifted it to 8.7 and 10.1:1 typical and 4.0 to 5.1:1 at the lightest pixel
+  (only the lightest pixel at 768 pixels still misses 4.5:1), and left the
+  decision on a scrim, which would clear it at the cost of a visible pill, to the owner.
   The 1.8 MB artwork is unchanged here; `optimize` will look at its weight.
 - **Failed loads show up promptly and leave no dead control.** With the catalog
   or the item API forced to 500, the skeleton used to stay for the six second
@@ -349,13 +352,13 @@ Distill decisions made during Phase 5 (each is easy to reverse):
 - **The base `.button` dims for a native `disabled`.** A Copilot note on Phase 4:
   only `data-disabled` was covered, while `.button-large` and `.button-secondary`
   already handled both.
-- **Found on the way, not changed here:** `CollapsibleDescription` decides whether
+- **Found on the way, fixed in Phase 7:** `CollapsibleDescription` decides whether
   to offer "Read more" from one measurement taken in the frame after the first
   render. If the web fonts settle afterwards, a description that fits in two lines
   keeps a "Read more" that reveals nothing. At 1024 pixels about half of the offline
   loads show it with identical CSS, and each is pixel-identical to the build before
-  this phase. It depends on width and font timing, so it is a job for `adapt`
-  (measure again when the fonts load and when the box resizes).
+  this phase. It depends on width and font timing, so it was left for `adapt`,
+  which measures again when the fonts load and when the box resizes.
 - **How it was checked.** Each of 81 captures was compared pixel for pixel with
   the same capture taken before any edit: 55 pages (11 pages at 1440, 1024, 768,
   390 and 320 pixels), 16 states of a kitchen-sink request form (initial, every
@@ -430,6 +433,87 @@ Clarify decisions made during Phase 6 (each is easy to reverse):
   strings are untouched ("Knowledge Base" in the results filter, "Follow",
   pagination, the share links).
 
+Adapt decisions made during Phase 7 (each is easy to reverse):
+
+- **A target size audit with the spacing exception done properly.** The audit
+  covers the nine page states with touch emulation at 390 pixels and a mouse at
+  1440. A target under 24 by 24 pixels passes only if no other target comes within
+  a 24 pixel circle around it, and a target nested inside another never qualifies
+  ([WCAG 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html)).
+  It found one real failure on two pages: the catalog's category toggle, a 12 pixel
+  chevron inside a row that is itself a button. The toggle now has a 24 pixel hit
+  area, positioned with negative margins so the chevron and the text beside it do
+  not move (every page is pixel-identical to the build before, apart from
+  the label described below). The same audit then caught a regression of mine:
+  padding the search-result titles, which looked harmless, brought the 16 pixel
+  breadcrumb links above them inside the 24 pixel circles and made 18 links fail,
+  so the titles are left alone (they are 163 pixels apart already). Final: 0
+  failures in all 18 combinations.
+- **Tap areas for the links people tap through lists.** Where the pointer is coarse,
+  article lists, related articles and recently viewed articles take 12.5 pixels of
+  vertical padding, which makes a 19 pixel line a 44 pixel target without moving
+  anything (padding on an inline box grows the area, not the line). That takes the
+  category page from 41 targets under 44 pixels on a phone to 20, the section page
+  from 32 to 20 and the article page from 36 to 29. The rest are the footer links
+  (29 pixels), the breadcrumbs (16), the popular chips (33) and the form controls,
+  which meet the 24 pixel minimum on their own or by spacing; they are left alone
+  because growing them would move the footer, the pills and the form.
+- **Service descriptions show on devices that cannot hover** (owner decision). On
+  desktop, hovering a catalog card shows its description in a tooltip; a phone has
+  no hover, so the cards showed only an icon and a title, and the tooltip was
+  hidden below 769 pixels. Where `hover: none`, the description now shows under the
+  title in muted text (`#6f747a`, 4.7:1), two lines at most, and the tooltip is
+  hidden. The services page at 390 pixels grows from 3,721 to 4,389 pixels (18%);
+  desktop pointers are unchanged. A desktop window narrowed below 769 pixels with a
+  mouse still gets neither the tooltip nor the description; see Open decisions.
+- **The skip link was nearly unreadable on focus.** Pressing Tab on any page shows
+  it, and the global link focus color (`a:focus`) outranked its own white text, so
+  it appeared as dark blue (`#07418f`) on black, 2.2:1. It now keeps white text
+  (21:1) and takes the dark-surface focus ring, because it slides over the dark
+  header. This was the "skip link boundary" item that Phase 4 left for `adapt`.
+- **A print stylesheet**, since there was none (`styles/_print.scss`). A printed page
+  is its content: the banner, header, footer, skip link, rails, votes, comments and
+  controls are left out, text is dark on white at the width of the paper, the
+  address of an outside link follows its text, and figures, tables, code and quotes
+  do not break across pages. The first print render showed that browsers drop
+  background colors by default ([`print-color-adjust: economy`](https://developer.mozilla.org/en-US/docs/Web/CSS/print-color-adjust)):
+  the hero's white text came out light gray on white, so the hero prints a dark
+  greeting without its search, chips or sign-in button, and the catalog's category
+  list stacks above the cards so they get the whole page instead of narrow columns
+  that broke words. Checked by emulating print on all nine page states (no text
+  light enough to vanish on white paper, no overflow, and no controls or repeating
+  fixed elements on the Knowledge pages) and by looking at the rendered PDFs.
+- **The "Popular:" label is full white.** It was 85% white while the chips beside it
+  are full white. See Phase 4's note for the numbers: the lightest pixel at 768
+  pixels still reads 4.0:1, and a scrim is the owner's call.
+- **"Read more" measures again.** Phase 5 found that the item page's description
+  decides from one measurement, before the web fonts settle, whether to offer
+  "Read more", so a description that fits in two lines could keep a button that
+  reveals nothing. The component now measures again when fonts finish loading and
+  when its box changes size, but never while the text is expanded (an expanded box
+  is not clamped, so measuring then would take "Read less" away). The false button
+  showed in 4 of 8 loads at 1024 pixels before and in 0 of 12 after; a long
+  description still collapses, expands and collapses again at 1440 and 390 pixels.
+  Five new tests (four of them fail on the old component) cover fit, overflow,
+  fonts, resize and the expanded state.
+- **Checked, nothing to change.** No horizontal overflow at 1440, 1024, 768, 390 or
+  320 pixels, nor on landscape phones (844 by 390 and 667 by 375 with touch
+  emulation) on seven pages. With the [WCAG 1.4.12](https://www.w3.org/WAI/WCAG22/Understanding/text-spacing.html)
+  text spacing overrides on seven pages at 1440 and 390 pixels, nothing visible
+  clips (the only newly clipped nodes are visually hidden text for screen readers,
+  which clips by design). No function depends on hover: a scan of the compiled CSS
+  finds two rules that reveal anything on hover, the notification dismiss button
+  (visible at 60% opacity at rest, 100% on hover) and the training button's label
+  (below).
+- **Left alone on purpose.** The item page's help rail still follows the form on a
+  phone, so suggested articles, which appear as someone types, sit below the Submit
+  button; moving them needs a design decision (see Open decisions). The training
+  button (a setting-gated 52 pixel graduation-cap circle with an accessible name
+  that the offline render does not show) reveals its text label on hover or
+  keyboard focus, so on a phone it is the icon alone; a permanent 32 character pill
+  would cover most of a phone's width. Safe-area handling (`viewport-fit=cover`) is
+  not added: the offline render has no notch, so it cannot be verified here.
+
 ## Gates
 
 Run from the repository root; each should hold at the end of the work.
@@ -472,6 +556,7 @@ styles, so the same pages and widths are compared before and after.
 | 2 | Across the same pages, counting text nodes: distinct font sizes fell from 16 to 8 at 1440 pixels wide (13 to 8 at 768, 16 to 8 at 390); text under 14 pixels fell from 35.1% of nodes to 2.0% (37.3% to 2.1% at 768, 39.5% to 2.6% at 390); an article paragraph went from a 15-pixel, 706-pixel-wide measure of about 102 characters per line to 16 pixels at 70 characters (a 32em cap); body line height is 1.62 and heading line heights are 1.15 and 1.35. Detector findings over `styles` and `templates`, with DESIGN.md loaded, fell from 81 (69 font sizes off the documented ramp, 6 radii, 4 side-stripe borders, 2 layout transitions) to 6 (4 radii and 2 layout transitions, left to phases 3 and 8). |
 | 5 | Generated files: `style.css` fell from 226,208 to 220,756 bytes (2.4%) and `script.js` from 61,166 to 42,664 bytes (30.2%); `!important` in the compiled CSS fell from 207 to 190 and `[class*=` attribute selectors from 65 to 15 (the rest match Garden's generated class names); the compiled CSS has 26 fewer blocks (counted as closing braces). Source (styles, scripts and templates): 867 lines deleted and 16 added in existing files, plus 75 lines in the two new helper files. Unit tests: 91 suites and 871 tests (874 before: the widget's spec went, the helper's eight tests came). Renders: no visible change, checked pixel for pixel (see the distill decisions). |
 | 6 | Search boxes whose placeholder promised services on an articles-only search: 3 pages, now none (all say "Search help articles", with a matching accessible name); the old text was clipped at every phone width and the new one fits at 375 pixels and wider. Catalog accessibility names: the sidebar row, the sidebar toggle and the sort button went from "Expand Hardware 4", "Expand" and "A-Z" to "Hardware 4", "Expand Hardware" and "Sort services: A-Z". Renders: 20 of 55 differ (home, services, signed-out home and the request page, each at the changed words) and the other 35, including every Knowledge page, are identical. Unit tests: 92 suites and 877 tests (871 before; six new). |
+| 7 | Target size (WCAG 2.5.8, with the nested-target and spacing rules applied): failures on the nine page states went from 1 control on 2 pages (the 12 pixel category toggle) to 0 in all 18 combinations (touch at 390 pixels, mouse at 1440); a padded search title that would have made 18 breadcrumb links fail was caught and left out. Touch targets under 44 pixels: category page 41 to 20, section 32 to 20, article 36 to 29. Skip link on focus: 2.2:1 (dark blue on black) to 21:1. "Popular:" label at the lightest pixel: 3.4 to 4.2:1 to 4.0 to 5.1:1 at 600 to 768 pixels (typical 6.8 to 7.8:1 to 8.7 to 10.1:1). False "Read more" at 1024 pixels: 4 of 8 loads to 0 of 12. Catalog at 390 pixels on a device that cannot hover: descriptions visible, page 3,721 to 4,389 pixels tall. Print: a stylesheet where there was none, checked on all nine page states. The 45 combinations of nine pages at five widths: no overflow, no contrast failures, no colors outside the palette and no control without a focus ring. Renders on a desktop pointer: 45 of 55 identical to Phase 6, and the other 10 (home and services at five widths) differ only in the 52 by 15 pixel patch of the "Popular:" label; the "Read more" timing difference that showed in earlier comparisons is gone. Unit tests: 92 suites and 882 tests (877 before; five new). |
 
 ## Open decisions
 
@@ -486,3 +571,8 @@ Still open:
 - Two theme settings read by nothing that renders: `community_image` ("Community banner"; its only consumer, the `.community-image` rule, was dead and is removed in Phase 5) and `service_catalog_hero_image` (its consumer, `.service-catalog-hero`, is used by no template). The hero artwork comes from `homepage_background_image`. Both stay in `manifest.json`, because removing a setting changes the Admin Center, which is the owner's call.
 - The live [arpa-h.gov](https://arpa-h.gov/) still ships the older USWDS 1.x banner copy ("The .gov means it's official."); this theme uses the current official 3.x text. Whether the two should be aligned is a content decision for the main site's owners.
 - The banner copy is English only, because a theme cannot add Help Center translation keys; USWDS publishes Spanish text if a Spanish locale is ever enabled.
+- Where suggested articles belong on the request page on a phone. They update as someone types, but the help rail follows the form, so a phone user sees them only below the Submit button. Putting the rail first would push the form down and shift the page as results arrive; an alternative is a compact "Related articles" strip just above Submit. Left as is until the owner chooses.
+- A desktop window narrowed below 769 pixels, with a mouse, gets neither the card tooltip (hidden below 769 pixels by an older rule) nor the inline description (shown only where `hover: none`). Showing the description below 769 pixels as well would close that gap at the cost of a taller list in narrow windows.
+- At 768 pixels exactly, the lightest pixel behind the "Popular:" label reads 4.0:1 (typical 8.7:1). A 55% indigo scrim, as the chips have, would clear 4.5:1 and show as a pill; the owner prefers the original look, so none is added.
+- The popular chips (33 pixels), the footer links (29) and the breadcrumbs (16) are under 44 pixels on a phone. They meet the 24 pixel minimum by size or spacing; padding them would move the footer, make the pills taller and change the breadcrumb line.
+- The training button shows its label on hover or keyboard focus only; on a phone it is the cap icon. Whether it should carry a permanent short label ("Training") on touch devices is the owner's call.
