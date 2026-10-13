@@ -419,15 +419,21 @@ a.svc-help-btn:hover,
 }
 
 /* ---------- CATALOG SKELETON + FADE-IN ---------- */
-.svc-catalog-stage { position: relative; min-height: 460px; }
+.svc-catalog-stage { --svc-stage-floor: 460px; position: relative; min-height: var(--svc-stage-floor); }
 #service-catalog-main-content { opacity: 0; transition: opacity 0.3s ease; }
 .svc-cat-ready #service-catalog-main-content { opacity: 1; }
 @keyframes svcCatFailsafe { to { opacity: 1; } }
 #service-catalog-main-content { animation: svcCatFailsafe 0s linear 6.5s forwards; }
 .svc-cat-ready .svc-catalog-stage { min-height: 0; }
 
+/* The skeleton is pinned to the stage's floor, not stretched over the stage.
+   It used to fill the stage (inset: 0), so when the real catalog rendered behind
+   it, still transparent, the stage grew from 460 to about 3,000 pixels on a
+   phone and the skeleton's grid stretched with it: a layout shift of 0.12, the
+   whole of the home page's score on a phone. */
 .svc-cat-skeleton {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0 0 auto;
+  height: var(--svc-stage-floor);
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   gap: var(--space-4);

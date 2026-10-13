@@ -1,6 +1,8 @@
 import { cleanup, screen, act } from "@testing-library/react";
+import i18next from "i18next";
 import { renderFlashNotifications } from "./renderFlashNotifications";
 import { emitNotify } from "../shared/notifications/notifyBus";
+import { initI18next } from "../shared";
 import type { Settings, ToastNotification } from "../shared";
 
 afterEach(() => {
@@ -37,5 +39,16 @@ describe("renderFlashNotifications", () => {
       emitNotify(notification);
     });
     expect(await screen.findByTestId(testId)).toBeInTheDocument();
+  });
+
+  it("leaves the translations a page module already loaded", async () => {
+    initI18next(baseLocale);
+    i18next.addResourceBundle(baseLocale, "translation", { page: "kept" });
+
+    await act(async () => {
+      await renderFlashNotifications(settings, baseLocale);
+    });
+
+    expect(i18next.getResource(baseLocale, "translation", "page")).toBe("kept");
   });
 });

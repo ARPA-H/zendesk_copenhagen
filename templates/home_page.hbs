@@ -175,6 +175,7 @@
 {{/if}}
 
 {{#if signed_in}}
+<link rel="modulepreload" href="{{asset 'shared-bundle.js'}}">
 <!-- Render the Zendesk service catalog into our card -->
 <script type="module">
   try {

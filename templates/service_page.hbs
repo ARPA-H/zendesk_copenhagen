@@ -97,6 +97,7 @@
 </div>
 
 {{!-- Render the embedded service catalog item form --}}
+<link rel="modulepreload" href="{{asset 'shared-bundle.js'}}">
 <script type="module">
   import { renderServiceCatalogItem } from "service-catalog";
   import { initIconSupport } from "svc-page-utils";
