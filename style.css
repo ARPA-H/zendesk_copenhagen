@@ -7796,6 +7796,12 @@ body {
   color: var(--type-subheading);
 }
 
+/* Until something has been suggested the empty message below says the same thing,
+   so the subtitle waits for the results. */
+.svc-article-card:has(.svc-article-empty) .svc-article-subtitle {
+  display: none;
+}
+
 .svc-article-list {
   display: flex;
   flex-direction: column;

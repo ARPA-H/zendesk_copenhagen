@@ -3,6 +3,7 @@ import { ThemeProvider } from "styled-components";
 import { DEFAULT_THEME } from "@zendeskgarden/react-theming";
 import { ServiceCatalogItem } from "./ServiceCatalogItem";
 import { submitServiceItemRequest } from "./submitServiceItemRequest";
+import { focusFirstInvalidField } from "./focusFirstInvalidField";
 import * as notifications from "../../../shared/notifications";
 import type { ServiceCatalogItem as ServiceCatalogItemType } from "../../data-types/ServiceCatalogItem";
 import type { TicketFieldObject } from "../../../ticket-fields/data-types/TicketFieldObject";
@@ -87,6 +88,10 @@ jest.mock("./ItemRequestForm", () => ({
   ASSET_KEY: "zen:custom_object:standard::itam_asset",
 }));
 
+jest.mock("./focusFirstInvalidField", () => ({
+  focusFirstInvalidField: jest.fn(),
+}));
+
 // Mock PreviewModeBanner so we can assert it renders without testing portal
 // behaviour here (it has its own dedicated specs).
 jest.mock("./PreviewModeBanner", () => ({
@@ -110,6 +115,8 @@ const mockSubmitServiceItemRequest =
 const mockNotify = notifications.notify as jest.MockedFunction<
   typeof notifications.notify
 >;
+const mockFocusFirstInvalidField =
+  focusFirstInvalidField as jest.MockedFunction<typeof focusFirstInvalidField>;
 
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
@@ -457,7 +464,7 @@ describe("ServiceCatalogItem", () => {
       expect(screen.getByTestId("submit-button")).not.toBeDisabled();
     });
 
-    it("moves focus to the first field the errors mark, so a failed submit is not silent", async () => {
+    it("hands focus to the first field the errors show, so a failed submit is not left on Submit", async () => {
       const fields = [
         {
           id: 1,
@@ -488,18 +495,15 @@ describe("ServiceCatalogItem", () => {
 
       renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
 
-      // The real fields get aria-invalid from the errors the submit sets (the
-      // mocked form renders no fields), so stand-ins mark the first and a later one.
+      // What focus does with the real field components is covered in
+      // focusFirstInvalidField.spec.tsx; here it only has to be asked, for
+      // this form, after validation fails and never before the request.
       const form = screen.getByTestId("item-request-form");
-      const first = document.createElement("input");
-      const later = document.createElement("input");
-      first.setAttribute("aria-invalid", "true");
-      later.setAttribute("aria-invalid", "true");
-      form.append(first, later);
-
       fireEvent.submit(form);
 
-      await waitFor(() => expect(first).toHaveFocus());
+      await waitFor(() =>
+        expect(mockFocusFirstInvalidField).toHaveBeenCalledWith(form)
+      );
       expect(mockSubmitServiceItemRequest).not.toHaveBeenCalled();
     });
 

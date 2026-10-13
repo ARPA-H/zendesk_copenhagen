@@ -67,6 +67,9 @@ body { background: var(--color-white); }
   line-height: var(--line-height-4);
   color: var(--type-subheading);
 }
+/* Until something has been suggested the empty message below says the same thing,
+   so the subtitle waits for the results. */
+.svc-article-card:has(.svc-article-empty) .svc-article-subtitle { display: none; }
 .svc-article-list { display: flex; flex-direction: column; margin-top: var(--space-2); }
 .svc-article-empty, .svc-article-loading, .svc-article-error {
   font-size: var(--font-size-2xs);

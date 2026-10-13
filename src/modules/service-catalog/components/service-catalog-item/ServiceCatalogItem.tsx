@@ -9,6 +9,7 @@ import { PreviewModeBanner } from "./PreviewModeBanner";
 import type { Organization } from "../../../ticket-fields/data-types/Organization";
 import { useServiceCatalogItem } from "../../hooks/useServiceCatalogItem";
 import { submitServiceItemRequest } from "./submitServiceItemRequest";
+import { focusFirstInvalidField } from "./focusFirstInvalidField";
 import type { ServiceRequestResponse } from "../../data-types/ServiceRequestResponse";
 import { addFlashNotification, notify } from "../../../shared";
 import { useTranslation } from "react-i18next";
@@ -414,9 +415,9 @@ export function ServiceCatalogItem({
 
     if (validateForm(requestFieldsWithFormData, attachments)) {
       flushSync(() => setIsSubmitting(false));
-      // The errors are on screen now. Without this a keyboard or screen reader
-      // user stays on the Submit button and is not told anything went wrong.
-      form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      // The errors are on screen now. Without this a keyboard user stays on the
+      // Submit button and has to hunt for the field that failed.
+      focusFirstInvalidField(form);
       return;
     }
 
