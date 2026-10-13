@@ -150,8 +150,10 @@
 {{#if signed_in}}
 {{#if categories}}
 {{!-- The heading and lede are English copy; every other locale keeps the topic
-      list (its names come from the Help Center) and a region label. --}}
-<section class="svc-knowledge" {{#contains help_center.locale 'en-'}}aria-labelledby="svc-knowledge-title"{{else}}aria-label="{{help_center.name}}"{{/contains}}>
+      list (its names come from the Help Center) as a plain section: with no
+      purpose-specific label to give it, naming it would announce a misleading
+      second site label, and an unnamed section is not a landmark. --}}
+<section class="svc-knowledge"{{#contains help_center.locale 'en-'}} aria-labelledby="svc-knowledge-title"{{/contains}}>
   <div class="svc-knowledge-inner">
     {{#contains help_center.locale 'en-'}}
     <h2 id="svc-knowledge-title" class="svc-knowledge-title">Browse help articles</h2>

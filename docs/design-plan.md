@@ -263,8 +263,9 @@ Hardening decisions made during Phase 4 (each is easy to reverse):
   typical pixel and 3.4 to 4.2:1 at the single lightest one; that is the original
   design. Phase 7 made the label full white, like the chips beside it, which
   lifted it to 8.7 and 10.1:1 typical and 4.0 to 5.1:1 at the lightest pixel
-  (only the lightest pixel at 768 pixels still misses 4.5:1), and left the
-  decision on a scrim, which would clear it at the cost of a visible pill, to the owner.
+  (only the lightest pixel at 768 pixels still misses 4.5:1). The owner chose to
+  leave it there rather than add a scrim, which would clear it (10.7:1 at the
+  worst pixel) at the cost of a visible pill.
   The 1.8 MB artwork is unchanged here; `optimize` will look at its weight.
 - **Failed loads show up promptly and leave no dead control.** With the catalog
   or the item API forced to 500, the skeleton used to stay for the six second
@@ -520,7 +521,9 @@ Adapt decisions made during Phase 7 (each is easy to reverse):
   helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#contains-helper),
   the same pattern as the empty states). Other locales keep Zendesk's placeholder
   and accessible name, get the translated sign-in action alone in the signed-out
-  band, and keep the Knowledge band's topic list under an unseen region label. A
+  band, and keep the Knowledge band's topic list as a plain section (naming it
+  would announce a second generic site label, and a section without a name is not
+  exposed as a landmark; review asked for exactly this). A
   second harness server in a non-English locale showed all three; English renders
   as before.
 - **Skip link, landmarks and the OS tiles.** axe-core also flagged a positive
@@ -598,7 +601,7 @@ Adapt decisions made during Phase 7 (each is easy to reverse):
   shorter than before.
 - **The "Popular:" label is full white.** It was 85% white while the chips beside it
   are full white. See Phase 4's note for the numbers: the lightest pixel at 768
-  pixels still reads 4.0:1, and a scrim is the owner's call.
+  pixels still reads 4.0:1; the owner chose to leave it (see Open decisions).
 - **"Read more" measures again.** Phase 5 found that the item page's description
   decides from one measurement, before the web fonts settle, whether to offer
   "Read more", so a description that fits in two lines could keep a button that
@@ -676,7 +679,11 @@ styles, so the same pages and widths are compared before and after.
 Resolved with the product owner: the USWDS exception and the `.gov` banner
 (owner decision 1), the Knowledge entry point on the home page (decision 2),
 the footer's policy links (help.arpa-h.gov is public, so the public HHS and
-arpa-h.gov policy pages belong there) and the Admin Center settings (decision 5).
+arpa-h.gov policy pages belong there), the Admin Center settings (decision 5) and,
+in the Phase 7 review, the "Popular:" label at 768 pixels, which reads 4.0:1 at its
+lightest pixel and stays as it is: a dark pill like the chips would clear 4.5:1
+(10.7:1 at the worst pixel) but adds a visible capsule that could read as a sixth,
+non-clickable chip, and the owner prefers the original look.
 Still open:
 
 - Whether pages without their own search should get a search entry point. Nine templates render no page-level search (applications, approval request and approval request list, contributions, error, request, requests, subscriptions and user profile). They had none before this work either: the base theme hid the header search on every page (`html body .header .search-wrapper { display: none !important; }` in `styles/_svc-tokens.scss`, still the case on the `sandbox` tip), so this work removed dead markup rather than a visible control. A compact search in the header on those pages is the cheapest fix if the owner wants one.
@@ -688,6 +695,5 @@ Still open:
 - If the request page's module cannot load (for example its script is blocked), the skeleton stays for six seconds and the form panel is then empty, with no message; the one-line "Can't find the right service? Submit a general request." below it is the only way forward. The catalog pages write a fallback for the same failure; the request page does not. A message needs new copy and a locale decision, so it is left for the owner.
 - Where suggested articles belong on the request page on a phone. They update as someone types, but the help rail follows the form, so a phone user sees them only below the Submit button. Putting the rail first would push the form down and shift the page as results arrive; an alternative is a compact "Related articles" strip just above Submit. Left as is until the owner chooses.
 - A desktop window narrowed below 769 pixels, with a mouse, gets neither the card tooltip (hidden below 769 pixels by an older rule) nor the inline description (shown only where `hover: none`). Showing the description below 769 pixels as well would close that gap at the cost of a taller list in narrow windows.
-- At 768 pixels exactly, the lightest pixel behind the "Popular:" label reads 4.0:1 (typical 8.7:1). A 55% indigo scrim, as the chips have, would clear 4.5:1 and show as a pill; the owner prefers the original look, so none is added.
 - The popular chips (33 pixels), the footer links (29) and the breadcrumbs (16) are under 44 pixels on a phone. They meet the 24 pixel minimum by size or spacing; padding them would move the footer, make the pills taller and change the breadcrumb line.
 - The training button shows its label on hover or keyboard focus only; on a phone it is the cap icon. Whether it should carry a permanent short label ("Training") on touch devices is the owner's call.
