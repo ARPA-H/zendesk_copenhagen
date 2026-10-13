@@ -30,25 +30,38 @@
    read as one dark band instead of a flat bar sitting on an image. The header
    goes transparent (the reverse logo and white text already suit the artwork),
    and the hero starts at the top of the bar and keeps its content below it.
-   The artwork is nudged down by half the bar's height, which keeps the part
-   behind the content exactly where it was. The header takes the higher z-index
-   because the hero comes later and is positioned, so it would otherwise paint
-   over the bar and its menus. Every other page keeps the solid indigo bar. */
+   The header takes the higher z-index because the hero comes later and is
+   positioned, so it would otherwise paint over the bar and its menus. Every
+   other page keeps the solid indigo bar. */
 .svc-home .header {
   background-color: transparent;
   z-index: 5;
 }
 .svc-home .svc-hero {
-  // Shown only while the artwork loads (or if it fails), so the white wordmark
-  // never lands on the white page. The artwork covers it and does not repeat: a
-  // repeating image tiled its bright bottom edge behind the logo. At 768px and
-  // below the artwork is anchored at the bottom instead (see MOBILE).
+  // Only shows until the artwork loads (or if it fails), so the white wordmark
+  // never lands on the white page. The artwork is the layer below.
   background-color: var(--color-brand-primary);
-  background-position: center calc(50% + #{$header-height} / 2);
-  background-repeat: no-repeat;
+  background-image: none;
   box-sizing: border-box;
   margin-top: calc(-1 * #{$header-height});
   padding-top: $header-height;
+}
+/* The artwork is a layer of its own: as wide as the hero and one header height
+   taller at the bottom, fitted with `cover` and centered, then cut off at the
+   hero's edge. Wherever the hero is wide (desktop, tablet) that is exactly where
+   the artwork sat before the header went transparent, so the crop behind the
+   content has not moved. Where the hero is tall and narrow (phones) the artwork
+   scales up just enough to run from the top of the header to the bottom of the
+   hero: no strip to fill with a flat color, and no change to the colors, because
+   it is still the whole artwork and not a close-up of its bottom. The layer does
+   not create a stacking context, so the greeting (z-index 2) and everything
+   above it keep their order. */
+.svc-home .svc-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 calc(-1 * #{$header-height});
+  background: url($homepage_background_image) center / cover no-repeat;
+  clip-path: inset(0 0 #{$header-height});
 }
 .svc-hero .svc-hero-inner,
 .svc-hero .hero-inner {
@@ -492,24 +505,8 @@ a.svc-help-btn:hover,
   html.svc-home, body.svc-home { overflow-x: hidden !important; max-width: 100% !important; }
 
   .svc-hero { min-height: 0; }
-  // The artwork keeps its own size (one image pixel per CSS pixel), anchored at
-  // the bottom center, so it runs unbroken from the top of the transparent header
-  // to the bottom of the hero. Scaled to fit it was only as tall as the hero, and
-  // the nudge above left a strip behind the logo that a flat color only covered.
-  .svc-home .svc-hero {
-    background-size: auto;
-    background-position: center bottom;
-  }
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner { padding: var(--space-5) var(--space-2); }
-  // The lower part of that artwork is a lighter pink: the subtitle goes to full
-  // white and the "Popular:" label sits on the chips' indigo scrim to hold 4.5:1.
-  .svc-hero-subtitle { font-size: var(--font-size-xs); margin-top: 8px; color: var(--color-white); }
-  .svc-hero-chips-label {
-    color: var(--color-white);
-    background-color: var(--on-dark-chip);
-    padding: 5px 12px;
-    border-radius: var(--radius-round);
-  }
+  .svc-hero-subtitle { font-size: var(--font-size-xs); margin-top: 8px; }
   .svc-hero-search { margin-top: 18px; padding: 6px 6px 6px 18px; }
   .svc-hero-input { font-size: var(--font-size-xs); padding: 11px 12px; }
   .svc-hero-search-btn { width: 42px; height: 42px; }
@@ -577,7 +574,7 @@ a.svc-help-btn:hover,
 
 @media (max-width: 430px) {
   .svc-hero-chips { gap: 6px; }
-  .svc-hero-chip, .svc-hero-chips-label { padding: 5px 10px; }
+  .svc-hero-chip { padding: 5px 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .svc-tooltip { transition: none !important; }

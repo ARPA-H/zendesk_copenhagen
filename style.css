@@ -6886,10 +6886,9 @@ zd-summary-block {
    read as one dark band instead of a flat bar sitting on an image. The header
    goes transparent (the reverse logo and white text already suit the artwork),
    and the hero starts at the top of the bar and keeps its content below it.
-   The artwork is nudged down by half the bar's height, which keeps the part
-   behind the content exactly where it was. The header takes the higher z-index
-   because the hero comes later and is positioned, so it would otherwise paint
-   over the bar and its menus. Every other page keeps the solid indigo bar. */
+   The header takes the higher z-index because the hero comes later and is
+   positioned, so it would otherwise paint over the bar and its menus. Every
+   other page keeps the solid indigo bar. */
 .svc-home .header {
   background-color: transparent;
   z-index: 5;
@@ -6897,11 +6896,28 @@ zd-summary-block {
 
 .svc-home .svc-hero {
   background-color: var(--color-brand-primary);
-  background-position: center calc(50% + 71px / 2);
-  background-repeat: no-repeat;
+  background-image: none;
   box-sizing: border-box;
   margin-top: calc(-1 * 71px);
   padding-top: 71px;
+}
+
+/* The artwork is a layer of its own: as wide as the hero and one header height
+   taller at the bottom, fitted with `cover` and centered, then cut off at the
+   hero's edge. Wherever the hero is wide (desktop, tablet) that is exactly where
+   the artwork sat before the header went transparent, so the crop behind the
+   content has not moved. Where the hero is tall and narrow (phones) the artwork
+   scales up just enough to run from the top of the header to the bottom of the
+   hero: no strip to fill with a flat color, and no change to the colors, because
+   it is still the whole artwork and not a close-up of its bottom. The layer does
+   not create a stacking context, so the greeting (z-index 2) and everything
+   above it keep their order. */
+.svc-home .svc-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 calc(-1 * 71px);
+  background: url($homepage_background_image) center/cover no-repeat;
+  clip-path: inset(0 0 71px);
 }
 
 .svc-hero .svc-hero-inner,
@@ -7517,23 +7533,12 @@ a.svc-help-btn:hover,
   .svc-hero {
     min-height: 0;
   }
-  .svc-home .svc-hero {
-    background-size: auto;
-    background-position: center bottom;
-  }
   .svc-hero .svc-hero-inner, .svc-hero .hero-inner {
     padding: var(--space-5) var(--space-2);
   }
   .svc-hero-subtitle {
     font-size: var(--font-size-xs);
     margin-top: 8px;
-    color: var(--color-white);
-  }
-  .svc-hero-chips-label {
-    color: var(--color-white);
-    background-color: var(--on-dark-chip);
-    padding: 5px 12px;
-    border-radius: var(--radius-round);
   }
   .svc-hero-search {
     margin-top: 18px;
@@ -7628,7 +7633,7 @@ a.svc-help-btn:hover,
   .svc-hero-chips {
     gap: 6px;
   }
-  .svc-hero-chip, .svc-hero-chips-label {
+  .svc-hero-chip {
     padding: 5px 10px;
   }
 }
@@ -8131,9 +8136,10 @@ body {
   color: var(--color-ui-60);
 }
 
-/* The button only proxies a click to the module's real submit button, so with no
-   form (the module showed its error screen) it would do nothing. */
-.svc-form-panel:not(:has(#service-catalog-item :is(input, textarea, select, [role=textbox]))) .svc-custom-submit-wrap {
+/* The button only proxies a click to the module's real submit button, so with none on
+   the page (the module showed its error screen) it would do nothing. Same lookup as
+   getNativeSubmit() in service_page.hbs. */
+.svc-form-panel:not(:has(#service-catalog-item :is([data-svc-native-submit], button[type=submit], input[type=submit]))) .svc-custom-submit-wrap {
   display: none;
 }
 
@@ -8819,6 +8825,10 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   .svc-hero-cta,
   .svc-custom-submit-btn,
   .svc-training-fab {
+    border: 1px solid ButtonText;
+  }
+  .nav-wrapper-mobile .menu-button-mobile {
+    background-color: ButtonFace;
     border: 1px solid ButtonText;
   }
   .svc-hero-search .svc-hero-search-btn {

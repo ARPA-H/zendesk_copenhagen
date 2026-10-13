@@ -34,7 +34,7 @@
   <div class="hero-inner svc-hero-inner">
     {{#if signed_in}}
     <div class="svc-hero-greeting">
-      <h1 class="svc-hero-title"><span id="svc-list-greeting">&nbsp;</span><span id="svc-list-greeting-name"></span></h1>
+      <h2 class="svc-hero-title"><span id="svc-list-greeting">&nbsp;</span><span id="svc-list-greeting-name"></span></h2>
       <p class="svc-hero-subtitle" id="svc-list-subtitle">What do you need help with today?</p>
 
       {{!-- Native Zendesk instant search (articles), skinned into the hero
@@ -70,7 +70,7 @@
     {{!-- Signed out: the greeting, search and catalog stay behind sign-in, so the
           band says why and offers the one action instead of sitting empty. --}}
     <div class="svc-hero-greeting svc-hero-signed-out">
-      <h1 class="svc-hero-title svc-greeting-ready">Sign in to get help</h1>
+      <h2 class="svc-hero-title svc-greeting-ready">Sign in to get help</h2>
       <p class="svc-hero-subtitle">Use your ARPA-H account to search help articles, submit a request and follow it.</p>
       {{#link "sign_in" class="svc-hero-cta"}}{{t 'sign_in'}}{{/link}}
     </div>

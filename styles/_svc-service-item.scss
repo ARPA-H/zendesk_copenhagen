@@ -228,9 +228,10 @@ body { background: var(--color-white); }
 .svc-custom-submit-btn:active { background-image: linear-gradient(var(--color-hover-light-10), var(--color-hover-light-10)); }
 .svc-custom-submit-btn:disabled { opacity: 0.4; cursor: wait; }
 .svc-custom-submit-note { margin: 0; font-size: var(--font-size-2xs); color: var(--color-ui-60); }
-/* The button only proxies a click to the module's real submit button, so with no
-   form (the module showed its error screen) it would do nothing. */
-.svc-form-panel:not(:has(#service-catalog-item :is(input, textarea, select, [role="textbox"]))) .svc-custom-submit-wrap { display: none; }
+/* The button only proxies a click to the module's real submit button, so with none on
+   the page (the module showed its error screen) it would do nothing. Same lookup as
+   getNativeSubmit() in service_page.hbs. */
+.svc-form-panel:not(:has(#service-catalog-item :is([data-svc-native-submit], button[type="submit"], input[type="submit"]))) .svc-custom-submit-wrap { display: none; }
 
 /* ---- SUBMIT BUTTON: overlap-aware hiding handled by JS ---- */
 /* Ensure form dropdowns render above the submit wrap */

@@ -23,6 +23,15 @@
     border: 1px solid ButtonText;
   }
 
+  // The mobile menu button is a bare icon in the header's text color. The palette
+  // turns that into ButtonText, which is dark on the dark artwork behind the
+  // transparent header, so on phones the only way into the navigation vanished.
+  // It gets a surface and a border of its own.
+  .nav-wrapper-mobile .menu-button-mobile {
+    background-color: ButtonFace;
+    border: 1px solid ButtonText;
+  }
+
   // The hero pill strips the border from every child with !important.
   .svc-hero-search .svc-hero-search-btn {
     border: 1px solid ButtonText !important;

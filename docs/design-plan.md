@@ -148,7 +148,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 1 | `colorize`, `document` | Token layer, NEXUS color rules, indigo header and footer, pill buttons, focus ring, and the React (Garden) theme mapped onto NEXUS; DESIGN.md is written from the built system | Done |
 | 2 | `typeset` | One NEXUS type scale in `rem` tokens (12 to 40 pixels, eight sizes in use): Poppins for the greeting and h1 and h2, Public Sans for everything read or pressed; a 70-character prose measure; tabular numerals; rewritten article, table and heading rhythm; the Garden theme on the same scale; the dead `.svc-hero-results`, `.svc-res-*`, `.svc-mini-*` and `.svc-mr-*` styles removed | Done |
 | 3 | `layout` | Spacing scale, containers, Knowledge page layouts, catalog rhythm; the Solutions footer structure (logo, site navigation row, divider, centered auxiliary links, copyright); the `.gov` banner; the header blended into the hero; the signed-in Knowledge band on the home page; the service item rebuild | In progress: footer, hero, one gutter and column set, category, section, article and search grids, Device FAQs tiles, overflow fixes, the banner, the blended header, the Knowledge band, the service item rebuild, the spacing sweep and the catalog title handling done; the Phase 3 review and polish remain |
-| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done apart from review: heading structure, the signed-out hero, empty states, failed loads (prompt error, no dead button), forced colors, RTL logical properties, unclamped service names and the mobile hero artwork (native size, anchored bottom center) |
+| 4 | `harden` | Empty, error and loading states; long text; RTL; forced colors; heading structure; the signed-out hero | Done apart from review: the Device FAQs heading (and a corrected heading probe), the signed-out hero, locale-aware empty states, failed loads (prompt error, no dead button), forced colors, RTL logical properties, unclamped service names and the mobile hero artwork ("zoomed to fill": its own layer, no strip, the original colors) |
 | 5 | `distill` | Remove dead and duplicated styles and markup that remain after phase 2 (which already deleted the unused hero-results and mini-form styles), including the unused `initSvcSearch` widget in `src/svcSearch.js` | Planned |
 | 6 | `clarify` | Microcopy (labels, placeholders, empty and error states); every search control says what it covers, since the hero placeholder mentions services but Zendesk's native search covers articles | Planned |
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Planned |
@@ -178,45 +178,81 @@ Layout decisions made during Phase 3 (each is easy to reverse):
 
 Hardening decisions made during Phase 4 (each is easy to reverse):
 
-- **Every page gets one `h1`.** The home and services pages had none (the
-  greeting was an `h2`); the greeting is now the `h1`, which changes nothing
-  visually because the global h1 and h2 rules share a face and weight and the
-  hero sets its own size. The Device FAQs page shows tiles instead of a title,
-  so it keeps a visually hidden `h1`.
+- **Heading structure: one `h1` per page, and a correction.** The home and
+  services pages already carry Zendesk's visually hidden `h1` (the Help Center
+  name), with the greeting as an `h2`. An earlier pass here said those pages had
+  no `h1` and promoted the greeting, which produced two; the cause was the probe,
+  which skipped visually hidden headings that screen readers still announce. The
+  greeting is an `h2` again, as in the stock theme, and the probe now counts
+  hidden headings. The one real gap is the Device FAQs category, which shows
+  tiles instead of a title and had no `h1` at all: it gets a visually hidden one.
 - **The signed-out home says why it is empty.** The greeting, search and
   catalog stay behind sign-in (owner decision 2), so the hero band now carries
-  a heading, one sentence and a cyan sign-in action instead of sitting empty.
+  a heading (an `h2`, like the greeting it replaces), one sentence and a cyan
+  sign-in action instead of sitting empty.
   The wording ("Sign in to get help", "Use your ARPA-H account to search help
   articles, submit a request and follow it.") is a placeholder for the
   `clarify` phase to review; it avoids naming a service desk, because
   help.arpa-h.gov also serves HR.
-- **Empty category and section pages say so** in plain words (a theme cannot
-  add Help Center translation keys, so the text is English like the other
-  ARPA-H copy), replacing the stock italic "Empty" link.
+- **Empty category and section pages say so**, in a styled paragraph rather than
+  the stock italic link. English locales get a sentence ("There are no sections in
+  this category yet.", "There are no articles in this section yet."); every other
+  locale keeps Zendesk's translated "Empty" (`{{t 'empty'}}`), chosen with the
+  [`contains` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#contains-helper)
+  on `help_center.locale`. The split exists because `src/domFixups.js` hides any
+  element whose only text is the English word "empty" (a placeholder that had
+  leaked onto pages), so a bare translated word would paint nothing in English, and
+  a theme cannot add Help Center translation keys. A first version of this change
+  was checked by reading the DOM, not the pixels, and the category message was
+  hidden by that fixup; both pages are now checked by what is painted.
 - **Forced colors:** the white reverse wordmark vanished on the plain header
   (the palette replaces the indigo bar), pill buttons lost their shape, and a
   selected row lost its tint. Each now keeps a dark logo tile, a border or an
-  outline. This was checked with Chrome's forced-colors emulation, not on
-  Windows itself, and the Garden form controls were not re-themed.
+  outline. A later check of the hero found one more: on the home and services
+  pages the header is transparent over dark artwork, so the mobile menu button's
+  icon (the only navigation on phones) turned dark on dark and vanished; it now
+  has a button face and a border. This was checked with Chrome's forced-colors
+  emulation, not on Windows itself, and the Garden form controls were not
+  re-themed.
 - **RTL:** pages were rendered with `dir="rtl"` at 1440 pixels and the grids,
   rails, header and footer mirror. The remaining physical properties in the
   Knowledge and catalog partials (blockquote border, the training button, the
   lock icon nudge, the mobile catalog toggle) are now logical. Garden reads the
   direction when it loads, so the React form controls need a real RTL locale to
   verify.
-- **A real defect found on the way, and an owner correction:** at narrow widths
-  the header blend left a strip at the top of the hero, and the artwork tiled
-  its bright bottom edge into it, a pink and cyan band behind the logo. The
-  artwork no longer repeats. Filling the strip with flat indigo was tried and
-  the owner rejected it ("padding it with indigo isn't appropriate"), so at 768
-  pixels and below the artwork keeps its own size (one image pixel per CSS
-  pixel), anchored at the bottom center: it fills the header and the hero with
-  no strip, and it shows the pinker bottom of the artwork. Over that pink the
-  subtitle is full white and the "Popular:" label sits on the chips' indigo
-  scrim (measured on the rendered pixels at 320, 390, 430, 600 and 768: label
-  9:1 or better, subtitle 4.65:1 or better for the typical pixel behind it,
-  with single-pixel dips where a thin line of the artwork crosses the text).
-  The indigo background remains only as the fallback while the artwork loads.
+- **A real defect found on the way, and two owner corrections:** at narrow widths
+  the header blend left a strip at the top of the hero (the artwork was nudged
+  down by half the header's height, and on a tall, narrow hero the fitted artwork
+  was only as tall as the hero), and the artwork tiled its bright bottom edge into
+  it, a pink and cyan band behind the logo. The artwork no longer repeats.
+  Filling the strip with flat indigo was rejected by the owner ("padding it with
+  indigo isn't appropriate"). The next attempt read "1:1 pixel" as native
+  resolution (one image pixel per CSS pixel); the artwork is 3456 by 2234 pixels,
+  so a phone showed only a window of its bright pink bottom: 93% of the hero was
+  pink (52% hot pink, none dark) against 11% pink and 75% dark before, and the
+  owner called it far too pink. It was pushed in `7fa10300` before it had been
+  compared with the approved look; it is replaced.
+
+  The artwork is now a layer of its own (`.svc-hero::before`): as wide as the
+  hero, one header height taller at the bottom, fitted with `cover`, centered and
+  cut off at the hero's edge. At 769 pixels and wider that is where the artwork
+  already sat (the same crop; a pixel diff against the previous build changes about
+  0.2% of pixels by at most 20 of 255 levels, sub-pixel resampling of thin lines).
+  On phones it scales up just enough to run from the top of the header to the
+  bottom of the hero, so there is no strip and nothing to fill. It shows the whole
+  artwork rather than a close-up of its bottom: 7.5% pink and 78% dark at 390
+  pixels, 10% pink at 320 and 4.5% at 430 (the approved look was 11% at 390). The
+  gap detector (a magenta fill under the artwork, any magenta pixel is a gap)
+  finds none at 19 widths from 320 to 1440 and with a long first name, a case
+  that opened a 9 pixel gap at 769 pixels under the old nudge. The layer is
+  positioned without a z-index, so it creates no stacking context: the greeting
+  (z-index 2, holding Zendesk's instant search) and the catalog card (z-index 3)
+  keep their order. The indigo background remains only as the fallback while the
+  artwork loads. The subtitle and "Popular:" label changes that came with the
+  native-size version are reverted. Open: at 600 to 768 pixels the "Popular:" label
+  sits over the artwork's cyan glow, 6.8 to 7.8:1 for the typical pixel and 3.4 to
+  4.2:1 at the single lightest one; that is the original design, and `adapt` can
+  decide whether it needs a scrim.
   The 1.8 MB artwork is unchanged here; `optimize` will look at its weight.
 - **Failed loads show up promptly and leave no dead control.** With the catalog
   or the item API forced to 500, the skeleton used to stay for the six second

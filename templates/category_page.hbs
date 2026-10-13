@@ -84,7 +84,10 @@
               {{/if}}
             </section>
           {{else}}
-            <p class="empty-state category-empty">There are no sections in this category yet.</p>
+            {{!-- English gets a sentence; every other locale keeps Zendesk's translated "Empty".
+                  (src/domFixups.js hides an element whose only text is the English word, which
+                  is why English needs a sentence of its own.) --}}
+            <p class="empty-state category-empty">{{#contains help_center.locale 'en-'}}There are no sections in this category yet.{{else}}{{t 'empty'}}{{/contains}}</p>
           {{/each}}
         </div>
       {{/is}}

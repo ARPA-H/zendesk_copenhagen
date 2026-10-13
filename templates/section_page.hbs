@@ -65,7 +65,8 @@
 
       {{#unless section.sections}}
         {{#unless section.articles}}
-          <p class="empty-state">There are no articles in this section yet.</p>
+          {{!-- English gets a sentence; every other locale gets Zendesk's translated "Empty". --}}
+          <p class="empty-state">{{#contains help_center.locale 'en-'}}There are no articles in this section yet.{{else}}{{t 'empty'}}{{/contains}}</p>
         {{/unless}}
       {{/unless}}
 
