@@ -59,13 +59,18 @@
 .svc-result-breadcrumbs a { color: var(--type-subheading); }
 .svc-result-desc { color: var(--type-subheading); font-size: var(--font-size-2xs); line-height: var(--line-height-5); margin: var(--space-1) 0 0; max-width: var(--measure-prose); }
 
-/* Search-results: sub-nav row + search pill */
+/* Search-results: sub-nav row + search pill. Stacked on a phone the breadcrumb
+   spans the row and starts at the left, as on every other Knowledge page; side
+   by side from the tablet width the two are centered on one line. */
 .svc-search-container .sub-nav {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   gap: var(--space-2);
   flex-wrap: wrap;
+}
+@media (min-width: 768px) {
+  .svc-search-container .sub-nav { align-items: center; }
 }
 
 .svc-search-pill {

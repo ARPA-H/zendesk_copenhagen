@@ -942,6 +942,75 @@ Expressive decisions made during Phase 9 (each is easy to reverse):
   the tokens, the wash, the forced-colors outline and the chevron rule, comments
   included; the two React bundles changed by 13 bytes each.
 
+Polish decisions made during Phase 10 (each is easy to reverse). The final
+critique (two isolated assessments, below) raised a short list of specific
+observations; each was measured in the offline render before anything changed, and
+the ones that held are fixed:
+
+- **The Device FAQs labels sit on one line.** The three tiles center a logo and its
+  label as a group, and the logos are three different heights (10, 6 and 4.5 rem), so
+  the labels sat at 429, 397 and 385 pixels down the page at 1440 wide. Where tiles
+  share a row (from 31rem, two or more columns) each logo now gets the largest
+  logo's box (`--os-logo-box`), so all three labels are at 429. The logos did not
+  move (each is still centered at 333 pixels) and the tiles keep their height
+  (252); on a phone, where each tile is its own row, nothing changes.
+- **The search page's breadcrumb starts at the left on a phone.** The search page's
+  own override centered the stacked breadcrumb (148 pixels wide, starting 121 pixels
+  in at 390 wide); category, section and article pages stretch it across the row and
+  start it at the left edge (358 pixels wide, 16 pixels in). The search page now
+  does the same below the tablet width and keeps its centered row above it.
+- **A page introduction no longer splits a name.** On a category page at 390 wide,
+  "ARPA-H" broke after its hyphen and left "H." alone on a line (line widths 346, 347
+  and 18 pixels). `text-wrap: pretty` on the description gives 346, 288 and 72, and
+  leaves 360 and 414 wide as they were; a browser without it ignores the property.
+- **The note under Submit is body text again.** Below 600 pixels it was 12 pixels
+  (the badge size, which `DESIGN.md` reserves for badges and status labels) on a
+  single line that truncated with an ellipsis; it only fit at 390 wide because it was
+  small. It is now 14 pixels like the desktop note and wraps, so the service item
+  page is 26 pixels taller on a phone (2,139 to 2,165) and the text can no longer be
+  cut off.
+- **The catalog's result count is a status message.** "15 services" changed with no
+  announcement when a person searched, sorted or changed category. WCAG 4.1.3
+  asks that "status messages can be programmatically determined through role or
+  properties such that they can be presented to the user by assistive technologies
+  without receiving focus" and its [Understanding page](https://www.w3.org/WAI/WCAG22/Understanding/status-messages.html)
+  lists "18 results returned" as an example. The count now has `role="status"`,
+  which changes nothing visible. When the category changes the count row is
+  replaced (the list shows its skeleton meanwhile), so that case may announce less
+  reliably than a search or a sort, where the same element changes its text.
+- **A failed submit moves focus to the first field that is marked.** With required
+  fields empty, the two fields turned red and focus stayed on the Submit button, so a
+  keyboard or screen reader user was told nothing. The [W3C forms tutorial](https://www.w3.org/WAI/tutorials/forms/notifications/)
+  says "If the submitted data contains errors, it is convenient to set the focus to
+  the first `<input>` element that contains an error." Measured in the built bundle
+  with two required fields empty, at 1440 wide with a mouse and at 390 with touch:
+  before, focus stayed on the button; now it lands on the first marked field and
+  that field is in view. This adds no new element; a summary of the errors would,
+  and it is left as an open decision.
+- **A typo in a default.** The default text of the alert banner setting
+  (`manifest.json`) said "inquires" twice, for "inquiries". It predates this work and
+  only a fresh install reads it, since Admin Center values override the default.
+- **Two statements in `DESIGN.md` now match what is built.** The catalog's service
+  filter is a Garden field with 4 pixel corners (measured), not a pill, so the Shapes
+  section says the hero search is the pill and the filter keeps Garden's corners; and
+  the rule against nesting a card inside a card names the catalog's large panel as the
+  one container for the grid.
+- **Measured and left.** The pagination buttons touch in the offline render
+  ("Next ›" and "»" share an edge at 528.2 pixels): the harness stub writes the list
+  items with no whitespace between them, and whether Zendesk's own markup has any
+  cannot be checked offline, so it is left for the sandbox. Article and section
+  titles in the category page's lists are body-colored with no underline, as they
+  were before this work (checked against the baseline capture), so a link only reads
+  as one by its place in a list. The share icons on articles come from the
+  `show_article_sharing` setting, which is on by default.
+- **A runtime call to a third party.** The service icons come from Iconify's public
+  API (`api.iconify.design`, with two fallback hosts) unless the Guide setting
+  `iconify_api_base` names a self-hosted API; it is empty in `manifest.json`, and
+  `src/modules/shared/service-icons/iconConfig.ts` documents it for "a
+  government/enterprise deployment". That is the original design with a documented
+  switch, so nothing changed here, but whether a .gov page should call a public
+  service for its icons is a question for the owner (see Open decisions).
+
 ## Gates
 
 Run from the repository root; each should hold at the end of the work.

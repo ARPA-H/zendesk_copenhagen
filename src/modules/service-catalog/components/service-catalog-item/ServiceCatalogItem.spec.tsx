@@ -457,6 +457,52 @@ describe("ServiceCatalogItem", () => {
       expect(screen.getByTestId("submit-button")).not.toBeDisabled();
     });
 
+    it("moves focus to the first field the errors mark, so a failed submit is not silent", async () => {
+      const fields = [
+        {
+          id: 1,
+          name: "custom_fields_1",
+          type: "text",
+          description: "Field 1",
+          label: "Field 1",
+          required: true,
+          options: [],
+          value: null,
+          error: null,
+        },
+      ];
+
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: fields,
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields: jest.fn(),
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      // The real fields get aria-invalid from the errors the submit sets (the
+      // mocked form renders no fields), so stand-ins mark the first and a later one.
+      const form = screen.getByTestId("item-request-form");
+      const first = document.createElement("input");
+      const later = document.createElement("input");
+      first.setAttribute("aria-invalid", "true");
+      later.setAttribute("aria-invalid", "true");
+      form.append(first, later);
+
+      fireEvent.submit(form);
+
+      await waitFor(() => expect(first).toHaveFocus());
+      expect(mockSubmitServiceItemRequest).not.toHaveBeenCalled();
+    });
+
     it("preserves fields hidden by a conditional rule when merging validation errors", async () => {
       const setRequestFields = jest.fn();
       const visibleField = {

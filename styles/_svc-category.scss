@@ -51,17 +51,33 @@
 
 // The three 512px canvases carry different amounts of empty margin (a wide
 // wordmark, a padded glyph, a full-bleed logo), so each is sized to read as the
-// same visual weight.
-.custom-os-tile--macos img {
-  width: 10rem;
+// same visual weight. Where tiles share a row (two or more columns, from 31rem)
+// every logo gets the largest logo's box, so the labels sit on one line instead
+// of following the height of each logo; the logos themselves do not move.
+.custom-os-tile-group {
+  --os-logo-box: 10rem;
 }
 
-.custom-os-tile--ios img {
-  width: 6rem;
+.custom-os-tile--macos {
+  --os-logo: 10rem;
 }
 
-.custom-os-tile--windows img {
-  width: 4.5rem;
+.custom-os-tile--ios {
+  --os-logo: 6rem;
+}
+
+.custom-os-tile--windows {
+  --os-logo: 4.5rem;
+}
+
+.custom-os-tile img {
+  width: var(--os-logo);
+}
+
+@media (min-width: 31rem) {
+  .custom-os-tile img {
+    margin-block: calc((var(--os-logo-box) - var(--os-logo)) / 2);
+  }
 }
 
 .custom-os-tile-label {

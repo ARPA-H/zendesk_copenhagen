@@ -2759,6 +2759,7 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   font-size: var(--font-size-sm);
   margin: 0 0 var(--space-4) 0;
   padding-inline-end: max(0px, 100% - var(--measure-prose));
+  text-wrap: pretty;
   word-break: break-word;
 }
 @media (min-width: 768px) {
@@ -7673,18 +7674,31 @@ a.svc-help-btn:hover,
   max-width: 100%;
 }
 
-.custom-os-tile--macos img {
-  width: 10rem;
+.custom-os-tile-group {
+  --os-logo-box: 10rem;
 }
 
-.custom-os-tile--ios img {
-  width: 6rem;
+.custom-os-tile--macos {
+  --os-logo: 10rem;
 }
 
-.custom-os-tile--windows img {
-  width: 4.5rem;
+.custom-os-tile--ios {
+  --os-logo: 6rem;
 }
 
+.custom-os-tile--windows {
+  --os-logo: 4.5rem;
+}
+
+.custom-os-tile img {
+  width: var(--os-logo);
+}
+
+@media (min-width: 31rem) {
+  .custom-os-tile img {
+    margin-block: calc((var(--os-logo-box) - var(--os-logo)) / 2);
+  }
+}
 .custom-os-tile-label {
   font-family: var(--font-secondary);
   font-size: var(--font-size-md);
@@ -8285,14 +8299,6 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   .svc-form-panel #service-catalog-item h2 {
     font-size: var(--font-size-md) !important;
   }
-  .svc-custom-submit-note {
-    font-size: var(--font-size-3xs);
-    line-height: var(--line-height-3);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-  }
 }
 /* ---- REDUCED MOTION ---- */
 @media (prefers-reduced-motion: reduce) {
@@ -8566,15 +8572,22 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   max-width: var(--measure-prose);
 }
 
-/* Search-results: sub-nav row + search pill */
+/* Search-results: sub-nav row + search pill. Stacked on a phone the breadcrumb
+   spans the row and starts at the left, as on every other Knowledge page; side
+   by side from the tablet width the two are centered on one line. */
 .svc-search-container .sub-nav {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: space-between;
   gap: var(--space-2);
   flex-wrap: wrap;
 }
 
+@media (min-width: 768px) {
+  .svc-search-container .sub-nav {
+    align-items: center;
+  }
+}
 .svc-search-pill {
   display: flex !important;
   align-items: center !important;

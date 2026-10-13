@@ -235,7 +235,7 @@ export function ServiceCatalogList({
       />
       {!isCategoryChanging && (
         <CountAndSortRow>
-          <span>
+          <span role="status">
             {t("service-catalog.service-count", "{{count}} services", {
               "defaultValue.one": "{{count}} service",
               count,

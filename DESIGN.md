@@ -267,7 +267,7 @@ Flat by default. Service cards and search result cards rest on a stroke alone; t
 
 ## Shapes
 
-Actions are pills (`1000px`). Surfaces are 16px, with the large catalog panel at 24px. Selects and textareas use 8px. Chips and the search field are pills.
+Actions are pills (`1000px`). Surfaces are 16px, with the large catalog panel at 24px: the panel is the page's container for the card grid, the one place a surface holds other surfaces. Selects and textareas use 8px. Chips and the hero search are pills; the catalog's own service filter is a Garden field and keeps Garden's 4px corners.
 
 ## Components
 
@@ -332,7 +332,7 @@ A failed load replaces its skeleton at once. The module's error screen is announ
 
 - **Don't** use cyan for anything that cannot be pressed, and don't put white text on it.
 - **Don't** use yellow, green or red outside a message.
-- **Don't** nest a card inside a card.
+- **Don't** nest a card inside a card. The catalog's large panel is the one container for the grid and is not itself a card.
 - **Don't** add a colored border on one side of a card, list item or alert wider than 1px.
 - **Don't** use `outline: none` without a replacement ring.
 - **Don't** hard-code hex, rgba or named color values (such as `yellow`) in the stylesheets. The one exception is the generated stock USWDS banner (`styles/_usa-banner-generated.scss`).

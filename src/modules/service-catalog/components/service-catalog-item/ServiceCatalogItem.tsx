@@ -414,6 +414,9 @@ export function ServiceCatalogItem({
 
     if (validateForm(requestFieldsWithFormData, attachments)) {
       flushSync(() => setIsSubmitting(false));
+      // The errors are on screen now. Without this a keyboard or screen reader
+      // user stays on the Submit button and is not told anything went wrong.
+      form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
       return;
     }
 

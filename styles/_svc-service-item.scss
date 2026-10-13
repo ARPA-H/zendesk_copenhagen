@@ -333,14 +333,6 @@ body > pre, body > code, body > .template-name, body > .editor-label { display: 
   .svc-form-panel #service-catalog-item h2 {
     font-size: var(--font-size-md) !important;
   }
-  .svc-custom-submit-note {
-    font-size: var(--font-size-3xs);
-    line-height: var(--line-height-3);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-  }
 }
 
 /* ---- REDUCED MOTION ---- */

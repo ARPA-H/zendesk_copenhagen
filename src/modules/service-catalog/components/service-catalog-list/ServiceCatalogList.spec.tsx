@@ -323,3 +323,69 @@ describe("ServiceCatalogList category heading", () => {
     expect(rules).not.toMatch(/text-overflow/);
   });
 });
+
+describe("ServiceCatalogList results count", () => {
+  beforeEach(() => {
+    setUrl("");
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    setUrl("");
+  });
+
+  // One response per fetch, in order, each carrying the given count.
+  function mockFetchCounts(...counts: number[]) {
+    const fetchMock = jest.fn();
+    counts.forEach((count) =>
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () => Promise.resolve({ ...emptyResponse, count }),
+          status: 200,
+          ok: true,
+        })
+      )
+    );
+    global.fetch = fetchMock;
+    return fetchMock;
+  }
+
+  it("announces the number of services in a status region", async () => {
+    mockFetchCounts(3);
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
+    );
+
+    expect(await screen.findByText("3 services")).toHaveAttribute(
+      "role",
+      "status"
+    );
+  });
+
+  it("changes the text of the same status region when a new count arrives", async () => {
+    const fetchMock = mockFetchCounts(3, 1);
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
+    );
+
+    const region = await screen.findByText("3 services");
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /A-Z/ }));
+    await user.click(screen.getByRole("menuitemradio", { name: "Newest" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    await waitFor(() => expect(region).toHaveTextContent("1 service"));
+    expect(region).toBeInTheDocument();
+  });
+});

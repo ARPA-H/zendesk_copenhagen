@@ -44,6 +44,9 @@
     // The measure is end padding, not max-width: a max-width would clamp the
     // full-row basis and let a short title sit beside the description.
     padding-inline-end: max(0px, calc(100% - var(--measure-prose)));
+    // Where it is supported, a hyphenated name such as ARPA-H no longer splits
+    // so that its last letter sits alone on a line.
+    text-wrap: pretty;
     word-break: break-word;
   }
 

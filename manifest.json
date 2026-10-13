@@ -368,7 +368,7 @@
           "type": "text",
           "description": "Alert Banner Text",
           "label": "Alert Banner Text",
-          "value": "For onboarding inquires, please contact your onboarding specialist. For all other inquires, please log in and submit a support request. Our hours of operation for weekdays are 6am - 6pm (ET). Thank you!"
+          "value": "For onboarding inquiries, please contact your onboarding specialist. For all other inquiries, please log in and submit a support request. Our hours of operation for weekdays are 6am - 6pm (ET). Thank you!"
         }
       ]
     },
