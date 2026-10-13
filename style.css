@@ -8785,6 +8785,15 @@ body > pre, body > code, body > .template-name, body > .editor-label {
   .svc-hero-search .svc-hero-search-btn {
     border: 1px solid ButtonText !important;
   }
+  .button-primary:not(:focus-visible), .requests-table-toolbar .organization-subscribe button[data-selected=true]:not(:focus-visible),
+  button[data-selected=true]:not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -5px;
+  }
+  .vote-voted:not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
   .service-catalog-sidebar button[aria-current=true]:not(:focus-visible)::after,
   .svc-search-sidebar .sidenav-item.current {
     outline: 2px solid Highlight;

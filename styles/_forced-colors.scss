@@ -42,6 +42,23 @@
     border: 1px solid ButtonText !important;
   }
 
+  // A selected state said only by a fill or a color is lost when the palette
+  // replaces both. The selected Yes or No vote and the selected follow button are
+  // the outline button turned primary (a fill), and a voted comment arrow only
+  // changes color, so each gets a ring in the system highlight inside its edge.
+  // A focused control keeps the focus outline instead, outside the edge, as the
+  // selected sidebar row above does.
+  .button-primary:not(:focus-visible),
+  button[data-selected="true"]:not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -5px;
+  }
+
+  .vote-voted:not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+
   // A selected row is a tint, so give it an outline. A focused row keeps the
   // focus outline instead. Both sit on the select button's overlay, which is
   // the size of the whole row.

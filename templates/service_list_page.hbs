@@ -188,10 +188,14 @@
       skeletonHideClass: "svc-cat-skel-hide",
       readyClasses: ["svc-cat-ready"],
       // "Complete" = real service links rendered, or the module's error
-      // screen (role="alert") took their place, so a failure shows at once
-      // instead of after the 6s hard cap.
+      // screen (role="alert") or the fallback written when the module itself
+      // cannot load (.svc-catalog-fallback, whose link has no trailing slash)
+      // took their place, so a failure shows at once instead of after the 6s
+      // hard cap.
       isComplete: (main) =>
-        !!main.querySelector('a[href*="/services/"], [role="alert"]'),
+        !!main.querySelector(
+          'a[href*="/services/"], [role="alert"], .svc-catalog-fallback'
+        ),
     });
   } catch (e) {
     console.warn("svc-page-utils module unavailable:", e);

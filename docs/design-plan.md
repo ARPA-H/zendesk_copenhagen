@@ -537,6 +537,33 @@ Adapt decisions made during Phase 7 (each is easy to reverse):
   rules on the four catalog states, a skip link without a target on the two OS-tile
   states); none do now. Axe finds a subset of what is wrong, so this is not a
   conformance claim.
+- **Selected states in forced colors.** Review said the primary and selected
+  buttons lose their boundary and their state in forced colors. I rendered the
+  controls in both palettes. The boundary is fine: a transparent border is a color
+  other than a system color, and [CSS Color Adjust](https://www.w3.org/TR/css-color-adjust-1/#forced-colors-properties)
+  forces those to one, so the primary variant keeps the edge the outline button
+  has. The state was a real gap: the selected Yes or No vote differs from the
+  plain one only by its fill, a voted comment arrow only by its color, and a
+  selected follow button by its fill (Zendesk's [`subscribe`
+  helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#subscribe-helper)
+  also switches the label from "Follow" to "Unfollow", so that one was covered by
+  text). In both palettes the selected and plain states were pixel-identical. Each
+  now gets a 2 pixel ring in the system highlight inside its edge (a focused
+  control keeps the focus outline outside it, as the sidebar row does); the two
+  states then differ by 496 pixels for the votes, 248 for the comment arrow and 484
+  for follow. The earlier Phase 4 scan had looked for missing boundaries, not
+  missing states. Chrome's emulation, not Windows.
+- **A failed catalog import shows at once.** When the catalog module cannot load,
+  the template writes a one-line fallback (`.svc-catalog-fallback`) with a link to
+  the services page, but the completion selector looked for links containing
+  `/services/` and the fallback's link ends in `/services`, so the page showed its
+  skeleton until the six second cap: the fallback was in the DOM at 0.25 seconds
+  and visible at 6.6 on both the home and services pages. The selector now
+  includes the fallback, and both pages show it in about 0.95 seconds (0.25 for the
+  module's failure, 0.4 of settle time and a 0.3 second fade). If the request page's
+  module cannot load there is still no fallback at all: its skeleton stays for the
+  six seconds and then the form panel is empty, with only the one-line "Can't find
+  the right service?" below it (see Open decisions).
 - **Service descriptions show on devices that cannot hover** (owner decision). On
   desktop, hovering a catalog card shows its description in a tooltip; a phone has
   no hover, so the cards showed only an icon and a title, and the tooltip was
@@ -658,6 +685,7 @@ Still open:
 - The live [arpa-h.gov](https://arpa-h.gov/) still ships the older USWDS 1.x banner copy ("The .gov means it's official."); this theme uses the current official 3.x text. Whether the two should be aligned is a content decision for the main site's owners.
 - The banner copy is English only, because a theme cannot add Help Center translation keys; USWDS publishes Spanish text if a Spanish locale is ever enabled.
 - The copy this work wrote (the signed-out hero sentences, the Knowledge band's heading and lede, the "Search help articles" placeholder and label) is English and shows only in `en-` locales, for the same reason; every other locale gets the fallbacks described under Phase 7. If a second locale is ever enabled, each of those strings needs a translation route: a theme cannot add `{{t}}` keys, so the options are Zendesk Dynamic Content (the [`dc` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#dc-dynamic-content-helper), "translated according to the current locale") or one `contains` branch per locale.
+- If the request page's module cannot load (for example its script is blocked), the skeleton stays for six seconds and the form panel is then empty, with no message; the one-line "Can't find the right service? Submit a general request." below it is the only way forward. The catalog pages write a fallback for the same failure; the request page does not. A message needs new copy and a locale decision, so it is left for the owner.
 - Where suggested articles belong on the request page on a phone. They update as someone types, but the help rail follows the form, so a phone user sees them only below the Submit button. Putting the rail first would push the form down and shift the page as results arrive; an alternative is a compact "Related articles" strip just above Submit. Left as is until the owner chooses.
 - A desktop window narrowed below 769 pixels, with a mouse, gets neither the card tooltip (hidden below 769 pixels by an older rule) nor the inline description (shown only where `hover: none`). Showing the description below 769 pixels as well would close that gap at the cost of a taller list in narrow windows.
 - At 768 pixels exactly, the lightest pixel behind the "Popular:" label reads 4.0:1 (typical 8.7:1). A 55% indigo scrim, as the chips have, would clear 4.5:1 and show as a pill; the owner prefers the original look, so none is added.
