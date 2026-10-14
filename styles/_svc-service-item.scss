@@ -15,7 +15,14 @@ body { background: var(--color-white); }
 /* ---- CONTENT LAYOUT (form + help rail) ---- */
 /* The form takes the reading column and the rail the aside column, the same
    720 | 320 split as the article page. Below desktop the rail drops under the
-   form. */
+   form. The search row above them uses the same two columns (see SEARCH below),
+   so one definition serves both and they cannot drift apart. */
+@mixin item-columns {
+  grid-template-columns: minmax(0, var(--column-reading)) minmax(0, var(--column-aside));
+  column-gap: var(--column-gap);
+  justify-content: space-between;
+}
+
 .svc-form-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -24,9 +31,7 @@ body { background: var(--color-white); }
   margin-bottom: var(--space-8);
 
   @include desktop {
-    grid-template-columns: minmax(0, var(--column-reading)) minmax(0, var(--column-aside));
-    column-gap: var(--column-gap);
-    justify-content: space-between;
+    @include item-columns;
   }
 }
 .svc-form-column, .svc-side-column { min-width: 0; }
@@ -293,6 +298,20 @@ body > pre, body > code, body > .template-name, body > .editor-label { display: 
   width: 100%;
 
   @include tablet { flex: 0 1 360px; width: auto; }
+}
+
+/* From desktop the help rail sits directly under this row, so the row is laid
+   on the form layout's two columns: the breadcrumbs over the form and the pill
+   over the rail. The pill is then exactly as wide as the rail's card and the two
+   share both edges, and so a center, at any width or text size. It was a fixed
+   360px against the card's 320px: flush on the right, 40px too wide on the left
+   and 20px off center. Tablet keeps the flex row above, where the rail is far
+   below the pill, under the form. */
+.sub-nav.svc-subnav {
+  @include desktop {
+    display: grid;
+    @include item-columns;
+  }
 }
 
 .svc-searchrow .svc-hero-search {
