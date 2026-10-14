@@ -133,12 +133,12 @@
       </section>
 
       <footer>
-        <div class="article-footer">
-          {{#if settings.show_article_sharing}}
-            <div class="article-share">{{share}}</div>
-          {{/if}}
-          {{#if settings.show_article_comments}}
-            {{#if comments}}
+        {{!-- The social sharing row is gone on purpose (docs/design-plan.md, owner
+              decision 12), so the footer row exists only when it has a comment
+              count to hold; an empty one would leave its padding behind. --}}
+        {{#if settings.show_article_comments}}
+          {{#if comments}}
+            <div class="article-footer">
               <a href="#article-comments" class="article-comment-count">
                 <svg role="img" aria-labelledby="article-comments-title article-comments-desc" xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="article-comment-count-icon">
                   <title id="article-comments-title">{{t 'go_to_comments'}}</title>
@@ -147,9 +147,9 @@
                 </svg>
                 <span aria-hidden="true">{{article.comment_count}}</span>
               </a>
-            {{/if}}
+            </div>
           {{/if}}
-        </div>
+        {{/if}}
         {{#with article}}
           <div class="article-votes">
             <h2 class="article-votes-question" id="article-votes-label">{{t 'was_this_article_helpful'}}</h2>

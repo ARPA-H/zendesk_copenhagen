@@ -62,7 +62,10 @@ stock community/article-focused layout.
   `manifest.json` (deploy now uses Zendesk's Theme Update Job instead of the
   Import Job, so per-env IDs are no longer needed); Community follow/sharing/
   scoped-search features (`show_follow_post`, `show_post_sharing`,
-  `scoped_community_search`) disabled by default since 2026-01-22.
+  `scoped_community_search`) disabled by default since 2026-01-22. Social
+  sharing has since been removed outright, settings and markup
+  (`show_post_sharing` and `show_article_sharing`; owner decision 13 in
+  `docs/design-plan.md`, [PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231)).
 - **Tooling**: devcontainer/Codespaces setup (see repo memory
   `devcontainer-notes.md`).
 

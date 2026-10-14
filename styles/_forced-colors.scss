@@ -79,4 +79,40 @@
     outline: 2px solid Highlight;
     outline-offset: var(--space-05);
   }
+
+  // The pager is text only and its hover cue is a tint, which the palette drops,
+  // so a hovered control gets the underline instead.
+  .pagination li > a:hover {
+    text-decoration: underline;
+  }
+
+  // Article tabs. The track and the selected pill are fills, which the palette
+  // drops, so each tab gets a border and the selected one the system highlight.
+  // Its colors are set by hand because the platform's fill would otherwise be
+  // replaced by the canvas. The icon is a mask over the tab's background color,
+  // which the palette would also turn into the canvas, so it takes the text color
+  // explicitly. A hovered tab says so with its border, since the tint is dropped.
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab {
+    border: 1px solid ButtonText;
+
+    &:hover {
+      border-color: Highlight;
+    }
+
+    &[aria-selected="true"] {
+      background-color: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+      forced-color-adjust: none;
+    }
+
+    &[data-platform]::before {
+      background-color: ButtonText;
+      forced-color-adjust: none;
+    }
+
+    &[aria-selected="true"][data-platform]::before {
+      background-color: HighlightText;
+    }
+  }
 }

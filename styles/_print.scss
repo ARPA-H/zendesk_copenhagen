@@ -32,7 +32,6 @@
   .article-sidebar,
   .collapsible-sidebar,
   .article-subscribe,
-  .article-share,
   .article-votes,
   .article-more-questions,
   .article-comments,
@@ -103,6 +102,30 @@
     font-size: 20pt;
     overflow: visible;
     text-overflow: clip;
+  }
+
+  // The selected tab is white text on a fill, and the fill is not printed, so it
+  // would be blank on paper. The tabs print as plain names, the selected one bold
+  // and underlined, which is what Zendesk's own tabs do; the icons are fills too,
+  // so they are left to the browser's "background graphics" setting.
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar {
+    background: none !important;
+    gap: var(--space-2);
+    padding: 0;
+  }
+
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab {
+    background: none !important;
+    border-radius: 0;
+    color: var(--color-black) !important;
+    flex: none;
+    min-height: 0;
+    padding: 0 0 var(--space-05);
+
+    &[aria-selected="true"] {
+      border-bottom: 2px solid var(--color-black);
+      font-weight: var(--font-weight-bold);
+    }
   }
 
   p,

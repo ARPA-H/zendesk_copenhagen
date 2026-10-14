@@ -143,6 +143,146 @@ supersede the assumptions below wherever the two differ.
     page captures are identical to the build before; the 22nd, the item page at 1440
     pixels, differs only inside the pill's box. Axe is clean on all 18 states, and
     print is unchanged (the pill and the rail are hidden there).
+12. **The pager is text only, with room between its links.** After the pages were
+    reviewed in the sandbox the owner asked that "Next" and "»" not be stroked ("I
+    think they work better as text only"), or, if the guidelines needed the stroke,
+    that they at least not touch. They do not need it. The NEXUS pagination
+    (`.pagination` in the skill's `components.css`) draws each item with a transparent
+    border, link-colored text, a 40 pixel minimum box and a 4 pixel gap, and
+    [USWDS pagination](https://designsystem.digital.gov/components/pagination/) gives
+    Previous and Next the `usa-pagination__link` class and only the page numbers
+    `usa-pagination__button`, so the stroked pill was the old theme's, not the
+    guidelines'. `.pagination` is now a centered, wrapping flex row
+    (`styles/_pagination.scss`): each control is a link-colored 40 pixel target with
+    no border, a 4 pixel gap between controls, a light tint on hover and the shared
+    focus ring, and `.pagination-current`, where the markup has one, is bold and is
+    not a link. A flex gap does not depend on the whitespace Zendesk's markup leaves
+    between the list items, which the offline stub could not show: the strokes met at
+    528.2 pixels there. Measured in Chrome with the stub's markup and with the
+    documented [`{{pagination}}` output](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#pagination-helper)
+    (First, Previous, page numbers with the current page as a non-link item, Next and
+    Last): no border, 4 pixels between boxes and about 32 between the visible arrows,
+    text contrast 6.73:1 (8.89:1 hovered), a visible focus ring, no sideways overflow
+    at 390 pixels (a long list wraps onto a second row), at 200% text, in
+    right-to-left (the arrows mirror) and in forced colors (a hovered link underlines,
+    since the tint is dropped). Of the 22 page captures only the section and search
+    pages changed, and only in the pager row. The change reaches every page that lists
+    `{{pagination}}`; the stub writes First, Previous, Next and Last only, so Zendesk's
+    real markup is the one thing left for the sandbox.
+13. **Social sharing is removed, not just switched off.** The owner asked whether
+    `manifest.json` can force the share buttons off "so it never gets reconfigured",
+    and, if it cannot, for them to be left out of the preview screenshots. It cannot:
+    a setting is an identifier, a type, a label, a description, a default `value` and,
+    for some types, options, a minimum and a maximum
+    ([Customizing the Settings panel of the theme](https://support.zendesk.com/hc/en-us/articles/4408846524954-Customizing-the-Settings-panel-of-the-theme)),
+    and nothing in that list locks a value; a default only holds until an admin
+    changes the setting, and `show_article_sharing` defaulted to on, which is why the
+    render showed the icons. So "off" is made permanent by removing what can turn it
+    on: the `show_article_sharing` and `show_post_sharing` settings (in
+    `manifest.json`, `translations.yml` and `translations/en-us.json`), the two
+    `{{share}}` blocks in `article_page.hbs` and `community_post_page.hbs`,
+    `src/share.js` (the handler that opened each link in a popup), `styles/_share.scss`
+    and the print stylesheet's entry. Two knock-on effects are handled. The article
+    footer row held the share icons and the comment count, and an empty row would have
+    kept its padding, so the row now exists only when there is a count to show. The
+    community post footer held the share links and a comment-count link, both only
+    through `show_post_sharing` (off in this theme since 2026-01-22), so it goes with
+    it and nothing changes at the defaults; the comments section under a post is
+    untouched. The other locale files keep the two retired labels as unused strings:
+    they are synced from Zendesk, and the command that would drop them
+    (`yarn download-locales`) must not be run in this fork anyway. Measured: article
+    pages are 41 pixels shorter at 1440 and 390 and nothing else on them moved. After
+    the theme is updated the Settings panel no longer lists the two "Social sharing"
+    checkboxes, and values saved for them under an older install are ignored.
+14. **Article tabs are a segmented control with a platform icon.** The owner found the
+    tabs on knowledge articles "very stylistically plain", with "no-to-little visual
+    queues" that they can be switched, and asked for Garden and USWDS to be checked,
+    NEXUS colors (grayscale preferred) and a uniform monochrome icon left of each
+    name: iOS, macOS, Windows, and the Apple logo for a guide that covers both iOS and
+    macOS. These tabs are the editor's native
+    [Tabs component](https://support.zendesk.com/hc/en-us/articles/11042740425754-Using-tabs-to-group-content-in-the-article-editor):
+    the article carries a `<zd-tabs>` with one `<details>` per tab, and Zendesk's own
+    script (read from its public copy) adds a `role="tablist"` bar of
+    `button.wysiwyg-tabs-tab`; the default look is a hairline with an underline under
+    the selected name. The
+    [templating cookbook](https://support.zendesk.com/hc/en-us/articles/4408832681626-Help-center-templating-cookbook)
+    says the base styling "is driven by a supported set of --zd-wysiwyg-* CSS custom
+    properties" and that styling its elements directly "is supported on a best effort
+    case, meaning the component structure might change". Garden's
+    [Tabs](https://garden.zendesk.com/components/tabs/) are the underline pattern
+    Zendesk already imitates ("Use Tabs to organize related content in a single
+    view"); [USWDS has no tabs component](https://designsystem.digital.gov/components/overview/),
+    and its nearest part is the
+    [segmented button group](https://designsystem.digital.gov/components/button-group/)
+    ("a set of discrete buttons in a row as a single element"); NEXUS has filter tabs
+    (`.card-nav`: pills, the selected one filled with the brand color and white text).
+    The bar now takes all three: a light track (`--surface-subtle`) holding one pill per
+    tab, the selected pill the near-black indigo with white text (`styles/_article-tabs.scss`).
+    Apart from that fill it is grayscale; the fill is one token, so `--color-ui-80`
+    would make it entirely so if the indigo reads as heavy. A hovered pill tints, the
+    focus ring is the shared one, the bar wraps instead of scrolling (Zendesk hides its
+    scrollbar, which hid the tabs that were off screen), a long name wraps inside its
+    pill (Zendesk's `flex: 0 0 auto` let one push the page 238 pixels sideways at 390
+    pixels; the stress fixture found it), and on a phone the track spans the column.
+    Measured: selected 19.76:1, unselected 7.77:1, hovered 16.34:1; bar 48 pixels and
+    tabs 40; Zendesk's own arrow, Home and End keys still work.
+
+    The icons are `assets/apple.svg`, `ios.svg`, `macos.svg` and `windows.svg`: plain
+    names, as the owner asked, in the style of the `ios.png`, `macos.png` and
+    `windows.png` beside them. They are the four Iconify icons the owner named
+    (`lineicons:apple-brand`, `lineicons:ios`, `streamline-logos:mac-finder-logo-solid`
+    and `lineicons:microsoft`), embedded in the theme instead of fetched, which the
+    owner chose over loading them from Iconify the way the service catalog does: no
+    request to a third party from a .gov page, nothing to wait for and no dependence on
+    `iconify_api_base`. Each `viewBox` is cropped to its glyph (the Finder icon fills
+    22 of its 24 units and the others 18, so unmodified they would not match in size)
+    and the drawing is unchanged, checked against Iconify's data path for path. The
+    icon box is 18 pixels (`1.125rem`) and not a fractional size: measured on the tab
+    fixtures at 1440 and 390 pixels, a 17.5 pixel box painted the iOS, macOS and Windows
+    icons from 16 to 18 pixels wide depending on where each fell (Chrome snaps a
+    fractional box to the pixel grid), and an 18 pixel box paints every one at 18 by 18
+    at every position, with the Apple logo, which is narrower by design, 15 by 18.
+    Lineicons is MIT and Streamline Logos is CC BY 4.0, so each file carries its credit
+    and `NOTICE.md` has the license text. The credit is a comment inside the `<svg>`
+    root, because Zendesk's theme importer rejects an SVG that opens with one (the
+    failure `PLAN.md` records for an earlier asset), and `src/svgAssets.spec.js` now
+    keeps every SVG asset opening with `<svg` or `<?xml`. The credit is not shown on
+    the page, which is the owner's call to change. Each is drawn as a CSS mask over the tab's text color,
+    so it follows every state (forced colors and print have rules of their own). The
+    files load from the theme's own assets, which Zendesk serves from the Help Center's
+    address: the [`asset` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#asset-helper)
+    "inserts the relative path of the specified asset", and a public Help Center's
+    stylesheet is `/hc/theming_assets/.../style.css` on its own host
+    ([support.zendesk.com](https://support.zendesk.com/hc/en-us)), so the mask is not a
+    cross-origin fetch. The path is the `$assets-<name>-svg` variable the fonts already
+    use, written straight into `mask-image` as the fonts write theirs, not through a
+    custom property, whose value Sass does not evaluate.
+
+    `src/articleTabs.js` reads each tab's name and sets `data-platform`; the stylesheet
+    does the rest. iOS (also iPadOS, iPhone, iPad), macOS (Mac, Mac OS X, OS X) and
+    Windows get their own icon; a name that mentions iOS and macOS together, or Apple,
+    gets the Apple logo; a name with Windows beside an Apple platform is ambiguous and
+    gets none, as does one with no platform (Android, Web browser). An author can also
+    choose in the name itself, as a service catalog item does in its description:
+    `[icon: ios.svg] Phone setup`. The marker names one of the four files (`.svg` is
+    optional), is removed from the name, and wins over the name; an unknown name shows
+    no icon. The service catalog's own `[icon: ios.svg]` marker finds these files too,
+    since it already resolves "a committed SVG in this theme's assets/ directory, by
+    filename". Zendesk's script can run before or after the theme's, so the labeller
+    handles the tabs already on the page and watches the article body for ones added
+    later: checked with the platform script defined before the theme's, on
+    DOMContentLoaded, 600 milliseconds after load, and not at all (then there is no tab
+    bar, and the raw disclosures are untouched).
+
+    Verified in the offline render with a port of Zendesk's `zd-tabs` element (from its
+    public script) and its tab CSS loaded before the theme's, as the platform does: axe-core
+    is clean on all 22 states (the 18 page states plus the two tab fixtures at both
+    widths; the section and search pages among them carry the new pager), at 1440 and
+    390 pixels, in right-to-left, at 200% text, in forced colors and in print (the
+    selected tab is white on a fill, which print drops, so it prints as bold underlined
+    text). The sandbox still has to confirm that the real article editor produces the
+    structure the emulation assumes (`zd-tabs > details > summary` and
+    `.wysiwyg-disclosure-content`).
 
 ## Assumptions
 
@@ -208,7 +348,7 @@ Items 3, 4 and 6 are refined by the owner decisions above.
 | 7 | `adapt` | Responsive behavior, touch targets, print, high contrast, reflow | Done, with its review rounds answered: the audit and its fixes (the category toggle's hit area and structure, tap areas for list links on touch, the skip link's text and tab order), service descriptions on devices that cannot hover (owner decision) and for screen readers on desktop, a print stylesheet, the "Popular:" label, the "Read more" measurement found in Phase 5, English copy limited to English locales, fixed-English blocks marked `lang="en"`, and an axe-core pass over every page state; reflow, landscape phones and text spacing checked with nothing to change |
 | 8 | `optimize` | CSS weight, font loading, layout shift, images | Done: the hero artwork re-encoded without changing a pixel (1.85 to 0.93 MB), the catalog skeleton pinned (layout shift 0.148 to 0.027), the toast host loaded only where something can toast (Knowledge pages lose 249 KB of script), `shared-bundle.js` preloaded where a page has a module, and the training button, fonts and interaction speed measured and left |
 | 9 | `onboard`, `bolder`, `quieter`, `animate`, `delight`, `overdrive`, `extract` | Moderate expressive layer (state motion plus one signature moment per key page, reduced-motion safe) and token extraction; `bolder` targets the Knowledge pages, `quieter` anything the critique finds excessive | Done apart from review: `extract` put twelve literal durations onto four motion tokens that fall to almost nothing under reduced motion (nothing the theme owns still moves for a visitor who asks for that, and Garden's one chevron turn is held still), `animate` eased the service cards' hover shadow along with their border and gave an article heading reached by a link a one-time wash, and `delight`, `bolder` and `quieter` found nothing further that earns its place; `onboard` (a first-use state for My requests) and `overdrive` (three directions) are recorded as open decisions |
-| 10 | `polish`, `audit` | Final pass, final score, docs | Done: the final critique ([25/40](design-critique-final-2026-10-13.md), from 23) and audit ([15/20](design-audit-final-2026-10-13.md), from 10); the polish they pointed to (the Device FAQs labels on one line, the search breadcrumb at the left on phones, the category introduction's orphaned "H.", a readable note under Submit, the help rail's hint said once, a status message for the catalog's count, focus on the first field with an error after a failed submit, and the alert banner's default text); the design sidecar refreshed from DESIGN.md; and the Before and After screenshots in the pull request description, regenerated after the last phase and again for the footer changes (owner decisions 9 and 10) |
+| 10 | `polish`, `audit` | Final pass, final score, docs | Done: the final critique ([25/40](design-critique-final-2026-10-13.md), from 23) and audit ([15/20](design-audit-final-2026-10-13.md), from 10); the polish they pointed to (the Device FAQs labels on one line, the search breadcrumb at the left on phones, the category introduction's orphaned "H.", a readable note under Submit, the help rail's hint said once, a status message for the catalog's count, focus on the first field with an error after a failed submit, and the alert banner's default text); the design sidecar refreshed from DESIGN.md; and the Before and After screenshots in the pull request description, regenerated after the last phase and again for the footer changes (owner decisions 9 and 10) and for the pager, sharing and tabs (owner decisions 12 to 14) |
 
 Layout decisions made during Phase 3 (each is easy to reverse):
 
@@ -497,7 +637,7 @@ Clarify decisions made during Phase 6 (each is easy to reverse):
   category descriptions and the popular chips are the owner's wording. The
   current page's breadcrumb stays link-colored (stock behavior). Zendesk's own
   strings are untouched ("Knowledge Base" in the results filter, "Follow",
-  pagination, the share links).
+  pagination).
 
 Adapt decisions made during Phase 7 (each is easy to reverse):
 
@@ -1178,14 +1318,15 @@ changed, and the ones that held are fixed:
   section says the hero search is the pill and the filter keeps Garden's corners; and
   the rule against nesting a card inside a card names the catalog's large panel as the
   one container for the grid.
-- **Measured and left.** The pagination buttons touch in the offline render
-  ("Next ›" and "»" share an edge at 528.2 pixels): the harness stub writes the list
-  items with no whitespace between them, and whether Zendesk's own markup has any
-  cannot be checked offline, so it is left for the sandbox. Article and section
-  titles in the category page's lists are body-colored with no underline, as they
-  were before this work (checked against the baseline capture), so a link only reads
-  as one by its place in a list. The share icons on articles come from the
-  `show_article_sharing` setting, which is on by default.
+- **Measured and left, then fixed.** The pagination buttons touched in the offline
+  render ("Next ›" and "»" shared an edge at 528.2 pixels) and the share icons on
+  articles came from the `show_article_sharing` setting, which was on by default. I
+  could not tell from the render whether the sandbox showed either, so both were left
+  for it; the owner then confirmed the pager touched and asked for both to change, which
+  is owner decisions 12 (a text-only pager with a gap) and 13 (the sharing settings and
+  markup removed). Article and section titles in the category page's lists are
+  body-colored with no underline, as they were before this work (checked against the
+  baseline capture), so a link only reads as one by its place in a list.
 - **A runtime call to a third party.** The service icons come from Iconify's public
   API (`api.iconify.design`, with two fallback hosts) unless the Guide setting
   `iconify_api_base` names a self-hosted API; it is empty in `manifest.json`, and
@@ -1242,7 +1383,7 @@ styles, so the same pages and widths are compared before and after.
 | 7 | Target size (WCAG 2.5.8, with the nested-target and spacing rules applied): failures on the nine page states went from 1 control on 2 pages (the 12 pixel category toggle) to 0 in all 18 combinations (touch at 390 pixels, mouse at 1440); a padded search title that would have made 18 breadcrumb links fail was caught and left out. Touch targets under 44 pixels: category page 41 to 20, section 32 to 20, article 36 to 34 (36 to 29 by box size; the related and recently viewed lists keep a 40 pixel area because neighbors overlap by 4). Keyboard on the catalog's category toggle: Enter and Space did nothing, because the row cancelled them (a review finding, present in the original code); both now expand and collapse, and the toggle is no longer inside a button. axe-core 4.13 over the nine page states at 1440 (mouse) and 390 (touch): findings in all 18 before, none after. Renders on a desktop pointer after this round: 54 of 55 identical to the build before; the 55th (home at 1440) differs by 18 pixels of at most 8 of 255 on one icon edge, with identical geometry to three decimals. Skip link on focus: 2.2:1 (dark blue on black) to 21:1. "Popular:" label at the lightest pixel: 3.4 to 4.2:1 to 4.0 to 5.1:1 at 600 to 768 pixels (typical 6.8 to 7.8:1 to 8.7 to 10.1:1). False "Read more" at 1024 pixels: 4 of 8 loads to 0 of 12. Catalog at 390 pixels on a device that cannot hover: descriptions visible, page 3,721 to 4,389 pixels tall. Print: a stylesheet where there was none, checked on all nine page states; the interactive elements visible in print went from 9 on the services page (6 category rows, a toggle, the search field and the sort menu) and 6 on the request page to none on the catalog pages and the request form's own 5 fields, and the home and services pages print about 320 pixels shorter. The 45 combinations of nine pages at five widths: no overflow, no contrast failures, no colors outside the palette and no control without a focus ring. Renders on a desktop pointer: 45 of 55 identical to Phase 6, and the other 10 (home and services at five widths) differ only in the 52 by 15 pixel patch of the "Popular:" label; the "Read more" timing difference that showed in earlier comparisons is gone. Language of parts: on a French page the `.gov` banner, the footer's policy block and the footer navigation's name resolved to French before and resolve to English now (the translated footer links stay French), with the screens identical (22 of 22) and axe clean on all 18 states. Scrollable tables: three captionless wide tables in an article were all named "Scrollable table" (axe: `landmark-unique`, moderate) and are now numbered 1 to 3 of 3 with a captioned one untouched (axe clean); on a French page they stayed focusable and unnamed until the Phase 10 review, and are now named through a hidden English label (see the polish decisions). OS tiles: English identical, French links named "macOS", "iOS" and "Windows". Unit tests: 94 suites and 902 tests (877 before; five new for "Read more", six for the sidebar's controls, six for the card descriptions, two for the print hooks, six for the table names). |
 | 8 | Phone profile (Slow 4G, 4x CPU slowdown, cache off, median of three), before to after. Home: LCP 11.5 to 7.1 s, layout shift 0.148 to 0.027, blocking time 179 to 86 ms, 2,278 to 1,378 KB; services: LCP 11.5 to 7.1 s, layout shift 0.148 to 0.027, blocking time 204 to 79 ms, 2,280 to 1,382 KB. Signed-out home: LCP 10.9 to 5.5 s, 2,162 to 1,014 KB, script 261 to 12 KB, blocking time 92 to 0 ms. Knowledge pages (category, OS tiles, section, article, search): LCP 764 to 920 ms down to 688 to 852 ms, script 261 to 12 KB, transferred 334 to 382 KB down to 86 to 134 KB (65 to 74% less), blocking time 63 to 139 ms down to 0 to 12 ms, load event 2.1 to 2.4 s down to 0.9 to 1.1 s. Request form: first paint 760 to 856 ms and LCP 780 to 872 ms (the price of the preload; the form is ready as fast as before, 3,563 and 3,546 ms in the five-run comparison), blocking time 80 to 57 ms. Catalog ready on home: 5,255 to 4,562 ms. Interactions at 4x CPU slowdown: 56 ms at worst on a phone and 48 ms on desktop (good is 200). Desktop, after (no earlier desktop baseline was taken): home LCP 1.20 s, signed-out home 0.96 s, Knowledge pages 168 to 192 ms, layout shift at most 0.048. Pixels: the re-encoded hero differs from the original in none of its 7.7 million pixels, and 22 of 22 captures are identical across the phase. Unit tests: 95 suites and 908 tests (94 and 902 before this phase; two new for the translation guard, four for the localized control names after review). |
 | 9 | Computed transitions and animations across the 18 page states (nine pages at 1440 pixels with a mouse and 390 with touch): 45 distinct rules, of which 24 are unchanged, 20 changed in length by 60 ms at most and one (the service cards') now also eases its shadow; twelve literal durations became four tokens. With the reduced-motion preference on: theme-owned rules that still ran went from 12 to 0, and no rule transitions `transform` or a layout property (Garden's chevron turn ran for 0.25 seconds with the preference on and is now instant); the 22 rules left are Garden's color, border, shadow, opacity, visibility and stacking-order changes, which WCAG does not count as motion. The anchor wash, stepped frame by frame: the full tint at 0, 500 and 720 ms, 61% at 1,000 ms, 19% at 1,400 ms and clear at 1,800 ms; no animation on a heading that is not the target or on any page with no hash; a static tint under reduced motion; a 2 pixel `Highlight` outline in forced colors; an anchor nested in a heading also triggers it. Pixels: 22 of 22 page captures identical to the build before Phases 8 and 9 (nothing here changes a resting page). axe-core over the 18 page states: no findings. Generated files: `style.css` +2,661 bytes raw (+780 gzipped), the two React bundles +13 bytes each. Unit tests: 96 suites and 918 tests (95 and 908 before this phase): the CSS changes have no unit tests and are checked by the computed-style probes above, and the ten new specs cover the toast host check from Phase 8 that the Phase 9 review found too loose (seven of the ten fail on the old template). |
-| 10 | Final critique, run as two isolated assessments like the baseline: 25/40 against 23/40, with status feedback, consistency and minimalism up a point each and user control down one (a difference between reviewers, explained in the document). Final audit: 15/20 against 10/20, each of the five dimensions at 3 from 2. Measured on the 18 page loads, baseline to final: horizontal overflow on 2 loads to none; colors off the palette in the rendered pages 35.7% to 0 (3.7% counting the stock banner's three colors); text pairs below 4.5:1 21 elements to none; distinct font sizes 20 to 9; text nodes under 14 pixels 37.7% to 4.7% (the stock banner supplies 45 of the 50); Tab stops without a visible focus change 10 to 0 of 691; pages with exactly one h1 7 to 9 of 9; states with axe-core violations 18 (46 rule hits) to none; HTTP errors 4 to 0. Polish: of the 22 page captures, four changed by exactly the fixes (the Device FAQs labels, the search breadcrumb at 390, the category introduction at 390 and the note under Submit at 390), and one later fix changed the help rail on the request page; axe-core stays clean on all 18 states. A failed submit now moves focus to the first field with an error for text, dropdown, multi-select, checkbox and attachments fields, each required alone (before the polish it stayed on the Submit button for every type), and so does a server rejection (422) that names a field: measured on a text field, focus was on the page body before and is on the input now. With a mouse in a window narrower than 769 pixels a catalog card now shows its hover tooltip (before: neither the tooltip nor the description), and resting pages are unchanged (22 of 22 captures identical). From 1024 pixels the search pill on the service item page shares its left edge, right edge and center with the help rail's card at five widths from 1024 to 1920, at 150% and 200% text, with a long breadcrumb and in right-to-left (before: 360 pixels against 320, 40 pixels too wide on the left and 20 off center); 21 of 22 captures identical, and the 22nd (the item page at 1440 pixels) differs only inside the pill. Unit tests: 99 suites and 949 tests (96 and 918 before the polish: two new for the count's status role, one for the focus handoff, six for the helper on real field components, two for the checkbox; and, after the Copilot reviews of the final commits, two more for the count's announcer, four for the table labels on other languages' pages, twelve for the catalog's completion check, a suite of its own, and two for the handoff after a server 422). |
+| 10 | Final critique, run as two isolated assessments like the baseline: 25/40 against 23/40, with status feedback, consistency and minimalism up a point each and user control down one (a difference between reviewers, explained in the document). Final audit: 15/20 against 10/20, each of the five dimensions at 3 from 2. Measured on the 18 page loads, baseline to final: horizontal overflow on 2 loads to none; colors off the palette in the rendered pages 35.7% to 0 (3.7% counting the stock banner's three colors); text pairs below 4.5:1 21 elements to none; distinct font sizes 20 to 9; text nodes under 14 pixels 37.7% to 4.7% (the stock banner supplies 45 of the 50); Tab stops without a visible focus change 10 to 0 of 691; pages with exactly one h1 7 to 9 of 9; states with axe-core violations 18 (46 rule hits) to none; HTTP errors 4 to 0. Polish: of the 22 page captures, four changed by exactly the fixes (the Device FAQs labels, the search breadcrumb at 390, the category introduction at 390 and the note under Submit at 390), and one later fix changed the help rail on the request page; axe-core stays clean on all 18 states. A failed submit now moves focus to the first field with an error for text, dropdown, multi-select, checkbox and attachments fields, each required alone (before the polish it stayed on the Submit button for every type), and so does a server rejection (422) that names a field: measured on a text field, focus was on the page body before and is on the input now. With a mouse in a window narrower than 769 pixels a catalog card now shows its hover tooltip (before: neither the tooltip nor the description), and resting pages are unchanged (22 of 22 captures identical). From 1024 pixels the search pill on the service item page shares its left edge, right edge and center with the help rail's card at five widths from 1024 to 1920, at 150% and 200% text, with a long breadcrumb and in right-to-left (before: 360 pixels against 320, 40 pixels too wide on the left and 20 off center); 21 of 22 captures identical, and the 22nd (the item page at 1440 pixels) differs only inside the pill. Unit tests: 99 suites and 949 tests (96 and 918 before the polish: two new for the count's status role, one for the focus handoff, six for the helper on real field components, two for the checkbox; and, after the Copilot reviews of the final commits, two more for the count's announcer, four for the table labels on other languages' pages, twelve for the catalog's completion check, a suite of its own, and two for the handoff after a server 422). For the owner's later requests (decisions 12 to 14): of the 22 page captures, 16 are identical to the build before, and the other six differ by exactly the changes (the section and search pages at both widths, in the pager row only; the article page at both widths, 41 pixels shorter without its share icons); the two tab fixtures and the pager add four more states to the axe-core pass, which is clean on all 22; the stress fixture's long tab name (607 pixels wide, 238 pixels of sideways scroll at 390) now wraps inside its pill with no overflow. Unit tests: 101 suites and 1,024 tests (99 and 949 before; 52 new for the tab labels and the platforms' files, and 23 for the first bytes of every SVG asset). Generated files: `style.css` 224.3 KB and `script.js` 49.4 KB, against Zendesk's [limit](https://support.zendesk.com/hc/en-us/articles/4408831783962-Knowledge-product-limits-for-your-help-center) of 800 KB each, and four assets of 3.7 KB in all (the limits are 5 MB an asset and 50 MB in total; there is no cap on the number of assets). |
 
 ## Open decisions
 
@@ -1274,4 +1415,6 @@ Still open:
 - My requests has no first-use state. `RequestsTable` renders the bare text "No requests found" whenever the list is empty, so a person who has never submitted a request meets a dead end, and so does someone whose search matched nothing. The `request-list` module knows whether a search or filter is active, so a first-use message with a link to the service catalog is feasible (`onboard`). The page is outside this work's scope (pages outside the catalog and Knowledge inherit tokens only) and has no offline fixture to check it against, so it is left for the owner.
 - From the final critique, not built, because each changes information architecture, content or product behavior (the [final critique](design-critique-final-2026-10-13.md) has the evidence for each). (a) The front door: the hero search and the popular-search chips send service intents to articles (four of the five chips name things that are also catalog cards), results have no "Matching services" row, the Knowledge search is silently scoped to the current category, and the no-results page has no request or Ask AI route. (b) The shell: the desktop header carries no navigation (Services, Submit a request and My requests are in the footer, for signed-in visitors, and the avatar menu), the signed-in home shows nothing about a person's own requests, and the alert banner reaches signed-out visitors only, which `PRODUCT.md` records as an owner decision. (c) The urgent path: no Service Desk number or hours outside the alert's default text, no lost-PIV-card service (only an article), and no route for a locked-out visit. (d) The catalog grid: fifteen cards of equal weight, hover-only descriptions on desktop (an owner decision from Phase 7), repeated icons and A to Z sorting only. (e) The submit moment on phones: the rail after the Submit button (above), no saved draft, and a hidden Requester line.
 - An error summary on the request form. A failed submit now moves focus to the first field with an error, but each empty field says only "This field is required." and nothing says how many fields need attention. A "2 fields need attention" list with links is the stronger pattern and adds a visible element, so it is left for the owner (see the [final audit](design-audit-final-2026-10-13.md)).
-- Where service icons come from. The catalog asks Iconify's public API for icon data at runtime (`api.iconify.design`, with two fallback hosts) unless the Guide setting `iconify_api_base` names a self-hosted [Iconify API](https://iconify.design/docs/api/); it is empty. The other route is `[icon: file.svg]` references served from theme assets. Either keeps the traffic inside the agency; which one is the owner's call, and what the live theme has set is worth checking first.
+- Where service icons come from. The catalog asks Iconify's public API for icon data at runtime (`api.iconify.design`, with two fallback hosts) unless the Guide setting `iconify_api_base` names a self-hosted [Iconify API](https://iconify.design/docs/api/); it is empty. The other route is `[icon: file.svg]` references served from theme assets. Either keeps the traffic inside the agency; which one is the owner's call, and what the live theme has set is worth checking first. The four platform icons on article tabs (`assets/apple.svg` and its siblings) take the second route and never call out, and a catalog item can use them by name too (`[icon: ios.svg]`).
+- What only the sandbox can show for the pager, sharing and tabs (owner decisions 12 to 14). The pager: Zendesk's real markup (the render writes First, Previous, Next and Last; the documented output also lists page numbers, which the styles cover). The tabs: that the article editor's Tabs component stores the structure the emulation assumes, that Zendesk's script still adds the `.wysiwyg-tabs-tab` buttons (by Zendesk's own account the component's structure "might change") and that the four icons load from the theme's assets. Each fails soft: a pager whose markup differs still has a gap and no stroke, and tabs that do not match the styles are Zendesk's default tabs. Settings: that the Settings panel no longer lists "Social sharing" and that no article shows a share row.
+- Whether the credit for the macOS icon (CC BY 4.0) should also be visible. The license lets the credit be given ["in any reasonable manner based on the medium, means, and context"](https://creativecommons.org/licenses/by/4.0/legalcode.en) of the use, and it is in the icon file and in `NOTICE.md` (creator, a link to the icon, the license, and that the `viewBox` was cropped). The page shows no credit; a line in the footer is the visible alternative and the owner's call.

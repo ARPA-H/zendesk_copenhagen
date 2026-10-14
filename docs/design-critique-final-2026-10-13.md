@@ -102,13 +102,13 @@ Facts only, from the Impeccable detector and the offline measurements (headless 
 | Observation | Disposition |
 | --- | --- |
 | The Device FAQs labels sat on three different lines (429, 397 and 385 pixels down the page at 1440 wide) | Fixed in Phase 10: one line; the logos did not move |
-| The pager's "Next ›" and "»" touch with no gap | Left. The offline stub writes the list items with no whitespace between them; whether Zendesk's own markup has any cannot be checked without a Zendesk environment, so it needs a look in the sandbox |
+| The pager's "Next ›" and "»" touch with no gap | Fixed after this critique (owner decision 12): the owner confirmed in the sandbox that they touched, and the pager is now text only with a gap between its links |
 | The category introduction wraps "ARPA-" and "H." onto separate lines at 390 | Fixed in Phase 10 with `text-wrap: pretty` |
 | On the search page at 390 the breadcrumb is centered while it is left-aligned elsewhere | Fixed in Phase 10: the search page's own override removed below the tablet width |
 | The "Community" type filter and per-result vote and comment counts add clutter for an IT knowledge base | Left: Zendesk settings and the stock results markup |
 | Home and Services are hand-synced template clones | Left: structure, with a refactor risk and no visible gain |
 | The footer's nine policy links carry the same weight as the three functional links; short pages leave white space below the footer at tablet heights | Left: the links are required, and the footer structure follows the owner's reference. The owner later dropped the Adobe plugin link as not needed in a Help Center, so there are eight |
-| Share-to-social icons (about 11 pixels) on internal how-tos | Left: the `show_article_sharing` setting, on by default, is the owner's |
+| Share-to-social icons (about 11 pixels) on internal how-tos | Fixed after this critique (owner decision 13): the owner asked for them off for good, and Zendesk has no way to lock a setting, so the `show_article_sharing` and `show_post_sharing` settings and the markup that read them are removed |
 | The alert banner's raspberry fill for a maintenance notice reads as an error; the default text misspells "inquiries" | The typo is fixed in Phase 10; the fill is an Admin Center setting (the alert keeps its own color settings by design) |
 | The 404 keeps the stock "Oops!" tone and has no search or Service Desk route | Left: a copy decision |
 | Two request doors: "Submit a request" opens the stock ticket form, "General request" opens a catalog item with a rail | Left: product |

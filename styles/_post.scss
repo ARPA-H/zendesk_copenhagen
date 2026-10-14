@@ -100,30 +100,6 @@
     @include content-body;
   }
 
-  &-footer {
-    align-items: center;
-    display: flex;
-    justify-content: space-between;
-    padding-bottom: 20px;
-  }
-
-  &-comment-count {
-    color: var(--type-subheading);
-
-    &:hover {
-      text-decoration: none;
-    }
-
-    .icon-comments {
-      color: var(--color-brand-primary);
-      display: inline-block;
-      width: 18px;
-      height: 18px;
-      margin: 5px;
-      vertical-align: middle;
-    }
-  }
-
   &-sidebar {
     @include desktop {
       border: 0;

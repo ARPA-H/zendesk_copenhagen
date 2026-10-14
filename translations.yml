@@ -219,16 +219,6 @@ parts:
       screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
       value: "Show related articles"
   - translation:
-      key: "txt.help_center_copenhagen_theme.article_sharing_label"
-      title: "Label for the article social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Social sharing"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.article_sharing_description"
-      title: "Description for the article social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Show social media sharing on article"
-  - translation:
       key: "txt.help_center_copenhagen_theme.section_page_group_label"
       title: "Label for the section page elements settings group"
       screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
@@ -264,16 +254,6 @@ parts:
       title: "Description for the follow post setting"
       screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
       value: "Users can follow a specific post"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.post_sharing_label"
-      title: "Label for the post social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Social sharing"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.post_sharing_description"
-      title: "Description for the post social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Show social media sharing on post"
   - translation:
       key: "txt.help_center_copenhagen_theme.comunity_topic_group_label"
       title: "Label for the community topic elements settings group"

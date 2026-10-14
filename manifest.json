@@ -286,13 +286,6 @@
           "description": "related_articles_description",
           "label": "related_articles_label",
           "value": true
-        },
-        {
-          "identifier": "show_article_sharing",
-          "type": "checkbox",
-          "description": "article_sharing_description",
-          "label": "article_sharing_label",
-          "value": true
         }
       ]
     },
@@ -316,13 +309,6 @@
           "type": "checkbox",
           "description": "follow_post_description",
           "label": "follow_post_label",
-          "value": false
-        },
-        {
-          "identifier": "show_post_sharing",
-          "type": "checkbox",
-          "description": "post_sharing_description",
-          "label": "post_sharing_label",
           "value": false
         }
       ]

@@ -1,0 +1,133 @@
+/***** Article tabs *****/
+
+// The article editor's Tabs component. Zendesk renders it as <zd-tabs> with one
+// <details> per tab and, once its own script has run, adds a tab bar:
+//
+//   .wysiwyg-tabs-active > .wysiwyg-tabs-bar[role=tablist]
+//                        > button.wysiwyg-tabs-tab[role=tab][aria-selected]
+//
+// Zendesk's default look is a hairline with an underline beneath the selected tab,
+// which reads as plain text, so nothing says the names can be switched. Here the bar
+// is a segmented control: a light track holding one pill per tab, the selected pill
+// filled. The pill and its fill are the NEXUS filter tabs; the track is what makes it
+// read as one control (USWDS has no tabs, and its nearest part, the segmented button
+// group, is the same idea); Garden's Tabs describe the keyboard model that Zendesk's
+// script already implements (arrow keys, Home and End). Apart from the selected fill,
+// which is the near-black indigo, it is grayscale.
+//
+// Zendesk supports overriding two custom properties, so those are set first and keep
+// the colors right even if its markup changes. Styling its elements directly is, by
+// its own description, best effort and liable to change with the markup, so every
+// rule below is written to fail soft: without it the tabs are Zendesk's default tabs.
+// The selectors carry .article-body so they outrank the platform's three-class rules
+// whichever stylesheet loads first.
+//
+// A tab named after a platform also gets that platform's icon: src/articleTabs.js
+// sets data-platform on the tab, and the icon is the plain-named file in assets/
+// (apple.svg, ios.svg, macos.svg, windows.svg), drawn as a mask so it takes the tab's
+// text color in every state.
+.article-body .wysiwyg-tabs-active {
+  --zd-wysiwyg-tabs-color: var(--color-brand-primary);
+  --zd-wysiwyg-disclosure-border-color: var(--surface-stroke);
+
+  > .wysiwyg-tabs-bar {
+    background-color: var(--surface-subtle);
+    border-bottom: 0;
+    border-radius: var(--radius-lg);
+    // Wrap rather than scroll: Zendesk hides the scrollbar, which hides the
+    // tabs that are off screen.
+    flex-wrap: wrap;
+    gap: var(--space-05);
+    overflow: visible;
+    padding: var(--space-05);
+    width: fit-content;
+
+    // On a phone the track spans the column, so each row of a wrapped bar fills it.
+    @media (max-width: 30rem) {
+      width: 100%;
+    }
+  }
+
+  > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab {
+    align-items: center;
+    background-color: transparent;
+    border: 0;
+    border-radius: var(--radius-round);
+    color: var(--type-subheading);
+    display: inline-flex;
+    // Zendesk fixes a tab at its text's width (flex: 0 0 auto), so a long name
+    // pushed the page sideways. Here a tab may shrink and wrap its text, and
+    // grows to share out the row when the bar wraps.
+    flex: 1 1 auto;
+    font-family: var(--font-secondary);
+    font-size: var(--font-size-2xs);
+    font-weight: var(--font-weight-medium);
+    gap: var(--space-1);
+    justify-content: center;
+    line-height: var(--line-height-3);
+    min-height: 40px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    padding: var(--space-1) var(--space-2);
+    text-align: center;
+    transition: background-color var(--motion-fast) ease-in-out, color var(--motion-fast) ease-in-out;
+    white-space: normal;
+
+    &:hover {
+      background-color: var(--color-ui-10);
+      color: var(--type-body);
+    }
+
+    // After :hover, so the selected tab keeps its fill under the pointer.
+    &[aria-selected="true"] {
+      background-color: var(--color-brand-primary);
+      color: var(--color-white);
+    }
+
+    // Zendesk's own ring is a 2px outline pulled inside a square corner.
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+}
+
+// The icon. Where masks are not supported the pseudo-element would be a plain
+// square of color, so it is only drawn where they are. Its box is a whole number
+// of pixels (1.125rem is 18px, and scales with the text like the tab's own
+// rem-sized text): a fractional box (1.25em was 17.5px) is pixel-snapped by where
+// it falls, so icons in one bar painted anywhere from 16 to 18 pixels wide.
+@supports ((mask-size: contain) or (-webkit-mask-size: contain)) {
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform]::before {
+    background-color: currentColor;
+    block-size: 1.125rem;
+    content: "";
+    flex: none;
+    inline-size: 1.125rem;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="apple"]::before {
+    -webkit-mask-image: url($assets-apple-svg);
+    mask-image: url($assets-apple-svg);
+  }
+
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="ios"]::before {
+    -webkit-mask-image: url($assets-ios-svg);
+    mask-image: url($assets-ios-svg);
+  }
+
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="macos"]::before {
+    -webkit-mask-image: url($assets-macos-svg);
+    mask-image: url($assets-macos-svg);
+  }
+
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="windows"]::before {
+    -webkit-mask-image: url($assets-windows-svg);
+    mask-image: url($assets-windows-svg);
+  }
+}
