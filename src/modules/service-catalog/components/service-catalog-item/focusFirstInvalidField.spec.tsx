@@ -3,6 +3,7 @@ import { render } from "../../../test/render";
 import type { TicketFieldObject } from "../../../ticket-fields/data-types/TicketFieldObject";
 import { Checkbox } from "../../../ticket-fields/fields/Checkbox";
 import { Input } from "../../../ticket-fields/fields/Input";
+import { MultiLookupField } from "../../../ticket-fields/fields/MultiLookupField";
 import { Tagger } from "../../../ticket-fields/fields/Tagger";
 import { Attachments } from "../../../ticket-fields/fields/attachments/Attachments";
 import { focusFirstInvalidField } from "./focusFirstInvalidField";
@@ -106,6 +107,66 @@ describe("focusFirstInvalidField", () => {
     expect(
       form.querySelector('[data-garden-id="forms.file_upload"]')
     ).toHaveFocus();
+  });
+
+  // A lookup shows its limit message as an error once more values are selected than it
+  // allows: its combobox marks itself invalid and the message is an alert, so it is a field
+  // with an error like any other, and here the first one in the form.
+  it("counts a lookup that is over its limit, which marks itself as invalid", async () => {
+    (globalThis.fetch as jest.Mock) = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            custom_object_records: [
+              { name: "Record A", id: "a" },
+              { name: "Record B", id: "b" },
+            ],
+          }),
+      })
+    );
+    const form = renderForm(
+      <>
+        <MultiLookupField
+          field={field({
+            id: 1,
+            name: "a",
+            label: "Systems",
+            type: "multi_lookup",
+            required: false,
+            value: ["a", "b"],
+            max_selections: 1,
+            relationship_target_type: "zen:custom_object:system",
+          })}
+          userId={1}
+          organizationId={null}
+          onChange={jest.fn()}
+          visibleFields={[]}
+        />
+        <Input
+          field={field({
+            id: 2,
+            name: "b",
+            label: "Short summary",
+            error: REQUIRED,
+          })}
+          onChange={jest.fn()}
+        />
+      </>
+    );
+
+    await screen.findByText(/reached the limit of 1 values/);
+
+    // Garden hides the lookup's input until it is focused, so the reachable control is its
+    // first selected tag; what matters is that focus is inside the lookup.
+    const lookup = screen.getByLabelText(/Systems/);
+    const lookupField = form.querySelector(
+      '[data-garden-id="dropdowns.combobox.field"]'
+    );
+    expect(lookup).toHaveAttribute("aria-invalid", "true");
+    expect(focusFirstInvalidField(form)).toBe(true);
+    expect(lookupField).toContainElement(document.activeElement as HTMLElement);
+    expect(screen.getByLabelText(/Short summary/)).not.toHaveFocus();
   });
 
   it("goes to the first error in the order the form shows them", () => {
