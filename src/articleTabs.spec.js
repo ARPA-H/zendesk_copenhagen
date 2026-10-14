@@ -53,8 +53,11 @@ describe("platformFromName", () => {
     ["iPhone and iPad", "ios"],
     ["Set up on iOS", "ios"],
     ["macOS", "macos"],
+    ["MACOS", "macos"],
     ["Mac", "macos"],
+    ["Mac mini", "macos"],
     ["Mac OS X", "macos"],
+    ["MAC OS X", "macos"],
     ["OS X", "macos"],
     ["Windows", "windows"],
     ["Windows 11", "windows"],
@@ -77,6 +80,13 @@ describe("platformFromName", () => {
     ["Bios settings"],
     ["Macro recorder"],
     ["Windowsill"],
+    // "MAC" is the network address, not the computer: only the capitalized product
+    // name "Mac" counts, apart from the explicit macOS and OS X forms.
+    ["MAC address"],
+    ["Find your MAC address"],
+    ["MAC filtering"],
+    ["Mac address"],
+    ["mac"],
     // Windows beside an Apple platform is ambiguous.
     ["iOS and Windows"],
     ["macOS or Windows"],

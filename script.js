@@ -971,7 +971,8 @@
    *
    * A name is matched by the platforms it mentions:
    *   iOS (also iPadOS, iPhone, iPad)        -> ios
-   *   macOS (also Mac, Mac OS X, OS X)       -> macos
+   *   macOS (also Mac, Mac OS X, OS X)       -> macos   ("Mac" only as a capitalized word,
+   *                                                       so a "MAC address" is not one)
    *   Windows                                -> windows
    *   iOS and macOS together, or Apple       -> apple
    * A name that mentions Windows beside an Apple platform is ambiguous, and a name that
@@ -996,7 +997,11 @@
   // The marker also takes the whitespace after it, so a name never starts with a gap.
   var MARKER = /\[icon:\s*([^\]]*?)\s*\]\s*/i;
   var IOS = /\b(?:ios|ipados|iphone|ipad)\b/i;
-  var MACOS = /\b(?:macos|mac\s?os(?:\s?x)?|os\s?x|mac)\b/i;
+  // The explicit forms match in any case. A bare "Mac" counts only as the capitalized
+  // product name: "MAC" is the network address, so a tab named "MAC address" is not
+  // about a Mac, and neither is "Mac address".
+  var MACOS = /\b(?:macos|mac\s?os(?:\s?x)?|os\s?x)\b/i;
+  var MAC = /\bMac\b(?!\s+address\b)/;
   var WINDOWS = /\bwindows\b/i;
   var APPLE = /\bapple\b/i;
 
@@ -1004,7 +1009,7 @@
     var windows = WINDOWS.test(name);
     var apple = APPLE.test(name);
     var ios = apple || IOS.test(name);
-    var macos = apple || MACOS.test(name);
+    var macos = apple || MACOS.test(name) || MAC.test(name);
 
     if (windows) return ios || macos ? "" : "windows";
     if (ios && macos) return "apple";
