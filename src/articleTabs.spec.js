@@ -196,6 +196,19 @@ describe("labelTab", () => {
       expect(names()).toEqual(["iOS"]);
     });
 
+    // The marker is removed from the name on the first pass, so a later pass sees only
+    // the name; the author's choice (no icon) has to survive it.
+    it("keeps an unknown marker's choice, not the name's, when it is run again", () => {
+      document.body.innerHTML = article("[icon: nothing.svg] iOS");
+
+      labelTab(tabs()[0]);
+      labelTab(tabs()[0]);
+      labelTabs();
+
+      expect(platforms()).toEqual([null]);
+      expect(names()).toEqual(["iOS"]);
+    });
+
     it("removes a marker that sits in the middle or at the end of the name", () => {
       document.body.innerHTML = article(
         "Set up [icon: ios.svg] now",
@@ -275,6 +288,30 @@ describe("initArticleTabs", () => {
     await settle();
 
     expect(platforms()).toEqual(["macos", "apple"]);
+  });
+
+  it("keeps an unknown marker's choice when a later change reruns the labels", async () => {
+    document.body.innerHTML = article("[icon: nothing.svg] iOS");
+    initArticleTabs();
+
+    document
+      .querySelector(".wysiwyg-tabs-bar")
+      .insertAdjacentHTML("beforeend", tab("Windows"));
+    await settle();
+
+    expect(platforms()).toEqual([null, "windows"]);
+    expect(names()).toEqual(["iOS", "Windows"]);
+  });
+
+  it("labels a tab whose name Zendesk's script fills in after adding it", async () => {
+    document.body.innerHTML = article("");
+    initArticleTabs();
+    expect(platforms()).toEqual([null]);
+
+    tabs()[0].textContent = "Windows";
+    await settle();
+
+    expect(platforms()).toEqual(["windows"]);
   });
 
   it("leaves tabs outside the article body alone", () => {

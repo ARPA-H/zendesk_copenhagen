@@ -93,15 +93,22 @@ function removeMarker(tab) {
   }
 }
 
+// Tabs whose icon an author chose with a marker. The marker is removed from the name on
+// the first pass, so a later pass would see only the name and infer an icon from it,
+// overriding the author: "[icon: nothing.svg] iOS" is meant to show no icon.
+var chosen = new WeakSet();
+
 export function labelTab(tab) {
-  // Already labelled. A tab with no platform is checked again, which finds the
-  // same nothing, because the marker (if it had one) is gone after the first pass.
-  if (tab.hasAttribute(PLATFORM_ATTRIBUTE)) return;
+  // Already labelled, or chosen by the author. A tab with no platform and no marker is
+  // checked again, which finds the same nothing, and finds a name that Zendesk's script
+  // fills in after it added the tab.
+  if (chosen.has(tab) || tab.hasAttribute(PLATFORM_ATTRIBUTE)) return;
 
   var marker = MARKER.exec(tab.textContent);
   var platform;
 
   if (marker) {
+    chosen.add(tab);
     platform = platformFromMarker(marker[1]);
     removeMarker(tab);
   } else {
