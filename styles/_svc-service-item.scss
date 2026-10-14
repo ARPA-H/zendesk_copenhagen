@@ -213,6 +213,9 @@ body { background: var(--color-white); }
 .svc-custom-submit-btn:hover,
 .svc-custom-submit-btn:active { background-image: linear-gradient(var(--color-hover-light-10), var(--color-hover-light-10)); }
 .svc-custom-submit-btn:disabled { opacity: 0.4; cursor: wait; }
+/* In a draft preview the real button stays disabled for good, and service_page.hbs copies
+   its title (the reason) onto this one. A "wait" cursor would promise that it ends. */
+.svc-custom-submit-btn:disabled[title] { cursor: not-allowed; }
 .svc-custom-submit-note { margin: 0; font-size: var(--font-size-2xs); color: var(--color-ui-60); }
 /* The button only proxies a click to the module's real submit button, so with none on
    the page (the module showed its error screen) it would do nothing. Same lookup as

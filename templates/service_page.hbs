@@ -281,45 +281,64 @@
     function wireCustomSubmit() {
       if (!customSubmit) return;
       var originalLabel = customSubmit.textContent;
-      customSubmit.addEventListener('click', function () {
+      // True from a click that starts a submission until the real button is
+      // enabled again. The label and the disabled state are the click's until then.
+      var submitting = false;
+
+      // Keeps this button in step with the module's real submit button, which is
+      // disabled while a request is on its way and, with a title that says why, for
+      // the whole life of a draft preview. Only a click used to read that state, so
+      // a preview offered a button that showed "Submitting…" until the timeout
+      // below and then did nothing.
+      function syncWithNativeSubmit() {
         var nativeSubmit = getNativeSubmit();
         if (!nativeSubmit) return;
+        if (submitting) {
+          if (nativeSubmit.disabled) return;
+          submitting = false;
+          customSubmit.textContent = originalLabel;
+        }
+        customSubmit.disabled = nativeSubmit.disabled;
+        if (nativeSubmit.title) customSubmit.title = nativeSubmit.title;
+        else customSubmit.removeAttribute('title');
+      }
+
+      customSubmit.addEventListener('click', function () {
+        var nativeSubmit = getNativeSubmit();
+        // A disabled real button is a draft preview or a request already on its
+        // way: either way there is nothing to start.
+        if (!nativeSubmit || nativeSubmit.disabled) return;
+        submitting = true;
         customSubmit.disabled = true;
         customSubmit.textContent = 'Submitting\u2026';
 
-        // Must be wired up *before* nativeSubmit.click() below: React's
-        // submit handler disables/re-enables the real button
-        // synchronously (via flushSync) for a purely client-side
-        // validation failure, which never reaches a network request --
-        // that mutation happens entirely inside the synchronous click()
-        // call, so an observer started afterwards would miss it and this
-        // button would sit stuck on "Submitting…" until the failsafe
-        // timeout below, even though the error appeared instantly.
-        var observer = new MutationObserver(function () {
-          var current = getNativeSubmit();
-          if (current && !current.disabled) {
-            customSubmit.disabled = false;
-            customSubmit.textContent = originalLabel;
-            observer.disconnect();
-          }
-        });
-        observer.observe(serviceContainer, {
-          attributes: true,
-          subtree: true,
-          attributeFilter: ['disabled']
-        });
-
         nativeSubmit.click();
 
-        // Last-resort safety net only -- the MutationObserver above
-        // should always win first now that the real button's `disabled`
-        // attribute accurately mirrors the in-flight/validation state.
+        // Last-resort safety net only: the observer below restores this button
+        // as soon as the real one is enabled again.
         setTimeout(function () {
-          observer.disconnect();
-          customSubmit.disabled = false;
+          if (!submitting) return;
+          submitting = false;
           customSubmit.textContent = originalLabel;
+          syncWithNativeSubmit();
         }, 5000);
       });
+
+      // Watched for the page's whole life, so it is already in place before
+      // nativeSubmit.click() above: React's submit handler disables and
+      // re-enables the real button synchronously (via flushSync) for a purely
+      // client-side validation failure, entirely inside that call, and an
+      // observer started afterwards would miss it and leave this button on
+      // "Submitting…" until the timeout, even though the error appeared at once.
+      if (serviceContainer) {
+        new MutationObserver(syncWithNativeSubmit).observe(serviceContainer, {
+          attributes: true,
+          attributeFilter: ['disabled', 'title'],
+          childList: true,
+          subtree: true
+        });
+      }
+      syncWithNativeSubmit();
     }
 
     window.addEventListener('load', function () {

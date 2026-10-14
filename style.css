@@ -8096,6 +8096,12 @@ body {
   cursor: wait;
 }
 
+/* In a draft preview the real button stays disabled for good, and service_page.hbs copies
+   its title (the reason) onto this one. A "wait" cursor would promise that it ends. */
+.svc-custom-submit-btn:disabled[title] {
+  cursor: not-allowed;
+}
+
 .svc-custom-submit-note {
   margin: 0;
   font-size: var(--font-size-2xs);

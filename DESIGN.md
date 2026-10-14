@@ -294,7 +294,7 @@ Actions are pills (`1000px`). Surfaces are 16px, with the large catalog panel at
 - **Primary:** cyan, indigo text, no border. Hover darkens with a 10% indigo overlay.
 - **Outline (the default `.button`):** transparent, 2px indigo border and text; hover adds a 5% indigo fill.
 - **Secondary:** solid indigo, white text.
-- **Disabled:** 40% opacity.
+- **Disabled:** 40% opacity. The request page's visible Submit button follows the form module's own: it is disabled while a request is on its way and for the whole life of a draft preview, where it also carries the module's explanation as its title and a `not-allowed` cursor.
 
 ### React components (Garden)
 
