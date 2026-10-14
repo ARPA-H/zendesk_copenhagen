@@ -3647,6 +3647,14 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
     -webkit-mask-size: contain;
     mask-size: contain;
   }
+  [dir=rtl] .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform]::before {
+    order: 1;
+  }
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform=android]::before {
+    inline-size: 1.375rem;
+    -webkit-mask-image: url($assets-android-svg);
+    mask-image: url($assets-android-svg);
+  }
   .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform=apple]::before {
     -webkit-mask-image: url($assets-apple-svg);
     mask-image: url($assets-apple-svg);
@@ -3658,6 +3666,10 @@ nav[aria-label=Breadcrumb] a[aria-disabled=true] {
   .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform=macos]::before {
     -webkit-mask-image: url($assets-macos-svg);
     mask-image: url($assets-macos-svg);
+  }
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform=web]::before {
+    -webkit-mask-image: url($assets-web-svg);
+    mask-image: url($assets-web-svg);
   }
   .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform=windows]::before {
     -webkit-mask-image: url($assets-windows-svg);

@@ -23,9 +23,11 @@
 // whichever stylesheet loads first.
 //
 // A tab named after a platform also gets that platform's icon: src/articleTabs.js
-// sets data-platform on the tab, and the icon is the plain-named file in assets/
-// (apple.svg, ios.svg, macos.svg, windows.svg), drawn as a mask so it takes the tab's
-// text color in every state.
+// sets data-platform on the tab, and the icon is the plain-named SVG file in assets/
+// (android.svg, apple.svg, ios.svg, macos.svg, web.svg, windows.svg), drawn as a mask so
+// it takes the tab's text color in every state and is scaled to its box at any size or
+// pixel density (a small raster icon would be blurry and, on a phone, illegible). It sits
+// to the left of the name in every text direction.
 .article-body .wysiwyg-tabs-active {
   --zd-wysiwyg-tabs-color: var(--color-brand-primary);
   --zd-wysiwyg-disclosure-border-color: var(--surface-stroke);
@@ -111,6 +113,22 @@
     mask-size: contain;
   }
 
+  // The icon is on the left of the name in right-to-left text too: a logo is not a
+  // directional glyph, and left is the owner's preference in every case. A
+  // right-to-left row starts at the right, so there the icon is ordered after the name.
+  [dir="rtl"] .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform]::before {
+    order: 1;
+  }
+
+  // The robot is a wide, short glyph (20 by 11 units, against 18 by 18 for iOS, macOS and
+  // Windows), so in the common 18px box it would paint 18 by 10 pixels and look small.
+  // Its box is wider, which gives it about the same visual weight as the others.
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="android"]::before {
+    inline-size: 1.375rem;
+    -webkit-mask-image: url($assets-android-svg);
+    mask-image: url($assets-android-svg);
+  }
+
   .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="apple"]::before {
     -webkit-mask-image: url($assets-apple-svg);
     mask-image: url($assets-apple-svg);
@@ -124,6 +142,11 @@
   .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="macos"]::before {
     -webkit-mask-image: url($assets-macos-svg);
     mask-image: url($assets-macos-svg);
+  }
+
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="web"]::before {
+    -webkit-mask-image: url($assets-web-svg);
+    mask-image: url($assets-web-svg);
   }
 
   .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab[data-platform="windows"]::before {

@@ -102,7 +102,7 @@ Facts only, from the Impeccable detector and the offline measurements (headless 
 | Observation | Disposition |
 | --- | --- |
 | The Device FAQs labels sat on three different lines (429, 397 and 385 pixels down the page at 1440 wide) | Fixed in Phase 10: one line; the logos did not move |
-| The pager's "Next ›" and "»" touch with no gap | Fixed after this critique (owner decision 12): the owner confirmed in the sandbox that they touched, and the pager is now text only with a gap between its links |
+| The pager's "Next ›" and "»" touch with no gap | Fixed after this critique (owner decision 12): the owner saw them touch and asked for text-only links with room between them, which is what the pager is now |
 | The category introduction wraps "ARPA-" and "H." onto separate lines at 390 | Fixed in Phase 10 with `text-wrap: pretty` |
 | On the search page at 390 the breadcrumb is centered while it is left-aligned elsewhere | Fixed in Phase 10: the search page's own override removed below the tablet width |
 | The "Community" type filter and per-result vote and comment counts add clutter for an IT knowledge base | Left: Zendesk settings and the stock results markup |

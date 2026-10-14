@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T03:55:00.000Z",
+  "generatedAt": "2026-10-14T04:44:00.000Z",
   "title": "Design System: ARPA-H Service Desk",
   "extensions": {
     "colorMeta": {
@@ -137,7 +137,7 @@
       "name": "Article Tabs",
       "kind": "custom",
       "refersTo": "tabs-track",
-      "description": "The platform guides' tabs: a segmented control on a quiet grey track, one pill per tab, the selected pill filled with the near-black indigo. A platform icon leads each name. Apart from the selected fill it is grayscale.",
+      "description": "The platform guides' tabs: a segmented control on a quiet grey track, one pill per tab, the selected pill filled with the near-black indigo. A platform icon (an SVG, on the left of the name in every text direction) leads each name. Apart from the selected fill it is grayscale.",
       "html": "<div class=\"ds-tabs\" role=\"tablist\"><button class=\"ds-tab ds-tab--selected\" role=\"tab\" aria-selected=\"true\">iOS</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">macOS</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\">Windows</button></div>",
       "css": ".ds-tabs { display: flex; gap: 4px; width: fit-content; padding: 4px; border-radius: 16px; background: #f3f5f8; } .ds-tab { min-height: 40px; padding: 8px 16px; border: 0; border-radius: 1000px; background: transparent; color: #4a4d52; font: 500 14px/1.35 'Public Sans', sans-serif; } .ds-tab--selected { background: #000334; color: #ffffff; }"
     }

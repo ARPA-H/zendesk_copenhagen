@@ -40,8 +40,23 @@ describe("the platforms", () => {
     }
   );
 
-  it("name the four icon files", () => {
-    expect([...PLATFORMS].sort()).toEqual(["apple", "ios", "macos", "windows"]);
+  it("name the six icon files", () => {
+    expect([...PLATFORMS].sort()).toEqual([
+      "android",
+      "apple",
+      "ios",
+      "macos",
+      "web",
+      "windows",
+    ]);
+  });
+
+  // Small icons are SVG so they scale to their box at any size; a PNG goes blurry
+  // and, on a phone, illegible.
+  it("draw every icon from an SVG, never a raster image", () => {
+    const styles = readFileSync("styles/_article-tabs.scss", "utf8");
+
+    expect(styles).not.toMatch(/\$assets-[a-z0-9-]+-(?:png|jpe?g|gif|webp)\b/);
   });
 });
 
@@ -61,6 +76,17 @@ describe("platformFromName", () => {
     ["OS X", "macos"],
     ["Windows", "windows"],
     ["Windows 11", "windows"],
+    ["Android", "android"],
+    ["android", "android"],
+    ["Android phones", "android"],
+    ["Set up on Android", "android"],
+    ["Web", "web"],
+    ["Web browser", "web"],
+    ["Web app", "web"],
+    ["Web-based", "web"],
+    ["Website", "web"],
+    ["Browser", "web"],
+    ["Outlook on the web", "web"],
     ["iOS and macOS", "apple"],
     ["iOS/macOS", "apple"],
     ["macOS or iOS", "apple"],
@@ -72,14 +98,14 @@ describe("platformFromName", () => {
   });
 
   it.each([
-    ["Android"],
-    ["Web browser"],
     ["Linux"],
     [""],
     // Words that only contain a platform name.
     ["Bios settings"],
     ["Macro recorder"],
     ["Windowsill"],
+    ["Webex"],
+    ["Cobweb"],
     // "MAC" is the network address, not the computer: only the capitalized product
     // name "Mac" counts, apart from the explicit macOS and OS X forms.
     ["MAC address"],
@@ -87,10 +113,16 @@ describe("platformFromName", () => {
     ["MAC filtering"],
     ["Mac address"],
     ["mac"],
-    // Windows beside an Apple platform is ambiguous.
+    // More than one platform in a name is ambiguous.
     ["iOS and Windows"],
     ["macOS or Windows"],
     ["Apple and Windows"],
+    ["Android and iOS"],
+    ["Android or Windows"],
+    ["Apple and Android"],
+    ["Web and Windows"],
+    ["Web and Android"],
+    ["Mac web browser"],
   ])("gives %p no icon", (name) => {
     expect(platformFromName(name)).toBe("");
   });
@@ -107,7 +139,7 @@ describe("labelTab", () => {
   });
 
   it("leaves a name with no platform without the attribute", () => {
-    document.body.innerHTML = article("Android");
+    document.body.innerHTML = article("Linux");
 
     labelTab(tabs()[0]);
 
@@ -120,8 +152,14 @@ describe("labelTab", () => {
       ["[icon: macos.svg] Laptop", "macos", "Laptop"],
       ["[icon: windows.svg] Desktop", "windows", "Desktop"],
       ["[icon: apple.svg] Any Apple device", "apple", "Any Apple device"],
+      ["[icon: android.svg] Other phones", "android", "Other phones"],
+      ["[icon: web.svg] Any browser", "web", "Any browser"],
       ["[icon:ios] Phone", "ios", "Phone"],
       ["[ICON:  WINDOWS.SVG  ]Desktop", "windows", "Desktop"],
+      // The theme also holds ios.png, macos.png and windows.png for the Device FAQs
+      // tiles; a tab never draws a PNG, so a ".png" name picks the SVG.
+      ["[icon: ios.png] Phone", "ios", "Phone"],
+      ["[icon: ANDROID.PNG] Other phones", "android", "Other phones"],
     ])("reads %p as the %s icon and shows %p", (name, platform, shown) => {
       document.body.innerHTML = article(name);
 
