@@ -289,7 +289,8 @@ Actions are pills (`1000px`). Surfaces are 16px, with the large catalog panel at
 
 ### Buttons
 
-- **Shape:** pill, 40px minimum height, `8px 20px` padding, 14px medium text.
+- **Shape:** pill, 40px minimum height, `8px 20px` padding, 14px medium text. The large button (`.button-large`, also the stock forms' Submit) is 48px high with 16px text.
+- **Size, a deliberate departure from NEXUS.** The NEXUS reference sets button text at 18px (large, 20px) with `12px 20px` padding, which is a marketing-site size. Here the default is 14px and the large button 16px, up from the original theme's 12px and 14px: 18px text would be 50% larger than the original's 12px on every form, toolbar and card, which are dense by design, and nobody asked for that change. The 14px text floor and the 40px and 48px target heights still hold. Which size to use is the owner's call and is listed in the plan's open decisions.
 - **Primary:** cyan, indigo text, no border. Hover darkens with a 10% indigo overlay.
 - **Outline (the default `.button`):** transparent, 2px indigo border and text; hover adds a 5% indigo fill.
 - **Secondary:** solid indigo, white text.
