@@ -297,4 +297,140 @@ describe("wrapWideTables", () => {
     expect(wrapper.hasAttribute("aria-labelledby")).toBe(false);
     expect(wrapper.querySelector("[data-table-scroll-label]")).toBeNull();
   });
+
+  it("wraps tables where ResizeObserver does not exist", () => {
+    expect(typeof window.ResizeObserver).toBe("undefined");
+    document.body.innerHTML = articleWithTable();
+
+    expect(() => wrapWideTables()).not.toThrow();
+
+    expect(document.querySelectorAll(".table-scroll")).toHaveLength(1);
+  });
+
+  describe("when a table changes size", () => {
+    let observers;
+
+    beforeEach(() => {
+      observers = [];
+      window.ResizeObserver = class {
+        constructor(callback) {
+          this.callback = callback;
+          this.targets = [];
+          observers.push(this);
+        }
+        observe(target) {
+          this.targets.push(target);
+        }
+        unobserve() {}
+        disconnect() {}
+      };
+    });
+
+    afterEach(() => {
+      delete window.ResizeObserver;
+    });
+
+    // A tab that is not showing has no box: both widths are 0.
+    const setNoBox = (wrapper) => {
+      Object.defineProperty(wrapper, "scrollWidth", {
+        value: 0,
+        configurable: true,
+      });
+      Object.defineProperty(wrapper, "clientWidth", {
+        value: 0,
+        configurable: true,
+      });
+    };
+
+    // What a browser reports when a box appears, goes or changes size.
+    const reportResize = (...targets) => {
+      observers.forEach((observer) =>
+        observer.callback(targets.map((target) => ({ target })))
+      );
+    };
+
+    const tabPanelWithTable = (caption = "") =>
+      `<div class="tab-panel" hidden><table>${caption}<tr><td>cell</td></tr></table></div>`;
+
+    it("watches each wrapper and its table, once however often tables are wrapped", () => {
+      document.body.innerHTML = articleWithTable();
+
+      wrapWideTables();
+      wrapWideTables();
+
+      const wrapper = document.querySelector(".table-scroll");
+      expect(observers).toHaveLength(1);
+      expect(observers[0].targets).toHaveLength(2);
+      expect(observers[0].targets[0]).toBe(wrapper);
+      expect(observers[0].targets[1]).toBe(wrapper.querySelector("table"));
+    });
+
+    it("makes a table a region when the tab holding it is shown", () => {
+      document.body.innerHTML = `<div class="article-body">${tabPanelWithTable(
+        "<caption>Ports and protocols</caption>"
+      )}</div>`;
+      wrapWideTables();
+      const wrapper = document.querySelector(".table-scroll");
+      expect(wrapper.hasAttribute("role")).toBe(false);
+      expect(wrapper.hasAttribute("tabindex")).toBe(false);
+
+      document.querySelector(".tab-panel").hidden = false;
+      setOverflow(wrapper, true);
+      reportResize(wrapper);
+
+      expect(wrapper.getAttribute("role")).toBe("region");
+      expect(wrapper.getAttribute("tabindex")).toBe("0");
+      expect(wrapper.getAttribute("aria-label")).toBe("Ports and protocols");
+    });
+
+    it("takes the region away again when its tab is hidden", () => {
+      document.body.innerHTML = `<div class="article-body">${tabPanelWithTable()}</div>`;
+      wrapWideTables();
+      const panel = document.querySelector(".tab-panel");
+      const wrapper = document.querySelector(".table-scroll");
+      panel.hidden = false;
+      setOverflow(wrapper, true);
+      reportResize(wrapper);
+      expect(wrapper.getAttribute("role")).toBe("region");
+
+      panel.hidden = true;
+      setNoBox(wrapper);
+      reportResize(wrapper);
+
+      expect(wrapper.hasAttribute("role")).toBe(false);
+      expect(wrapper.hasAttribute("tabindex")).toBe(false);
+      expect(wrapper.hasAttribute("aria-label")).toBe(false);
+    });
+
+    it("numbers every captionless region again, not only the one that changed", () => {
+      document.body.innerHTML = `<div class="article-body"><table><tr><td>cell</td></tr></table>${tabPanelWithTable()}</div>`;
+      wrapWideTables();
+      const [showing, inTab] = document.querySelectorAll(".table-scroll");
+      setOverflow(showing, true);
+      reportResize(showing);
+      expect(showing.getAttribute("aria-label")).toBe("Scrollable table");
+
+      document.querySelector(".tab-panel").hidden = false;
+      setOverflow(inTab, true);
+      reportResize(inTab);
+
+      expect(showing.getAttribute("aria-label")).toBe(
+        "Scrollable table 1 of 2"
+      );
+      expect(inTab.getAttribute("aria-label")).toBe("Scrollable table 2 of 2");
+    });
+
+    it("does nothing for a table that still fits", () => {
+      document.body.innerHTML = `<div class="article-body">${tabPanelWithTable()}</div>`;
+      wrapWideTables();
+      const wrapper = document.querySelector(".table-scroll");
+
+      document.querySelector(".tab-panel").hidden = false;
+      setOverflow(wrapper, false);
+      reportResize(wrapper);
+
+      expect(wrapper.hasAttribute("role")).toBe(false);
+      expect(wrapper.hasAttribute("tabindex")).toBe(false);
+    });
+  });
 });

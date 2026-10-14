@@ -826,9 +826,11 @@
   //    last columns cannot be reached. Each table in an article body gets a
   //    wrapper; the wrapper becomes a focusable region only while the table
   //    actually overflows, so keyboard users can scroll it and tables that fit
-  //    add no tab stop. The region is named by the table's caption, which is the
-  //    article's own text. A table without one gets a fixed English name, and it
-  //    is numbered when several tables need it so the regions stay
+  //    add no tab stop. It is worked out again on load, on resize and whenever a
+  //    table or its wrapper changes size, so a table in a tab that is shown later
+  //    becomes a region then. The region is named by the table's caption, which
+  //    is the article's own text. A table without one gets a fixed English name,
+  //    and it is numbered when several tables need it so the regions stay
   //    distinguishable. On an English page that name is the region's aria-label.
   //    On any other page it comes from a hidden element marked lang="en"
   //    (aria-labelledby), so the region still has a name and a role there, and
@@ -877,6 +879,7 @@
   function wrapWideTables(root) {
     var scope = document;
     var tables = scope.querySelectorAll(".article-body table");
+    var watched = [];
     for (var i = 0; i < tables.length; i++) {
       var table = tables[i];
       if (
@@ -894,8 +897,28 @@
       }
       table.parentNode.insertBefore(wrapper, table);
       wrapper.appendChild(table);
+      watched.push(wrapper, table);
     }
+    watchTableSizes(watched);
     updateScrollableTables(scope);
+  }
+
+  // A table in a tab that is not showing has no box, so it measures as not
+  // overflowing and is not made a region. Showing the tab fires neither load nor
+  // resize, so the regions are worked out again whenever a wrapper or its table
+  // changes size: that covers a tab being shown or hidden, and a table that grows
+  // after load (a late font or image). Setting the attributes changes no size, so
+  // this cannot loop.
+  function watchTableSizes(elements) {
+    if (!elements.length || typeof ResizeObserver !== "function") {
+      return;
+    }
+    var observer = new ResizeObserver(function () {
+      updateScrollableTables();
+    });
+    for (var i = 0; i < elements.length; i++) {
+      observer.observe(elements[i]);
+    }
   }
 
   function updateScrollableTables(root) {

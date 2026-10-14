@@ -21,13 +21,19 @@
 // the icon URLs are inlined, because the theme has no ../img folder.
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import * as sass from "sass";
 
-const uswdsRoot = path.resolve("node_modules/@uswds/uswds");
+// Paths hang off this file, not off the folder the command was started in.
+const repoRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  ".."
+);
+const uswdsRoot = path.join(repoRoot, "node_modules", "@uswds", "uswds");
 const uswdsVersion = JSON.parse(
   fs.readFileSync(path.join(uswdsRoot, "package.json"), "utf-8")
 ).version;
-const OUTPUT = path.resolve("styles/_usa-banner-generated.scss");
+const OUTPUT = path.join(repoRoot, "styles", "_usa-banner-generated.scss");
 
 const SOURCE = `
 @use "uswds-core" with (
@@ -85,7 +91,15 @@ export function buildBannerCss() {
   return `${header}${out.trim()}\n`;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run only when node was started on this file, not when it is imported. Comparing file
+// URLs, rather than "file://" plus argv[1], stays right for a folder name with a space or
+// an accented letter (a file URL percent-encodes it), for a Windows drive path, and for a
+// folder reached through a symbolic link (import.meta.url is the real path).
+const runDirectly =
+  Boolean(process.argv[1]) &&
+  import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href;
+
+if (runDirectly) {
   const next = buildBannerCss();
   if (process.argv.includes("--check")) {
     const current = fs.existsSync(OUTPUT) ? fs.readFileSync(OUTPUT, "utf-8") : "";
