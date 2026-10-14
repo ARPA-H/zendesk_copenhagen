@@ -68,6 +68,14 @@ stock community/article-focused layout.
   `docs/design-plan.md`, [PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231)).
 - **Tooling**: devcontainer/Codespaces setup (see repo memory
   `devcontainer-notes.md`).
+- **NEXUS design system (2026-10)**: the Service Catalog and Knowledge pages, the
+  header, footer and shared chrome are built on the NEXUS tokens of the
+  `arpa-h-web-design` skill (`styles/_tokens.scss`), with the stock USWDS `.gov`
+  banner as the only USWDS part. The Admin Center color, Logo and Show Help Center
+  name settings are gone from `manifest.json`; the tokens and the committed ARPA-H
+  logo assets replace them. The plan, the decisions and the evidence are in
+  `docs/design-plan.md`, the system itself in `DESIGN.md` and `PRODUCT.md`
+  ([PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231)).
 
 ## Dependency updates ahead of upstream
 
@@ -130,6 +138,34 @@ originating commit messages for the "why".
 Not a version bump: `@iconify/react` is a genuinely new dependency (for the
 icon-support feature, see "What diverges from upstream" above), not present in
 upstream at all.
+
+## Session: 2026-10-14: NEXUS design pass ([PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231))
+
+One combined pull request from `impeccable-design-passes` into `sandbox`: ten design
+phases, the owner's follow-up requests, and a long run of Copilot review rounds. What
+was decided and measured is in `docs/design-plan.md` (decisions, results, open
+decisions); the system is described in `DESIGN.md` and `PRODUCT.md`.
+
+### Before and after merging
+
+- **The deploy replaces the live sandbox theme in place.** A merge to `sandbox` runs
+  `update.yml`, and `updateTheme.js` creates a Zendesk
+  [theme update job](https://developer.zendesk.com/api-reference/help_center/help-center-api/theming/)
+  for the brand's live theme with `replace_settings: false` (saved setting values are
+  kept), then prunes old non-live themes. The previous look is not kept as a theme of
+  its own, so to go back, revert the merge on `sandbox` and let the deploy run again.
+  Download the current sandbox theme first if a copy is wanted (a
+  [theme download](https://support.zendesk.com/hc/en-us/articles/4408846524954) includes
+  its `manifest.json`).
+- **Settings panel.** The Colors group, Logo, Show Help Center name and the two Social
+  sharing settings are gone from `manifest.json` (owner decisions 5, 7 and 13), and
+  saved values for them are ignored. The unused `settings/logo.png` was deleted with
+  them, so that the package holds no file that matches no setting.
+- **Only the sandbox can verify** (listed in the pull request description and in the
+  plan's Open decisions): instant search, the real pager and article tab markup, that
+  the tab icons load from the theme's assets, that the Settings panel lists none of the
+  removed settings, a real screen reader, Windows forced colors, a real right-to-left
+  locale, and Firefox, Safari and Edge.
 
 ## Session: 2026-09-11 — resolve-pr-146-conflicts ([PR #147](https://github.com/ARPA-H/zendesk_copenhagen/pull/147), supersedes [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146))
 
