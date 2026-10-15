@@ -183,7 +183,10 @@ choices are in `docs/design-plan.md`, "After the merge"):
   which is blank by default and differs between Zendesk instances, so a blank value gave
   a dead `/hc/en-us/services/` link. Blank now opens the standard request form
   (`{{page_path 'new_request'}}`, the footer's page). "General request service ID" and
-  "General request category ID" are read by nothing and are labelled "(not used)".
+  "General request category ID" were read by nothing and are removed from
+  `manifest.json` and the translation files; the Service Catalog group keeps four
+  settings (the training button and its URL, "Other request service ID" and the Iconify
+  API).
 
 ## Session: 2026-09-11 — resolve-pr-146-conflicts ([PR #147](https://github.com/ARPA-H/zendesk_copenhagen/pull/147), supersedes [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146))
 

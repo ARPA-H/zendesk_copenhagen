@@ -1584,9 +1584,14 @@ above.
   and the stock templates already put block helpers inside attribute values
   (`class="article-list-item{{#if promoted}} article-promoted{{/if}}"`). Three settings
   overlapped, and that is the likely way an admin ends up with a dead button: "General
-  request service ID" and "General request category ID" are read by nothing (their
+  request service ID" and "General request category ID" were read by nothing (their
   descriptions said they drove this link), while "Other request service ID" drives all
-  three links. The labels and descriptions now say so. Measured by rendering the real
+  three links. The labels and descriptions first said so, and a later change removed
+  the two unused settings and their strings. The manifest defines the theme's
+  [Settings panel](https://support.zendesk.com/hc/en-us/articles/4408846524954), so
+  deleting them there is the lasting way; a change made in Guide's code editor would be
+  overwritten by the next deploy, which updates the live theme from this repository.
+  Measured by rendering the real
   templates in the harness with the ID set to `115` and with it blank: set, all three
   links are `/hc/en-us/services/115` as before; blank, all three are
   `/hc/en-us/requests/new`, the footer's URL. What the harness cannot show is the
@@ -1598,7 +1603,7 @@ Resolved with the product owner: the USWDS exception and the `.gov` banner
 (owner decision 1), the Knowledge entry point on the home page (decision 2),
 the footer's policy links (help.arpa-h.gov is public, so the public HHS and
 arpa-h.gov policy pages belong there, less the public footer's "Download Adobe
-Plugin" link, which the owner dropped as not needed: owner decision 9), the footer's site links for signed-in visitors only (decision 10), the Admin Center settings (decision 5) and,
+Plugin" link, which the owner dropped as not needed: owner decision 9), the footer's site links for signed-in visitors only (decision 10), the two unused General request settings (removed after the merge: see "After the merge"), the Admin Center settings (decision 5) and,
 in the Phase 7 review, the "Popular:" label at 768 pixels, which reads 4.0:1 at its
 lightest pixel and stays as it is: a dark pill like the chips would clear 4.5:1
 (10.7:1 at the worst pixel) but adds a visible capsule that could read as a sixth,
@@ -1628,6 +1633,5 @@ Still open:
 - What "right justification" of the tab icons meant. It was read as the right-to-left case, where the icon led the name from the right, and the icon now stays on the left there (owner decision 15). If it meant the icon and name centered in a stretched pill (a phone, or a wrapped row), `justify-content: flex-start` on the tab left-aligns them; that is a visible change, so it waits for the owner.
 - Whether the two other PNGs stay PNG. The tab icons are SVG only (owner decision 15). The Device FAQs tile logos (`assets/ios.png`, `macos.png` and `windows.png`, shown at 72 to 160 pixels) and the stock banner flag (`assets/us_flag_small.png`, 16 pixels wide) are still raster, because they are not tiny icons, a 512 pixel source is sharp at the size shown, and the macOS tile is a wordmark with no SVG in the icon sets the owner named. Converting them is a visible change to the Device FAQs page and the owner's call.
 - Button text size. The NEXUS reference sets default button text at 18px and large at 20px, with `12px 20px` padding (`.github/skills/arpa-h-web-design/SKILL.md`, "Button sizing"). The theme uses 14px and 16px (`styles/_buttons.scss`), up from the original 12px and 14px, so that forms, toolbars and cards keep the proportions the owner knew. A Copilot review noted the difference. It is recorded as a deliberate departure (`DESIGN.md`, Buttons), and moving to the NEXUS size would enlarge every button on every page and reflow the forms, so it waits for the owner.
-- The two unused General request settings. `general_request_service_id` and `general_request_category_id` are read by nothing, since the button moved to `other_request_service_id` on 2026-07-28 ([`b692f76d`](https://github.com/ARPA-H/zendesk_copenhagen/commit/b692f76d)). Their labels now say "(not used)" and their descriptions point to the setting that works, rather than the settings being removed, because removing a setting is the owner's call (the same choice is open for `community_image` and `service_catalog_hero_image` above). Recommendation: remove both, with their strings in `translations/en-us.json` and `translations.yml`.
 - Whether a visited hero chip should look different from an unvisited one. They are the same now (white), as the header and footer links are. If a cue is wanted, a browser lets `:visited` change only color-type properties and ignores any transparency ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/:visited#privacy_restrictions)), and the light end of the visited family, Violet 300 (`#b8b2e4`, the NEXUS Accent Cooler Light), measures 9.3:1 at the lowest on the chip fills, against 2.0:1 for the violet that caused the problem.
 - What only the sandbox can show for the General request links. Whether the "Other request service ID" setting holds a value there, and whether it is an item ID from that instance; the page the button opens now that a blank value falls back to the standard request form; and Zendesk's real `{{page_path 'new_request'}}` output, which the offline harness stubs with the same route as the footer link.

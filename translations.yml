@@ -334,26 +334,6 @@ parts:
       screenshot: ""
       value: "The destination URL for the floating Technology Training button. Leave blank to keep the button hidden."
   - translation:
-      key: "txt.help_center_copenhagen_theme.general_request_service_id_label"
-      title: "Label for the general request service id setting"
-      screenshot: ""
-      value: "General request service ID (not used)"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.general_request_service_id_description"
-      title: "Description for the general request service id setting"
-      screenshot: ""
-      value: "Not used by this theme. The \"General request\" button reads \"Other request service ID\" instead."
-  - translation:
-      key: "txt.help_center_copenhagen_theme.general_request_category_id_label"
-      title: "Label for the general request category id setting"
-      screenshot: ""
-      value: "General request category ID (not used)"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.general_request_category_id_description"
-      title: "Description for the general request category id setting"
-      screenshot: ""
-      value: "Not used by this theme. The \"General request\" button does not read it; see \"Other request service ID\"."
-  - translation:
       key: "txt.help_center_copenhagen_theme.other_request_service_id_label"
       title: "Label for the other request service id setting"
       screenshot: ""
