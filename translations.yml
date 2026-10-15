@@ -337,22 +337,22 @@ parts:
       key: "txt.help_center_copenhagen_theme.general_request_service_id_label"
       title: "Label for the general request service id setting"
       screenshot: ""
-      value: "General request service ID (not used)"
+      value: "General request service ID"
   - translation:
       key: "txt.help_center_copenhagen_theme.general_request_service_id_description"
       title: "Description for the general request service id setting"
       screenshot: ""
-      value: "Not used by this theme. The \"General request\" button reads \"Other request service ID\" instead."
+      value: "The service catalog item ID that the \"General request\" button (Home and Services pages) and the \"Submit a general request\" link (service pages) open while \"Other request service ID\" is blank. Item IDs differ between Zendesk instances, so copy it from this one. Leave both blank to open the standard request form."
   - translation:
       key: "txt.help_center_copenhagen_theme.general_request_category_id_label"
       title: "Label for the general request category id setting"
       screenshot: ""
-      value: "General request category ID (not used)"
+      value: "General request category ID"
   - translation:
       key: "txt.help_center_copenhagen_theme.general_request_category_id_description"
       title: "Description for the general request category id setting"
       screenshot: ""
-      value: "Not used by this theme. The \"General request\" button does not read it; see \"Other request service ID\"."
+      value: "Optional. The service catalog category to open the General request item under, for an item that is in several categories. It is added to the link as ?category_id=. Has no effect while both service ID settings are blank."
   - translation:
       key: "txt.help_center_copenhagen_theme.other_request_service_id_label"
       title: "Label for the other request service id setting"
@@ -362,4 +362,4 @@ parts:
       key: "txt.help_center_copenhagen_theme.other_request_service_id_description"
       title: "Description for the other request service id setting"
       screenshot: ""
-      value: "The service catalog item ID that the \"General request\" button (Home and Services pages) and the \"Submit a general request\" link (service pages) open. Item IDs differ between Zendesk instances, so copy it from this one. Leave blank to open the standard request form."
+      value: "The service catalog item ID that the \"General request\" button and link open. It is read first; while it is blank, \"General request service ID\" is used. Item IDs differ between Zendesk instances, so copy it from this one. Leave both blank to open the standard request form."

@@ -179,11 +179,14 @@ choices are in `docs/design-plan.md`, "After the merge"):
   label in every state, like the header and footer links. Rule of thumb: a component on
   a dark surface sets its own color for each link state; the global link colors are for
   light surfaces.
-- **General request links.** They are built from the "Other request service ID" setting,
-  which is blank by default and differs between Zendesk instances, so a blank value gave
-  a dead `/hc/en-us/services/` link. Blank now opens the standard request form
-  (`{{page_path 'new_request'}}`, the footer's page). "General request service ID" and
-  "General request category ID" are read by nothing and are labelled "(not used)".
+- **General request links.** The button and the "Submit a general request" link read
+  "Other request service ID" first, then "General request service ID", and open the
+  standard request form (`{{page_path 'new_request'}}`, the footer's page) while both are
+  blank; "General request category ID", when set, is added as `?category_id=` to an item
+  link. The two General request settings were the original per-environment design
+  (PR #63) and had gone unread since July, so a value saved in them did nothing; at the
+  owner's choice they are wired back in rather than removed. The old setting still wins,
+  so a link that works today does not change.
 
 ## Session: 2026-09-11 — resolve-pr-146-conflicts ([PR #147](https://github.com/ARPA-H/zendesk_copenhagen/pull/147), supersedes [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146))
 
