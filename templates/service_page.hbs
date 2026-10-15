@@ -70,8 +70,10 @@
             <p class="svc-custom-submit-note">Review your request details, then submit to the Service Desk.</p>
           </div>
         </div>
-        {{!-- One-line fallback instead of a banner box. --}}
-        <p class="svc-fallback">Can&rsquo;t find the right service? <a href="/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}">Submit a general request</a>.</p>
+        {{!-- One-line fallback instead of a banner box. The link is the service catalog
+              item named in the theme settings, or the standard request form (the
+              footer's page) until one is set. --}}
+        <p class="svc-fallback">Can&rsquo;t find the right service? <a href="{{#if settings.other_request_service_id}}/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}{{else}}{{page_path 'new_request'}}{{/if}}">Submit a general request</a>.</p>
       </div>
       <aside class="svc-side-column" aria-label="Help with this request">
         <section class="svc-article-card">
