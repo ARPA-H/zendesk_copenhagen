@@ -129,7 +129,10 @@
           <span class="svc-help-banner-title">Still can&rsquo;t find what you need?</span>
           <span class="svc-help-banner-sub">Submit a general request.</span>
         </div>
-        <a class="svc-help-btn" href="/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}">
+        {{!-- The "General request" button: the service catalog item named in the theme
+              settings, or the standard request form (the footer's page) until one is
+              set. --}}
+        <a class="svc-help-btn" href="{{#if settings.other_request_service_id}}/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}{{else}}{{page_path 'new_request'}}{{/if}}">
           General request
         </a>
       </div>

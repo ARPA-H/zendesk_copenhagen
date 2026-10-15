@@ -1527,6 +1527,71 @@ styles, so the same pages and widths are compared before and after.
 | 9 | Computed transitions and animations across the 18 page states (nine pages at 1440 pixels with a mouse and 390 with touch): 45 distinct rules, of which 24 are unchanged, 20 changed in length by 60 ms at most and one (the service cards') now also eases its shadow; twelve literal durations became four tokens. With the reduced-motion preference on: theme-owned rules that still ran went from 12 to 0, and no rule transitions `transform` or a layout property (Garden's chevron turn ran for 0.25 seconds with the preference on and is now instant); the 22 rules left are Garden's color, border, shadow, opacity, visibility and stacking-order changes, which WCAG does not count as motion. The anchor wash, stepped frame by frame: the full tint at 0, 500 and 720 ms, 61% at 1,000 ms, 19% at 1,400 ms and clear at 1,800 ms; no animation on a heading that is not the target or on any page with no hash; a static tint under reduced motion; a 2 pixel `Highlight` outline in forced colors; an anchor nested in a heading also triggers it. Pixels: 22 of 22 page captures identical to the build before Phases 8 and 9 (nothing here changes a resting page). axe-core over the 18 page states: no findings. Generated files: `style.css` +2,661 bytes raw (+780 gzipped), the two React bundles +13 bytes each. Unit tests: 96 suites and 918 tests (95 and 908 before this phase): the CSS changes have no unit tests and are checked by the computed-style probes above, and the ten new specs cover the toast host check from Phase 8 that the Phase 9 review found too loose (seven of the ten fail on the old template). |
 | 10 | Final critique, run as two isolated assessments like the baseline: 25/40 against 23/40, with status feedback, consistency and minimalism up a point each and user control down one (a difference between reviewers, explained in the document). Final audit: 15/20 against 10/20, each of the five dimensions at 3 from 2. Measured on the 18 page loads, baseline to final: horizontal overflow on 2 loads to none; colors off the palette in the rendered pages 35.7% to 0 (3.7% counting the stock banner's three colors); text pairs below 4.5:1 21 elements to none; distinct font sizes 20 to 9; text nodes under 14 pixels 37.7% to 4.7% (the stock banner supplies 45 of the 50); Tab stops without a visible focus change 10 to 0 of 691; pages with exactly one h1 7 to 9 of 9; states with axe-core violations 18 (46 rule hits) to none; HTTP errors 4 to 0. Polish: of the 22 page captures, four changed by exactly the fixes (the Device FAQs labels, the search breadcrumb at 390, the category introduction at 390 and the note under Submit at 390), and one later fix changed the help rail on the request page; axe-core stays clean on all 18 states. A failed submit now moves focus to the first field with an error for text, dropdown, multi-select, checkbox and attachments fields, each required alone (before the polish it stayed on the Submit button for every type), and so does a server rejection (422) that names a field: measured on a text field, focus was on the page body before and is on the input now. With a mouse in a window narrower than 769 pixels a catalog card now shows its hover tooltip (before: neither the tooltip nor the description), and resting pages are unchanged (22 of 22 captures identical). From 1024 pixels the search pill on the service item page shares its left edge, right edge and center with the help rail's card at five widths from 1024 to 1920, at 150% and 200% text, with a long breadcrumb and in right-to-left (before: 360 pixels against 320, 40 pixels too wide on the left and 20 off center); 21 of 22 captures identical, and the 22nd (the item page at 1440 pixels) differs only inside the pill. Unit tests: 99 suites and 949 tests (96 and 918 before the polish: two new for the count's status role, one for the focus handoff, six for the helper on real field components, two for the checkbox; and, after the Copilot reviews of the final commits, two more for the count's announcer, four for the table labels on other languages' pages, twelve for the catalog's completion check, a suite of its own, and two for the handoff after a server 422). For the owner's later requests (decisions 12 to 14): of the 22 page captures, 16 are identical to the build before, and the other six differ by exactly the changes (the section and search pages at both widths, in the pager row only; the article page at both widths, 41 pixels shorter without its share icons); the two tab fixtures and the pager add four more states to the axe-core pass, which is clean on all 22; the stress fixture's long tab name (607 pixels wide, 238 pixels of sideways scroll at 390) now wraps inside its pill with no overflow. For decision 15 (the icons on the left, Android and Web): of the 26 captures (13 pages at two widths), 24 are identical to the build before and the other two are the stress fixture, which gained tabs; all 19 icons in three tab groups sit left of the name, in left-to-right and right-to-left text, at 1440, 768, 390 and 320 pixels (with the right-to-left rule cancelled, all six icons of the first group are on the right); axe-core is still clean on all 22 states; the Android icon paints about 20 by 12 pixels in its 22 by 18 box and the Web icon 18 by 18. Unit tests: 102 suites and 1,080 tests (99 and 949 before; 87 new for the tab labels and the platforms' files, 25 for the first bytes of every SVG asset, one for the focus handoff to a lookup over its limit, twelve for the Submit proxy, a suite of its own, and six for the table regions of tabs that are shown later). Generated files: `style.css` 231,983 bytes and `script.js` 53,238 bytes, against Zendesk's [limit](https://support.zendesk.com/hc/en-us/articles/4408831783962-Knowledge-product-limits-for-your-help-center) of 800 KB each, and six tab icons of 6,523 bytes in all (the limits are 5 MB an asset and 50 MB in total; there is no cap on the number of assets). |
 
+## After the merge
+
+[PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231) was merged into
+`sandbox` on 2026-10-15, and the owner then reported two problems on the deployed
+theme. Both are fixed in a follow-up pull request, and neither changes a decision
+above.
+
+- **Visited hero chips were unreadable.** A popular-search chip that had been visited
+  showed its label in violet (`#4535a7`) on the dark scrim, and a chip turned dark
+  blue (`#07418f`) and underlined when it was hovered, focused or pressed. The cause is
+  specificity: the global link rules in `styles/_base.scss` (`a:visited`, `a:hover`,
+  `a:active`, `a:focus`) outrank the single class `.svc-hero-chip`, so they set the
+  label's color, not the chip. The visited case is as old as the original theme, whose
+  `a:visited` also beat the chip's class. The hover, focus and pressed cases came in
+  with this work: the original `a:hover` only added an underline, and Phase 1 made the
+  global rule set the link-hover color as well. Measured in Chrome with a real browsing
+  history, because `getComputedStyle` always reports the unvisited color
+  ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/:visited#privacy_restrictions)):
+  white at 18.5 to 19.0:1 at rest, but 2.0 to 2.1:1 visited, 1.3:1 hovered or pressed
+  and 1.9 to 2.0:1 with keyboard focus, against the 4.5:1 that
+  [WCAG 1.4.3](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html) asks
+  for at 14 pixels. A sweep of every link on a dark surface (140 links on the 11
+  harness pages, each at rest, visited, hovered, focused and pressed, with the states
+  forced through the DevTools protocol, which reproduced the real-history numbers
+  exactly) found no failure other than the 10 chips on the home and services pages: the
+  header links, the footer links and the hero button already pin their states. The
+  chips now pin a white label and no underline in every state (`a.svc-hero-chip:visited`
+  and the other three, each outranking its global rule), as those controls do. Measured
+  after: 18.5 to 19.0:1 at rest, visited and focused, and 12.4 to 13.0:1 at the lowest
+  (hovered or pressed, where the pill lightens), at 1440 pixels; 11.5:1 at the lowest at
+  390; 14.0 to 19.6:1 in forced-colors mode, where the browser colors the label itself.
+  The sweep now reads 0 failures out of the same 140 links, and the resting chips are
+  pixel-identical. Two choices are the owner's to overrule: a visited chip looks like an
+  unvisited one (a chip is a shortcut to a search, not a link to read, and the other
+  dark surfaces do the same), and hover is the existing fill and border with no
+  underline, as on the hero button (the original theme underlined it). The two new spec
+  files, `src/heroChipStates.spec.js` and `src/generalRequestLink.spec.js`, hold 39 tests,
+  and 12 of them fail on the old code.
+- **The General request links went nowhere until an ID was set.** The button on the home
+  and services pages and the "Submit a general request" link on a service page are built
+  by hand, `/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}`,
+  and have been since [`b692f76d`](https://github.com/ARPA-H/zendesk_copenhagen/commit/b692f76d)
+  (2026-07-28), long before this work. That setting is blank in the manifest, and item
+  IDs differ between Zendesk instances, so an instance where nobody set it, or where an
+  ID from another instance was pasted in, got `/hc/en-us/services/` with nothing after
+  it. The footer's "Submit a request" link has no such problem because it is Zendesk's
+  [`link` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#link-helper),
+  which builds the URL itself. The offline harness hid the problem: it set the ID to a
+  mock service "so the link goes somewhere real". When the setting is blank the three
+  links now use the
+  [`page_path` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#page_path-helper)
+  (`{{page_path 'new_request'}}`, "a relative url to the requested path"), which is the
+  footer's page; with an ID set nothing changes. `{{#if}}` treats an empty string as
+  false ([Curlybars `to_bool`](https://github.com/zendesk/curlybars/blob/86f30991370b2285f7630f98e1156fcb3f9bb785/lib/curlybars/rendering_support.rb#L48)),
+  and the stock templates already put block helpers inside attribute values
+  (`class="article-list-item{{#if promoted}} article-promoted{{/if}}"`). Three settings
+  overlapped, and that is the likely way an admin ends up with a dead button: "General
+  request service ID" and "General request category ID" are read by nothing (their
+  descriptions said they drove this link), while "Other request service ID" drives all
+  three links. The labels and descriptions now say so. Measured by rendering the real
+  templates in the harness with the ID set to `115` and with it blank: set, all three
+  links are `/hc/en-us/services/115` as before; blank, all three are
+  `/hc/en-us/requests/new`, the footer's URL. What the harness cannot show is the
+  ARPA-H sandbox's own setting, which was not read, and the real `page_path` output.
+
 ## Open decisions
 
 Resolved with the product owner: the USWDS exception and the `.gov` banner
@@ -1563,3 +1628,6 @@ Still open:
 - What "right justification" of the tab icons meant. It was read as the right-to-left case, where the icon led the name from the right, and the icon now stays on the left there (owner decision 15). If it meant the icon and name centered in a stretched pill (a phone, or a wrapped row), `justify-content: flex-start` on the tab left-aligns them; that is a visible change, so it waits for the owner.
 - Whether the two other PNGs stay PNG. The tab icons are SVG only (owner decision 15). The Device FAQs tile logos (`assets/ios.png`, `macos.png` and `windows.png`, shown at 72 to 160 pixels) and the stock banner flag (`assets/us_flag_small.png`, 16 pixels wide) are still raster, because they are not tiny icons, a 512 pixel source is sharp at the size shown, and the macOS tile is a wordmark with no SVG in the icon sets the owner named. Converting them is a visible change to the Device FAQs page and the owner's call.
 - Button text size. The NEXUS reference sets default button text at 18px and large at 20px, with `12px 20px` padding (`.github/skills/arpa-h-web-design/SKILL.md`, "Button sizing"). The theme uses 14px and 16px (`styles/_buttons.scss`), up from the original 12px and 14px, so that forms, toolbars and cards keep the proportions the owner knew. A Copilot review noted the difference. It is recorded as a deliberate departure (`DESIGN.md`, Buttons), and moving to the NEXUS size would enlarge every button on every page and reflow the forms, so it waits for the owner.
+- The two unused General request settings. `general_request_service_id` and `general_request_category_id` are read by nothing, since the button moved to `other_request_service_id` on 2026-07-28 ([`b692f76d`](https://github.com/ARPA-H/zendesk_copenhagen/commit/b692f76d)). Their labels now say "(not used)" and their descriptions point to the setting that works, rather than the settings being removed, because removing a setting is the owner's call (the same choice is open for `community_image` and `service_catalog_hero_image` above). Recommendation: remove both, with their strings in `translations/en-us.json` and `translations.yml`.
+- Whether a visited hero chip should look different from an unvisited one. They are the same now (white), as the header and footer links are. If a cue is wanted, a browser lets `:visited` change only color-type properties and ignores any transparency ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/:visited#privacy_restrictions)), and the light end of the visited family, Violet 300 (`#b8b2e4`, the NEXUS Accent Cooler Light), measures 9.3:1 at the lowest on the chip fills, against 2.0:1 for the violet that caused the problem.
+- What only the sandbox can show for the General request links. Whether the "Other request service ID" setting holds a value there, and whether it is an item ID from that instance; the page the button opens now that a blank value falls back to the standard request form; and Zendesk's real `{{page_path 'new_request'}}` output, which the offline harness stubs with the same route as the footer link.

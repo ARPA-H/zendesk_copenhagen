@@ -167,6 +167,24 @@ decisions); the system is described in `DESIGN.md` and `PRODUCT.md`.
   removed settings, a real screen reader, Windows forced colors, a real right-to-left
   locale, and Firefox, Safari and Edge.
 
+### After the merge
+
+PR #231 was merged into `sandbox` on 2026-10-15. Two problems the owner then saw on the
+deployed theme are fixed in a follow-up pull request (details, measurements and the open
+choices are in `docs/design-plan.md`, "After the merge"):
+
+- **Hero chips.** The global link rules (`a:visited`, `a:hover`, `a:active`, `a:focus`)
+  outranked `.svc-hero-chip`, so a visited chip was violet and a hovered, focused or
+  pressed one blue on the dark scrim (about 2:1 and 1.3:1). The chips now pin a white
+  label in every state, like the header and footer links. Rule of thumb: a component on
+  a dark surface sets its own color for each link state; the global link colors are for
+  light surfaces.
+- **General request links.** They are built from the "Other request service ID" setting,
+  which is blank by default and differs between Zendesk instances, so a blank value gave
+  a dead `/hc/en-us/services/` link. Blank now opens the standard request form
+  (`{{page_path 'new_request'}}`, the footer's page). "General request service ID" and
+  "General request category ID" are read by nothing and are labelled "(not used)".
+
 ## Session: 2026-09-11 — resolve-pr-146-conflicts ([PR #147](https://github.com/ARPA-H/zendesk_copenhagen/pull/147), supersedes [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146))
 
 Merged [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146)'s sticky

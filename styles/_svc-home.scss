@@ -216,6 +216,22 @@ a.svc-hero-cta:active {
   border: 1px solid var(--on-dark-border);
   transition: background-color var(--motion-base) ease, border-color var(--motion-base) ease;
 }
+/* The label is white in every link state. The global link rules in _base.scss
+   (a:visited, a:hover, a:active, a:focus) outrank a single class, so without this
+   a visited chip turns violet and a hovered, focused or pressed one turns blue:
+   about 2:1 and 1.3:1 on the indigo scrim, against the 4.5:1 the scrim is there to
+   keep. The header links, the footer links and the hero button pin their states
+   the same way. A visited chip looks like an unvisited one on purpose: it is a
+   shortcut to a search, not a link to read. The hover feedback is the fill and the
+   border below, so there is no underline, as on the hero button. */
+a.svc-hero-chip,
+a.svc-hero-chip:visited,
+a.svc-hero-chip:hover,
+a.svc-hero-chip:active,
+a.svc-hero-chip:focus {
+  color: var(--color-white);
+  text-decoration: none;
+}
 .svc-hero-chip:hover {
   background-image: linear-gradient(var(--color-hover-dark-15), var(--color-hover-dark-15));
   border-color: var(--on-dark-border-strong);
