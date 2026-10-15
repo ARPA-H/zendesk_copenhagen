@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import {
   ThemeProviders,
   createTheme,
+  hasInitializedI18next,
   initI18next,
   loadTranslations,
 } from "../shared";
@@ -18,7 +19,10 @@ export async function renderFlashNotifications(
   settings: Settings,
   baseLocale: string
 ) {
-  initI18next(baseLocale);
+  // document_head.hbs loads this host after the page's own modules may have
+  // started, and initI18next resets the shared instance, so only start it when
+  // no page module has.
+  if (!hasInitializedI18next()) initI18next(baseLocale);
   await loadTranslations(baseLocale, [
     () => import(`../shared/translations/locales/${baseLocale}.json`),
   ]);

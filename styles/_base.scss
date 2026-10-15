@@ -4,11 +4,11 @@
 }
 
 body {
-  background-color: $background_color;
-  color: $text_color;
+  background-color: var(--surface-page);
+  color: var(--type-body);
   font-family: "Public Sans", "Arial", $text_font, sans-serif;
   font-size: $font-size-base;
-  line-height: 1.5;
+  line-height: var(--line-height-4);
   -webkit-font-smoothing: antialiased;
 
   > main {
@@ -21,7 +21,11 @@ body {
 h1,
 h2 {
   font-family: "Poppins", "Public Sans", "Arial", $heading_font, sans-serif;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-neg-05);
+  line-height: var(--line-height-2);
   margin-top: 0;
+  text-wrap: balance;
 }
 
 h3,
@@ -29,45 +33,86 @@ h4,
 h5,
 h6 {
   font-family: "Public Sans", "Arial", $heading_font, sans-serif;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-3);
   margin-top: 0;
+  text-wrap: balance;
+}
+
+// Page titles and section titles use the NEXUS steps below the marketing scale
+// (32 and 24 rather than 48 and 36): these are working pages, and a long
+// article title has to stay on two lines. The home hero greeting is the only
+// display size (--font-size-4xl). Headings may break inside a long unbroken
+// token (a URL, a file name) instead of widening the page.
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: anywhere;
 }
 
 h1 {
-  font-size: 32px;
+  font-size: var(--font-size-2xl);
 }
 
 h2 {
-  font-size: 22px;
+  font-size: var(--font-size-lg);
 }
 
 h3 {
-  font-size: 18px;
-  font-weight: $font-weight-semibold;
+  font-size: var(--font-size-md);
 }
 
 h4 {
-  font-size: 16px;
+  font-size: var(--font-size-xs);
+}
+
+h5,
+h6 {
+  font-size: var(--font-size-2xs);
+}
+
+// Counts, dates and table figures line up in columns.
+.doc-count,
+.vote-sum,
+.meta-data,
+time,
+th,
+td {
+  font-variant-numeric: tabular-nums;
 }
 
 a {
-  color: $link_color;
+  color: var(--color-link);
   text-decoration: none;
 
   &:visited {
-    color: $visited_link_color;
+    color: var(--color-link-visited);
   }
 
   &:hover,
   &:active,
   &:focus {
+    color: var(--color-link-hover);
     text-decoration: underline;
   }
+}
+
+// NEXUS focus indicator (WCAG 2.4.7). The box-shadow ring follows the element's
+// radius; the transparent outline is repainted in a system color in
+// forced-colors mode, where box-shadow is dropped.
+:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
 }
 
 .hbs-form, .search {
   input,
   textarea {
-    color: #000;
+    color: var(--type-body);
     font-size: $input-font-size;
   }
   
@@ -78,33 +123,33 @@ a {
   
     /* We use the :where selector to not increase the specificity of the selector */
     &:where(:not([type="checkbox"])) {
-      outline: none;
+      // No outline override: the global focus ring (box-shadow plus a
+      // transparent outline that forced-colors mode repaints) applies.
   
       &:focus {
-        border: 1px solid $brand_color;
+        border: 1px solid var(--color-focus-ring);
       }
     }
   }
   
   input[disabled] {
-    background-color: #ddd;
+    background-color: var(--color-ui-10);
   }
   
   select {
     -webkit-appearance: none;
     -moz-appearance: none;
-    background: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23CCC' d='M0 0h10L5 6 0 0z'/%3E%3C/svg%3E%0A")
-      no-repeat #fff;
+    background: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%236f747a' d='M0 0h10L5 6 0 0z'/%3E%3C/svg%3E%0A")
+      no-repeat var(--color-white);
     background-position: right 10px center;
-    border: 1px solid $high-contrast-border-color;
-    border-radius: 4px;
+    border: 1px solid var(--color-ui-60);
+    border-radius: var(--radius-md);
     padding: 8px 30px 8px 10px;
-    outline: none;
-    color: $field-text-focus-color;
+    color: var(--type-body);
     width: 100%;
   
     &:focus {
-      border: 1px solid $brand_color;
+      border: 1px solid var(--color-focus-ring);
     }
   
     &::-ms-expand {
@@ -113,15 +158,14 @@ a {
   }
   
   textarea {
-    border: 1px solid $high-contrast-border-color;
-    border-radius: 2px;
+    border: 1px solid var(--color-ui-60);
+    border-radius: var(--radius-md);
     resize: vertical;
     width: 100%;
-    outline: none;
     padding: 10px;
   
     &:focus {
-      border: 1px solid $brand_color;
+      border: 1px solid var(--color-focus-ring);
     }
   }
 }
@@ -132,7 +176,7 @@ a {
 }
 
 .container-divider {
-  border-top: 1px solid $low-contrast-border-color;
+  border-top: 1px solid var(--surface-stroke);
   margin-bottom: 20px;
 }
 
@@ -148,4 +192,14 @@ ul {
 
 .visibility-hidden {
   @include visually-hidden;
+}
+
+// A page with nothing to list says so in plain words (category and section
+// pages), in the body voice rather than the stock italic link.
+.empty-state {
+  color: var(--type-subheading);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-4);
+  margin: var(--space-4) 0;
+  max-width: var(--measure-prose);
 }

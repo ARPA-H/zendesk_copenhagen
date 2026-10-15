@@ -25,7 +25,7 @@ const MobileToggle = styled.button<{ $isOpen: boolean }>`
 
   svg {
     transform: rotate(${(props) => (props.$isOpen ? "180deg" : "0deg")});
-    transition: transform 0.15s ease;
+    transition: transform var(--motion-fast) ease;
   }
 
   @media (max-width: 768px) {

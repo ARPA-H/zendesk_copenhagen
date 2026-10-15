@@ -29,7 +29,7 @@ const slideIn = keyframes`
 
 const Container = styled.div`
   display: grid;
-  animation: ${slideIn} 200ms forwards;
+  animation: ${slideIn} var(--motion-base) forwards;
 `;
 
 const InnerContainer = styled.div`

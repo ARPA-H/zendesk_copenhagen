@@ -4,7 +4,7 @@
 
 .profile-header {
   padding: 30px 0;
-  background-color: $primary-shade;
+  background-color: var(--surface-subtle);
 }
 
 .profile-header .container {
@@ -118,7 +118,7 @@
 }
 
 .profile-stats .stat-label {
-  color: $secondary-text-color;
+  color: var(--type-subheading);
   flex: 0 0 100px;
   margin-right: 10px;
 
@@ -129,7 +129,7 @@
 }
 
 .profile-stats-activity {
-  border-top: solid 1px #ddd;
+  border-top: solid 1px var(--surface-stroke);
   margin-top: 15px;
 
   @include tablet {
@@ -170,7 +170,7 @@
 }
 
 .profile-stats-counters {
-  border-bottom: solid 1px #ddd;
+  border-bottom: solid 1px var(--surface-stroke);
 
   @include tablet {
     flex: 0 0 200px;
@@ -222,11 +222,11 @@
 
 .profile-private-badge {
   flex-basis: 100%;
-  border: solid 1px $brand_color;
+  border: solid 1px var(--color-brand-primary);
   border-radius: 4px;
-  color: $brand_color;
+  color: var(--color-brand-primary);
   padding: 5px 20px;
-  font-size: 12px;
+  font-size: var(--font-size-3xs);
   text-align: center;
 
   .profile-private-icon {
@@ -242,7 +242,7 @@
 // Navigation
 
 .profile-nav {
-  background-color: $secondary-shade;
+  background-color: var(--color-ui-10);
   margin-bottom: 37px;
 }
 
@@ -269,7 +269,7 @@
 .profile-section-description {
   flex-basis: 100%;
   padding: 10px 0;
-  color: $secondary-text-color;
+  color: var(--type-subheading);
   font-size: $font-size-small;
   white-space: nowrap;
   overflow: hidden;
@@ -283,7 +283,7 @@
 
 .profile-section-sorter {
   flex-basis: 100%;
-  border-top: solid 1px #eee;
+  border-top: solid 1px var(--color-ui-5);
   font-size: $font-size-small;
 
   .dropdown-toggle {
@@ -326,7 +326,7 @@
   }
 
   &-item {
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     display: flex;
     flex: 1;
     flex-direction: row;
@@ -365,7 +365,7 @@
 
     &-description,
     &-metadata-description {
-      color: $secondary-text-color;
+      color: var(--type-subheading);
       font-size: $font-size-small;
       margin: 0;
     }
@@ -399,7 +399,7 @@
   margin: 0 0 5px 0;
   display: inline;
   line-height: 21px;
-  font-size: 15px;
+  font-size: var(--font-size-xs);
   vertical-align: middle;
 }
 
@@ -410,7 +410,7 @@
 // Profile contribution list
 
 .profile-contribution-list > .profile-contribution {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-ui-5);
 
   @include tablet {
     padding-left: 30px;
@@ -423,13 +423,13 @@
 }
 
 .profile-contribution-list > .profile-contribution:last-child {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-ui-5);
 }
 
 .profile-contribution-icon {
   left: 0;
   position: absolute;
-  color: #ccc;
+  color: var(--color-ui-40);
   line-height: 25px;
 
   [dir="rtl"] & {
@@ -481,7 +481,7 @@
 .profile-section .private-activity {
   display: block;
   margin-top: 40px;
-  color: #999;
+  color: var(--color-ui-60);
 }
 
 .private-activity-icon {
@@ -515,11 +515,11 @@
 
 .profile-activity:not(:last-child) {
   @include tablet {
-    border-left: 1px solid #ddd;
+    border-left: 1px solid var(--surface-stroke);
 
     [dir="rtl"] & {
       border-left: 0;
-      border-right: 1px solid #ddd;
+      border-right: 1px solid var(--surface-stroke);
     }
   }
 }
@@ -572,7 +572,7 @@
   padding: 20px;
   margin-top: 10px;
   border-radius: 8px;
-  background-color: $primary-shade;
+  background-color: var(--surface-subtle);
 
   @include tablet {
     margin-top: 0;
@@ -595,10 +595,10 @@
   border-radius: 50%;
   background-size: 14px 14px;
   background-repeat: no-repeat;
-  background-color: $background_color;
+  background-color: var(--surface-page);
   background-position: 50% 50%;
   text-align: center;
-  color: #ccc;
+  color: var(--color-ui-40);
 
   [dir="rtl"] & {
     right: 0;

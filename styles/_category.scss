@@ -2,78 +2,69 @@
 .category {
   &-container {
     display: flex;
-    justify-content: flex-end;
   }
 
   &-content {
-    @include desktop {
-      flex: 0 0 80%;
-    }
-
     flex: 1;
     max-width: 100%;
+    min-width: 0;
   }
 }
 
+// Sections sit in two columns from tablet up: one gutter and one row gap,
+// no boxes. A grid keeps the columns equal without leaving the leftover
+// percentage that `space-between` used to turn into a 116px channel.
 .section-tree {
-  @include tablet { flex-direction: row; }
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  gap: var(--space-6) var(--column-gap);
+  grid-template-columns: minmax(0, 1fr);
+
+  @include tablet {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   .section {
-    @include tablet { flex: 0 0 45%; /* Two columns for tablet and desktop. Leaving 5% separation between columns */ }
-    flex: initial;
     max-width: 100%;
   }
 
   &-title {
     margin-bottom: 0;
-    font-size: 18px;
+    font-size: var(--font-size-md);
     font-weight: $font-weight-semibold;
 
-    a { color: $text_color; }
+    a { color: var(--type-body); }
   }
 
   .see-all-articles {
     display: block;
-    padding: 15px 0;
+    padding: var(--space-105) 0;
   }
 }
 
 .article-list {
   &-item {
     font-size: $font-size-bigger;
-    padding: 15px 0;
+    padding: var(--space-105) 0;
     text-overflow: ellipsis;
     overflow: hidden;
 
-    a { color: $text_color; }
+    a { color: var(--type-body); }
   }
 }
 
 .icon-star {
-  color: $brand_color;
-  font-size: 18px;
-}
-
-/***** ARPA-H category/section swirl background *****/
-
-body.category-page .container,
-body.section-page .container {
-  background-image: url($homepage_background_image);
-  background-repeat: no-repeat;
-  background-position: top center;
-  background-size: cover;
+  color: var(--color-brand-primary);
+  font-size: var(--font-size-sm);
 }
 
 /***** Custom OS tile image zoom *****/
 
-.custom-os-tile img {
-  transition: transform 0.4s ease;
-}
+@media (prefers-reduced-motion: no-preference) {
+  .custom-os-tile img {
+    transition: transform var(--motion-slow) ease;
+  }
 
-.custom-os-tile:hover img {
-  transform: scale(1.1);
+  .custom-os-tile:hover img {
+    transform: scale(1.1);
+  }
 }

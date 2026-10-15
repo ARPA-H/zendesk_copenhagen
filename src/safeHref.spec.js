@@ -1,33 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
-import { safeHref, stripTags } from "./svcSearch";
-
-describe("stripTags", () => {
-  it("returns plain text from HTML", () => {
-    expect(stripTags("<b>Hello</b> <i>world</i>")).toBe("Hello world");
-  });
-
-  it("handles null/undefined/empty input", () => {
-    expect(stripTags(null)).toBe("");
-    expect(stripTags(undefined)).toBe("");
-    expect(stripTags("")).toBe("");
-  });
-
-  it("drops event-handler markup without executing it", () => {
-    expect(
-      stripTags('<img src=x onerror="window.__stripTagsPwned = 1">text')
-    ).toBe("text");
-    expect(window.__stripTagsPwned).toBeUndefined();
-  });
-
-  it("never executes script tags", () => {
-    const out = stripTags(
-      "before<script>window.__stripTagsPwned = 1</script>after"
-    );
-    expect(out).toContain("before");
-    expect(out).toContain("after");
-    expect(window.__stripTagsPwned).toBeUndefined();
-  });
-});
+import { safeHref } from "./safeHref";
 
 describe("safeHref", () => {
   it("allows relative help center paths", () => {
@@ -64,5 +36,9 @@ describe("safeHref", () => {
 
   it("uses '#' as the default fallback when none is provided", () => {
     expect(safeHref("javascript:alert(1)")).toBe("#");
+  });
+
+  it("is exposed on window for the page templates", () => {
+    expect(window.svcSafeHref).toBe(safeHref);
   });
 });

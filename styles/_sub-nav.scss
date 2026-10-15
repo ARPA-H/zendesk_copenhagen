@@ -1,13 +1,16 @@
 .sub-nav {
-  align-items: baseline;
+  // Stacked, the children stretch to the container so a long breadcrumb trail
+  // wraps inside it instead of widening the page.
+  align-items: stretch;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  gap: 15px 30px;
+  gap: var(--space-2) var(--space-4);
   justify-content: space-between;
-  margin-bottom: 55px;
+  margin-bottom: var(--space-5);
 
   @include tablet {
+    align-items: center;
     flex-direction: row;
   }
 
@@ -16,9 +19,12 @@
     margin: 0;
   }
 
+  nav {
+    min-width: 0;
+  }
+
   // Inner pages search field
   .search-container {
-    max-width: 300px;
     width: 100%;
 
     @include tablet {

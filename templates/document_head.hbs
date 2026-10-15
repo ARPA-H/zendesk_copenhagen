@@ -36,6 +36,23 @@
 <!-- Customized 5-21-25 -->
 <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
+<!-- Lets the stylesheet tell a scripted page from an unscripted one, so the
+     government banner's explanation stays readable without script. "js" is set
+     now so the collapsed banner never flashes open. src/govBanner.js adds
+     "js-ready" once its click handlers are installed; if that has not happened
+     after five seconds (script.js blocked, failed or very slow), "js" is dropped
+     again so the explanation is exposed instead of sitting behind an inert
+     button. The controller puts both classes back whenever it does start. -->
+<script type="text/javascript">
+  (function () {
+    var root = document.documentElement;
+    root.classList.add("js");
+    setTimeout(function () {
+      if (!root.classList.contains("js-ready")) root.classList.remove("js");
+    }, 5000);
+  })();
+</script>
+
 <!--
   Self-hosted Public Sans (USWDS / ARPA-H standard type) and Poppins (NEXUS
   display type) @font-face declarations now live in styles/_fonts.scss,
@@ -71,11 +88,54 @@
   }
 }
 </script>
-<script type="module">
-  import { renderFlashNotifications } from "flash-notifications";
-  const settings = {{json settings}};
-  const baseLocale = {{json help_center.base_locale}};
-  renderFlashNotifications(settings, baseLocale);
+<script type="module" data-toast-host>
+  // The toast host loads React and the Garden runtime (about 250 KB gzipped), so
+  // a page loads it only when something can toast: a flash notification is
+  // waiting in sessionStorage (written before a redirect; the key is
+  // FLASH_NOTIFICATIONS_KEY in src/modules/shared/notifications/constants.ts),
+  // or the page has a React module of its own, which can notify at any time and
+  // whose notifications queue in notifyBus until the host subscribes. A page with
+  // a module has an inline module script of its own (this one is excluded by its
+  // attribute); a plain Knowledge page has neither, so it skips the download.
+  // The old static import also made the browser fetch shared-bundle.js while
+  // parsing; now it is requested only after the page has been parsed. Without a
+  // hint that put the hero image of the home and services pages 170 ms later and
+  // the request form 170 ms later to be ready, so every page with a module
+  // preloads it itself (a modulepreload link above its module script). That
+  // brings the hero image and the form back on time, makes the catalog ready
+  // about 0.7 s sooner than under the old import, and costs a first paint about
+  // 120 ms later, because the bundle now shares the connection with the
+  // stylesheet and fonts.
+  const flashWaiting = (() => {
+    const key = "HC_FLASH_NOTIFICATIONS";
+    let raw;
+    try {
+      raw = window.sessionStorage.getItem(key);
+    } catch (e) {
+      return true;
+    }
+    if (!raw) return false;
+    // The host leaves a value it cannot use in place, which would load it on every
+    // page for the rest of the tab session, so only a non-empty array counts.
+    let waiting = false;
+    try {
+      const parsed = JSON.parse(raw);
+      waiting = Array.isArray(parsed) && parsed.length > 0;
+    } catch (e) {}
+    if (!waiting) {
+      try {
+        window.sessionStorage.removeItem(key);
+      } catch (e) {}
+    }
+    return waiting;
+  })();
+  const hasPageModule = !!document.querySelector(
+    'script[type="module"]:not([src]):not([data-toast-host])'
+  );
+  if (flashWaiting || hasPageModule) {
+    const { renderFlashNotifications } = await import("flash-notifications");
+    renderFlashNotifications({{json settings}}, {{json help_center.base_locale}});
+  }
 </script>
 
 {{!-- The breadcrumb neutralizer and "empty"-text hider that used to live here

@@ -1,7 +1,7 @@
 .service-catalog {
   &-hero {
     background-image: url($service_catalog_hero_image);
-    margin-bottom: 10px;
+    margin-bottom: var(--space-1);
     height: 320px;
   }
 
@@ -11,7 +11,7 @@
 
   &-main-content {
     display: flex;
-    gap: 32px;
+    gap: var(--space-4);
   }
 
   &-list {
@@ -21,7 +21,7 @@
   &-breadcrumbs {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: var(--space-3);
   }
 }
 
@@ -42,25 +42,16 @@
 
 /***** Service Catalog ARPA-H overrides *****/
 
-.service-catalog-hero {
-  background-image: url($service_catalog_hero_image);
-  margin-bottom: 10px;
-  height: 320px;
-}
-
-.service-catalog-main-content {
-  display: flex;
-  gap: 32px;
-}
-
-.service-catalog-list {
-  width: 100%;
-}
-
 .service-catalog-breadcrumbs {
   display: flex;
   align-items: center;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+
+  nav {
+    min-width: 0;
+  }
 }
 
 // Mobile: stack the categories sidebar above the service list instead of
@@ -72,7 +63,7 @@
 @media (max-width: 768px) {
   .service-catalog-main-content {
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-2);
   }
 
   .service-catalog-sidebar,
@@ -84,13 +75,13 @@
     width: 100%;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    border: 1px solid #dfe4ee;
-    border-radius: 8px;
-    background: #fff;
-    font-size: 15px;
+    padding: var(--space-105) var(--space-2);
+    border: 1px solid var(--color-ui-20);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    font-size: var(--font-size-xs);
     font-weight: 500;
-    text-align: left;
+    text-align: start;
   }
 
   .svc-cat-sidebar-toggle-label {
@@ -101,13 +92,13 @@
 
   .svc-cat-sidebar-toggle svg {
     flex-shrink: 0;
-    margin-left: 12px;
+    margin-inline-start: var(--space-105);
   }
 
   .svc-cat-sidebar-list {
-    margin-top: 8px;
-    border: 1px solid #dfe4ee;
-    border-radius: 8px;
-    padding: 8px;
+    margin-top: var(--space-1);
+    border: 1px solid var(--color-ui-20);
+    border-radius: var(--radius-md);
+    padding: var(--space-1);
   }
 }

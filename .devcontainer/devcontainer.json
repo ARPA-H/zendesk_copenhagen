@@ -14,7 +14,17 @@
   // every Codespace vulnerable during a compromised-release window (and
   // post-start.sh reinstalled it on EVERY resume). Bump the pin deliberately.
   "containerEnv": {
-    "COPILOT_CLI_VERSION": "1.0.83"
+    "COPILOT_CLI_VERSION": "1.0.83",
+
+    // Points every `gh` command in the container at this repo, a fork of
+    // zendesk/copenhagen_theme. Without it an interactive `gh pr ...` stops and asks
+    // for `gh repo set-default`, and once an `upstream` remote exists a bare `gh`
+    // command run where it cannot prompt (an agent's shell) goes to that repo instead,
+    // because `gh` ranks `upstream` above `origin`. GH_REPO skips remote discovery and
+    // needs no network or token to take effect, where `gh repo set-default` in
+    // postCreateCommand would need both. `--repo` still overrides it. See "Upstream
+    // Repository" in AGENTS.md.
+    "GH_REPO": "ARPA-H/zendesk_copenhagen"
   },
 
   // Runs once, at first container creation only. Secret-free so it can be baked

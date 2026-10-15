@@ -29,6 +29,7 @@ export function Checkbox({ field, onChange }: CheckboxProps): JSX.Element {
       <GardenCheckbox
         name={name}
         required={required}
+        aria-invalid={error ? true : undefined}
         defaultChecked={value as boolean}
         value={checkboxValue ? "on" : "off"}
         onChange={handleChange}

@@ -1,43 +1,45 @@
 /***** Search results *****/
 .search-results {
-  @include desktop {
-    flex-direction: row;
-  }
-
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   justify-content: space-between;
 
-  &-column {
-    @include desktop {
-      flex: 0 0 75%;
-    }
+  // The shared page grid: filter rail | gap | results column (the column
+  // tokens), the same as the article page, with the free space on the right.
+  @include desktop {
+    align-items: start;
+    column-gap: var(--column-gap);
+    display: grid;
+    grid-template-columns: var(--column-rail) minmax(0, var(--column-reading));
+    justify-content: start;
+  }
 
+  &-column {
     flex: 1;
   }
 
   &-sidebar {
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     flex: 1 0 auto;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-3);
     padding: 0;
 
     @include desktop {
       border: 0;
-      flex: 0 0 20%;
+      flex: none;
       height: auto;
     }
 
     .sidenav-item {
       border-radius: 4px;
-      padding: 10px 36px;
-      margin-bottom: 4px;
-      color: $text_color;
+      padding: var(--space-105) var(--space-4);
+      margin-bottom: var(--space-05);
+      color: var(--type-body);
 
       &:hover,
       &.current {
-        background-color: #e9ebed;
+        background-color: var(--color-ui-10);
         text-decoration: none;
       }
     }
@@ -53,26 +55,26 @@
       flex-grow: 0;
 
       .content-tag {
-        background: #E9EBED;
+        background: var(--color-ui-10);
         border-radius: 4px;
-        padding: 4px 12px;
+        padding: var(--space-05) var(--space-105);
         text-decoration: none;
 
         .label {
           font-style: normal;
           font-weight: 600;
-          font-size: 12px;
+          font-size: var(--font-size-3xs);
           line-height: 24px;
           text-align: center;
           letter-spacing: -0.000427656px;
-          color: #49545C;
+          color: var(--color-ui-70);
           flex-grow: 0;
           vertical-align: middle;
           display: inline-block;
         }
 
         .close-icon {
-          color: #555555;
+          color: var(--color-ui-70);
           vertical-align: middle;
           display: inline-block;
         }
@@ -80,7 +82,7 @@
     }
 
     .collapsible-sidebar {
-      margin-bottom: 30px;
+      margin-bottom: var(--space-4);
 
       &:not(.expanded) {
         .multibrand-filter-list {
@@ -95,7 +97,7 @@
     }
 
     .multibrand-filter-list .doc-count {
-      color: $field-text-color;
+      color: var(--type-subheading);
     }
 
     .see-all-filters {
@@ -103,8 +105,8 @@
       border: none;
       cursor: pointer;
       display: block;
-      padding: 10px;
-      color: $link_color;
+      padding: var(--space-105);
+      color: var(--color-link);
 
       &[aria-hidden="true"] {
         display: none;
@@ -122,16 +124,16 @@
   }
 
   &-subheading {
-    font-size: 18px;
+    font-size: var(--font-size-sm);
     font-weight: $font-weight-semibold;
   }
 
   &-list {
-    margin-bottom: 25px;
+    margin-bottom: var(--space-3);
     > li {
-      padding: 20px 0;
+      padding: var(--space-3) 0;
       &:first-child {
-        border-top: 1px solid $low-contrast-border-color;
+        border-top: 1px solid var(--surface-stroke);
       }
     }
   }
@@ -143,25 +145,25 @@
     padding-top: 4rem;
 
     .headline {
-      color: #2F3941;
+      color: var(--type-body);
       font-weight: 400;
-      font-size: 18px;
-      line-height: 24px;
-      letter-spacing: -0.45px;
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-3);
+      letter-spacing: var(--letter-spacing-neg-05);
     }
 
     .action-prompt {
-      color: #68737D;
+      color: var(--type-muted);
       font-weight: 400;
-      font-size: 14px;
-      line-height: 20px;
-      letter-spacing: -0.154px;
+      font-size: var(--font-size-2xs);
+      line-height: var(--line-height-4);
+      letter-spacing: 0;
 
       a {
-        color: $link_color;
+        color: var(--color-link);
 
         &:visited {
-          color: $link_color;
+          color: var(--color-link);
         }
       }
     }
@@ -171,6 +173,7 @@
 .search-result {
   &-title-container {
     display: flex;
+    gap: var(--space-2);
     justify-content: space-between;
     align-items: center;
   }
@@ -178,31 +181,32 @@
   &-title {
     font-size: $font-size-bigger;
     margin-bottom: 0;
+    min-width: 0;
+  }
+
+  // Vote and comment counts stay on one line; the title gives way instead.
+  &-icons {
+    display: flex;
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   &-votes,
   &-meta-count {
-    color: $secondary-text-color;
+    color: var(--type-subheading);
     font-size: $font-size-small;
+    margin-inline-start: var(--space-3);
 
     &-icon {
-      color: $brand_color;
+      color: var(--color-brand-primary);
       vertical-align: middle;
       width: 13px;
       height: 13px;
     }
-
-    [dir="ltr"] & {
-      margin-left: 20px;
-    }
-
-    [dir="rtl"] & {
-      margin-right: 20px;
-    }
   }
 
   &-meta-container {
-    color: #666;
+    color: var(--color-ui-60);
     display: flex;
     flex-direction: column;
 
@@ -216,13 +220,7 @@
     }
 
     .meta-data {
-      [dir="ltr"] & {
-        @include desktop { margin-left: 20px; }
-      }
-
-      [dir="rtl"] & {
-        @include desktop { margin-right: 20px; }
-      }
+      @include desktop { margin-inline-start: var(--space-3); }
 
       &::after {
         content: none;
@@ -235,22 +233,24 @@
   }
 
   &-description {
-    margin-top: 10px;
+    margin-top: var(--space-1);
     margin-bottom: 0;
     word-break: break-word;
   }
 }
 
-/* By default use bold instead of italic to highlight */
-.search-results-description em {
+/* By default use bold instead of italic to highlight. The markup uses the
+   singular class (search-result-description), so the selector has to as well. */
+.search-result-description em {
   font-style: normal;
   font-weight: bold;
 }
 
-/* Add a yellow background for Chinese */
+/* Highlight search matches on Chinese pages with the selected surface; yellow
+   is reserved for warning messages. */
 html[lang|="zh"] {
-  .search-results-description em {
+  .search-result-description em {
     font-style: normal;
-    background: yellow;
+    background: var(--surface-selected);
   }
 }

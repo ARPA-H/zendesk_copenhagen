@@ -9,7 +9,7 @@
 .alert-banner {
   background: $alert_banner_bg_color;
   color: $alert_banner_text_color;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, .15);
+  box-shadow: var(--shadow-1);
   margin-bottom: 40px;
   margin-top: -60px;
   display: flex;

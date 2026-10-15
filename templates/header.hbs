@@ -3,35 +3,69 @@
   (ARPA-H custom — header section).
 --}}
 
-<a class="skip-navigation" tabindex="1" href="#main-content">{{t 'skip_navigation' }}</a>
+{{!-- First in the document, so it is the first Tab stop without a positive
+      tabindex (which would also reorder focus for everything after it). --}}
+<a class="skip-navigation" href="#main-content">{{t 'skip_navigation' }}</a>
+
+{{!--
+  Official U.S. government banner, markup from the USWDS 3.14 component
+  (https://designsystem.digital.gov/components/banner/). help.arpa-h.gov is a
+  public .gov site, so the banner shows to signed-in and anonymous visitors
+  alike. The panel is rendered collapsed (hidden), so a page never loads with it
+  open and then collapses it; opening it pushes the page down, as any disclosure
+  does. src/govBanner.js toggles it. Without script, or if script.js
+  never starts the controller (see document_head.hbs), the panel stays visible
+  (see styles/_usa-banner.scss). The copy is the official English
+  text, which is not a Help Center string, so it is not translated here; lang="en"
+  on the section, the element that carries the aria-label, keeps assistive
+  technology reading it as English on every locale (WCAG 3.1.2).
+--}}
+<section class="usa-banner" lang="en" aria-label="Official website of the United States government">
+  <div class="usa-accordion">
+    <header class="usa-banner__header">
+      <div class="usa-banner__inner">
+        <div class="grid-col-auto">
+          <img aria-hidden="true" class="usa-banner__header-flag" src="{{asset 'us_flag_small.png'}}" alt="" />
+        </div>
+        <div class="grid-col-fill tablet:grid-col-auto" aria-hidden="true">
+          <p class="usa-banner__header-text">An official website of the United States government</p>
+          <p class="usa-banner__header-action">Here’s how you know</p>
+        </div>
+        <button type="button" class="usa-accordion__button usa-banner__button" aria-expanded="false" aria-controls="gov-banner-default">
+          <span class="usa-banner__button-text">Here’s how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="usa-banner__content usa-accordion__content" id="gov-banner-default" hidden>
+      <div class="grid-row grid-gap-lg">
+        <div class="usa-banner__guidance tablet:grid-col-6">
+          <img class="usa-banner__icon usa-media-block__img" src="{{asset 'icon-dot-gov.svg'}}" role="img" alt="" aria-hidden="true" />
+          <div class="usa-media-block__body">
+            <p><strong>Official websites use .gov</strong><br />A <strong>.gov</strong> website belongs to an official government organization in the United States.</p>
+          </div>
+        </div>
+        <div class="usa-banner__guidance tablet:grid-col-6">
+          <img class="usa-banner__icon usa-media-block__img" src="{{asset 'icon-https.svg'}}" role="img" alt="" aria-hidden="true" />
+          <div class="usa-media-block__body">
+            <p><strong>Secure .gov websites use HTTPS</strong><br />A <strong>lock</strong> (<span class="icon-lock"><svg xmlns="http://www.w3.org/2000/svg" width="52" height="64" viewBox="0 0 52 64" class="usa-banner__lock-image" role="img" aria-labelledby="banner-lock-description" focusable="false"><title id="banner-lock-title">Lock</title><desc id="banner-lock-description">Locked padlock icon</desc><path fill-rule="evenodd" d="M26 0c10.493 0 19 8.507 19 19v9h3a4 4 0 0 1 4 4v28a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4V32a4 4 0 0 1 4-4h3v-9C7 8.507 15.507 0 26 0zm0 8c-5.979 0-10.843 4.77-10.996 10.712L15 19v9h22v-9c0-6.075-4.925-11-11-11z"/></svg></span>) or <strong>https://</strong> means you’ve safely connected to the .gov website. Share sensitive information only on official, secure websites.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <header class="header">
   <div class="logo">
     {{#link 'help_center'}}
-      {{!-- Prefer the admin-set logo; fall back to the committed SVG lockup for
-           crisp rendering. Zendesk blocks SVG *uploads* (Logo setting), but
-           serving a theme asset is fine. Clear the Logo setting in Guide to use
-           the SVG. --}}
-      {{#if settings.logo}}
-        <img src="{{settings.logo}}" alt="{{t 'home_page' name=help_center.name}}" />
-      {{else}}
-        <img src="{{asset 'arpa-h-logo.svg'}}" alt="{{t 'home_page' name=help_center.name}}" />
-      {{/if}}
-      {{#if settings.show_brand_name}}
-        <span aria-hidden="true">{{help_center.name}}</span>
-      {{/if}}
+      {{!-- The NEXUS navigation bar is indigo and specifies the reverse (white
+           wordmark) logo, so the header always uses the committed lockup. There
+           is no Logo setting: a full-color upload would disappear on indigo. --}}
+      <img src="{{asset 'arpa-h-logo-reverse.svg'}}" alt="{{t 'home_page' name=help_center.name}}" width="133" height="37" />
+      {{!-- No site title beside the logo: help.arpa-h.gov serves several
+           audiences (IT and HR among them), so a "Service Desk" label would
+           misdescribe it. There is no Show Help Center name setting either. --}}
     {{/link}}
-  </div>
-
-  <div class="search-wrapper">
-    <h2 class="visibility-hidden">{{ t 'search' }}</h2>
-    <div class="search-container">
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="search-icon" aria-hidden="true">
-        <circle cx="4.5" cy="4.5" r="4" fill="none" stroke="currentColor"/>
-        <path stroke="currentColor" stroke-linecap="round" d="M11 11L7.5 7.5"/>
-      </svg>
-      {{search submit=false instant=settings.instant_search class='search search-full'}}
-    </div>
   </div>
 
   <div class="nav-wrapper-desktop">
