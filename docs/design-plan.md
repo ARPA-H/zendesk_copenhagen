@@ -1575,22 +1575,41 @@ above.
   it. The footer's "Submit a request" link has no such problem because it is Zendesk's
   [`link` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#link-helper),
   which builds the URL itself. The offline harness hid the problem: it set the ID to a
-  mock service "so the link goes somewhere real". When the setting is blank the three
+  mock service "so the link goes somewhere real". While neither service ID is set the three
   links now use the
   [`page_path` helper](https://developer.zendesk.com/api-reference/help_center/help-center-templates/helpers/#page_path-helper)
   (`{{page_path 'new_request'}}`, "a relative url to the requested path"), which is the
-  footer's page; with an ID set nothing changes. `{{#if}}` treats an empty string as
+  footer's page; with "Other request service ID" set nothing changes. `{{#if}}` treats an empty string as
   false ([Curlybars `to_bool`](https://github.com/zendesk/curlybars/blob/86f30991370b2285f7630f98e1156fcb3f9bb785/lib/curlybars/rendering_support.rb#L48)),
   and the stock templates already put block helpers inside attribute values
   (`class="article-list-item{{#if promoted}} article-promoted{{/if}}"`). Three settings
-  overlapped, and that is the likely way an admin ends up with a dead button: "General
-  request service ID" and "General request category ID" are read by nothing (their
-  descriptions said they drove this link), while "Other request service ID" drives all
-  three links. The labels and descriptions now say so. Measured by rendering the real
-  templates in the harness with the ID set to `115` and with it blank: set, all three
-  links are `/hc/en-us/services/115` as before; blank, all three are
-  `/hc/en-us/requests/new`, the footer's URL. What the harness cannot show is the
-  ARPA-H sandbox's own setting, which was not read, and the real `page_path` output.
+  are involved, and their history explains why the button looked broken. "General
+  request service ID" and "General request category ID" were the per-environment design:
+  [`8986d5bd`](https://github.com/ARPA-H/zendesk_copenhagen/commit/8986d5bd) (PR #63,
+  2026-07-27) replaced hard-coded IDs with them, so the link was
+  `/services/<item>?category_id=<category>`. Two commits the next day
+  ([`824d57ae`](https://github.com/ARPA-H/zendesk_copenhagen/commit/824d57ae) and
+  [`f6bf5200`](https://github.com/ARPA-H/zendesk_copenhagen/commit/f6bf5200)) put
+  hard-coded IDs back, and `b692f76d` then moved the button to a new setting, "Other
+  request service ID", with no category. The two originals stayed in the manifest with
+  nothing reading them. An admin who filled in the two settings named for the button
+  got no effect, which is the likeliest way to end up with a dead one (the sandbox's own
+  values were not read). The owner asked whether removing them would end per-environment
+  configuration, and chose to wire them back in instead. The links now read "Other
+  request service ID" first, as before, then "General request service ID", then the
+  request form, and "General request category ID", when set, is added as `?category_id=`
+  to either item link. The item page preselects that category when the item is in it;
+  otherwise it takes the item's first category (`ServiceCatalogItem.tsx`). A link that
+  works today does not change, because the old setting still wins. Measured by rendering
+  the real templates in the harness in five cases, on all three pages (15 links): Other
+  only (`/hc/en-us/services/115`, as before), General only (`.../116`), General with a
+  category (`.../116?category_id=CAT1`), Other and General with a category (Other wins:
+  `.../115?category_id=CAT1`), and all three blank (`/hc/en-us/requests/new`, the
+  footer's URL). The 53 tests in `src/generalRequestLink.spec.js` render each template's
+  real `href` against those cases and require the manifest, its strings and the
+  templates to agree; 11 of them fail on the previous templates. What the harness cannot
+  show is the ARPA-H sandbox's own settings, which were not read, and the real
+  `page_path` output.
 
 ## Open decisions
 
@@ -1598,7 +1617,7 @@ Resolved with the product owner: the USWDS exception and the `.gov` banner
 (owner decision 1), the Knowledge entry point on the home page (decision 2),
 the footer's policy links (help.arpa-h.gov is public, so the public HHS and
 arpa-h.gov policy pages belong there, less the public footer's "Download Adobe
-Plugin" link, which the owner dropped as not needed: owner decision 9), the footer's site links for signed-in visitors only (decision 10), the Admin Center settings (decision 5) and,
+Plugin" link, which the owner dropped as not needed: owner decision 9), the footer's site links for signed-in visitors only (decision 10), the two General request settings that nothing read (the owner chose to wire them back in, not to remove them: see "After the merge"), the Admin Center settings (decision 5) and,
 in the Phase 7 review, the "Popular:" label at 768 pixels, which reads 4.0:1 at its
 lightest pixel and stays as it is: a dark pill like the chips would clear 4.5:1
 (10.7:1 at the worst pixel) but adds a visible capsule that could read as a sixth,
@@ -1628,6 +1647,5 @@ Still open:
 - What "right justification" of the tab icons meant. It was read as the right-to-left case, where the icon led the name from the right, and the icon now stays on the left there (owner decision 15). If it meant the icon and name centered in a stretched pill (a phone, or a wrapped row), `justify-content: flex-start` on the tab left-aligns them; that is a visible change, so it waits for the owner.
 - Whether the two other PNGs stay PNG. The tab icons are SVG only (owner decision 15). The Device FAQs tile logos (`assets/ios.png`, `macos.png` and `windows.png`, shown at 72 to 160 pixels) and the stock banner flag (`assets/us_flag_small.png`, 16 pixels wide) are still raster, because they are not tiny icons, a 512 pixel source is sharp at the size shown, and the macOS tile is a wordmark with no SVG in the icon sets the owner named. Converting them is a visible change to the Device FAQs page and the owner's call.
 - Button text size. The NEXUS reference sets default button text at 18px and large at 20px, with `12px 20px` padding (`.github/skills/arpa-h-web-design/SKILL.md`, "Button sizing"). The theme uses 14px and 16px (`styles/_buttons.scss`), up from the original 12px and 14px, so that forms, toolbars and cards keep the proportions the owner knew. A Copilot review noted the difference. It is recorded as a deliberate departure (`DESIGN.md`, Buttons), and moving to the NEXUS size would enlarge every button on every page and reflow the forms, so it waits for the owner.
-- The two unused General request settings. `general_request_service_id` and `general_request_category_id` are read by nothing, since the button moved to `other_request_service_id` on 2026-07-28 ([`b692f76d`](https://github.com/ARPA-H/zendesk_copenhagen/commit/b692f76d)). Their labels now say "(not used)" and their descriptions point to the setting that works, rather than the settings being removed, because removing a setting is the owner's call (the same choice is open for `community_image` and `service_catalog_hero_image` above). Recommendation: remove both, with their strings in `translations/en-us.json` and `translations.yml`.
 - Whether a visited hero chip should look different from an unvisited one. They are the same now (white), as the header and footer links are. If a cue is wanted, a browser lets `:visited` change only color-type properties and ignores any transparency ([MDN](https://developer.mozilla.org/en-US/docs/Web/CSS/:visited#privacy_restrictions)), and the light end of the visited family, Violet 300 (`#b8b2e4`, the NEXUS Accent Cooler Light), measures 9.3:1 at the lowest on the chip fills, against 2.0:1 for the violet that caused the problem.
-- What only the sandbox can show for the General request links. Whether the "Other request service ID" setting holds a value there, and whether it is an item ID from that instance; the page the button opens now that a blank value falls back to the standard request form; and Zendesk's real `{{page_path 'new_request'}}` output, which the offline harness stubs with the same route as the footer link.
+- What only the sandbox can show for the General request links. Whether the three settings ("Other request service ID", "General request service ID" and "General request category ID") hold values there, and whether each is an ID from that instance; where the button goes with those values; and Zendesk's real `{{page_path 'new_request'}}` output, which the offline harness stubs with the same route as the footer link.
