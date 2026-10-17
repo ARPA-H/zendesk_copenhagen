@@ -1596,9 +1596,11 @@ their settings. Neither changes a decision above.
   request service ID", with no category. The two originals stayed in the manifest with
   nothing reading them. An admin who filled in the two settings named for the button
   got no effect, which is the likeliest way to end up with a dead one (the sandbox's own
-  values were not read). Removing them would have ended per-environment configuration
-  of the link, so they are wired back in rather than removed. The links now read "Other
-  request service ID" first, as before, then "General request service ID", then the
+  values were not read). They are wired back in rather than removed: "General request
+  category ID" is the only setting that can choose a category per environment ("Other
+  request service ID" takes an item ID only), and a value already saved in either one
+  now takes effect. The links now read "Other request service ID" first, as before, then
+  "General request service ID", then the
   request form, and "General request category ID", when set, is added as `?category_id=`
   to either item link. The item page preselects that category when the item is in it;
   otherwise it takes the item's first category (`ServiceCatalogItem.tsx`). A link that
