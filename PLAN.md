@@ -169,9 +169,11 @@ decisions); the system is described in `DESIGN.md` and `PRODUCT.md`.
 
 ### After the merge
 
-PR #231 was merged into `sandbox` on 2026-10-15. Two problems the owner then saw on the
-deployed theme are fixed in a follow-up pull request (details, measurements and the open
-choices are in `docs/design-plan.md`, "After the merge"):
+PR #231 was merged into `sandbox` on 2026-10-15. Two problems on the deployed theme were
+fixed in follow-up pull requests
+([#232](https://github.com/ARPA-H/zendesk_copenhagen/pull/232) and
+[#234](https://github.com/ARPA-H/zendesk_copenhagen/pull/234)); details, measurements and
+the open choices are in `docs/design-plan.md`, "After the merge":
 
 - **Hero chips.** The global link rules (`a:visited`, `a:hover`, `a:active`, `a:focus`)
   outranked `.svc-hero-chip`, so a visited chip was violet and a hovered, focused or
@@ -184,9 +186,9 @@ choices are in `docs/design-plan.md`, "After the merge"):
   standard request form (`{{page_path 'new_request'}}`, the footer's page) while both are
   blank; "General request category ID", when set, is added as `?category_id=` to an item
   link. The two General request settings were the original per-environment design
-  (PR #63) and had gone unread since July, so a value saved in them did nothing; at the
-  owner's choice they are wired back in rather than removed. The old setting still wins,
-  so a link that works today does not change.
+  (PR #63) and had gone unread since July, so a value saved in them did nothing; they
+  are wired back in rather than removed. The old setting still wins, so a link that
+  works today does not change.
 
 ## Session: 2026-09-11 — resolve-pr-146-conflicts ([PR #147](https://github.com/ARPA-H/zendesk_copenhagen/pull/147), supersedes [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146))
 

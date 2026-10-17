@@ -1530,9 +1530,11 @@ styles, so the same pages and widths are compared before and after.
 ## After the merge
 
 [PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231) was merged into
-`sandbox` on 2026-10-15, and the owner then reported two problems on the deployed
-theme. Both are fixed in a follow-up pull request, and neither changes a decision
-above.
+`sandbox` on 2026-10-15. Two problems then showed on the deployed theme: hero chips that
+were unreadable in some link states, and General request links that went nowhere.
+[#232](https://github.com/ARPA-H/zendesk_copenhagen/pull/232) fixed both, and
+[#234](https://github.com/ARPA-H/zendesk_copenhagen/pull/234) changed how the links read
+their settings. Neither changes a decision above.
 
 - **Visited hero chips were unreadable.** A popular-search chip that had been visited
   showed its label in violet (`#4535a7`) on the dark scrim, and a chip turned dark
@@ -1559,12 +1561,12 @@ above.
   (hovered or pressed, where the pill lightens), at 1440 pixels; 11.5:1 at the lowest at
   390; 14.0 to 19.6:1 in forced-colors mode, where the browser colors the label itself.
   The sweep now reads 0 failures out of the same 140 links, and the resting chips are
-  pixel-identical. Two choices are the owner's to overrule: a visited chip looks like an
+  pixel-identical. Two choices can be revisited: a visited chip looks like an
   unvisited one (a chip is a shortcut to a search, not a link to read, and the other
   dark surfaces do the same), and hover is the existing fill and border with no
-  underline, as on the hero button (the original theme underlined it). The two new spec
-  files, `src/heroChipStates.spec.js` and `src/generalRequestLink.spec.js`, hold 39 tests,
-  and 12 of them fail on the old code.
+  underline, as on the hero button (the original theme underlined it).
+  `src/heroChipStates.spec.js` holds 10 tests for the four states and the selector
+  specificity, and 6 of them fail on the styles from before the fix.
 - **The General request links went nowhere until an ID was set.** The button on the home
   and services pages and the "Submit a general request" link on a service page are built
   by hand, `/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}`,
@@ -1594,8 +1596,8 @@ above.
   request service ID", with no category. The two originals stayed in the manifest with
   nothing reading them. An admin who filled in the two settings named for the button
   got no effect, which is the likeliest way to end up with a dead one (the sandbox's own
-  values were not read). The owner asked whether removing them would end per-environment
-  configuration, and chose to wire them back in instead. The links now read "Other
+  values were not read). Removing them would have ended per-environment configuration
+  of the link, so they are wired back in rather than removed. The links now read "Other
   request service ID" first, as before, then "General request service ID", then the
   request form, and "General request category ID", when set, is added as `?category_id=`
   to either item link. The item page preselects that category when the item is in it;
@@ -1617,7 +1619,7 @@ Resolved with the product owner: the USWDS exception and the `.gov` banner
 (owner decision 1), the Knowledge entry point on the home page (decision 2),
 the footer's policy links (help.arpa-h.gov is public, so the public HHS and
 arpa-h.gov policy pages belong there, less the public footer's "Download Adobe
-Plugin" link, which the owner dropped as not needed: owner decision 9), the footer's site links for signed-in visitors only (decision 10), the two General request settings that nothing read (the owner chose to wire them back in, not to remove them: see "After the merge"), the Admin Center settings (decision 5) and,
+Plugin" link, which the owner dropped as not needed: owner decision 9), the footer's site links for signed-in visitors only (decision 10), the two General request settings that nothing read (wired back in, not removed: see "After the merge"), the Admin Center settings (decision 5) and,
 in the Phase 7 review, the "Popular:" label at 768 pixels, which reads 4.0:1 at its
 lightest pixel and stays as it is: a dark pill like the chips would clear 4.5:1
 (10.7:1 at the worst pixel) but adds a visible capsule that could read as a sixth,
