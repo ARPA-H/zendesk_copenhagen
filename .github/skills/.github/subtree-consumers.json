@@ -143,5 +143,10 @@
     "repo": "ARPA-H/zendesk_onboarding_offboarding",
     "prefix": ".github/skills",
     "branch": "sandbox"
+  },
+  {
+    "repo": "ARPA-H/sentinel-connectors-claude-desktop",
+    "prefix": ".github/skills",
+    "branch": "main"
   }
 ]
