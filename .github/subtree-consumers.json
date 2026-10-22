@@ -148,5 +148,10 @@
     "repo": "ARPA-H/sentinel-connectors-claude-desktop",
     "prefix": ".github/skills",
     "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/astronaut",
+    "prefix": ".github/skills",
+    "branch": "main"
   }
 ]
