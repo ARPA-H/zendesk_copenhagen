@@ -162,7 +162,7 @@ class SourceYmlTransform extends Transform {
         contents: Buffer.from(
           OUTPUT_BANNER +
             "\n" +
-            dump(outputContent, { quotingType: `"`, forceQuotes: true })
+            dump(outputContent, { quoteStyle: "double", forceQuotes: true })
         ),
       });
       this.push(virtualFile);
