@@ -62,9 +62,20 @@ stock community/article-focused layout.
   `manifest.json` (deploy now uses Zendesk's Theme Update Job instead of the
   Import Job, so per-env IDs are no longer needed); Community follow/sharing/
   scoped-search features (`show_follow_post`, `show_post_sharing`,
-  `scoped_community_search`) disabled by default since 2026-01-22.
+  `scoped_community_search`) disabled by default since 2026-01-22. Social
+  sharing has since been removed outright, settings and markup
+  (`show_post_sharing` and `show_article_sharing`; owner decision 13 in
+  `docs/design-plan.md`, [PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231)).
 - **Tooling**: devcontainer/Codespaces setup (see repo memory
   `devcontainer-notes.md`).
+- **NEXUS design system (2026-10)**: the Service Catalog and Knowledge pages, the
+  header, footer and shared chrome are built on the NEXUS tokens of the
+  `arpa-h-web-design` skill (`styles/_tokens.scss`), with the stock USWDS `.gov`
+  banner as the only USWDS part. The Admin Center color, Logo and Show Help Center
+  name settings are gone from `manifest.json`; the tokens and the committed ARPA-H
+  logo assets replace them. The plan, the decisions and the evidence are in
+  `docs/design-plan.md`, the system itself in `DESIGN.md` and `PRODUCT.md`
+  ([PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231)).
 
 ## Dependency updates ahead of upstream
 
@@ -78,7 +89,7 @@ originating commit messages for the "why".
 
 | Package                                                                                                     | Upstream   | Current                           | Why                                                                                                                                                                                  |
 | ----------------------------------------------------------------------------------------------------------- | ---------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `js-yaml` (devDep)                                                                                          | `^4.1.1`   | `^4.3.1`                          | CVE-2026-59870 (HIGH): quadratic-CPU DoS in `!!omap` resolution                                                                                                                      |
+| `js-yaml` (devDep)                                                                                          | `^4.1.1`   | `^5.4.2`                          | CVE-2026-59870 (HIGH): quadratic-CPU DoS in `!!omap` resolution                                                                                                                      |
 | `puppeteer`                                                                                                 | `24.9.0`   | `25.7.0`                          | Removes `extract-zip` entirely (HIGH: unvalidated symlink path traversal) — puppeteer 25's `@puppeteer/browsers` no longer bundles it                                                |
 | `eslint`                                                                                                    | `8.35.0`   | `9.39.5`                          | Clears eslint's own EOL/unsupported-version notice plus 3 MODERATE advisories in `@humanwhocodes/config-array`/`object-schema` (both replaced internally by `@eslint/*` in eslint 9) |
 | `@shopify/eslint-plugin`                                                                                    | `^44.0.0`  | `50.0.0`                          | Required to move `eslint` to 9.x (only majors ≥49 support eslint 9's peer range)                                                                                                     |
@@ -127,6 +138,113 @@ originating commit messages for the "why".
 Not a version bump: `@iconify/react` is a genuinely new dependency (for the
 icon-support feature, see "What diverges from upstream" above), not present in
 upstream at all.
+
+## Session: 2026-10-14: NEXUS design pass ([PR #231](https://github.com/ARPA-H/zendesk_copenhagen/pull/231))
+
+One combined pull request from `impeccable-design-passes` into `sandbox`: ten design
+phases, the owner's follow-up requests, and a long run of Copilot review rounds. What
+was decided and measured is in `docs/design-plan.md` (decisions, results, open
+decisions); the system is described in `DESIGN.md` and `PRODUCT.md`.
+
+### Before and after merging
+
+- **The deploy replaces the live sandbox theme in place.** A merge to `sandbox` runs
+  `update.yml`, and `updateTheme.js` creates a Zendesk
+  [theme update job](https://developer.zendesk.com/api-reference/help_center/help-center-api/theming/)
+  for the brand's live theme with `replace_settings: false` (saved setting values are
+  kept), then prunes old non-live themes. The previous look is not kept as a theme of
+  its own, so to go back, revert the merge on `sandbox` and let the deploy run again.
+  Download the current sandbox theme first if a copy is wanted (a
+  [theme download](https://support.zendesk.com/hc/en-us/articles/4408846524954) includes
+  its `manifest.json`).
+- **Settings panel.** The Colors group, Logo, Show Help Center name and the two Social
+  sharing settings are gone from `manifest.json` (owner decisions 5, 7 and 13), and
+  saved values for them are ignored. The unused `settings/logo.png` was deleted with
+  them, so that the package holds no file that matches no setting.
+- **Only the sandbox can verify** (listed in the pull request description and in the
+  plan's Open decisions): instant search, the real pager and article tab markup, that
+  the tab icons load from the theme's assets, that the Settings panel lists none of the
+  removed settings, a real screen reader, Windows forced colors, a real right-to-left
+  locale, and Firefox, Safari and Edge.
+
+### After the merge
+
+PR #231 was merged into `sandbox` on 2026-10-15. Two problems on the deployed theme were
+fixed in follow-up pull requests
+([#232](https://github.com/ARPA-H/zendesk_copenhagen/pull/232) and
+[#234](https://github.com/ARPA-H/zendesk_copenhagen/pull/234)); details, measurements and
+the open choices are in `docs/design-plan.md`, "After the merge":
+
+- **Hero chips.** The global link rules (`a:visited`, `a:hover`, `a:active`, `a:focus`)
+  outranked `.svc-hero-chip`, so a visited chip was violet and a hovered, focused or
+  pressed one blue on the dark scrim (about 2:1 and 1.3:1). The chips now pin a white
+  label in every state, like the header and footer links. Rule of thumb: a component on
+  a dark surface sets its own color for each link state; the global link colors are for
+  light surfaces.
+- **General request links.** The button and the "Submit a general request" link read
+  "Other request service ID" first, then "General request service ID", and open the
+  standard request form (`{{page_path 'new_request'}}`, the footer's page) while both are
+  blank; "General request category ID", when set, is added as `?category_id=` to an item
+  link. The two General request settings were the original per-environment design
+  (PR #63) and had gone unread since July, so a value saved in them did nothing; they
+  are wired back in rather than removed. The old setting still wins, so a link that
+  works today does not change.
+
+## Session: 2026-09-11 — resolve-pr-146-conflicts ([PR #147](https://github.com/ARPA-H/zendesk_copenhagen/pull/147), supersedes [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146))
+
+Merged [#146](https://github.com/ARPA-H/zendesk_copenhagen/pull/146)'s sticky
+request-list filters (`useParams` hook, URL <-> `localStorage` sync) plus
+`upstream/master` through `4.51.1` into a fresh branch (#146's head branch was
+named `master` on the contributor's fork, so conflict-resolution commits
+couldn't be pushed to it directly). Conflicts were in `templates/header.hbs`
+(kept this fork's nav structure, adopted upstream's `{{t 'ask_ai'}}` i18n fix
+and added the previously-missing mobile Ask AI link — CSS for it already
+existed) and the generated `assets/request-list-bundle.js` (rebuilt, not
+hand-merged). Also fixed a stale `@testing-library/react-hooks` import in
+`useParams.test.ts` (package removed fork-wide, see dependency table above) and
+two unused `catch (error)` bindings in `useParams.ts`.
+
+**Correction:** #146 is not new ARPA-H code — every file it touched
+(`useParams.ts`/`.test.ts`, `deserializeRequestListParams.ts`, the
+translations) is byte-for-byte identical to `upstream/master` (verified via
+`diff`), and `git log upstream/master -- .../useParams.ts` shows the same
+commit hashes (`5cf15ea3 feat: sticky filters across reloads and tabs`,
+`ef69058d chore: address review, unify useParams`) as this branch — it's
+upstream's own `4.51.0`/`4.51.1` "sticky filters" feature, ported into sandbox
+verbatim. So the findings below are genuinely upstream bugs and **can** be
+filed as issues/PRs against `zendesk/copenhagen_theme`, not just local
+follow-ups.
+
+**Copilot automated review on #147 flagged 4 moderate findings, all in this
+upstream-authored `useParams.ts`/translations code — assessed as low-impact
+for our usage today and left as-is, logged here for optional upstream
+follow-up:**
+
+- `writeUrl()` rebuilds the URL from only the request-list's own serialized
+  keys, so any unrelated query param (e.g. a UTM tag) would be silently
+  dropped on mount/push. No code path in this app currently links to
+  `/requests` with extra params, so low real-world impact today, but fragile
+  if that ever changes.
+- `FILTERS_LOCAL_STORAGE_KEY` isn't scoped by user/locale/brand — filters
+  persist per-browser-origin, not per-user, so a shared browser profile could
+  show the previous user's filter selection (tab and sort are URL-only state
+  and are never written to or restored from `localStorage`). Filters do get
+  converted into the actual search query (`useRequests.ts`), so this changes
+  which of the current user's own tickets are shown, not just filter UI
+  state — but server-side authorization still scopes results to what that
+  user is allowed to see regardless of which stale filters carried over, so
+  this is a confusing-stale-view risk, not an information-disclosure one.
+- No `storage` event listener, so filter changes don't live-sync to an
+  already-open second tab (only picked up on that tab's next
+  reload/navigation). Persistence itself still works; this is a "not truly
+  live" nice-to-have gap, not a correctness bug.
+- The new `requestCount.two`/`few`/`many` plural keys were only added to the
+  source `translations/en-us.yml`; the runtime-loaded
+  `translations/locales/*.json` files (regenerated separately via
+  `yarn i18n:update-translations`, per normal translation workflow) don't have
+  them yet, so non-English locales with those plural categories fall back to
+  `other` until that sync happens. English itself has no `two`/`few`/`many`
+  plural category, so unaffected.
 
 ## Session: 2026-08-17 — dependency/security sweep ([PR #130](https://github.com/ARPA-H/zendesk_copenhagen/pull/130))
 
@@ -643,20 +761,18 @@ since.
   6.9.1 for the 6.x line; and `extract-zip@2.0.1` (dev-only, via puppeteer) has
   a HIGH advisory with no patched version published, so it can't be resolved
   away.
-- **eslint 9 major bump (2026-08-17)**: `.eslintrc.js` (legacy eslintrc format)
-  still works under eslint 9 — flat config is only the _default_, not mandatory
-  yet — but requires `ESLINT_USE_FLAT_CONFIG=false` on every invocation (set in
-  the `yarn eslint` script). eslint 10 has none of this compatibility shim and
-  is a dead end regardless: `@shopify/eslint-plugin` (even at its latest major,
-  50.0.0) caps out at `eslint@^9.27.0`, so eslint 10 isn't reachable until
-  Shopify's plugin catches up. Bumping also required `eslint-plugin-react-hooks`
-  4.6.2 -> 7.1.1 (its old major doesn't declare eslint 9 in its peer range),
-  whose rewritten `recommended` config added new React-Compiler-era rules as
-  errors. Two of them fire on real, pre-existing patterns:
-  `react-hooks/set-state-in-effect` (19 call sites) and `react-hooks/refs` (8
-  call sites) are downgraded to `warn` in `.eslintrc.js` pending a dedicated
-  cleanup pass — don't re-enable as `error` without fixing those call sites
-  first.
+- **eslint 10 major bump**: migrated from legacy `.eslintrc.js` to flat
+  `eslint.config.js` (eslint 10 removed eslintrc support entirely).
+  `eslint-plugin-react`, `eslint-plugin-import`, `eslint-plugin-react-hooks`,
+  `eslint-plugin-check-file` and `@shopify/eslint-plugin` don't declare eslint
+  10 support yet (they still call removed `context.getFilename()` etc.), so
+  they are wrapped with `@eslint/compat` (`fixupConfigRules` /
+  `fixupPluginRules`), and the React version is pinned in `settings.react`
+  because `detect` also uses a removed API. Drop the shims once the plugins
+  ship eslint 10 support. `react-hooks/set-state-in-effect` and
+  `react-hooks/refs` remain downgraded to `warn` in `eslint.config.js` pending a
+  dedicated cleanup pass — don't re-enable as `error` without fixing those call
+  sites first.
 - **i18next-parser -> i18next-cli migration (deferred, own PR)**: worth doing
   eventually (i18next-parser is unmaintained and drags in the old
   `broccoli-plugin`/`quick-temp`/`rimraf@2.7.1` chain — see the dependency

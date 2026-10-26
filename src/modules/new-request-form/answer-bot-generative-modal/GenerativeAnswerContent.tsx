@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { getColor } from "@zendeskgarden/react-theming";
 import { GenerativeAnswerSourcesList } from "./GenerativeAnswerSourcesList";
 import type { CitationArticle } from "../data-types";
 
@@ -9,7 +10,8 @@ interface GenerativeAnswerContentProps {
 }
 
 const GeneratedAnswerContainer = styled.div`
-  background-color: #f4f6f8;
+  background-color: ${({ theme }) =>
+    getColor({ theme, variable: "background.recessed" })};
   border-radius: 10px;
 `;
 

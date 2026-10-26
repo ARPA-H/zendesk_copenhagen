@@ -3,6 +3,7 @@ import { ThemeProvider } from "styled-components";
 import { DEFAULT_THEME } from "@zendeskgarden/react-theming";
 import { ServiceCatalogItem } from "./ServiceCatalogItem";
 import { submitServiceItemRequest } from "./submitServiceItemRequest";
+import { focusFirstInvalidField } from "./focusFirstInvalidField";
 import * as notifications from "../../../shared/notifications";
 import type { ServiceCatalogItem as ServiceCatalogItemType } from "../../data-types/ServiceCatalogItem";
 import type { TicketFieldObject } from "../../../ticket-fields/data-types/TicketFieldObject";
@@ -87,6 +88,10 @@ jest.mock("./ItemRequestForm", () => ({
   ASSET_KEY: "zen:custom_object:standard::itam_asset",
 }));
 
+jest.mock("./focusFirstInvalidField", () => ({
+  focusFirstInvalidField: jest.fn(),
+}));
+
 // Mock PreviewModeBanner so we can assert it renders without testing portal
 // behaviour here (it has its own dedicated specs).
 jest.mock("./PreviewModeBanner", () => ({
@@ -110,6 +115,8 @@ const mockSubmitServiceItemRequest =
 const mockNotify = notifications.notify as jest.MockedFunction<
   typeof notifications.notify
 >;
+const mockFocusFirstInvalidField =
+  focusFirstInvalidField as jest.MockedFunction<typeof focusFirstInvalidField>;
 
 const renderWithTheme = (component: React.ReactElement) => {
   return render(
@@ -457,6 +464,49 @@ describe("ServiceCatalogItem", () => {
       expect(screen.getByTestId("submit-button")).not.toBeDisabled();
     });
 
+    it("hands focus to the first field the errors show, so a failed submit is not left on Submit", async () => {
+      const fields = [
+        {
+          id: 1,
+          name: "custom_fields_1",
+          type: "text",
+          description: "Field 1",
+          label: "Field 1",
+          required: true,
+          options: [],
+          value: null,
+          error: null,
+        },
+      ];
+
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: fields,
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields: jest.fn(),
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      // What focus does with the real field components is covered in
+      // focusFirstInvalidField.spec.tsx; here it only has to be asked, for
+      // this form, after validation fails and never before the request.
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() =>
+        expect(mockFocusFirstInvalidField).toHaveBeenCalledWith(form)
+      );
+      expect(mockSubmitServiceItemRequest).not.toHaveBeenCalled();
+    });
+
     it("preserves fields hidden by a conditional rule when merging validation errors", async () => {
       const setRequestFields = jest.fn();
       const visibleField = {
@@ -675,6 +725,75 @@ describe("ServiceCatalogItem", () => {
           error: "Product name: cannot be blank",
         }),
       ]);
+    });
+
+    it("hands focus to the first field the server's errors show, once they are set, and frees the submit button", async () => {
+      const setRequestFields = jest.fn();
+      mockUseItemFormFields.mockReturnValue({
+        requestFields: mockRequestFields,
+        associatedLookupField: mockAssociatedLookupField,
+        categoryLookupField: null,
+        error: null,
+        setRequestFields,
+        handleChange: jest.fn(),
+        isRequestFieldsLoading: false,
+        assetTypeHiddenValue: "",
+        isAssetTypeHidden: false,
+        assetTypeIds: [],
+        assetIds: [],
+      });
+
+      mockSubmitServiceItemRequest.mockResolvedValue({
+        ok: false,
+        status: 422,
+        json: () =>
+          Promise.resolve({
+            error: "RecordInvalid",
+            description: "Record validation errors",
+            details: {
+              base: [
+                {
+                  description: "Product name: cannot be blank",
+                  error: "cannot be blank",
+                  field_id: 1,
+                },
+              ],
+            },
+          }),
+      } as unknown as Response);
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      const form = screen.getByTestId("item-request-form");
+      fireEvent.submit(form);
+
+      await waitFor(() =>
+        expect(mockFocusFirstInvalidField).toHaveBeenCalledWith(form)
+      );
+
+      // The field errors have to be set before focus is asked for, or the
+      // field it would land on is not marked yet.
+      const lastErrorUpdate = Math.max(
+        ...setRequestFields.mock.invocationCallOrder
+      );
+      expect(lastErrorUpdate).toBeLessThan(
+        mockFocusFirstInvalidField.mock.invocationCallOrder[0]
+      );
+      expect(screen.getByTestId("submit-button")).not.toBeDisabled();
+    });
+
+    it("does not ask for a focus handoff when the failure is not a validation error", async () => {
+      mockSubmitServiceItemRequest.mockResolvedValue({
+        ok: false,
+        status: 500,
+      } as unknown as Response);
+
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+
+      fireEvent.submit(screen.getByTestId("item-request-form"));
+
+      await waitFor(() => expect(mockNotify).toHaveBeenCalled());
+      expect(mockFocusFirstInvalidField).not.toHaveBeenCalled();
     });
 
     const renderLastNotifyMessage = () => {

@@ -24,7 +24,7 @@ sentinel-connectors-<source>/
 │   ├── infrastructure/
 │   │   ├── deployment.json                 # ARM template (DCE, DCR, Function App, Storage, App Insights)
 │   │   ├── parameters.json                 # Deployment parameter values (environment-specific)
-│   │   ├── create-custom-table.json        # ARM template for the custom _CL table
+│   │   ├── table.json                      # Standalone ARM template for the custom _CL table — deploy against the workspace's own resource group, not nested in deployment.json
 │   │   ├── deploy.ps1                      # Infrastructure deployment script
 │   │   ├── create-resource-group.ps1       # One-time RG creation helper
 │   │   └── delete-resource-group.ps1       # Teardown helper
@@ -164,13 +164,13 @@ Use consistent Azure resource naming conventions:
     "applicationInsightsName":      { "value": "appi-<env>-sentinel-<source>-<region>" },
     "storageAccountName":           { "value": "st<source><env><region>" },
     "workspaceName":                { "value": "log-<env>-<region>" },
-    "workspaceResourceGroup":       { "value": "rg-<env>-network-<region>" },
     "dataCollectionEndpointName":   { "value": "dce-<env>-sentinel-<source>-<region>" },
-    "dataCollectionRuleName":       { "value": "dcr-<env>-sentinel-<source>-<region>" },
-    "customTableName":              { "value": "Product<ConnectorName><LogType>_CL" }
+    "dataCollectionRuleName":       { "value": "dcr-<env>-sentinel-<source>-<region>" }
   }
 }
 ```
+
+`table.json` is deployed separately, directly against the workspace's own resource group, with its own `workspaceName`/`tableName` parameters — see the GitHub Actions workflow step below and [Connector Manifest: Table Deployment](./connector-manifest.md#table-deployment-workspace-resource-group).
 
 ---
 
@@ -255,8 +255,8 @@ jobs:
         run: |
           az deployment group create \
             --resource-group <workspace-resource-group> \
-            --template-file <source>/infrastructure/create-custom-table.json \
-            --parameters workspaceName=<workspace-name> customTableName=Product<ConnectorName><LogType>_CL
+            --template-file <source>/infrastructure/table.json \
+            --parameters workspaceName=<workspace-name> tableName=Product<ConnectorName><LogType>_CL
 
       - name: Deploy Infrastructure
         run: |

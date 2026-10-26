@@ -21,6 +21,23 @@ const SERIALIZED_KEYS = {
 const SORT_ORDER_ASC = "asc" as const;
 const SORT_ORDER_DESC = "desc" as const;
 
+// parseInt() parses a numeric prefix (e.g. "2abc" -> 2), so a plain
+// Number.isNaN check after parsing isn't enough to reject malformed values --
+// this requires the entire string to be digits first, and excludes a leading
+// "0" so "0" itself is rejected (page and organization_id are both 1-indexed
+// identifiers; 0 is never valid for either). isSafeInteger then rejects
+// overflow to Infinity for huge digit strings.
+const POSITIVE_INTEGER_REGEX = /^[1-9]\d*$/;
+
+function parseStrictInteger(value: string): number | null {
+  if (!POSITIVE_INTEGER_REGEX.test(value)) {
+    return null;
+  }
+
+  const parsed = parseInt(value, 10);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
 export function deserializeRequestListParams(
   searchParams: URLSearchParams
 ): Partial<RequestListParams> {
@@ -38,7 +55,10 @@ export function deserializeRequestListParams(
   }
 
   if (pageParam != null) {
-    res.page = parseInt(pageParam, 10);
+    const page = parseStrictInteger(pageParam);
+    if (page != null) {
+      res.page = page;
+    }
   }
 
   if (
@@ -51,10 +71,13 @@ export function deserializeRequestListParams(
 
   if (selectedTabName !== null) {
     if (selectedTabName === ORG_REQUESTS_TAB_NAME && organizationId != null) {
-      res.selectedTab = {
-        name: ORG_REQUESTS_TAB_NAME,
-        organizationId: parseInt(organizationId, 10),
-      };
+      const parsedOrganizationId = parseStrictInteger(organizationId);
+      if (parsedOrganizationId != null) {
+        res.selectedTab = {
+          name: ORG_REQUESTS_TAB_NAME,
+          organizationId: parsedOrganizationId,
+        };
+      }
     } else if (
       selectedTabName === MY_REQUESTS_TAB_NAME ||
       selectedTabName === CCD_REQUESTS_TAB_NAME
@@ -71,10 +94,24 @@ export function deserializeRequestListParams(
   return res;
 }
 
+// Recognizes a URL as authoritative only when it actually produced some
+// deserialized state -- a bare/malformed recognized key on its own (e.g.
+// `?sort_by=created_at` with no `sort_order`, or an invalid
+// `selected_tab_name`) must not count, or resolveParamsFromUrl() would treat
+// the URL as authoritative and clear the user's stored filters for nothing.
+export function hasRequestListParams(searchParams: URLSearchParams): boolean {
+  return Object.keys(deserializeRequestListParams(searchParams)).length > 0;
+}
+
+// Rejects prototype-chain property names so a crafted `filter___proto__=`
+// (etc.) query param can't be used for prototype pollution below.
+const UNSAFE_FIELD_NAMES = new Set(["__proto__", "constructor", "prototype"]);
+
 function getFiltersFromSearchParams(
   searchParams: URLSearchParams
 ): FilterValuesMap {
-  const res: FilterValuesMap = {};
+  const seenFields = new Set<string>();
+  const entries: Array<[string, FilterValue[]]> = [];
 
   for (const [key] of searchParams) {
     if (!key.startsWith(FILTER_PREFIX)) {
@@ -83,19 +120,27 @@ function getFiltersFromSearchParams(
 
     const field = key.replace(FILTER_PREFIX, "");
 
-    if (res[field] != null) {
+    if (UNSAFE_FIELD_NAMES.has(field) || seenFields.has(field)) {
       continue;
     }
 
+    seenFields.add(field);
+
     const values = searchParams.getAll(key).filter(isFilterValue);
-    res[field] = values;
+    if (values.length > 0) {
+      entries.push([field, values]);
+    }
   }
 
-  return res;
+  // Object.fromEntries defines properties directly rather than assigning
+  // through bracket notation, so a tainted key (e.g. "__proto__") can never
+  // reach the prototype chain here, unlike `res[field] = values`.
+  return Object.fromEntries(entries);
 }
 
-function isFilterValue(value: string): value is FilterValue {
+function isFilterValue(value: unknown): value is FilterValue {
   return (
-    value.startsWith(":") || value.startsWith("<") || value.startsWith(">")
+    typeof value === "string" &&
+    (value.startsWith(":") || value.startsWith("<") || value.startsWith(">"))
   );
 }

@@ -1,6 +1,6 @@
 /***** Search field *****/
 
-$icon-color: #777;
+$icon-color: var(--color-ui-60);
 $padding-left: 40px;
 $padding-right: 20px;
 
@@ -9,8 +9,8 @@ $padding-right: 20px;
 }
 
 .search {
-  border-color: $high-contrast-border-color;
-  border-radius: 30px;
+  border-color: var(--color-ui-60);
+  border-radius: var(--radius-round);
   border-style: solid;
   border-width: 1px;
   display: flex;
@@ -18,32 +18,32 @@ $padding-right: 20px;
   transition: $input-transition;
 
   &:focus-within {
-    border-color: $brand_color;
+    border-color: var(--color-brand-primary);
   }
 
   input[type="search"], 
   .clear-button {
-    background-color: #fff;
-    border-radius: 30px;
+    background-color: var(--color-white);
+    border-radius: var(--radius-round);
     border: none;
   }
 
   &-full input[type="search"], 
   &-full .clear-button {
-    border-color: #fff;
+    border-color: var(--color-white);
   }
 
   input[type="search"] {
     appearance: none;
     -webkit-appearance: none;
     box-sizing: border-box;
-    color: $field-text-color;
+    color: var(--color-ui-60);
     flex: 1 1 auto;
     height: 40px;
     width: 100%;
 
     &:focus {
-      color: $field-text-focus-color;
+      color: var(--color-ui-70);
     }
 
     &::-webkit-search-decoration,
@@ -56,7 +56,7 @@ $padding-right: 20px;
     &:-webkit-autofill,
     &:-webkit-autofill:hover, 
     &:-webkit-autofill:focus {
-      -webkit-box-shadow: 0 0 0 1000px #fff inset;
+      -webkit-box-shadow: 0 0 0 1000px var(--color-white) inset;
     }
 
   }
@@ -72,8 +72,8 @@ $padding-right: 20px;
     padding: 0 15px;
 
     &:hover {
-      background-color: $brand_color;
-      color: #fff;
+      background-color: var(--color-brand-primary);
+      color: var(--color-white);
     }
 
     &:focus {
@@ -100,7 +100,7 @@ $padding-right: 20px;
     border-right-color: transparent;
 
     &:focus {
-      border-right-color: $brand_color;
+      border-right-color: var(--color-brand-primary);
     }
 
   }
@@ -111,7 +111,7 @@ $padding-right: 20px;
     border-left-color: transparent;
 
     &:focus {
-      border-left-color: $brand_color;
+      border-left-color: var(--color-brand-primary);
     }
     
   }
@@ -129,7 +129,7 @@ $padding-right: 20px;
     border-left-color: transparent;
 
     &:focus {
-      border-left-color: $brand_color;
+      border-left-color: var(--color-brand-primary);
     }
 
   }
@@ -140,7 +140,7 @@ $padding-right: 20px;
     border-right-color: transparent;
 
     &:focus {
-      border-right-color: $brand_color;
+      border-right-color: var(--color-brand-primary);
     }
 
   }

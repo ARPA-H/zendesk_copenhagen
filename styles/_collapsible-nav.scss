@@ -14,8 +14,8 @@
     border-top: 0;
   }
 
-  border-bottom: 1px solid $low-contrast-border-color;
-  border-top: 1px solid $low-contrast-border-color;
+  border-bottom: 1px solid var(--surface-stroke);
+  border-top: 1px solid var(--surface-stroke);
 }
 
 .collapsible-nav-toggle {
@@ -53,8 +53,7 @@
   }
 
   &:focus {
-    outline: none;
-    border: 1px solid $brand_color;
+    border: 1px solid var(--color-focus-ring);
   }
 }
 
@@ -82,19 +81,19 @@
       }
     }
 
-    color: $text_color;
+    color: var(--type-body);
     line-height: 45px;
     order: 1; // All elements have the same order
 
     a {
-      color: $text_color;
+      color: var(--type-body);
       display: block;
     }
   }
 
   li:hover {
     @include tablet {
-      border-bottom: 4px solid #ddd;
+      border-bottom: 4px solid var(--surface-stroke);
 
       a:not([aria-current="page"]) {
         padding: 15px 0 11px 0;
@@ -118,18 +117,18 @@
   li[aria-selected="true"],
   li.current {
     @include tablet {
-      border-bottom: 4px solid $brand_color;
+      border-bottom: 4px solid var(--color-brand-primary);
       order: 1;
     }
 
     order: 0; //Move to top of menu
     position: relative;
 
-    a { color: $text_color; }
+    a { color: var(--type-body); }
   }
 }
 
-.collapsible-nav[aria-expanded="true"] {
+.collapsible-nav.expanded {
   li:not([aria-selected="true"]),
   li:not(.current) {
     display: block;

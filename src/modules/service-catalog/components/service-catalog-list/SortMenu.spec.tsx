@@ -94,6 +94,34 @@ describe("SortMenu", () => {
     expect(screen.getByRole("button", { name: /Z-A/ })).toBeInTheDocument();
   });
 
+  it("names the button after what it sorts and the current order", () => {
+    render(<SortMenu selectedOption="name_desc" onChange={jest.fn()} />);
+
+    expect(
+      screen.getByRole("button", { name: "Sort services: Z-A" })
+    ).toBeInTheDocument();
+  });
+
+  it("builds that name from messages a locale already translates", () => {
+    render(<SortMenu selectedOption="name_desc" onChange={jest.fn()} />, {
+      "service-catalog.sort.aria-label": "Trier les services",
+      "service-catalog.sort.name-desc": "Z-A",
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Trier les services: Z-A" })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Sort services/ })
+    ).not.toBeInTheDocument();
+  });
+
+  it("carries the class the print stylesheet hides", () => {
+    render(<SortMenu selectedOption="name_asc" onChange={jest.fn()} />);
+
+    expect(screen.getByRole("button")).toHaveClass("service-catalog-sort");
+  });
+
   it("renders all sort options when the menu is opened", async () => {
     render(<SortMenu selectedOption="name_asc" onChange={jest.fn()} />);
 

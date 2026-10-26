@@ -63,6 +63,13 @@
 
       {{pagination "section.articles"}}
 
+      {{#unless section.sections}}
+        {{#unless section.articles}}
+          {{!-- English gets a sentence; every other locale gets Zendesk's translated "Empty". --}}
+          <p class="empty-state">{{#contains help_center.locale 'en-'}}There are no articles in this section yet.{{else}}{{t 'empty'}}{{/contains}}</p>
+        {{/unless}}
+      {{/unless}}
+
     </section>
   </div>
 </div>

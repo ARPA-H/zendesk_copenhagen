@@ -9,7 +9,7 @@
     &:last-child { margin-bottom: 0; }
 
     .attachment-icon {
-      color: $text_color;
+      color: var(--type-body);
       left: 0;
       position: absolute;
       top: 5px;
@@ -28,5 +28,5 @@
 }
 
 .upload-dropzone span {
-  color: $secondary-text-color;
+  color: var(--type-subheading);
 }

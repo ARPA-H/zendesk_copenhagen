@@ -37,7 +37,7 @@ yarn i18n:update-translations
 yarn i18n:update-translations --module=module-name
 ```
 
-**Note:** Preview requires Zendesk authentication. Run `yarn zcli login -i` first if needed.
+**Note:** Preview requires Zendesk authentication. Run `yarn zcli login` first if needed.
 
 ## Architecture
 
@@ -101,6 +101,16 @@ Translations stored in `src/modules/[module]/translations/`.
 ## APIs
 
 Use only public REST APIs documented at <https://developer.zendesk.com/api-reference/>
+
+## Upstream Repository
+
+This repo is a fork of [zendesk/copenhagen_theme](https://github.com/zendesk/copenhagen_theme). Do not do anything with the upstream repo unless the user explicitly instructs you to: no comments, issues, pull requests, reviews, reactions or pushes there; no fetching, pulling, merging or rebasing from it; and no reading its pull requests, issues or code. Everything you do on GitHub for this project happens in [ARPA-H/zendesk_copenhagen](https://github.com/ARPA-H/zendesk_copenhagen).
+
+A bare `gh` command can reach the upstream repo by mistake. A clone with a remote named `upstream` ranks it [above `origin`](https://github.com/cli/cli/blob/d6b82b12e67d108b7c82d76d943a3a47814acbc1/context/remote.go#L60), and where `gh` cannot prompt (an agent's shell, for one) it [uses the first remote](https://github.com/cli/cli/blob/d6b82b12e67d108b7c82d76d943a3a47814acbc1/context/context.go#L84) unless a default is set. So:
+
+- Pass `--repo ARPA-H/zendesk_copenhagen` to every `gh pr` and `gh issue` command, and write `gh api` paths out in full (`repos/ARPA-H/zendesk_copenhagen/...`) instead of using the `{owner}/{repo}` placeholders. Or set the default once: [`gh repo set-default`](https://cli.github.com/manual/gh_repo_set-default) `ARPA-H/zendesk_copenhagen` in each clone, or [`GH_REPO=ARPA-H/zendesk_copenhagen`](https://cli.github.com/manual/gh_help_environment) in the environment (`--repo` still overrides it). The devcontainer sets `GH_REPO`, so a Codespace already has it.
+- Check that any URL a command prints starts with `https://github.com/ARPA-H/zendesk_copenhagen/`.
+- If something does reach the upstream repo, tell the user at once and say what it was.
 
 ## Agent Skills
 

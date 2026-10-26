@@ -13,8 +13,9 @@ import {
   getCustomObjectKey,
 } from "./LookupField";
 import type { CustomObjectRecord } from "../data-types/CustomObjectRecord";
+import { sanitizeDescription } from "../sanitizeDescription";
 
-const DEFAULT_MAX_SELECTIONS = 20;
+export const DEFAULT_MAX_SELECTIONS = 20;
 const COLLAPSED_MAX_TAGS = 4;
 
 interface MultiLookupFieldProps {
@@ -274,7 +275,11 @@ export function MultiLookupField({
         {required && <Span aria-hidden="true">*</Span>}
       </Field.Label>
       {description && (
-        <Field.Hint dangerouslySetInnerHTML={{ __html: description }} />
+        <Field.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <Combobox
         ref={wrapperRef}

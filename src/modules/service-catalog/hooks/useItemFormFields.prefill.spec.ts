@@ -106,8 +106,8 @@ describe("useItemFormFields — query-string prefill integration", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
       })
     );

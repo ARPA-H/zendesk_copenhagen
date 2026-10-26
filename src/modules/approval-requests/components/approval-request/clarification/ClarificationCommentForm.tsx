@@ -116,8 +116,8 @@ function ClarificationCommentForm({
               {commentValidation === "error"
                 ? validation_empty_input
                 : commentValidation === "warning"
-                ? charLimitMessage
-                : null}
+                  ? charLimitMessage
+                  : null}
             </Message>
           </Field>
         </Col>

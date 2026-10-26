@@ -59,7 +59,8 @@ const StyledOptionContent = styled.div`
 
 const StyledModalFooter = styled(Modal.Footer)`
   padding: 32px 40px;
-  border-top: 1px solid rgb(232, 234, 236);
+  border-top: 1px solid
+    ${({ theme }) => getColor({ theme, variable: "border.subtle" })};
 `;
 
 export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
@@ -216,8 +217,8 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
   const displayOptions = isLoadingOptions
     ? [loadingOption]
     : options.length === 0
-    ? [noResultsOption] // Show "No results" when no options (whether typed or not)
-    : options;
+      ? [noResultsOption] // Show "No results" when no options (whether typed or not)
+      : options;
 
   return (
     <>

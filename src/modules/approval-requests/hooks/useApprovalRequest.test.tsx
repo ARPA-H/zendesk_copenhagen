@@ -39,6 +39,31 @@ describe("useApprovalRequest", () => {
     expect(result.current.approvalRequest).toEqual(mockApprovalRequest);
   });
 
+  it.each([
+    ["dot segment", "..", "1234"],
+    ["path separator", "workflow123", "1234/decision"],
+    ["percent encoding", "workflow%2F123", "1234"],
+  ])(
+    "issues no API request for an id with a %s",
+    async (_label, workflowId, requestId) => {
+      const { result } = renderHook(() =>
+        useApprovalRequest({
+          approvalWorkflowInstanceId: workflowId,
+          approvalRequestId: requestId,
+          enablePolling: false,
+        })
+      );
+
+      await waitFor(() => {
+        expect(result.current.isLoading).toBe(false);
+      });
+
+      expect(fetch).not.toHaveBeenCalled();
+      expect(result.current.errorFetchingApprovalRequest).toBeTruthy();
+      expect(result.current.approvalRequest).toBeUndefined();
+    }
+  );
+
   it("polls data when polling is enabled and status is not terminal", async () => {
     jest.useFakeTimers();
 

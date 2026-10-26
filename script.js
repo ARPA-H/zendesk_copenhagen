@@ -17,6 +17,20 @@
     toggle.focus();
   }
 
+  // Collapsible elements track their expanded state on the toggle button only;
+  // aria-expanded is not valid on the wrapping div/nav, so a class is used for styling
+  function toggleCollapsible(toggle, element) {
+    const isExpanded = toggle.getAttribute("aria-expanded") === "true";
+    toggle.setAttribute("aria-expanded", !isExpanded);
+    element.classList.toggle("expanded", !isExpanded);
+  }
+
+  function closeCollapsible(toggle, element) {
+    toggle.setAttribute("aria-expanded", false);
+    element.classList.remove("expanded");
+    toggle.focus();
+  }
+
   // Navigation
 
   window.addEventListener("DOMContentLoaded", () => {
@@ -48,12 +62,12 @@
       );
 
       element.addEventListener("click", () => {
-        toggleNavigation(toggle, element);
+        toggleCollapsible(toggle, element);
       });
 
       element.addEventListener("keyup", (event) => {
         if (event.keyCode === ESCAPE) {
-          closeNavigation(toggle, element);
+          closeCollapsible(toggle, element);
         }
       });
     });
@@ -378,18 +392,6 @@
       if (menu && menu.classList.contains("dropdown-menu")) {
         dropdowns.push(new Dropdown(toggle, menu));
       }
-    });
-  });
-
-  // Share
-
-  window.addEventListener("DOMContentLoaded", () => {
-    const links = document.querySelectorAll(".share a");
-    links.forEach((anchor) => {
-      anchor.addEventListener("click", (event) => {
-        event.preventDefault();
-        window.open(anchor.href, "", "height = 500, width = 500");
-      });
     });
   });
 
@@ -799,76 +801,400 @@
     }
   })();
 
-  /*
-   * Shared "live search" widget logic for the Service Catalog mini search
-   * (service_page.hbs) and hero search (service_list_page.hbs).
-   *
-   * These two searches used to be ~300 lines of near-duplicated inline
-   * <script> in each template (SYNONYMS map, esc/stripTags helpers, fetchJSON,
-   * scoring/ranking, dropdown rendering, keyboard nav). That logic now lives
-   * here (bundled into script.js, same approach as ./domFixups.js) and each
-   * template instantiates it with the DOM ids/classes/copy that differ between
-   * the two pages.
-   *
-   * `initSvcSearch` and `safeHref` are exposed on `window` (see bottom of this
-   * file) because script.js is a classic (non-module) script whose load order
-   * relative to a page's inline <script> tags isn't guaranteed by this theme.
-   * Callers in the templates poll for `window.initSvcSearch` before invoking
-   * it (same defensive approach as domFixups.js's DOMContentLoaded guard,
-   * just generalized to "wait for script.js" instead of "wait for the DOM").
-   *
-   * i18n note: the strings below (group titles, badges, loading/empty states)
-   * are ARPA-H-authored copy specific to this widget, not Zendesk Guide "stock"
-   * strings. Per this repo's Curlybars `{{t}}` helper, only keys Help Center
-   * itself exposes can be resolved that way (see AGENTS.md) — arbitrary new
-   * keys defined in translations.yml are not resolvable from templates. That
-   * pipeline only covers manifest.json settings-panel labels. Centralizing the
-   * copy here (single source of truth, passed in via `strings`) removes the
-   * duplication and makes a future proper localization pass a one-file change.
-   */
-
-  var DEFAULT_SYNONYMS = {
-    laptop: ["device", "computer", "macbook", "hardware", "equipment"],
-    computer: ["device", "laptop", "hardware", "equipment"],
-    monitor: ["device", "peripheral", "hardware", "display"],
-    keyboard: ["device", "peripheral", "hardware"],
-    mouse: ["device", "peripheral", "hardware"],
-    wifi: ["network", "internet", "wireless", "connection"],
-    internet: ["network", "wifi", "connection"],
-    vpn: ["network", "remote", "access", "connection"],
-    email: ["outlook", "mailbox", "mail"],
-    phone: ["mobile", "cell", "device", "telephone"],
-    login: ["account", "password", "access", "sign in", "credentials"],
-    signin: ["account", "password", "access", "login"],
-    printer: ["print", "peripheral", "device"],
-  };
-
-  var DEFAULT_STRINGS = {
-    searching: "Searching…",
-    noMatches: "No matching services or resources.",
-    seeAllResultsFor: "See all results for",
-    recommendedServices: "Recommended services",
-    selfHelpResources: "Self-Help Resources",
-    serviceBadge: "Service",
-    resourceBadge: "Resource",
-    serviceCatalogFallback: "Service catalog",
-    knowledgeArticleFallback: "Knowledge article",
-    untitled: "Untitled",
-  };
-
-  function esc(s) {
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+  // ---------------------------------------------------------------------------
+  // 4. Keep the footer copyright year current. The template renders the year it
+  //    was last edited so the notice is complete without JavaScript; this swaps
+  //    in the visitor's current year.
+  // ---------------------------------------------------------------------------
+  function setFooterYear() {
+    var years = document.querySelectorAll("[data-footer-year]");
+    var year = String(new Date().getFullYear());
+    for (var i = 0; i < years.length; i++) {
+      years[i].textContent = year;
+    }
   }
 
-  function stripTags(s) {
-    var d = document.createElement("div");
-    d.innerHTML = s || "";
-    return (d.textContent || "").trim();
+  if (document.readyState !== "loading") {
+    setFooterYear();
+  } else {
+    document.addEventListener("DOMContentLoaded", setFooterYear);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. Let a table that is wider than its column scroll sideways inside its own
+  //    region. Without this the page either widens or, where it is clipped, the
+  //    last columns cannot be reached. Each table in an article body gets a
+  //    wrapper; the wrapper becomes a focusable region only while the table
+  //    actually overflows, so keyboard users can scroll it and tables that fit
+  //    add no tab stop. It is worked out again on load, on resize and whenever a
+  //    table or its wrapper changes size, so a table in a tab that is shown later
+  //    becomes a region then. The region is named by the table's caption, which
+  //    is the article's own text. A table without one gets a fixed English name,
+  //    and it is numbered when several tables need it so the regions stay
+  //    distinguishable. On an English page that name is the region's aria-label.
+  //    On any other page it comes from a hidden element marked lang="en"
+  //    (aria-labelledby), so the region still has a name and a role there, and
+  //    the English words are not passed off as the page's own language.
+  // ---------------------------------------------------------------------------
+  var SCROLLABLE_TABLE_LABEL = "Scrollable table";
+  var SCROLLABLE_LABEL_ATTR = "data-table-scroll-label";
+  var scrollableLabelCount = 0;
+
+  function isEnglishPage() {
+    var lang = document.documentElement.getAttribute("lang") || "en";
+    return /^en(-|$)/i.test(lang);
+  }
+
+  function findFallbackLabel(wrapper) {
+    for (var i = 0; i < wrapper.children.length; i++) {
+      if (wrapper.children[i].hasAttribute(SCROLLABLE_LABEL_ATTR)) {
+        return wrapper.children[i];
+      }
+    }
+    return null;
+  }
+
+  function removeFallbackLabel(wrapper) {
+    var label = findFallbackLabel(wrapper);
+    if (label) {
+      wrapper.removeChild(label);
+    }
+    wrapper.removeAttribute("aria-labelledby");
+  }
+
+  function setFallbackLabel(wrapper, text) {
+    var label = findFallbackLabel(wrapper);
+    if (!label) {
+      label = document.createElement("span");
+      label.hidden = true;
+      label.setAttribute("lang", "en");
+      label.setAttribute(SCROLLABLE_LABEL_ATTR, "");
+      label.id = "table-scroll-label-" + ++scrollableLabelCount;
+      wrapper.insertBefore(label, wrapper.firstChild);
+    }
+    label.textContent = text;
+    wrapper.setAttribute("aria-labelledby", label.id);
+  }
+
+  function wrapWideTables(root) {
+    var scope = document;
+    var tables = scope.querySelectorAll(".article-body table");
+    var watched = [];
+    for (var i = 0; i < tables.length; i++) {
+      var table = tables[i];
+      if (
+        table.parentNode &&
+        table.parentNode.classList.contains("table-scroll")
+      ) {
+        continue;
+      }
+      var wrapper = document.createElement("div");
+      wrapper.className = "table-scroll";
+      var caption = table.querySelector("caption");
+      var captionText = caption && caption.textContent.trim();
+      if (captionText) {
+        wrapper.setAttribute("data-label", captionText);
+      }
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+      watched.push(wrapper, table);
+    }
+    watchTableSizes(watched);
+    updateScrollableTables(scope);
+  }
+
+  // A table in a tab that is not showing has no box, so it measures as not
+  // overflowing and is not made a region. Showing the tab fires neither load nor
+  // resize, so the regions are worked out again whenever a wrapper or its table
+  // changes size: that covers a tab being shown or hidden, and a table that grows
+  // after load (a late font or image). Setting the attributes changes no size, so
+  // this cannot loop.
+  function watchTableSizes(elements) {
+    if (!elements.length || typeof ResizeObserver !== "function") {
+      return;
+    }
+    var observer = new ResizeObserver(function () {
+      updateScrollableTables();
+    });
+    for (var i = 0; i < elements.length; i++) {
+      observer.observe(elements[i]);
+    }
+  }
+
+  function updateScrollableTables(root) {
+    var scope = root || document;
+    var wrappers = scope.querySelectorAll(".table-scroll");
+    var overflowing = [];
+    var unnamed = [];
+    for (var i = 0; i < wrappers.length; i++) {
+      var wrapper = wrappers[i];
+      if (wrapper.scrollWidth > wrapper.clientWidth) {
+        overflowing.push(wrapper);
+        if (!wrapper.getAttribute("data-label")) {
+          unnamed.push(wrapper);
+        }
+      } else {
+        wrapper.removeAttribute("role");
+        wrapper.removeAttribute("tabindex");
+        wrapper.removeAttribute("aria-label");
+        removeFallbackLabel(wrapper);
+      }
+    }
+
+    var english = isEnglishPage();
+    for (var j = 0; j < overflowing.length; j++) {
+      var scroller = overflowing[j];
+      var label = scroller.getAttribute("data-label");
+      var captioned = !!label;
+      if (!captioned) {
+        label =
+          unnamed.length > 1
+            ? SCROLLABLE_TABLE_LABEL +
+              " " +
+              (unnamed.indexOf(scroller) + 1) +
+              " of " +
+              unnamed.length
+            : SCROLLABLE_TABLE_LABEL;
+      }
+      scroller.setAttribute("tabindex", "0");
+      scroller.setAttribute("role", "region");
+      if (captioned || english) {
+        scroller.setAttribute("aria-label", label);
+        removeFallbackLabel(scroller);
+      } else {
+        scroller.removeAttribute("aria-label");
+        setFallbackLabel(scroller, label);
+      }
+    }
+  }
+
+  if (document.readyState !== "loading") {
+    wrapWideTables();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      wrapWideTables();
+    });
+  }
+  window.addEventListener("load", function () {
+    updateScrollableTables();
+  });
+  window.addEventListener("resize", function () {
+    updateScrollableTables();
+  });
+
+  /*
+   * Platform icons for the tabs of an article.
+   *
+   * The article editor's Tabs component is turned into a tab bar by Zendesk's own
+   * script, which copies each tab's name into a <button class="wysiwyg-tabs-tab">.
+   * This file reads each name, works out which platform it is about, and sets
+   * data-platform on the tab. styles/_article-tabs.scss draws the matching icon, one of
+   * the plain-named SVG files in assets/ (android.svg, apple.svg, ios.svg, macos.svg,
+   * web.svg, windows.svg), so nothing is fetched at run time and nothing is inserted into
+   * the page. The icons are SVG on purpose: a small raster icon is blurry and, on a phone,
+   * illegible, while an SVG is scaled to its box at any size and pixel density.
+   *
+   * A name is matched by the platforms it mentions:
+   *   iOS (also iPadOS, iPhone, iPad)        -> ios
+   *   macOS (also Mac, Mac OS X, OS X)       -> macos   ("Mac" only as a capitalized word,
+   *                                                       so a "MAC address" is not one)
+   *   Windows                                -> windows
+   *   Android                                -> android
+   *   Web (also Website, Browser)            -> web
+   *   iOS and macOS together, or Apple       -> apple
+   * A name that mentions more than one of Apple, Windows, Android and Web is ambiguous, and
+   * a name that mentions none of them has nothing to show, so neither gets an icon.
+   *
+   * An author can pick the icon in the name instead, the way a service catalog item does
+   * in its description, with a marker such as  [icon: ios.svg] Phone setup . The marker
+   * names one of the six files above and is removed from the visible name; the extension
+   * is optional, and ".png" is read as ".svg" (the theme also holds ios.png, macos.png and
+   * windows.png for the Device FAQs tiles, and a PNG is never drawn as a tab icon). Any
+   * other name shows no icon. The marker wins over the name.
+   *
+   * Zendesk's script can run before or after this one, so tabs already on the page are
+   * labelled at once and tabs added later are caught by a MutationObserver.
+   *
+   * ES2015 only (no async/await); this file is bundled into script.js.
+   */
+
+  var BODY_SELECTOR = ".article-body";
+  var TAB_SELECTOR = ".wysiwyg-tabs-tab";
+  var PLATFORM_ATTRIBUTE = "data-platform";
+  var PLATFORMS = ["android", "apple", "ios", "macos", "web", "windows"];
+
+  // The marker also takes the whitespace after it, so a name never starts with a gap.
+  var MARKER = /\[icon:\s*([^\]]*?)\s*\]\s*/i;
+  var IOS = /\b(?:ios|ipados|iphone|ipad)\b/i;
+  // The explicit forms match in any case. A bare "Mac" counts only as the capitalized
+  // product name: "MAC" is the network address, so a tab named "MAC address" is not
+  // about a Mac, and neither is "Mac address".
+  var MACOS = /\b(?:macos|mac\s?os(?:\s?x)?|os\s?x)\b/i;
+  var MAC = /\bMac\b(?!\s+address\b)/;
+  var WINDOWS = /\bwindows\b/i;
+  var ANDROID = /\bandroid\b/i;
+  var WEB = /\b(?:web|website|browser)s?\b/i;
+  var APPLE = /\bapple\b/i;
+
+  function platformFromName(name) {
+    var android = ANDROID.test(name);
+    var web = WEB.test(name);
+    var windows = WINDOWS.test(name);
+    var apple = APPLE.test(name);
+    var ios = apple || IOS.test(name);
+    var macos = apple || MACOS.test(name) || MAC.test(name);
+    var families =
+      (android ? 1 : 0) +
+      (web ? 1 : 0) +
+      (windows ? 1 : 0) +
+      (ios || macos ? 1 : 0);
+
+    // None has nothing to show, and more than one is ambiguous.
+    if (families !== 1) return "";
+    if (android) return "android";
+    if (web) return "web";
+    if (windows) return "windows";
+    if (ios && macos) return "apple";
+    return ios ? "ios" : "macos";
+  }
+
+  function platformFromMarker(value) {
+    var name = value.toLowerCase().replace(/\.(?:svg|png)$/, "");
+
+    return PLATFORMS.indexOf(name) === -1 ? "" : name;
+  }
+
+  function removeMarker(tab) {
+    var walker = document.createTreeWalker(tab, NodeFilter.SHOW_TEXT, null);
+    var node = walker.nextNode();
+
+    while (node) {
+      if (MARKER.test(node.nodeValue)) {
+        node.nodeValue = node.nodeValue.replace(MARKER, "");
+        return;
+      }
+      node = walker.nextNode();
+    }
+  }
+
+  // Tabs whose icon an author chose with a marker. The marker is removed from the name on
+  // the first pass, so a later pass would see only the name and infer an icon from it,
+  // overriding the author: "[icon: nothing.svg] iOS" is meant to show no icon.
+  var chosen = new WeakSet();
+
+  function labelTab(tab) {
+    // Already labelled, or chosen by the author. A tab with no platform and no marker is
+    // checked again, which finds the same nothing, and finds a name that Zendesk's script
+    // fills in after it added the tab.
+    if (chosen.has(tab) || tab.hasAttribute(PLATFORM_ATTRIBUTE)) return;
+
+    var marker = MARKER.exec(tab.textContent);
+    var platform;
+
+    if (marker) {
+      chosen.add(tab);
+      platform = platformFromMarker(marker[1]);
+      removeMarker(tab);
+    } else {
+      platform = platformFromName(tab.textContent);
+    }
+
+    if (platform) tab.setAttribute(PLATFORM_ATTRIBUTE, platform);
+  }
+
+  function labelTabs(root) {
+    var tabs = (root || document).querySelectorAll(TAB_SELECTOR);
+
+    for (var i = 0; i < tabs.length; i++) {
+      labelTab(tabs[i]);
+    }
+  }
+
+  function initArticleTabs() {
+    var body = document.querySelector(BODY_SELECTOR);
+
+    if (!body) return;
+
+    labelTabs(body);
+
+    if (typeof MutationObserver === "function") {
+      new MutationObserver(function () {
+        labelTabs(body);
+      }).observe(body, { childList: true, subtree: true });
+    }
+  }
+
+  if (document.readyState !== "loading") {
+    initArticleTabs();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      initArticleTabs();
+    });
+  }
+
+  /*
+   * Disclosure behavior for the USWDS "official government website" banner
+   * (templates/header.hbs, styles/_usa-banner.scss). It mirrors the USWDS banner
+   * script (packages/usa-banner/src/index.js in @uswds/uswds): the button flips
+   * aria-expanded, the panel it controls is shown or hidden, and the header gets
+   * the expanded modifier class that hides the "Here's how you know" prompt.
+   *
+   * ES2015 only (no async/await); this file is bundled into script.js.
+   */
+
+  var BUTTON_SELECTOR = ".usa-banner__button";
+  var HEADER_SELECTOR = ".usa-banner__header";
+  var EXPANDED_CLASS = "usa-banner__header--expanded";
+
+  function setBannerExpanded(button, expanded) {
+    var panel = document.getElementById(button.getAttribute("aria-controls"));
+    var header = button.closest(HEADER_SELECTOR);
+
+    button.setAttribute("aria-expanded", expanded ? "true" : "false");
+    if (panel) panel.hidden = !expanded;
+    if (header) header.classList.toggle(EXPANDED_CLASS, expanded);
+  }
+
+  function toggleBanner(button) {
+    setBannerExpanded(button, button.getAttribute("aria-expanded") !== "true");
+  }
+
+  // document_head.hbs sets "js" before this script loads, so the collapsed banner
+  // never flashes open, and drops it again after five seconds unless "js-ready" is
+  // there. Marking the page only after the handlers are installed means a blocked or
+  // failed script leaves the explanation readable instead of behind an inert button.
+  function markScriptReady() {
+    var classes = document.documentElement.classList;
+
+    classes.add("js");
+    classes.add("js-ready");
+  }
+
+  function initGovBanner(root) {
+    var scope = document;
+    var buttons = scope.querySelectorAll(BUTTON_SELECTOR);
+
+    for (var i = 0; i < buttons.length; i++) {
+      (function (button) {
+        setBannerExpanded(
+          button,
+          button.getAttribute("aria-expanded") === "true"
+        );
+        button.addEventListener("click", function () {
+          toggleBanner(button);
+        });
+      })(buttons[i]);
+    }
+
+    markScriptReady();
+  }
+
+  if (document.readyState !== "loading") {
+    initGovBanner();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      initGovBanner();
+    });
   }
 
   /**
@@ -896,492 +1222,10 @@
     return scheme === "http" || scheme === "https" ? str : fb;
   }
 
-  function initSvcSearch(options) {
-    var formId = options.formId;
-    var inputId = options.inputId;
-    var resultsId = options.resultsId;
-    var chipsId = options.chipsId;
-    var chipSelector = options.chipSelector || ".svc-hero-chip";
-    var resultPrefix = options.resultPrefix; // 'mr' (mini) or 'res' (hero)
-    var iconSize = options.iconSize || 17;
-    var gapPx = options.gapPx || 8;
-    var synonyms = options.synonyms || DEFAULT_SYNONYMS;
-    var strings = Object.assign({}, DEFAULT_STRINGS, options.strings || {});
-    var fallbackHref = options.fallbackHref || "#";
-
-    var form = document.getElementById(formId);
-    var input = document.getElementById(inputId);
-    var results = document.getElementById(resultsId);
-    var chips = chipsId ? document.getElementById(chipsId) : null;
-    if (!form || !input || !results) return;
-
-    function cls(name) {
-      return "svc-" + resultPrefix + "-" + name;
-    }
-
-    var HC_BASE = (location.pathname.match(/^\/hc\/[^/]+/) || ["/hc/en-us"])[0];
-    var SERVICES_URL = HC_BASE + "/services";
-    var SEARCH_PAGE = HC_BASE + "/search?query=";
-    var MAX = 5;
-    var timer = null;
-    var token = 0;
-
-    if (results.parentElement !== document.body)
-      document.body.appendChild(results);
-
-    var ICON_SERVICE =
-      '<svg width="' +
-      iconSize +
-      '" height="' +
-      iconSize +
-      '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line></svg>';
-    var ICON_DOC =
-      '<svg width="' +
-      iconSize +
-      '" height="' +
-      iconSize +
-      '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>';
-
-    function fetchJSON(url, tok) {
-      return fetch(url, {
-        headers: { Accept: "application/json" },
-        credentials: "same-origin",
-      })
-        .then(function (r) {
-          return r.ok ? r.json() : null;
-        })
-        .then(function (d) {
-          return tok === token ? d : null;
-        })
-        .catch(function () {
-          return null;
-        });
-    }
-
-    var allServices = null;
-    var servicesLoading = null;
-
-    /* Cache the fetched catalog in sessionStorage so it loads once per session
-       (TTL 30 min) instead of on every page load. Shared between the mini and
-       hero searches. */
-    var SVC_CACHE_KEY = "svcCatalogItems";
-    var SVC_CACHE_TTL = 30 * 60 * 1000;
-    function svcReadCache() {
-      try {
-        var c = JSON.parse(sessionStorage.getItem(SVC_CACHE_KEY) || "null");
-        if (!c || !Array.isArray(c.items) || Date.now() - c.ts > SVC_CACHE_TTL)
-          return null;
-        return c.items;
-      } catch {
-        return null;
-      }
-    }
-    function svcWriteCache(items) {
-      try {
-        sessionStorage.setItem(
-          SVC_CACHE_KEY,
-          JSON.stringify({ ts: Date.now(), items: items })
-        );
-      } catch {
-        // sessionStorage may be unavailable (private browsing, quota, etc.);
-        // caching is a pure optimization, so silently skip it.
-      }
-    }
-
-    function normalizeItem(it) {
-      var id = it.id || it.uuid || "";
-      return {
-        title: stripTags(it.name || it.title || strings.serviceBadge),
-        desc: stripTags(it.description || ""),
-        category: stripTags(
-          it.category_name || (it.category && it.category.name) || ""
-        ),
-        href: safeHref(
-          it.html_url || (id ? HC_BASE + "/services/" + id : SERVICES_URL),
-          fallbackHref
-        ),
-      };
-    }
-
-    function loadAllServices() {
-      if (allServices) return Promise.resolve(allServices);
-      if (servicesLoading) return servicesLoading;
-      var cached = svcReadCache();
-      if (cached) {
-        allServices = cached;
-        return Promise.resolve(cached);
-      }
-      servicesLoading = fetchServicesPage(
-        "/api/v2/help_center/service_catalog/items.json?page[size]=100",
-        0,
-        []
-      ).then(function (out) {
-        allServices = out;
-        svcWriteCache(out);
-        return out;
-      });
-      return servicesLoading;
-    }
-
-    // Recursively walks the paginated service catalog API (max 20 pages),
-    // accumulating normalized items into `out`. Written as a plain Promise
-    // chain (not async/await) to match this file's ES2015-only convention.
-    function fetchServicesPage(url, guard, out) {
-      if (!url || guard >= 20) return Promise.resolve(out);
-      return fetch(url, {
-        headers: { Accept: "application/json" },
-        credentials: "same-origin",
-      })
-        .then(function (r) {
-          return r.ok ? r.json() : null;
-        })
-        .then(function (data) {
-          if (!data) return out;
-          var arr =
-            data.service_catalog_items ||
-            data.items ||
-            data.results ||
-            data.records ||
-            [];
-          arr.forEach(function (it) {
-            out.push(normalizeItem(it));
-          });
-          var nextUrl =
-            data.meta && data.meta.has_more && data.links && data.links.next
-              ? data.links.next
-              : null;
-          return fetchServicesPage(nextUrl, guard + 1, out);
-        })
-        .catch(function () {
-          return out;
-        });
-    }
-
-    function scoreService(svc, terms) {
-      var title = svc.title.toLowerCase();
-      var desc = svc.desc.toLowerCase();
-      var cat = svc.category.toLowerCase();
-      var score = 0;
-      for (var i = 0; i < terms.length; i++) {
-        var t = terms[i];
-        if (!t) continue;
-        if (title === t) score += 100;
-        else if (title.indexOf(t) === 0) score += 50;
-        else if (title.indexOf(t) !== -1) score += 30;
-        if (desc.indexOf(t) !== -1) score += 10;
-        if (cat.indexOf(t) !== -1) score += 15;
-      }
-      return score;
-    }
-
-    function buildTerms(q) {
-      var base = q.toLowerCase().split(/\s+/).filter(Boolean);
-      var terms = {};
-      base.forEach(function (w) {
-        terms[w] = 1;
-      });
-      base.forEach(function (w) {
-        var key = w.replace(/[^a-z]/g, "");
-        (synonyms[key] || []).forEach(function (s) {
-          terms[s.toLowerCase()] = 1;
-        });
-      });
-      return { primary: base, all: Object.keys(terms) };
-    }
-
-    function getServices(q) {
-      return loadAllServices().then(function (list) {
-        if (!list || !list.length) return [];
-        var parts = buildTerms(q);
-        var primary = parts.primary;
-        var all = parts.all;
-        var scored = list
-          .map(function (svc) {
-            return { svc: svc, score: scoreService(svc, primary) };
-          })
-          .filter(function (x) {
-            return x.score > 0;
-          });
-        if (scored.length < 3 && all.length > primary.length) {
-          var have = {};
-          scored.forEach(function (x) {
-            have[x.svc.href] = 1;
-          });
-          list.forEach(function (svc) {
-            if (have[svc.href]) return;
-            var s = scoreService(svc, all);
-            if (s > 0) scored.push({ svc: svc, score: s - 5 });
-          });
-        }
-        scored.sort(function (a, b) {
-          return b.score - a.score;
-        });
-        return scored.slice(0, MAX).map(function (x) {
-          return {
-            title: x.svc.title,
-            href: x.svc.href,
-            sub:
-              x.svc.category ||
-              (x.svc.desc
-                ? x.svc.desc.slice(0, 70)
-                : strings.serviceCatalogFallback),
-          };
-        });
-      });
-    }
-
-    function getDocs(q, tok) {
-      var url =
-        "/api/v2/help_center/articles/search.json?per_page=" +
-        MAX +
-        "&query=" +
-        encodeURIComponent(q);
-      return fetchJSON(url, tok).then(function (d) {
-        if (!d) return [];
-        return (d.results || []).slice(0, MAX).map(function (a) {
-          return {
-            title: stripTags(a.title) || strings.untitled,
-            href: safeHref(
-              a.html_url || SEARCH_PAGE + encodeURIComponent(q),
-              fallbackHref
-            ),
-            sub: a.snippet
-              ? stripTags(a.snippet).slice(0, 70)
-              : strings.knowledgeArticleFallback,
-          };
-        });
-      });
-    }
-
-    var optionSeq = 0;
-    function group(title, groupCls, badge, icon, itemCls, items) {
-      if (!items.length) return "";
-      var html =
-        '<div class="' +
-        cls("group-header") +
-        " " +
-        groupCls +
-        '">' +
-        '<span class="' +
-        cls("group-title") +
-        '">' +
-        esc(title) +
-        "</span>" +
-        '<span class="' +
-        cls("group-count") +
-        '">' +
-        items.length +
-        "</span></div>";
-      items.forEach(function (it) {
-        var optId = resultsId + "-opt-" + optionSeq++;
-        html +=
-          '<a id="' +
-          optId +
-          '" class="' +
-          cls("item") +
-          " " +
-          itemCls +
-          '" role="option" aria-selected="false" href="' +
-          esc(it.href) +
-          '">' +
-          '<span class="' +
-          cls("icon") +
-          '" aria-hidden="true">' +
-          icon +
-          "</span>" +
-          '<span class="' +
-          cls("text") +
-          '"><span class="' +
-          cls("title") +
-          '">' +
-          esc(it.title) +
-          "</span>" +
-          '<span class="' +
-          cls("sub") +
-          '">' +
-          esc(it.sub) +
-          "</span></span>" +
-          '<span class="' +
-          cls("badge") +
-          '">' +
-          badge +
-          "</span></a>";
-      });
-      return html;
-    }
-
-    function place() {
-      var r = form.getBoundingClientRect();
-      var m = 12;
-      var w = Math.min(r.width, window.innerWidth - m * 2);
-      var l = Math.min(Math.max(r.left, m), window.innerWidth - m - w);
-      results.style.left = Math.round(l) + "px";
-      results.style.width = Math.round(w) + "px";
-      results.style.top = Math.round(r.bottom + gapPx) + "px";
-    }
-    function show(html) {
-      results.innerHTML = html;
-      results.hidden = false;
-      place();
-      input.setAttribute("aria-expanded", "true");
-    }
-    function hide() {
-      results.hidden = true;
-      results.innerHTML = "";
-      input.setAttribute("aria-expanded", "false");
-      input.removeAttribute("aria-activedescendant");
-    }
-
-    function run(q) {
-      q = (q || "").trim();
-      if (q.length < 2) {
-        hide();
-        return;
-      }
-      var tok = ++token;
-      optionSeq = 0;
-      show(
-        '<div class="' + cls("loading") + '">' + esc(strings.searching) + "</div>"
-      );
-      Promise.all([getServices(q), getDocs(q, tok)]).then(function (res) {
-        var services = res[0];
-        var docs = res[1];
-        if (tok !== token) return;
-        optionSeq = 0;
-        var html =
-          group(
-            strings.recommendedServices,
-            cls("services"),
-            strings.serviceBadge,
-            ICON_SERVICE,
-            cls("service"),
-            services
-          ) +
-          group(
-            strings.selfHelpResources,
-            cls("docs"),
-            strings.resourceBadge,
-            ICON_DOC,
-            cls("doc"),
-            docs
-          );
-        if (!services.length && !docs.length) {
-          html =
-            '<div class="' +
-            cls("empty") +
-            '">' +
-            esc(strings.noMatches) +
-            "</div>";
-        }
-        html +=
-          '<a class="' +
-          cls("footer") +
-          '" href="' +
-          SEARCH_PAGE +
-          encodeURIComponent(q) +
-          '">' +
-          esc(strings.seeAllResultsFor) +
-          " &ldquo;" +
-          esc(q) +
-          "&rdquo;</a>";
-        show(html);
-      });
-    }
-
-    loadAllServices();
-
-    input.addEventListener("input", function () {
-      clearTimeout(timer);
-      var q = input.value;
-      timer = setTimeout(function () {
-        run(q);
-      }, 220);
-    });
-    input.addEventListener("focus", function () {
-      if (input.value.trim().length >= 2 && results.innerHTML) {
-        results.hidden = false;
-        place();
-      }
-    });
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var q = input.value.trim();
-      if (q) window.location.href = SEARCH_PAGE + encodeURIComponent(q);
-    });
-
-    if (chips) {
-      chips.addEventListener("click", function (e) {
-        var chip = e.target.closest && e.target.closest(chipSelector);
-        if (!chip) return;
-        var q = chip.getAttribute("data-q") || chip.textContent.trim();
-        input.value = q;
-        input.focus();
-        run(q);
-      });
-    }
-
-    input.addEventListener("keydown", function (e) {
-      if (results.hidden) return;
-      var items = Array.prototype.slice.call(
-        results.querySelectorAll("." + cls("item"))
-      );
-      if (!items.length) return;
-      var i = items.findIndex(function (el) {
-        return el.classList.contains(cls("active"));
-      });
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        i = (i + 1) % items.length;
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        i = (i - 1 + items.length) % items.length;
-      } else if (e.key === "Enter" && i >= 0) {
-        e.preventDefault();
-        window.location.href = items[i].getAttribute("href");
-        return;
-      } else if (e.key === "Escape") {
-        hide();
-        return;
-      } else {
-        return;
-      }
-      items.forEach(function (el) {
-        el.classList.remove(cls("active"));
-        el.setAttribute("aria-selected", "false");
-      });
-      items[i].classList.add(cls("active"));
-      items[i].setAttribute("aria-selected", "true");
-      input.setAttribute("aria-activedescendant", items[i].id);
-      items[i].scrollIntoView({ block: "nearest" });
-    });
-
-    document.addEventListener("click", function (e) {
-      if (!form.contains(e.target) && !results.contains(e.target)) hide();
-    });
-    window.addEventListener(
-      "scroll",
-      function () {
-        if (!results.hidden) place();
-      },
-      { passive: true }
-    );
-    window.addEventListener("resize", function () {
-      if (!results.hidden) place();
-    });
-    input.addEventListener("blur", function () {
-      // Give click-on-option a chance to navigate before we potentially hide.
-      setTimeout(function () {
-        if (document.activeElement !== input)
-          input.removeAttribute("aria-activedescendant");
-      }, 0);
-    });
-  }
-
-  // Expose on `window` for the page-specific inline <script> blocks in
-  // service_page.hbs / service_list_page.hbs to call — see the file header
-  // comment for why this isn't a plain module import.
+  // service_page.hbs reads this from `window` for the training button and the
+  // suggested-article links. script.js is a classic script, so a page's inline
+  // <script> cannot import it.
   if (typeof window !== "undefined") {
-    window.initSvcSearch = initSvcSearch;
     window.svcSafeHref = safeHref;
   }
 
@@ -1420,7 +1264,9 @@
 
     const tip = document.createElement("div");
     tip.className = "svc-tooltip";
-    tip.setAttribute("role", "tooltip");
+    // A visual copy of the card description, which describeCards() ties to the
+    // card for assistive technology.
+    tip.setAttribute("aria-hidden", "true");
     tip.style.left = "-9999px";
     tip.style.top = "-9999px";
     document.body.appendChild(tip);
@@ -1482,6 +1328,35 @@
           if (el && !el.classList.contains("svc-desc-hidden"))
             el.classList.add("svc-desc-hidden");
         });
+    }
+    // The description is hidden by CSS (a hover tooltip shows it), which also
+    // hides it from assistive technology, so each card is described by it
+    // explicitly; aria-describedby may point at hidden content. Where the
+    // description is shown inside the card (a device that cannot hover) it is
+    // already read as part of the link, so nothing is added there.
+    const cannotHover = window.matchMedia
+      ? window.matchMedia("(hover: none)")
+      : null;
+    let describedCount = 0;
+    function describeCards() {
+      const shownInCard = !!cannotHover && cannotHover.matches;
+      main.querySelectorAll('a[href*="/services/"]').forEach((card) => {
+        if (inSidebar(card)) return;
+        const el = findDescEl(card);
+        if (!shownInCard && el && descText(card)) {
+          if (!el.id) el.id = "svc-card-desc-" + ++describedCount;
+          card.setAttribute("aria-describedby", el.id);
+        } else if (
+          /^svc-card-desc-/.test(card.getAttribute("aria-describedby") || "")
+        ) {
+          card.removeAttribute("aria-describedby");
+        }
+      });
+    }
+    if (cannotHover) {
+      if (cannotHover.addEventListener)
+        cannotHover.addEventListener("change", describeCards);
+      else if (cannotHover.addListener) cannotHover.addListener(describeCards);
     }
     function positionTip(card) {
       const rect = card.getBoundingClientRect();
@@ -1609,13 +1484,15 @@
     }
 
     function enhance() {
-      [hideDescriptions, applyCategoryDescription].forEach((fn) => {
-        try {
-          fn();
-        } catch (e) {
-          console.warn("enhance step failed:", e);
+      [hideDescriptions, describeCards, applyCategoryDescription].forEach(
+        (fn) => {
+          try {
+            fn();
+          } catch (e) {
+            console.warn("enhance step failed:", e);
+          }
         }
-      });
+      );
     }
     enhance();
     new MutationObserver(enhance).observe(main, {

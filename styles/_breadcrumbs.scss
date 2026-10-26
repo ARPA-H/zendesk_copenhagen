@@ -4,26 +4,29 @@
     margin: 0;
   }
 
-  margin: 0 0 15px 0;
+  margin: 0 0 var(--space-2) 0;
   padding: 0;
   display: flex;
+  // A long trail wraps onto a second line instead of widening the page.
+  flex-wrap: wrap;
+  min-width: 0;
 
   li {
     display: inline-block;
-    color: $secondary-text-color;
+    color: var(--type-subheading);
     font-size: $font-size-small;
-    max-width: 450px;
+    max-width: min(100%, 450px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 
     + li::before {
-      content: ">";
-      margin: 0 4px;
+      content: ">" / "";
+      margin: 0 var(--space-05);
     }
 
     a:visited {
-      color: $link_color;
+      color: var(--color-link);
     }
   }
 }

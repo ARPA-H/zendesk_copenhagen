@@ -9,7 +9,7 @@
   &-list { padding: 0; }
 
   &-item {
-    border-bottom: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
     overflow: auto;
     padding: 20px 0;
 
@@ -42,7 +42,7 @@
   }
 
   &-item-meta {
-    color: $text_color;
+    color: var(--type-body);
     @include tablet {
       margin: 0;
       float: right;
@@ -83,7 +83,7 @@
   &-comment-icon {
     svg {
       vertical-align: middle;
-      color: $brand_color;
+      color: var(--color-brand-primary);
       width: 16px;
       height: 16px;
     }

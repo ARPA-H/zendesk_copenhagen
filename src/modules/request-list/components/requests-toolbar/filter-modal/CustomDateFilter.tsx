@@ -14,7 +14,7 @@ export type CustomDateFieldKey = "startDate" | "endDate";
 
 export type CustomDateValues = [
   startDate: Date | undefined,
-  endDate: Date | undefined
+  endDate: Date | undefined,
 ];
 
 interface CustomDateFilterProps {

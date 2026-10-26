@@ -7,7 +7,7 @@
   {
     "repo": "ARPA-H/zendesk_copenhagen",
     "prefix": ".github/skills",
-    "branch": "main"
+    "branch": "sandbox"
   },
   {
     "repo": "ARPA-H/ledger",
@@ -37,7 +37,7 @@
   {
     "repo": "ARPA-H/zendesk_devices",
     "prefix": ".github/skills",
-    "branch": "main"
+    "branch": "sandbox"
   },
   {
     "repo": "ARPA-H/demo-hhs-ai-expo",
@@ -52,7 +52,7 @@
   {
     "repo": "ARPA-H/zendesk_usb",
     "prefix": ".github/skills",
-    "branch": "main"
+    "branch": "sandbox"
   },
   {
     "repo": "ARPA-H/solution-site-redirect",
@@ -75,7 +75,7 @@
     "branch": "main"
   },
   {
-    "repo": "ARPA-H/entra-tap-html-function",
+    "repo": "ARPA-H/identity",
     "prefix": ".github/skills",
     "branch": "main"
   },
@@ -101,6 +101,56 @@
   },
   {
     "repo": "ARPA-H/sentinel-connectors-logitech-sync",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/arpah-plurri2",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/sentinel-connectors-zendesk-sandbox",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/sentinel-connectors-docusign",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/sentinel-connectors-github",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/care-et",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/user-offboarder",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/payload-prototype",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/zendesk_onboarding_offboarding",
+    "prefix": ".github/skills",
+    "branch": "sandbox"
+  },
+  {
+    "repo": "ARPA-H/sentinel-connectors-claude-desktop",
+    "prefix": ".github/skills",
+    "branch": "main"
+  },
+  {
+    "repo": "ARPA-H/astronaut",
     "prefix": ".github/skills",
     "branch": "main"
   }

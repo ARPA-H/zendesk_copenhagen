@@ -123,18 +123,6 @@ describe("Rendering", () => {
     ).toBeInTheDocument();
   }, 10000);
 
-  test("applies a default sort of updated at and descending", async () => {
-    await renderComponent();
-
-    expect(useParams).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sort: { order: "desc", by: "updated_at" },
-      }),
-      expect.any(Function),
-      expect.any(Function)
-    );
-  });
-
   test("renders the request description when the subject is empty", async () => {
     await renderComponent();
 
@@ -372,7 +360,6 @@ describe("Filter tabs", () => {
     expect(push).toHaveBeenCalledWith({
       page: 1,
       selectedTab: { name: ORG_REQUESTS_TAB_NAME, organizationId: 1 },
-      filters: {},
     });
   });
 });

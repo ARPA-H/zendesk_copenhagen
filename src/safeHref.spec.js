@@ -1,5 +1,5 @@
 import { describe, it, expect } from "@jest/globals";
-import { safeHref } from "./svcSearch";
+import { safeHref } from "./safeHref";
 
 describe("safeHref", () => {
   it("allows relative help center paths", () => {
@@ -36,5 +36,9 @@ describe("safeHref", () => {
 
   it("uses '#' as the default fallback when none is provided", () => {
     expect(safeHref("javascript:alert(1)")).toBe("#");
+  });
+
+  it("is exposed on window for the page templates", () => {
+    expect(window.svcSafeHref).toBe(safeHref);
   });
 });

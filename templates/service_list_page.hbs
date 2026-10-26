@@ -2,6 +2,8 @@
   Home page (service_list_page) — hero + combined live search + service catalog.
   Styling: styles/_svc-home.scss (design tokens in _svc-tokens.scss). Do NOT add
   <style> blocks or style="" attributes here — edit the SCSS partials instead.
+  This page mirrors templates/home_page.hbs, minus the Knowledge band: the
+  service list page template is not given `categories`.
 
   The hero is static, fully-styled markup and renders immediately (no
   hide-by-default guard). Only the async service-catalog uses a skeleton
@@ -60,6 +62,18 @@
         <a class="svc-hero-chip" href="/hc/{{help_center.base_locale}}/search?query=shared%20mailbox%20distribution%20list">Shared Mailboxes/Distribution Lists</a>
       </div>
     </div>
+    {{else}}
+    {{!-- Signed out: the greeting, search and catalog stay behind sign-in, so the
+          band says why and offers the one action instead of sitting empty. The
+          sentences are English copy; every other locale gets the translated
+          sign-in action alone. --}}
+    <div class="svc-hero-greeting svc-hero-signed-out">
+      {{#contains help_center.locale 'en-'}}
+      <h2 class="svc-hero-title svc-greeting-ready">Sign in to get help</h2>
+      <p class="svc-hero-subtitle">Use your ARPA-H account to search help articles, submit a request and track it.</p>
+      {{/contains}}
+      {{#link "sign_in" class="svc-hero-cta"}}{{t 'sign_in'}}{{/link}}
+    </div>
     {{/if}}
   </div>
 </section>
@@ -115,7 +129,12 @@
           <span class="svc-help-banner-title">Still can&rsquo;t find what you need?</span>
           <span class="svc-help-banner-sub">Submit a general request.</span>
         </div>
-        <a class="svc-help-btn" href="/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}">
+        {{!-- The "General request" button. It opens the service catalog item named by
+              "Other request service ID", else the one named by "General request service
+              ID", else the standard request form (the footer's page). "General request
+              category ID", when set, is added to an item link as ?category_id= so the item
+              opens under that category. --}}
+        <a class="svc-help-btn" href="{{#if settings.other_request_service_id}}/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}{{#if settings.general_request_category_id}}?category_id={{settings.general_request_category_id}}{{/if}}{{else}}{{#if settings.general_request_service_id}}/hc/{{help_center.base_locale}}/services/{{settings.general_request_service_id}}{{#if settings.general_request_category_id}}?category_id={{settings.general_request_category_id}}{{/if}}{{else}}{{page_path 'new_request'}}{{/if}}{{/if}}">
           General request
         </a>
       </div>
@@ -125,6 +144,7 @@
 {{/if}}
 
 {{#if signed_in}}
+<link rel="modulepreload" href="{{asset 'shared-bundle.js'}}">
 <!-- Render the Zendesk service catalog into our card -->
 <script type="module">
   try {
@@ -173,8 +193,17 @@
       skeletonId: "svc-catalog-skeleton",
       skeletonHideClass: "svc-cat-skel-hide",
       readyClasses: ["svc-cat-ready"],
-      // "Complete" = the catalog has real service links rendered.
-      isComplete: (main) => !!main.querySelector('a[href*="/services/"]'),
+      // "Complete" = real service links rendered, or the count announcer
+      // (data-service-count) holding text, which a catalog that loaded with
+      // nothing in it has instead of links (it stays empty while the list
+      // loads), or the module's error screen (role="alert") or the fallback
+      // written when the module itself cannot load (.svc-catalog-fallback,
+      // whose link has no trailing slash) took their place, so a failure shows
+      // at once instead of after the 6s hard cap.
+      isComplete: (main) =>
+        !!main.querySelector(
+          'a[href*="/services/"], [data-service-count]:not(:empty), [role="alert"], .svc-catalog-fallback'
+        ),
     });
   } catch (e) {
     console.warn("svc-page-utils module unavailable:", e);
@@ -211,9 +240,9 @@
 </script>
 
 <!-- Native instant-search wiring: submit the native {{search}} form when the
-     pink button is clicked, and keep the ARPA-H placeholder text. The
-     real-time article suggestions and the results page are provided by
-     Zendesk's platform — there is no custom fetch/scoring layer. -->
+     pink button is clicked, and name what this search covers. The real-time
+     article suggestions and the results page are provided by Zendesk's
+     platform; there is no custom fetch/scoring layer. -->
 <script>
   (function () {
     var wrap = document.getElementById('svc-hero-search');
@@ -222,7 +251,16 @@
     var input = wrap.querySelector('input[type="search"]');
     var btn   = document.getElementById('svc-hero-search-btn');
 
-    if (input) input.setAttribute('placeholder', 'Search by service or keyword (e.g., Software, Device, SharePoint)…');
+    // This search finds help articles, not services (the catalog has its own
+    // "Search for services" field), so the field says so, visibly and to
+    // assistive technology. The wording is English; other locales keep the
+    // placeholder and accessible name Zendesk's search helper localizes.
+    {{#contains help_center.locale 'en-'}}
+    if (input) {
+      input.setAttribute('placeholder', 'Search help articles');
+      input.setAttribute('aria-label', 'Search help articles');
+    }
+    {{/contains}}
 
     if (btn && form) {
       btn.addEventListener('click', function () {

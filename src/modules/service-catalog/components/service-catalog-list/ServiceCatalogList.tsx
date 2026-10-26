@@ -39,12 +39,12 @@ const StyledGrid = styled(Grid)`
   padding: 0;
 `;
 
+// A category name wraps instead of being cut off: truncating it hid text that
+// people cannot read any other way, and it fails reflow at 320px.
 const CategoryHeading = styled(XL).attrs({ tag: "h2", isBold: true })`
   margin-bottom: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 600px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 `;
 
 const CountAndSortRow = styled.div`
@@ -53,6 +53,24 @@ const CountAndSortRow = styled.div`
   justify-content: space-between;
   gap: ${(props) => props.theme.space.sm};
   flex-wrap: wrap;
+`;
+
+// The live region that speaks the count. It stays in the page for as long as
+// the list does, because a screen reader registers a status region before it
+// changes and may miss one that is inserted already holding text; the visible
+// count below is hidden from assistive technology so the number is not read
+// twice. Out of flow, so it adds no gap to the column.
+const CountAnnouncer = styled.span`
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 `;
 
 function getApiCategoryId(selectedCategoryId: string | null): string | null {
@@ -222,8 +240,20 @@ export function ServiceCatalogList({
     selectedCategoryName === ALL_SERVICES_ID
       ? t("service-catalog-sidebar.all-services", "All services")
       : selectedCategoryName === UNCATEGORIZED_ID
-      ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
-      : selectedCategoryName;
+        ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
+        : selectedCategoryName;
+
+  const serviceCountMessage = t(
+    "service-catalog.service-count",
+    "{{count}} services",
+    {
+      "defaultValue.one": "{{count}} service",
+      count,
+    }
+  );
+  // The count is the previous list's until a response arrives, so the region
+  // holds nothing while the list loads and speaks only the settled number.
+  const isSettled = !isLoading && !isCategoryChanging;
 
   return (
     <Container>
@@ -233,14 +263,12 @@ export function ServiceCatalogList({
         isLoading={isLoading}
         onChange={handleInputChange}
       />
+      <CountAnnouncer role="status" data-service-count>
+        {isSettled ? serviceCountMessage : ""}
+      </CountAnnouncer>
       {!isCategoryChanging && (
         <CountAndSortRow>
-          <span>
-            {t("service-catalog.service-count", "{{count}} services", {
-              "defaultValue.one": "{{count}} service",
-              count,
-            })}
-          </span>
+          <span aria-hidden="true">{serviceCountMessage}</span>
           <SortMenu selectedOption={sortOption} onChange={handleSortChange} />
         </CountAndSortRow>
       )}

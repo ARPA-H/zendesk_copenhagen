@@ -46,7 +46,7 @@ export function GenerativeAnswerBotModalFooter({
         </FooterItem>
         <FooterItem>
           <Button isPrimary disabled>
-            <Dots size={24} color="white" />
+            <Dots size={24} />
           </Button>
         </FooterItem>
       </>

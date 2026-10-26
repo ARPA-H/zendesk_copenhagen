@@ -195,8 +195,18 @@ async function checkJobStatus(jobId) {
         const data = await zendeskFetch(`/guide/theming/jobs/${jobId}`, { method: 'GET' });
 
         if (data.job.status !== 'pending') {
+            // SECURITY: same redaction as importTheme()/updateTheme() above -
+            // this status payload can echo the pre-signed upload target back.
+            const safeJob = {
+                job: {
+                    id: data.job.id,
+                    status: data.job.status,
+                    theme_id: data.job.data && data.job.data.theme_id,
+                    errors: data.job.errors,
+                }
+            };
             console.log('::group::Check Job Status Response');
-            const prettyResponse = JSON.stringify(data, null, 2);
+            const prettyResponse = JSON.stringify(safeJob, null, 2);
             console.log(prettyResponse);
             console.log('::endgroup::');
             fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Check Job Status Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);

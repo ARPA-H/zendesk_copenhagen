@@ -64,13 +64,14 @@ const ContentSkeleton = () => (
   </ContentContainer>
 );
 
+// The list is a div, not a main: see ServiceCatalogPage.
 export const PageLoadingState: React.FC = () => (
   <>
     <aside className="service-catalog-sidebar">
       <SidebarSkeleton />
     </aside>
-    <main className="service-catalog-list">
+    <div className="service-catalog-list">
       <ContentSkeleton />
-    </main>
+    </div>
   </>
 );

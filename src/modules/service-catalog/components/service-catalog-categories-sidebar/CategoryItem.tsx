@@ -1,4 +1,5 @@
 import type React from "react";
+import { useId } from "react";
 import styled from "styled-components";
 import { getColor } from "@zendeskgarden/react-theming";
 import ChevronDownIcon from "@zendeskgarden/svg-icons/src/12/chevron-down-fill.svg";
@@ -31,6 +32,7 @@ const StyledSidebarItem = styled.div<{
   $nestingLevel: number;
   $hasChildren: boolean;
 }>`
+  position: relative;
   display: flex;
   align-items: center;
   height: 40px;
@@ -43,34 +45,22 @@ const StyledSidebarItem = styled.div<{
   cursor: pointer;
   background-color: ${(props) =>
     props.$active
-      ? `${getColor({ theme: props.theme, hue: "blue", shade: 600 })}33`
+      ? getColor({ theme: props.theme, hue: "blue", shade: 100 })
       : "transparent"};
   border-radius: 4px;
 
   &:hover {
     background-color: ${(props) =>
       props.$active
-        ? `${getColor({ theme: props.theme, hue: "blue", shade: 600 })}47`
-        : `${getColor({ theme: props.theme, hue: "blue", shade: 600 })}14`};
-  }
-
-  &:focus {
-    outline: none;
-    box-shadow: inset 0 0 0 2px
-      ${(props) => getColor({ theme: props.theme, hue: "blue", shade: 600 })};
-  }
-
-  &:focus:not(:focus-visible) {
-    box-shadow: none;
-  }
-
-  &:focus-visible {
-    box-shadow: inset 0 0 0 2px
-      ${(props) => getColor({ theme: props.theme, hue: "blue", shade: 600 })};
+        ? getColor({ theme: props.theme, hue: "blue", shade: 200 })
+        : getColor({ theme: props.theme, hue: "grey", shade: 100 })};
   }
 `;
 
 const ExpandButton = styled.button`
+  position: relative;
+  /* Above the select button's overlay, so the toggle takes its own clicks. */
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,9 +68,12 @@ const ExpandButton = styled.button`
   border: none;
   cursor: pointer;
   padding: 0;
-  width: 12px;
-  height: 12px;
-  margin-right: 8px;
+  /* A 24px hit area around the 12px chevron (WCAG 2.5.8 target size); the
+     negative margins keep the chevron exactly where it was. */
+  width: 24px;
+  height: 24px;
+  margin-block: -6px;
+  margin-inline: -6px 2px;
   color: ${({ theme }) => getColor({ theme, hue: "grey", shade: 600 })};
   flex-shrink: 0;
 
@@ -94,12 +87,47 @@ const ExpandButton = styled.button`
   }
 `;
 
-const ItemContent = styled.div`
+/* The row's control. It is a sibling of the expand button, never its parent:
+   a button must not contain another control, and assistive technology may
+   flatten one that does. Its ::after stretches over the whole row, so a click
+   anywhere on the row still selects the category. */
+const SelectButton = styled.button`
   display: flex;
-  align-items: center;
   flex: 1;
+  align-items: center;
   min-width: 0;
   gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+  }
+
+  &:focus-visible {
+    /* The row-wide ring below replaces the theme's own ring on the button. */
+    outline: none;
+    box-shadow: none;
+  }
+
+  &:focus-visible::after {
+    /* The transparent outline is repainted in forced-colors mode, where the
+       box-shadow ring is dropped. */
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+    box-shadow: inset 0 0 0 2px
+      ${(props) =>
+        getColor({ theme: props.theme, variable: "border.primaryEmphasis" })};
+  }
 `;
 
 const SidebarItemName = styled.span`
@@ -111,7 +139,8 @@ const SidebarItemName = styled.span`
 
 const ItemCount = styled.span`
   flex-shrink: 0;
-  color: ${({ theme }) => getColor({ theme, hue: "grey", shade: 600 })};
+  font-variant-numeric: tabular-nums;
+  color: ${({ theme }) => getColor({ theme, variable: "foreground.subtle" })};
 `;
 
 interface CategoryItemProps {
@@ -137,18 +166,36 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
   const isUncategorized = category.id === UNCATEGORIZED_ID;
   const isSelected = selectedCategoryId === category.id;
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const nameId = useId();
+  const countId = useId();
+  const childrenId = useId();
+  const hasCount = typeof category.items_count === "number";
 
   const displayName = isAllServices
     ? t("service-catalog-sidebar.all-services", "All services")
     : isUncategorized
-    ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
-    : category.name;
+      ? t("service-catalog-sidebar.uncategorized", "Uncategorized")
+      : category.name;
 
-  const handleExpandClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onToggleExpand(category.id);
-  };
+  // Name the toggle after its category, so a list of buttons does not read
+  // "Expand, Expand, Expand". Where the locale has the name-bearing message
+  // (English only: a theme cannot add Help Center translations), the name stays
+  // the same when the state changes and aria-expanded says whether the
+  // subcategories are showing. Every other locale keeps the Expand or Collapse
+  // message it already translates, followed by the category's own name, rather
+  // than an English phrase read in the wrong language.
+  const toggleLabel = i18n.exists("service-catalog-sidebar.subcategories-named")
+    ? t(
+        "service-catalog-sidebar.subcategories-named",
+        "{{name}} subcategories",
+        { name: displayName }
+      )
+    : `${
+        isExpanded
+          ? t("service-catalog-sidebar.collapse-category", "Collapse")
+          : t("service-catalog-sidebar.expand-category", "Expand")
+      } ${displayName}`;
 
   return (
     <>
@@ -157,15 +204,6 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
           $active={isSelected}
           $nestingLevel={nestingLevel}
           $hasChildren={hasChildren}
-          onClick={() => onSelect(category.id)}
-          tabIndex={0}
-          role="button"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onSelect(category.id);
-            }
-          }}
           data-test-id={
             isAllServices
               ? "sidebar-all-services"
@@ -175,34 +213,32 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
           <CategoryItemContainer $nestingLevel={hasChildren ? nestingLevel : 0}>
             {hasChildren && (
               <ExpandButton
-                onClick={handleExpandClick}
-                aria-label={
-                  isExpanded
-                    ? t(
-                        "service-catalog-sidebar.collapse-category",
-                        "Collapse category"
-                      )
-                    : t(
-                        "service-catalog-sidebar.expand-category",
-                        "Expand category"
-                      )
-                }
+                onClick={() => onToggleExpand(category.id)}
+                aria-label={toggleLabel}
+                aria-expanded={isExpanded}
+                aria-controls={isExpanded ? childrenId : undefined}
                 type="button"
               >
                 {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
               </ExpandButton>
             )}
-            <ItemContent>
-              <SidebarItemName>{displayName}</SidebarItemName>
-              {typeof category.items_count === "number" && (
-                <ItemCount>{category.items_count}</ItemCount>
+            <SelectButton
+              onClick={() => onSelect(category.id)}
+              aria-current={isSelected ? "true" : undefined}
+              // Name it after the category and its count only.
+              aria-labelledby={hasCount ? `${nameId} ${countId}` : nameId}
+              type="button"
+            >
+              <SidebarItemName id={nameId}>{displayName}</SidebarItemName>
+              {hasCount && (
+                <ItemCount id={countId}>{category.items_count}</ItemCount>
               )}
-            </ItemContent>
+            </SelectButton>
           </CategoryItemContainer>
         </StyledSidebarItem>
       </CategoryItemWrapper>
       {hasChildren && isExpanded && (
-        <>
+        <div id={childrenId}>
           {category.children?.map((child) => (
             <CategoryItem
               key={child.id}
@@ -214,7 +250,7 @@ export const CategoryItem: React.FC<CategoryItemProps> = ({
               onToggleExpand={onToggleExpand}
             />
           ))}
-        </>
+        </div>
       )}
     </>
   );

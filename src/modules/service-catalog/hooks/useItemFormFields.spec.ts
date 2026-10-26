@@ -103,8 +103,8 @@ describe("useItemFormFields", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes("/api/v2/ticket_fields?locale=en-us")
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
         status: 200,
         ok: true,
@@ -167,11 +167,11 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            status: 500,
-            ok: false,
-          })
-        : {};
+          ? Promise.resolve({
+              status: 500,
+              ok: false,
+            })
+          : {};
     });
 
     const { result } = renderHook(() =>
@@ -251,12 +251,12 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
     const { result } = renderHook(() =>
@@ -295,12 +295,12 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
     const { result } = renderHook(() =>
@@ -352,12 +352,12 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
     const { result } = renderHook(() =>
@@ -430,12 +430,12 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
     const { result } = renderHook(() =>
@@ -491,12 +491,12 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
     const { result } = renderHook(() =>
@@ -546,12 +546,12 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
     const { result } = renderHook(() =>
@@ -662,8 +662,8 @@ describe("useItemFormFields", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
         status: 200,
         ok: true,
@@ -710,8 +710,8 @@ describe("useItemFormFields", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
         status: 200,
         ok: true,

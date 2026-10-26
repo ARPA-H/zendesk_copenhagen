@@ -63,13 +63,15 @@ export const ServiceCatalogPage: React.FC<ServiceCatalogPageProps> = ({
           />
         </aside>
       )}
-      <main className="service-catalog-list">
+      {/* A div, not a main: Help Center already wraps every page template in a
+          main, and a second one is nested inside it (axe: landmark-no-duplicate-main). */}
+      <div className="service-catalog-list">
         <ServiceCatalogList
           helpCenterPath={helpCenterPath}
           selectedCategoryId={hasCategories ? selectedCategoryId : null}
           selectedCategoryName={selectedCategoryName}
         />
-      </main>
+      </div>
     </>
   );
 };

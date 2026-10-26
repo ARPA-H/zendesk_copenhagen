@@ -1,27 +1,22 @@
 // Variables
+//
+// Colors, type scale, spacing, radius and elevation live in _tokens.scss as
+// NEXUS custom properties. The legacy size variables below resolve to that
+// scale, so every partial that still reads them follows it:
+//   base     body text (16px)
+//   small    secondary text: breadcrumbs, labels, counts, metadata (14px)
+//   smaller  micro text, badges only (12px)
+//   bigger   list rows that carry a link (16px, the same step as body; the row
+//            is set apart by padding and weight rather than by size)
 
-// Colors
-$hover-button-color: zass-darken($brand_color, 20%);
-$secondary-text-color: zass-lighten($text_color, 20%);
+$font-size-bigger: var(--font-size-xs);
+$font-size-base: var(--font-size-xs);
+$font-size-navigation: var(--font-size-2xs);
+$font-size-small: var(--font-size-2xs);
+$font-size-smaller: var(--font-size-3xs);
 
-$primary-shade: zass-darken($background_color, 3%); //#f8f8f8 for the default background_color
-$secondary-shade: zass-darken($background_color, 5%); //#f2f2f2 for the default background_color
-
-$font-size-bigger: 16px;
-$font-size-base: 15px;
-$font-size-navigation: 14px;
-$font-size-small: 13px;
-$font-size-smaller: 11px;
-
-$high-contrast-border-color: #848F99; // maintains a 3:1 contrast ratio with default background color (#FFF). Use for controls and inputs
-$low-contrast-border-color: #ddd; // less than 3:1 contrast ratio with default background color. Use for elements that do not require user interaction
-$menu-border-color: #d8dcde;
-
-$button-color: $brand_color;
-
-$input-font-size: 14px;
-$field-text-color: #666;
-$field-text-focus-color: #555;
+// 16px keeps iOS Safari from zooming the page when a field takes focus.
+$input-font-size: var(--font-size-xs);
 
 // Breakpoints variables
 $tablet-width: 768px;
@@ -31,4 +26,4 @@ $max-width-container: 1160px;
 $font-weight-semibold: 600;
 
 // Transitions
-$input-transition: border .12s ease-in-out;
+$input-transition: border var(--motion-fast) ease-in-out;

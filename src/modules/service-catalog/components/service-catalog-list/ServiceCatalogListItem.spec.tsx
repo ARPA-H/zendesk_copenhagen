@@ -80,6 +80,32 @@ describe("ServiceCatalogListItem", () => {
       );
     });
 
+    it("should show a long name in full instead of clamping it behind a hover-only tooltip", () => {
+      const longName =
+        "Request an exception to the standard government-furnished laptop configuration for international travel";
+
+      render(
+        <ServiceCatalogListItem
+          serviceItem={{ ...mockServiceItem, name: longName }}
+          helpCenterPath={mockHelpCenterPath}
+        />
+      );
+
+      const title = screen.getByText(longName);
+      expect(title).not.toHaveAttribute("title");
+      expect(
+        getComputedStyle(title).getPropertyValue("-webkit-line-clamp")
+      ).toBe("");
+
+      // Control: the secondary description is still clamped, so an empty value
+      // above means "not clamped" rather than "jsdom cannot read the property".
+      expect(
+        getComputedStyle(
+          screen.getByText(/This is a keyboard/)
+        ).getPropertyValue("-webkit-line-clamp")
+      ).toBe("3");
+    });
+
     it("should render name and description as text without executing HTML payloads", () => {
       const onError = jest.fn();
       (window as unknown as { __xss?: () => void }).__xss = onError;
@@ -104,7 +130,7 @@ describe("ServiceCatalogListItem", () => {
       delete (window as unknown as { __xss?: () => void }).__xss;
     });
 
-    it("should use primaryHue as card border color on hover", async () => {
+    it("should use the primary emphasis border color on hover", async () => {
       render(
         <ServiceCatalogListItem
           serviceItem={mockServiceItem}
@@ -127,10 +153,18 @@ describe("ServiceCatalogListItem", () => {
         .map((style) => style.textContent)
         .join("\n");
 
+      // The hover color must be a resolved Garden color: interpolating the
+      // primaryHue name directly produced the CSS keyword "blue".
+      const hoverBorderColor = getColor({
+        theme: testTheme,
+        variable: "border.primaryEmphasis",
+      });
+
       expect(styleTagsText).toMatch(
-        new RegExp(
-          `:hover\\s*\\{[^}]*border-color:\\s*${testTheme.colors.primaryHue}`
-        )
+        new RegExp(`:hover\\s*\\{[^}]*border-color:\\s*${hoverBorderColor}`)
+      );
+      expect(styleTagsText).not.toMatch(
+        /:hover\s*\{[^}]*border-color:\s*blue\s*[;}]/
       );
     });
   });

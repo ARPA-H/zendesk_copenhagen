@@ -224,8 +224,7 @@ export function ItemRequestForm({
         name: rec.name,
         value: rec.id,
         serialNumber: rec.custom_object_fields["standard::serial_number"] as
-          | string
-          | undefined,
+          string | undefined,
       };
 
       if (rec.custom_object_key === "standard::itam_asset") {
@@ -348,8 +347,8 @@ export function ItemRequestForm({
         error: isAssetField(field)
           ? assetError || field.error
           : isAssetTypeField(field)
-          ? assetTypeError || field.error
-          : field.error,
+            ? assetTypeError || field.error
+            : field.error,
       };
 
       elements.push(

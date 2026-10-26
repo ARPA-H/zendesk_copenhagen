@@ -1,3 +1,45 @@
+## [4.51.5](https://github.com/zendesk/copenhagen_theme/compare/v4.51.4...v4.51.5) (2026-10-09)
+
+
+### Bug Fixes
+
+* update dompurify to version 3.4.16 ([bdafb00](https://github.com/zendesk/copenhagen_theme/commit/bdafb00879bb9b8f6cfbb0049556348a03702e79))
+
+## [4.51.4](https://github.com/zendesk/copenhagen_theme/compare/v4.51.3...v4.51.4) (2026-09-25)
+
+
+### Bug Fixes
+
+* remove invalid aria-expanded from collapsible containers ([f340d79](https://github.com/zendesk/copenhagen_theme/commit/f340d79a22a088b1e7d17805eeebcba42cecd863))
+
+## [4.51.3](https://github.com/zendesk/copenhagen_theme/compare/v4.51.2...v4.51.3) (2026-09-24)
+
+
+### Bug Fixes
+
+* reorder sidebar heading before toggle for screen reader reading order ([575500e](https://github.com/zendesk/copenhagen_theme/commit/575500e13dfef01b14aa53382aa819a6755ca8a5))
+
+## [4.51.2](https://github.com/zendesk/copenhagen_theme/compare/v4.51.1...v4.51.2) (2026-09-23)
+
+
+### Bug Fixes
+
+* **a11y:** hide breadcrumb separator from screen readers ([a1e6891](https://github.com/zendesk/copenhagen_theme/commit/a1e689129a53cec99812916a1c155f3bafe88c32))
+
+## [4.51.1](https://github.com/zendesk/copenhagen_theme/compare/v4.51.0...v4.51.1) (2026-09-07)
+
+
+### Bug Fixes
+
+* localize the Ask AI button text ([7165316](https://github.com/zendesk/copenhagen_theme/commit/716531608d890e2d72fdf6e7f565a88a162341f3)), closes [chaseappio/ruta-40#21395](https://github.com/chaseappio/ruta-40/issues/21395)
+
+# [4.51.0](https://github.com/zendesk/copenhagen_theme/compare/v4.50.5...v4.51.0) (2026-08-31)
+
+
+### Features
+
+* sticky filters across reloads and tabs ([5cf15ea](https://github.com/zendesk/copenhagen_theme/commit/5cf15ea304b13dd964af1f7d2acab234d451d83b))
+
 ## [4.50.5](https://github.com/zendesk/copenhagen_theme/compare/v4.50.4...v4.50.5) (2026-08-24)
 
 

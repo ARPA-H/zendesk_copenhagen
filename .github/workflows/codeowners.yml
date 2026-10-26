@@ -1,0 +1,186 @@
+name: Validate CODEOWNERS
+
+# GitHub silently ignores CODEOWNERS rules whose owners it cannot resolve, so
+# a stale team, a typo, or an owner who lost write access disables code-owner
+# review for those paths with no warning anywhere in the UI. This workflow
+# turns that silent fail-open into a failing check.
+
+permissions:
+  contents: read
+
+on:
+  # No `paths:` filter on pull_request: this job's check ("Validate
+  # CODEOWNERS") is REQUIRED by the branch Ruleset, and a required check
+  # whose workflow is path-filtered never reports on non-matching PRs -
+  # they hang at "Expected - Waiting" and can never merge. The job is a
+  # handful of API calls, so it simply runs on every PR.
+  #
+  # BOOTSTRAP CAVEAT: `pull_request` executes the workflow definition from
+  # the PR's MERGE REF, so a PR author can edit this file to always
+  # succeed. That is accepted to bootstrap (a pull_request_target version
+  # cannot produce its own required check before the file exists on the
+  # base branch - and for the same reason, a later PR that naively flips
+  # this trigger to pull_request_target would wedge itself: its merge ref
+  # loses the pull_request trigger while the base still lacks
+  # pull_request_target). POST-BOOTSTRAP HARDENING (maintainer, Ruleset
+  # side): add a "Require workflows to pass" rule pinned to this file on
+  # the protected ref - GitHub then requires a fresh run of the PINNED
+  # definition per merge, making merge-ref edits and same-name check
+  # forgery moot; the status-check requirement can then be dropped or
+  # kept as UX. Throughout, native code-owner review is the authorization
+  # boundary; this check guards the fail-open invalid-CODEOWNERS class,
+  # not merge authorization.
+  pull_request:
+  push:
+    branches:
+      - main
+      - sandbox
+  # Owner validity can drift with NO repository event (an account losing
+  # access, a team change). The scheduled run validates both protected
+  # branches so drift surfaces as a failed run within one interval - a
+  # detection alarm, deliberately NOT merge-blocking check propagation
+  # (that machinery was retired with the previous guard; the Ruleset
+  # "Require workflows to pass" rule is the enforcement lever).
+  schedule:
+    - cron: "31 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate CODEOWNERS
+    runs-on: ubuntu-latest
+    steps:
+      # No checkout: the errors endpoint evaluates the file server-side at the
+      # given ref, which is also the only way to resolve owner membership.
+      # Untrusted values are passed through env, never interpolated into the
+      # shell.
+      - name: Check CODEOWNERS resolves
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          # github.sha is the MERGE COMMIT on pull_request events (so the
+          # validated file includes both head- and base-side changes, and
+          # fork head SHAs are never needed) and the event commit on push
+          # and manual dispatch.
+          REF: ${{ github.sha }}
+          # On PRs, ALSO validate the base commit: GitHub enforces the BASE
+          # branch's CODEOWNERS for the PR's own review rule, so a broken
+          # base must fail the check even when the merge result is clean.
+          # Empty on push/dispatch.
+          BASE_REF: ${{ github.event.pull_request.base.sha }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+
+          validate_ref() {
+            ref="$1"
+            label="$2"
+
+            # The errors endpoint returns an EMPTY errors array when no
+            # CODEOWNERS exists at all - and an absent file is the ultimate
+            # fail-open (native review has no owners to require). Require
+            # one of the supported locations to exist first, and require it
+            # to be a regular FILE: the contents API also returns 200 for a
+            # directory, symlink, or submodule at these paths (jq errors on
+            # the directory-listing array, so those fall through too).
+            found=""
+            for path in .github/CODEOWNERS CODEOWNERS docs/CODEOWNERS; do
+              # Only a genuine 404 may fall through to the next location:
+              # treating a transient 5xx/403 as "absent" could shift
+              # discovery to a lower-precedence file and validate the wrong
+              # one. Any other failure fails closed.
+              if resp=$(gh api "repos/${REPO}/contents/${path}?ref=${ref}" 2>&1); then
+                if [ "$(printf '%s' "$resp" | jq -r '.type' 2>/dev/null)" = "file" ]; then
+                  found="$path"
+                  break
+                fi
+                # 200 but not a regular file (directory/symlink/submodule):
+                # not a usable CODEOWNERS; try the next location.
+                continue
+              fi
+              case "$resp" in
+                *"HTTP 404"*)
+                  continue
+                  ;;
+                *)
+                  echo "::error::Could not probe ${path} at ${label} (${ref}): ${resp}"
+                  return 1
+                  ;;
+              esac
+            done
+            if [ -z "$found" ]; then
+              echo "::error::No CODEOWNERS file exists at ${label} (${ref}) - native code-owner review has no owners to require (fail-open)."
+              echo "## CODEOWNERS is missing (${label})" >> "$GITHUB_STEP_SUMMARY"
+              return 1
+            fi
+
+            if ! response=$(gh api "repos/${REPO}/codeowners/errors?ref=${ref}" 2>&1); then
+              echo "::error::Could not read CODEOWNERS errors for ${label} (${ref}): ${response}"
+              return 1
+            fi
+
+            count=$(printf '%s' "$response" | jq '.errors | length')
+
+            if [ "$count" -eq 0 ]; then
+              # Zero parser errors does not prove coverage: an empty or
+              # comment-only file (or one whose LAST catch-all rule lists no
+              # owner - the last matching rule wins and ownerless rules are
+              # legal) has no errors yet leaves require_code_owner_review
+              # with nobody to require. Enforce this repo's catch-all
+              # policy: the last all-path rule (`*`, `**`, `**/*`, or `/**` -
+              # any of them matches every path) must name at least one owner.
+              # Narrower ownerless globs can still clear their own paths;
+              # full per-path evaluation is beyond a coverage heuristic.
+              # Capture-and-check rather than piping: errexit is suppressed
+              # inside a function invoked as `f || ...`, and a mid-stream
+              # gh failure must not hand awk PARTIAL content (which could
+              # still show an owned catch-all while omitting a later
+              # overriding rule). A failed read fails the validation.
+              if ! raw=$(gh api "repos/${REPO}/contents/${found}?ref=${ref}" \
+                -H "Accept: application/vnd.github.raw+json"); then
+                echo "::error::Could not read ${found} at ${label} (${ref}) for the coverage check."
+                return 1
+              fi
+              owners=$(printf '%s\n' "$raw" \
+                | awk '$1 !~ /^#/ && ($1 == "*" || $1 == "**" || $1 == "**/*" || $1 == "/**") { c = NF; for (i = 1; i <= NF; i++) if ($i ~ /^#/) { c = i - 1; break }; n = c } END { print n + 0 }')
+              if [ "$owners" -lt 2 ]; then
+                echo "::error::CODEOWNERS at ${label} (${found}) has no owned catch-all rule (\`* @owner\`) - native code-owner review has no owner to require for most paths (fail-open)."
+                echo "## CODEOWNERS has no owned catch-all rule (${label})" >> "$GITHUB_STEP_SUMMARY"
+                return 1
+              fi
+              echo "CODEOWNERS is valid at ${label} (${ref}): every owner resolves."
+              return 0
+            fi
+
+            echo "::error::CODEOWNERS at ${label} has ${count} unresolved entr(ies). Code-owner review is silently DISABLED for the affected paths."
+            printf '%s' "$response" | jq -r '
+              .errors[]
+              | "::error file=\(.path),line=\(.line),col=\(.column)::\(.kind): \(.suggestion // "invalid CODEOWNERS entry")"
+            '
+            {
+              echo "## CODEOWNERS is invalid (${label})"
+              echo
+              echo "GitHub ignores unresolvable rules, so these paths currently have **no owner**"
+              echo "and any \`require_code_owner_review\` rule covering them is vacuously satisfied."
+              echo
+              printf '%s' "$response" | jq -r '.errors[] | "- \`\(.path)\` line \(.line): **\(.kind)** — \(.suggestion // "invalid entry")"'
+            } >> "$GITHUB_STEP_SUMMARY"
+            return 1
+          }
+
+          status=0
+          if [ "$EVENT" = "schedule" ]; then
+            # Drift reconciliation: validate both protected branches by name.
+            validate_ref main "main branch" || status=1
+            validate_ref sandbox "sandbox branch" || status=1
+          elif [ -n "$BASE_REF" ]; then
+            validate_ref "$BASE_REF" "base branch" || status=1
+            validate_ref "$REF" "merge result" || status=1
+          else
+            validate_ref "$REF" "event commit" || status=1
+          fi
+
+          if [ "$status" -eq 0 ]; then
+            echo "CODEOWNERS is valid: every owner resolves." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"

@@ -17,15 +17,13 @@
   }
 }
 
+// Content is at most 1160px wide and never closer than the page gutter to the
+// viewport edge. The padding does the centering, so the box stays full width
+// and the header, pages and footer share one left edge at every width.
 @mixin max-width-container {
-  @media (min-width: #{$max-width-container}) {
-    padding: 0;
-    width: 90%;
-  }
-
-  max-width: $max-width-container;
-  margin: 0 auto;
-  padding: 0 5%;
+  box-sizing: border-box;
+  padding-inline: max(var(--page-gutter), calc((100% - #{$max-width-container}) / 2));
+  width: 100%;
 }
 
 @mixin vertical-align {
@@ -42,24 +40,27 @@
   word-wrap: break-word; //IE/Edge compatibility
 }
 
+// The NEXUS focus ring. The transparent outline is repainted in a system color
+// in forced-colors mode, where box-shadow is dropped.
 @mixin focus-ring {
-  outline: 0;
-  box-shadow: 0 0 0 3px $brand_color;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: var(--shadow-focus);
 }
 
 @mixin standalone-link {
   a {
-    color: $link_color;
+    color: var(--color-link);
     text-decoration: underline;
 
     &:visited {
-      color: $visited_link_color;
+      color: var(--color-link-visited);
     }
 
     &:hover,
     &:active,
     &:focus {
-      color: $hover_link_color;
+      color: var(--color-link-hover);
     }
   }
 }
@@ -67,12 +68,12 @@
 @mixin image-alignment {
   &.image-style-align-left {
     float: left;
-    margin: 8px 20px 6px 0;
+    margin: var(--space-1) var(--space-3) var(--space-1) 0;
   }
 
   &.image-style-align-right {
     float: right;
-    margin: 8px 0px 6px 20px;
+    margin: var(--space-1) 0 var(--space-1) var(--space-3);
   }
 
   &.image-style-block-align-right {
@@ -91,6 +92,84 @@
 
   display: flow-root;
 
+  // Prose reads at 16px with generous leading, held to about 70 characters per
+  // line; images, tables and code blocks stay as wide as the column.
+  line-height: var(--line-height-5);
+
+  p,
+  ul,
+  ol,
+  dl,
+  blockquote {
+    max-width: var(--measure-prose);
+  }
+
+  // More room above a heading than below it, so it reads as the start of the
+  // text that follows. Steps of the spacing scale: h2 40 and 12, h3 32 and 8,
+  // h4 24 and 8.
+  h2 {
+    margin: var(--space-5) 0 var(--space-105);
+  }
+
+  h3 {
+    margin: var(--space-4) 0 var(--space-1);
+  }
+
+  h4 {
+    margin: var(--space-3) 0 var(--space-1);
+  }
+
+  h2,
+  h3,
+  h4 {
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  strong,
+  b {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  table {
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+    margin: var(--space-3) 0;
+    max-width: 100%;
+
+    th,
+    td {
+      border-bottom: 1px solid var(--surface-stroke);
+      padding: var(--space-1) var(--space-2);
+      text-align: start;
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: var(--font-weight-semibold);
+    }
+  }
+
+  // src/domFixups.js wraps each article table so one that is wider than the
+  // column scrolls inside this box instead of widening the page.
+  .table-scroll {
+    margin: var(--space-3) 0;
+    max-width: 100%;
+    overflow-x: auto;
+
+    > table {
+      margin: 0;
+    }
+
+    &:focus-visible {
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-focus);
+      outline: 2px solid transparent;
+      outline-offset: 2px;
+    }
+  }
+
   img {
     height: auto;
     max-width: 100%;
@@ -103,7 +182,7 @@
   figure.image {
     display: table;
 
-    margin: 0 auto;
+    margin: var(--space-3) auto;
 
     > img {
       display: block;
@@ -115,24 +194,18 @@
 
 
   figcaption {
-    padding: 10px 0;
-    font-size: 12px;
+    padding: var(--space-1) 0;
+    font-size: var(--font-size-2xs);
     text-align: center;
-    background-color: $secondary-shade;
+    background-color: var(--color-ui-10);
   }
 
   ul,
   ol {
-    padding-left: 20px;
     list-style-position: outside;
-    margin: 20px 0 20px 20px;
-
-    [dir="rtl"] & {
-      padding-right: 20px;
-      padding-left: 0;
-      margin-left: 0;
-      margin-right: 20px;
-    }
+    margin: var(--space-2) 0;
+    margin-inline-start: var(--space-2);
+    padding-inline-start: var(--space-3);
   }
 
   // Sub level list
@@ -150,28 +223,29 @@
   }
 
   :not(pre) > code {
-    background: $primary-shade;
-    border: 1px solid $low-contrast-border-color;
-    border-radius: 3px;
-    padding: 0 5px;
-    margin: 0 2px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-stroke);
+    border-radius: var(--radius-sm);
+    padding: 0 var(--space-05);
+    margin: 0 var(--space-2px);
   }
 
   pre {
-    background: $primary-shade;
-    border: 1px solid $low-contrast-border-color;
-    border-radius: 3px;
-    padding: 10px 15px;
+    background: var(--surface-subtle);
+    border: 1px solid var(--surface-stroke);
+    border-radius: var(--radius-sm);
+    padding: var(--space-105) var(--space-2);
     overflow: auto;
     white-space: pre;
     direction: ltr;
   }
 
+  // No italic face is loaded, so italics would be synthesized; the quote is
+  // set apart by its rule and a quieter color instead.
   blockquote {
-    border-left: 1px solid $low-contrast-border-color;
-    color: $secondary-text-color;
-    font-style: italic;
-    padding: 0 15px;
+    border-inline-start: 1px solid var(--surface-stroke);
+    color: var(--type-subheading);
+    padding: 0 var(--space-2);
   }
 }
 

@@ -15,19 +15,19 @@
 }
 
 .form-field input {
-  border: 1px solid $high-contrast-border-color;
+  border: 1px solid var(--color-ui-60);
   border-radius: 4px;
   padding: 10px;
   width: 100%;
 
-  &:focus { border: 1px solid $brand_color; }
+  &:focus { border: 1px solid var(--color-focus-ring); }
 }
 
 .form-field input[type="text"] {
-  border: 1px solid $high-contrast-border-color;
+  border: 1px solid var(--color-ui-60);
   border-radius: 4px;
 
-  &:focus { border: 1px solid $brand_color; }
+  &:focus { border: 1px solid var(--color-focus-ring); }
 }
 
 .form-field input[type="checkbox"] {
@@ -37,30 +37,28 @@
 // Select box
 .form-field .nesty-input {
   border-radius: 4px;
-  border: 1px solid $high-contrast-border-color;
+  border: 1px solid var(--color-ui-60);
   height: 80px;
   // line-height matches height so single-line text stays vertically
   // centered in the taller (accessibility touch-target) box; was
   // previously left at the pre-bump 40px, which top-aligned the text.
   line-height: 80px;
-  outline: none;
   vertical-align: middle;
 
   &:focus {
-    border: 1px solid $brand_color;
+    border: 1px solid var(--color-focus-ring);
     text-decoration: none;
   }
 }
 
 .form-field .hc-multiselect {
   &-toggle {
-    border: 1px solid $high-contrast-border-color;
+    border: 1px solid var(--color-ui-60);
   }
 }
 
 .form-field .hc-multiselect-toggle:focus {
-  outline: none;
-  border: 1px solid $brand_color;
+  border: 1px solid var(--color-focus-ring);
   text-decoration: none;
 }
 
@@ -73,13 +71,13 @@
 }
 
 .form-field .optional {
-  color: $secondary-text-color;
+  color: var(--type-subheading);
   margin-left: 4px;
 }
 
 .form-field p {
-  color: $secondary-text-color;
-  font-size: 12px;
+  color: var(--type-subheading);
+  font-size: var(--font-size-2xs);
   margin: 5px 0;
 }
 
@@ -89,7 +87,7 @@
 }
 
 .form footer a {
-  color: $secondary-text-color;
+  color: var(--type-subheading);
   cursor: pointer;
   margin-right: 15px;
 }
@@ -99,7 +97,7 @@
   margin-top: 30px;
 
   label {
-    border-bottom: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
     display: block;
     padding-bottom: 5px;
   }
@@ -107,6 +105,6 @@
   li {
     padding: 10px 0;
 
-    a:visited { color: $visited_link_color; }
+    a:visited { color: var(--color-link-visited); }
   }
 }

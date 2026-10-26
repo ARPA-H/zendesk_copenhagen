@@ -1,26 +1,25 @@
 /***** Article *****/
 .article {
   /*
-  * The article grid is defined this way to optimize readability:
-  * Sidebar | Content | Free space
-  * 17%     | 66%     | 17%
+  * The article grid: a navigation rail, then the reading column. The widths
+  * are the shared column tokens (240 | 48 gap | 720), so the page lines up with
+  * the section and search pages. Only the rail is fixed: the reading column is
+  * minmax(0, 720px) and shrinks when the container is narrower (672px at a
+  * 1024px viewport), so the grid never reaches past its container.
   */
-  @include desktop {
-    flex: 1 0 66%;
-    max-width: 66%;
-    min-width: 640px;
-    padding: 0 30px;
-  }
-
   flex: 1 0 auto; //Explicit values needed whith flex-direction: column for IE11
+  min-width: 0;
 
   &-container {
-    @include desktop {
-      flex-direction: row;
-    }
-
     display: flex;
     flex-direction: column;
+
+    @include desktop {
+      align-items: start;
+      column-gap: var(--column-gap);
+      display: grid;
+      grid-template-columns: var(--column-rail) minmax(0, var(--column-reading));
+    }
   }
 
   &-header {
@@ -34,16 +33,16 @@
     flex-direction: column;
     flex-wrap: wrap;
     justify-content: space-between;
-    margin-bottom: 40px;
-    margin-top: 20px;
+    margin-bottom: var(--space-4);
+    margin-top: var(--space-2);
   }
 
   &-avatar {
-    margin-right: 10px;
+    margin-inline-end: var(--space-1);
   }
 
   &-author {
-    margin-bottom: 10px;
+    margin-bottom: var(--space-1);
   }
 
   &-title {
@@ -57,7 +56,7 @@
 
     .icon-lock {
       position: relative;
-      left: -5px;
+      inset-inline-start: -5px;
       vertical-align: baseline;
     }
   }
@@ -84,11 +83,27 @@
     > p:last-child {
       margin-bottom: 0;
     }
+
+    // A link to a heading (a shared deep link, or one inside the article) puts it
+    // at the top of the window with nothing to say it is the one asked for. A
+    // wash of the selection tint says so: it holds long enough to be found, then
+    // fades. With reduced motion it stays, as a plain highlight, for as long as
+    // the heading is the target. `:has(:target)` covers an anchor nested inside
+    // the heading; it sits inside a forgiving `:is()` so a browser without
+    // `:has()` still highlights a heading that is itself the target.
+    :is(h1, h2, h3, h4, h5, h6):is(:target, :has(:target)) {
+      border-radius: var(--radius-sm);
+      background-color: var(--surface-selected);
+      box-shadow: 0 0 0 var(--space-1) var(--surface-selected);
+
+      @media (prefers-reduced-motion: no-preference) {
+        animation: article-target-wash 1800ms ease-out 1 forwards;
+      }
+    }
   }
 
   &-content {
-    line-height: 1.6;
-    margin: 40px 0;
+    margin: var(--space-4) 0;
     word-wrap: break-word;
   }
 
@@ -96,11 +111,11 @@
     align-items: center;
     display: flex;
     justify-content: space-between;
-    padding-bottom: 20px;
+    padding-bottom: var(--space-2);
   }
 
   &-comment-count {
-    color: $secondary-text-color;
+    color: var(--type-subheading);
 
     &:hover {
       text-decoration: none;
@@ -108,7 +123,7 @@
 
     &-icon {
       vertical-align: middle;
-      color: $brand_color;
+      color: var(--color-brand-primary);
       width: 18px;
       height: 18px;
     }
@@ -117,15 +132,15 @@
   &-sidebar {
     @include desktop {
       border: 0;
-      flex: 0 0 17%;
+      flex: none;
       height: auto;
-      max-width: 17%;
+      max-width: none;
     }
 
-    border-bottom: 1px solid $low-contrast-border-color;
-    border-top: 1px solid $low-contrast-border-color;
+    border-bottom: 1px solid var(--surface-stroke);
+    border-top: 1px solid var(--surface-stroke);
     flex: 1 0 auto; //Explicit values needed whith flex-direction: column for IE11
-    margin-bottom: 20px;
+    margin-bottom: var(--space-3);
     padding: 0;
   }
 
@@ -134,10 +149,10 @@
       flex-direction: row;
     }
 
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     display: flex;
     flex-direction: column;
-    padding: 20px 0;
+    padding: var(--space-3) 0;
 
     > * {
       flex: 1 0 50%; //Explicit values needed whith flex-direction: column for IE11
@@ -150,17 +165,18 @@
       }
 
       @include tablet {
-        padding-right: 20px;
+        padding-inline-end: var(--space-3);
       }
     }
   }
 
   &-votes {
-    border-top: 1px solid $low-contrast-border-color;
-    padding: 30px 0;
+    border-top: 1px solid var(--surface-stroke);
+    padding: var(--space-4) 0;
     text-align: center;
 
     &-question { // Explicit values for rendering h2 like a span for accessibility.
+      font-family: var(--font-secondary);
       font-size: $font-size-base;
       font-weight: normal;
       margin-bottom: 0;
@@ -168,13 +184,18 @@
   }
 
   &-vote {
-    margin: 10px 5px;
+    margin: var(--space-1) var(--space-05);
     min-width: 90px;
     width: auto;
   }
 
+  // The vote tally is a <small>, which normalize.css sets to 80% (12.8px).
+  &-votes-count {
+    font-size: var(--font-size-2xs);
+  }
+
   &-more-questions {
-    margin: 10px 0 20px;
+    margin: var(--space-1) 0 var(--space-3);
     text-align: center;
     @include standalone-link;
   }
@@ -184,12 +205,12 @@
       display: none;
     }
 
-    border-top: 1px solid $high-contrast-border-color;
+    border-top: 1px solid var(--color-ui-60);
 
     a {
-      color: $text_color;
+      color: var(--type-body);
       display: block;
-      padding: 20px 0;
+      padding: var(--space-3) 0;
 
       &:hover,
       &:focus {
@@ -229,10 +250,16 @@
 
   &-item {
     display: block;
-    margin-top: 10px;
-    margin-bottom: 16px;
+    margin-top: var(--space-1);
+    margin-bottom: var(--space-2);
     overflow: hidden;
     text-overflow: ellipsis;
+
+    // The article being read is marked in the section list by weight and color.
+    &[aria-current="page"] {
+      color: var(--type-body);
+      font-weight: var(--font-weight-semibold);
+    }
   }
 }
 
@@ -243,6 +270,19 @@
   }
 
   li {
-    margin-bottom: 15px;
+    margin-bottom: var(--space-2);
+  }
+}
+
+@keyframes article-target-wash {
+  0%,
+  40% {
+    background-color: var(--surface-selected);
+    box-shadow: 0 0 0 var(--space-1) var(--surface-selected);
+  }
+
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 var(--space-1) transparent;
   }
 }

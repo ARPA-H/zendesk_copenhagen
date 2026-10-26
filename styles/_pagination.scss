@@ -1,57 +1,69 @@
 /***** Pagination *****/
 
 .pagination {
-  margin: 20px 0;
+  margin: var(--space-3) 0;
   text-align: center;
 
-  &-next, &-prev, &-first, &-last {
-    display: inline-block;
-    &-link {
-      @extend .button;
+  // The pager is text only. NEXUS draws its pagination controls with a transparent
+  // border and USWDS draws Previous and Next as plain links, so neither strokes
+  // them. A flex row with a gap keeps the controls apart whatever whitespace
+  // Zendesk's markup leaves between the list items (the old inline-block items
+  // touched), and the row wraps rather than overflow on a narrow screen.
+  ul {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-05);
+    justify-content: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  // Each control is a 40px target (the NEXUS pagination size) with the link color
+  // and a quiet tint on hover. The arrow and its label are flex items, so the gap
+  // between them does not depend on the markup and flips with the text direction.
+  li > a,
+  &-current > span {
+    align-items: center;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    font-weight: var(--font-weight-medium);
+    gap: var(--space-1);
+    justify-content: center;
+    min-height: 40px;
+    min-width: 40px;
+    padding-inline: var(--space-105);
+    white-space: nowrap;
+  }
+
+  li > a {
+    transition: background-color var(--motion-fast) ease-in-out;
+
+    // A control does not change color once its page has been visited.
+    &:visited {
+      color: var(--color-link);
     }
+
+    &:hover,
+    &:active,
+    &:focus {
+      background-color: var(--color-ui-5);
+      color: var(--color-link-hover);
+      text-decoration: none;
+    }
+  }
+
+  // The current page, when the markup lists page numbers, is the one item that
+  // is not a link.
+  &-current > span {
+    color: var(--type-body);
+    font-weight: var(--font-weight-bold);
   }
 
   &-first, &-last {
-    &-link {
-      padding: 0 10px;
-    }
-
     &-text {
      @include visually-hidden;
-    }
-  }
-
-  &-next {
-    &-link {
-      padding-right: 10px;
-    }
-    &-text {
-      margin-right: 10px;
-    }
-    [dir="rtl"] & {
-      &-link {
-        padding-left: 10px;
-      }
-      &-text {
-        margin-left: 10px;
-      }
-    }
-  }
-
-  &-prev {
-    &-link {
-      padding-left: 10px;
-    }
-    &-text {
-      margin-left: 10px;
-    }
-    [dir="rtl"] & {
-      &-link {
-        padding-right: 10px;
-      }
-      &-text {
-        margin-right: 10px;
-      }
     }
   }
 }

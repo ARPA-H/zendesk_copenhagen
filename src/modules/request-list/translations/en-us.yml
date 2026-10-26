@@ -29,8 +29,23 @@ parts:
       value: "{{count}} request"
       screenshot: "https://drive.google.com/file/d/1GKtVd7FnRbqu408DNBe-l_-fapj2bWRK/view?usp=sharing"
   - translation:
+      key: "guide-requests-app.requestCount.two"
+      title: "Label indicating the number of requests, when there are 2 requests"
+      value: "{{count}} requests"
+      screenshot: "https://drive.google.com/file/d/1GKtVd7FnRbqu408DNBe-l_-fapj2bWRK/view?usp=sharing"
+  - translation:
       key: guide-requests-app.requestCount.other
       title: "Label indicating the number of requests, when there are more than 1 request"
+      value: "{{count}} requests"
+      screenshot: "https://drive.google.com/file/d/1GKtVd7FnRbqu408DNBe-l_-fapj2bWRK/view?usp=sharing"
+  - translation:
+      key: "guide-requests-app.requestCount.few"
+      title: "Label indicating the number of requests, when there are a few requests"
+      value: "{{count}} requests"
+      screenshot: "https://drive.google.com/file/d/1GKtVd7FnRbqu408DNBe-l_-fapj2bWRK/view?usp=sharing"
+  - translation:
+      key: "guide-requests-app.requestCount.many"
+      title: "Label indicating the number of requests, when there are many requests"
       value: "{{count}} requests"
       screenshot: "https://drive.google.com/file/d/1GKtVd7FnRbqu408DNBe-l_-fapj2bWRK/view?usp=sharing"
   - translation:

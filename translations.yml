@@ -13,81 +13,6 @@ packages:
 
 parts:
   - translation:
-      key: "txt.help_center_copenhagen_theme.colors_group_label"
-      title: "Label for the color setting group"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Colors"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_color_description"
-      title: "Description for the brand color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand color for major navigational elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_color_label"
-      title: "Label for the brand color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_text_color_description"
-      title: "Description for the brand text color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand color for hover and active states"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.brand_text_color_label"
-      title: "Label for the brand text color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Brand text color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.text_color_description"
-      title: "Description for the text color settings"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Text color for body and heading elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.text_color_label"
-      title: "Label for the text color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Text color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.link_color_description"
-      title: "Description for the link color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Text color for link elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.link_color_label"
-      title: "Label for the link color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Link color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.visited_link_color_description"
-      title: "Description for the visited link color setting"
-      screenshot: "https://drive.google.com/file/d/1ZOoBb6K_mpYtyd3ulkEKawmSj1dZPuFw/view?usp=sharing"
-      value: "Text color for visited link elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.hover_link_color_label"
-      title: "Label for the hover link color setting"
-      screenshot: "https://drive.google.com/file/d/14Wh8h1I-ej3d2TRrPHFMvydDeEO_8sxr/view?usp=sharing"
-      value: "Hover link color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.hover_link_color_description"
-      title: "Description for the hover link color setting"
-      screenshot: "https://drive.google.com/file/d/14Wh8h1I-ej3d2TRrPHFMvydDeEO_8sxr/view?usp=sharing"
-      value: "Text color for the hover state of link elements"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.visited_link_color_label"
-      title: "Label for the visited link color setting"
-      screenshot: "https://drive.google.com/file/d/1ZOoBb6K_mpYtyd3ulkEKawmSj1dZPuFw/view?usp=sharing"
-      value: "Visited link color"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.background_color_description"
-      title: "Description for the background color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Background color of your Help Center"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.background_color_label"
-      title: "Label for the background color setting"
-      screenshot: "https://zendesk.box.com/s/ufzzcaedpey0zp92nozg2yzhytsrhd8f"
-      value: "Background color"
-  - translation:
       key: "txt.help_center_copenhagen_theme.fonts_group_label"
       title: "Label for the fonts setting group"
       screenshot: "https://zendesk.box.com/s/l203jfwo8m7tcurohau3xwdr4gflneo3"
@@ -117,16 +42,6 @@ parts:
       title: "Label for the brand settings group"
       screenshot: "https://zendesk.box.com/s/cffw5at7onzirw9g54kmecdji28zk02x"
       value: "Brand"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.logo_description"
-      title: "Description for the logo setting"
-      screenshot: "https://zendesk.box.com/s/cffw5at7onzirw9g54kmecdji28zk02x"
-      value: "Company logo"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.logo_label"
-      title: "Label for the logo setting"
-      screenshot: "https://zendesk.box.com/s/cffw5at7onzirw9g54kmecdji28zk02x"
-      value: "Logo"
   - translation:
       key: "txt.help_center_copenhagen_theme.favicon_description"
       title: "Description for the favicon setting"
@@ -304,16 +219,6 @@ parts:
       screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
       value: "Show related articles"
   - translation:
-      key: "txt.help_center_copenhagen_theme.article_sharing_label"
-      title: "Label for the article social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Social sharing"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.article_sharing_description"
-      title: "Description for the article social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Show social media sharing on article"
-  - translation:
       key: "txt.help_center_copenhagen_theme.section_page_group_label"
       title: "Label for the section page elements settings group"
       screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
@@ -349,16 +254,6 @@ parts:
       title: "Description for the follow post setting"
       screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
       value: "Users can follow a specific post"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.post_sharing_label"
-      title: "Label for the post social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Social sharing"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.post_sharing_description"
-      title: "Description for the post social media sharing setting"
-      screenshot: "https://drive.google.com/open?id=1uZaNe12E-A_snTd_7AjcqirB4ROLF4bB"
-      value: "Show social media sharing on post"
   - translation:
       key: "txt.help_center_copenhagen_theme.comunity_topic_group_label"
       title: "Label for the community topic elements settings group"
@@ -396,16 +291,6 @@ parts:
       title: "Description for the setting to show suggested articles within the new request form"
       screenshot: "https://drive.google.com/file/d/1UrHbBwCWc2R-tzdOXCMoKj-ztZ9FXzfb/view?usp=sharing"
       value: "Show suggested articles on new request form"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.show_brand_name_label"
-      title: "Label for the show brand name setting"
-      screenshot: "https://drive.google.com/file/d/16zQao3zk3uRScIUpkyc6bXAWwqHh3Zh-/view?usp=sharing"
-      value: "Show Help Center name"
-  - translation:
-      key: "txt.help_center_copenhagen_theme.show_brand_name_description"
-      title: "Description for the show brand name setting"
-      screenshot: "https://drive.google.com/file/d/16zQao3zk3uRScIUpkyc6bXAWwqHh3Zh-/view?usp=sharing"
-      value: "Display the Help Center name next to the logo"
   - translation:
       key: "txt.help_center_copenhagen_theme.request_list_beta_label"
       title: "Label for the request list beta setting"
@@ -457,7 +342,7 @@ parts:
       key: "txt.help_center_copenhagen_theme.general_request_service_id_description"
       title: "Description for the general request service id setting"
       screenshot: ""
-      value: "The service catalog item ID used by the \"General request\" fallback link"
+      value: "The service catalog item ID that the \"General request\" button (Home and Services pages) and the \"Submit a general request\" link (service pages) open while \"Other request service ID\" is blank. Item IDs differ between Zendesk instances, so copy it from this one. Leave both blank to open the standard request form."
   - translation:
       key: "txt.help_center_copenhagen_theme.general_request_category_id_label"
       title: "Label for the general request category id setting"
@@ -467,7 +352,7 @@ parts:
       key: "txt.help_center_copenhagen_theme.general_request_category_id_description"
       title: "Description for the general request category id setting"
       screenshot: ""
-      value: "The service catalog category ID used by the \"General request\" fallback link"
+      value: "Optional. The service catalog category to open the General request item under, for an item that is in several categories. It is added to the link as ?category_id=. Has no effect while both service ID settings are blank."
   - translation:
       key: "txt.help_center_copenhagen_theme.other_request_service_id_label"
       title: "Label for the other request service id setting"
@@ -477,4 +362,4 @@ parts:
       key: "txt.help_center_copenhagen_theme.other_request_service_id_description"
       title: "Description for the other request service id setting"
       screenshot: ""
-      value: "The service catalog item ID for the \"Other\" request, used by the \"General request\" fallback link on service pages"
+      value: "The service catalog item ID that the \"General request\" button and link open. It is read first; while it is blank, \"General request service ID\" is used. Item IDs differ between Zendesk instances, so copy it from this one. Leave both blank to open the standard request form."

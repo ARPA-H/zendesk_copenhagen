@@ -40,8 +40,22 @@ async function importTheme(brandId) {
             method: 'POST',
             body: JSON.stringify({ job: { attributes: { brand_id: brandId, format: 'zip' } } }),
         });
+        // SECURITY: never print data.job.data.upload verbatim - it contains a
+        // pre-signed upload URL and POST parameters. This repo is public, so
+        // Actions logs are public; anyone watching a run during the upload
+        // window could race the workflow and substitute a malicious theme zip.
+        // Mirrors the redaction already applied in updateTheme.js.
+        const safeData = {
+            job: {
+                id: data.job.id,
+                status: data.job.status,
+                theme_id: data.job.data.theme_id,
+                upload_url: '[REDACTED]',
+                upload_parameters: '[REDACTED]',
+            }
+        };
         console.log('::group::Import Theme Response');
-        console.log(JSON.stringify(data, null, 2));
+        console.log(JSON.stringify(safeData, null, 2));
         console.log('::endgroup::');
         return {
             jobId: data.job.id,
@@ -84,8 +98,18 @@ async function checkImportJobStatus(jobId) {
     try {
         const data = await zendeskFetch(`/guide/theming/jobs/${jobId}`, { method: 'GET' });
         if (data.job.status !== 'pending') {
+            // SECURITY: same redaction as importTheme() - job payloads can
+            // echo the pre-signed upload target back.
+            const safeJob = {
+                job: {
+                    id: data.job.id,
+                    status: data.job.status,
+                    theme_id: data.job.data && data.job.data.theme_id,
+                    errors: data.job.errors,
+                }
+            };
             console.log('::group::Import Job Response');
-            console.log(JSON.stringify(data, null, 2));
+            console.log(JSON.stringify(safeJob, null, 2));
             console.log('::endgroup::');
         }
         return data.job;

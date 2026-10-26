@@ -4,6 +4,7 @@ import { Avatar } from "@zendeskgarden/react-avatars";
 import { Dots } from "@zendeskgarden/react-loaders";
 import { GenerativeAnswerContent } from "./GenerativeAnswerContent";
 import styled from "styled-components";
+import { getColor } from "@zendeskgarden/react-theming";
 import type { CitationArticle } from "../data-types";
 
 interface GenerativeAnswerBotModalBodyProps {
@@ -29,7 +30,8 @@ const AgentMessage = styled.div`
     props.theme.rtl ? "16px 16px 0px 16px" : "16px 16px 16px 0px"};
   gap: ${(props) => props.theme.space.sm};
   align-items: center;
-  background-color: #f4f6f8;
+  background-color: ${({ theme }) =>
+    getColor({ theme, variable: "background.recessed" })};
 `;
 
 export function GenerativeAnswerBotModalBody({

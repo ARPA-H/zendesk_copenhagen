@@ -1,25 +1,71 @@
 <footer class="footer">
   <div class="footer-inner">
-    {{#link 'help_center'}}{{help_center.name}}{{/link}}
+    <div class="footer-top">
+      {{#link 'help_center' class='footer-logo'}}
+        <img src="{{asset 'arpa-h-logo-reverse.svg'}}" alt="{{t 'home_page' name=help_center.name}}" width="180" height="50" />
+      {{/link}}
 
-    <div class="footer-language-selector">
+      {{!-- Site links are for signed-in visitors only: anonymous visitors cannot
+           submit requests (owner decision) and the services page asks them to
+           sign in. The whole navigation sits inside the condition, so a
+           signed-out footer has no empty landmark. The link helper still
+           decides whether each link shows (it returns nothing when the service
+           catalog is not available). The name is fixed English, and the links
+           below it are translated, so the language mark goes on the name
+           alone: a hidden element that aria-labelledby can still read. --}}
+      {{#if signed_in}}
+        <nav class="footer-nav" aria-labelledby="footer-nav-name">
+          <span id="footer-nav-name" lang="en" hidden>Footer</span>
+          <ul class="footer-nav-list">
+            <li>{{link 'service_catalog'}}</li>
+            <li>{{link 'new_request'}}</li>
+            <li>{{link 'requests'}}</li>
+          </ul>
+        </nav>
+      {{/if}}
+
       {{#if alternative_locales}}
-        <div class="dropdown language-selector">
-          <button class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-            {{current_locale.name}}
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="dropdown-chevron-icon" aria-hidden="true">
-              <path fill="none" stroke="currentColor" stroke-linecap="round" d="M3 4.5l2.6 2.6c.2.2.5.2.7 0L9 4.5"/>
-            </svg>
-          </button>
-          <span class="dropdown-menu dropdown-menu-end" role="menu">
-            {{#each alternative_locales}}
-              <a href="{{url}}" dir="{{direction}}" rel="nofollow" role="menuitem">
-                {{name}}
-              </a>
-            {{/each}}
-          </span>
+        <div class="footer-language-selector">
+          <div class="dropdown language-selector">
+            <button class="dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+              {{current_locale.name}}
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" focusable="false" viewBox="0 0 12 12" class="dropdown-chevron-icon" aria-hidden="true">
+                <path fill="none" stroke="currentColor" stroke-linecap="round" d="M3 4.5l2.6 2.6c.2.2.5.2.7 0L9 4.5"/>
+              </svg>
+            </button>
+            <span class="dropdown-menu dropdown-menu-end" role="menu">
+              {{#each alternative_locales}}
+                <a href="{{url}}" dir="{{direction}}" rel="nofollow" role="menuitem">
+                  {{name}}
+                </a>
+              {{/each}}
+            </span>
+          </div>
         </div>
       {{/if}}
+    </div>
+
+    {{!-- NEXUS auxiliary navigation: the policy links the public arpa-h.gov
+         footer carries, centered, then the copyright line. That footer's ninth
+         link, "Download Adobe Plugin", is left out on purpose: a Help Center
+         has no use for a PDF reader download (owner decision). The labels are
+         fixed English text because the Help Center translation keys cannot be
+         extended from a theme, so the block is marked lang="en" for assistive
+         technology on every locale (WCAG 3.1.2). --}}
+    <div class="footer-bottom" lang="en">
+      <nav class="footer-aux-nav" aria-label="Policies and information">
+        <ul class="footer-aux-nav-list">
+          <li><a href="https://www.hhs.gov/web/section-508/index.html">Accessibility</a></li>
+          <li><a href="https://arpa-h.gov/privacy-policy">Privacy Policy</a></li>
+          <li><a href="https://arpa-h.gov/freedom-of-information-act">Freedom of Information Act</a></li>
+          <li><a href="https://www.hhs.gov/web/policies-and-standards/hhs-web-policies/disclaimer/index.html">Linking Policy</a></li>
+          <li><a href="https://www.hhs.gov/vulnerability-disclosure-policy/index.html">Vulnerability Disclosure Policy</a></li>
+          <li><a href="https://www.hhs.gov/about/agencies/asa/eeo/no-fear-act/index.html">No FEAR Act</a></li>
+          <li><a href="https://oig.hhs.gov/">Inspector General</a></li>
+          <li><a href="https://arpa-h.gov/logo">Logo Guidance</a></li>
+        </ul>
+      </nav>
+      <p class="footer-copyright">&copy; <span data-footer-year>2026</span> ARPA-H All Rights Reserved.</p>
     </div>
   </div>
 </footer>

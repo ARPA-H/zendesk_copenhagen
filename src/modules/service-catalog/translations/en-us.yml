@@ -162,7 +162,7 @@ parts:
       key: "service-catalog.empty-state.search-description"
       title: "Empty state with search description"
       screenshot: "https://drive.google.com/file/d/10DiQB3DDf9x13owivlJs9QMNWVXCKdOd/view?usp=drive_link"
-      value: "Enter your keywords in the search field."
+      value: "Try a different keyword, or clear the search to see all services."
   - translation:
       key: "service-catalog.item.serial-number-label"
       title: "Label prefix for serial number shown in lookup field options. Serial number (SN) abbreviation can be translated as per language"
@@ -198,6 +198,11 @@ parts:
       title: "[A11Y] Hidden label for screen readers for the expand category button in the service catalog sidebar"
       screenshot: "https://drive.google.com/file/d/1QaRvkzKPV1ptp6fQ2JLeUJV91p6vBftE/view?usp=sharing"
       value: "Expand"
+  - translation:
+      key: "service-catalog-sidebar.subcategories-named"
+      title: "[A11Y] Hidden label for screen readers for the button that shows or hides the subcategories of one category in the service catalog sidebar. {{name}} is the category name; whether they are showing is announced separately"
+      screenshot: ""
+      value: "{{name}} subcategories"
   - translation:
       key: "service-catalog-sidebar.all-services"
       title: "Label for the navigation item in the service catalog sidebar that shows all services"
