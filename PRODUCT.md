@@ -121,7 +121,7 @@ into Knowledge pages.
 - Only public, documented Zendesk REST APIs.
 - `category_page.hbs` hard-codes one category ID and three section IDs for the
   OS tiles; moving them to settings is a known follow-up, not part of this work.
-- ESLint (`.eslintrc.js`) keeps the `approval-requests`, `new-request-form` and
+- ESLint (`eslint.config.js`) keeps the `approval-requests`, `new-request-form` and
   `service-catalog` modules from importing any other feature module; they may
   import `shared`, `test`, `ticket-fields` and `flash-notifications`, which
   import only each other.

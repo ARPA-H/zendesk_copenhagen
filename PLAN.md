@@ -761,20 +761,18 @@ since.
   6.9.1 for the 6.x line; and `extract-zip@2.0.1` (dev-only, via puppeteer) has
   a HIGH advisory with no patched version published, so it can't be resolved
   away.
-- **eslint 9 major bump (2026-08-17)**: `.eslintrc.js` (legacy eslintrc format)
-  still works under eslint 9 — flat config is only the _default_, not mandatory
-  yet — but requires `ESLINT_USE_FLAT_CONFIG=false` on every invocation (set in
-  the `yarn eslint` script). eslint 10 has none of this compatibility shim and
-  is a dead end regardless: `@shopify/eslint-plugin` (even at its latest major,
-  50.0.0) caps out at `eslint@^9.27.0`, so eslint 10 isn't reachable until
-  Shopify's plugin catches up. Bumping also required `eslint-plugin-react-hooks`
-  4.6.2 -> 7.1.1 (its old major doesn't declare eslint 9 in its peer range),
-  whose rewritten `recommended` config added new React-Compiler-era rules as
-  errors. Two of them fire on real, pre-existing patterns:
-  `react-hooks/set-state-in-effect` (19 call sites) and `react-hooks/refs` (8
-  call sites) are downgraded to `warn` in `.eslintrc.js` pending a dedicated
-  cleanup pass — don't re-enable as `error` without fixing those call sites
-  first.
+- **eslint 10 major bump**: migrated from legacy `.eslintrc.js` to flat
+  `eslint.config.js` (eslint 10 removed eslintrc support entirely).
+  `eslint-plugin-react`, `eslint-plugin-import`, `eslint-plugin-react-hooks`,
+  `eslint-plugin-check-file` and `@shopify/eslint-plugin` don't declare eslint
+  10 support yet (they still call removed `context.getFilename()` etc.), so
+  they are wrapped with `@eslint/compat` (`fixupConfigRules` /
+  `fixupPluginRules`), and the React version is pinned in `settings.react`
+  because `detect` also uses a removed API. Drop the shims once the plugins
+  ship eslint 10 support. `react-hooks/set-state-in-effect` and
+  `react-hooks/refs` remain downgraded to `warn` in `eslint.config.js` pending a
+  dedicated cleanup pass — don't re-enable as `error` without fixing those call
+  sites first.
 - **i18next-parser -> i18next-cli migration (deferred, own PR)**: worth doing
   eventually (i18next-parser is unmaintained and drags in the old
   `broccoli-plugin`/`quick-temp`/`rimraf@2.7.1` chain — see the dependency

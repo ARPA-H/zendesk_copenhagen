@@ -17,9 +17,6 @@ updates:
     ignore:
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
-      # ESLint 10 drops eslintrc support; repo uses legacy .eslintrc.js
-      - dependency-name: "eslint"
-        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     target-branch: "sandbox"
