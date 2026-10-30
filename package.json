@@ -122,7 +122,7 @@
     "tar": "^7.5.22",
     "adm-zip": "^0.6.1",
     "shell-quote": "^1.10.0",
-    "undici": "^6.29.0",
+    "undici": "^6.29.1",
     "basic-ftp": "^6.0.1",
     "tmp": "^0.2.7",
     "@tootallnate/once": "^2.0.0",
@@ -134,7 +134,7 @@
     "ip-address": "^10.4.0",
     "cross-spawn": "^7.0.6",
     "form-data": "^4.0.6",
-    "qs": "^6.16.0",
+    "qs": "^6.16.1",
     "eslint/ajv": "^6.14.0",
     "eslint/js-yaml": "^4.3.1",
     "@eslint/eslintrc/ajv": "^6.14.0",
@@ -153,13 +153,14 @@
     "@zendesk/zcli-themes/ws": "^8.21.0",
     "jsdom/ws": "^8.21.0",
     "@opentelemetry/core": "^2.8.0",
-    "minimatch@npm:3.1.5/brace-expansion": "^1.1.16",
+    "minimatch@npm:3.1.5/brace-expansion": "^1.1.21",
     "minimatch@npm:5.1.8/brace-expansion": "^2.1.2",
     "minimatch@npm:10.2.4/brace-expansion": "^5.0.9",
     "libnpmdiff/diff": "^5.2.2",
     "vite/esbuild": "^0.28.1",
     "ajv/fast-uri": "^3.1.5",
-    "postcss/nanoid": "^3.3.18"
+    "postcss/nanoid": "^3.3.18",
+    "katex": "^0.18.2"
   },
   "commitlint": {
     "extends": [
