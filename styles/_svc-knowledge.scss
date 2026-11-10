@@ -1,0 +1,80 @@
+// Knowledge entry point on the home page, for signed-in people who would rather
+// browse than search (templates/home_page.hbs). It is reading, not doing, so it is
+// a ruled list of topics rather than the catalog's cards, and it shares the page
+// container's edges.
+.svc-knowledge {
+  @include max-width-container;
+  padding-block: 0 var(--space-8);
+}
+
+.svc-knowledge-inner {
+  border-top: 1px solid var(--surface-stroke);
+  padding-top: var(--space-5);
+}
+
+.svc-knowledge-title {
+  margin-bottom: var(--space-1);
+}
+
+.svc-knowledge-lede {
+  color: var(--type-subheading);
+  margin: 0 0 var(--space-4);
+}
+
+.svc-knowledge-list {
+  display: grid;
+  gap: 0 var(--column-gap);
+  // Two columns at most on the 1160px container; fewer topics stretch to fill.
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+}
+
+// The rule sits on the item, which stretches to the row, so hairlines line up
+// across columns even when one description is longer than the other.
+.svc-knowledge-item {
+  border-bottom: 1px solid var(--surface-stroke);
+  display: flex;
+}
+
+.svc-knowledge-link {
+  color: var(--type-body);
+  display: block;
+  flex: 1;
+  padding: var(--space-2) 0;
+
+  &:visited {
+    color: var(--type-body);
+  }
+
+  &:hover {
+    text-decoration: none;
+
+    .svc-knowledge-name {
+      color: var(--color-link);
+      text-decoration: underline;
+    }
+  }
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.svc-knowledge-name {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.svc-knowledge-desc {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--type-subheading);
+  display: -webkit-box;
+  font-size: var(--font-size-2xs);
+  line-height: 1.5;
+  margin-top: var(--space-05);
+  overflow: hidden;
+  // Avoids a last line that is a single fragment, such as the "H." of "ARPA-H".
+  text-wrap: pretty;
+}

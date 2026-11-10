@@ -6,6 +6,7 @@ import {
   Checkbox as GardenCheckbox,
 } from "@zendeskgarden/react-forms";
 import { Span } from "@zendeskgarden/react-typography";
+import { sanitizeDescription } from "../sanitizeDescription";
 
 interface CheckboxProps {
   field: TicketFieldObject;
@@ -28,6 +29,7 @@ export function Checkbox({ field, onChange }: CheckboxProps): JSX.Element {
       <GardenCheckbox
         name={name}
         required={required}
+        aria-invalid={error ? true : undefined}
         defaultChecked={value as boolean}
         value={checkboxValue ? "on" : "off"}
         onChange={handleChange}
@@ -37,7 +39,11 @@ export function Checkbox({ field, onChange }: CheckboxProps): JSX.Element {
           {required && <Span aria-hidden="true">*</Span>}
         </GardenField.Label>
         {description && (
-          <GardenField.Hint dangerouslySetInnerHTML={{ __html: description }} />
+          <GardenField.Hint
+            dangerouslySetInnerHTML={{
+              __html: sanitizeDescription(description),
+            }}
+          />
         )}
       </GardenCheckbox>
       {error && (

@@ -47,7 +47,7 @@ export const EmptyState = ({
           <MD>
             {t(
               "service-catalog.empty-state.search-description",
-              "Enter your keywords in the search field."
+              "Try a different keyword, or clear the search to see all services."
             )}
           </MD>
         )}

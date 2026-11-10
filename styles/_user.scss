@@ -1,37 +1,3 @@
-/***** User info in header *****/
-.user-info {
-  display: inline-block;
-
-  .dropdown-toggle::after {
-    @include tablet { display: inline-block;}
-    display: none;
-  }
-
-  > button {
-    border: 0;
-    color: $link_color;
-    min-width: 0;
-    padding: 0;
-    white-space: nowrap;
-
-    &:hover,
-    &:focus {
-      color: $link_color;
-      background-color: transparent;
-    }
-
-    &::after {
-      color: $link_color;
-      padding-right: 15px;
-
-      [dir="rtl"] & {
-        padding-left: 15px;
-        padding-right: 0;
-      }
-    }
-  }
-}
-
 // Selector is this strong to override the styles set with ids
 #user #user-name {
   @include tablet { display: inline-block; }
@@ -60,12 +26,12 @@
   }
 
   .icon-agent {
-    color: $brand_color;
-    border: 2px solid #fff;
+    color: var(--color-brand-primary);
+    border: 2px solid var(--color-white);
     border-radius: 50%;
     bottom: -4px;
-    background-color: $brand_text_color;
-    font-size: 17px;
+    background-color: var(--color-white);
+    font-size: var(--font-size-xs);
     height: 17px;
     line-height: 17px;
     position: absolute;

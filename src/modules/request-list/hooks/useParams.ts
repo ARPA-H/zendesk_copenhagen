@@ -53,7 +53,7 @@ function readStoredFilters(): FilterValuesMap {
     return version === FILTERS_LOCAL_STORAGE_VERSION && isFilterValuesMap(value)
       ? value
       : {};
-  } catch (error) {
+  } catch {
     return {};
   }
 }
@@ -64,7 +64,7 @@ function writeStoredFilters(filters: FilterValuesMap): void {
       FILTERS_LOCAL_STORAGE_KEY,
       JSON.stringify([FILTERS_LOCAL_STORAGE_VERSION, filters])
     );
-  } catch (error) {
+  } catch {
     // ignore
   }
 }

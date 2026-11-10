@@ -1,3 +1,10 @@
+{{!--
+  Service request (item) page
+  STYLES: moved to style.css (ARPA-H custom — service item page section).
+  Do not re-add a <style> block here; edit style.css instead.
+--}}
+{{!-- Stock preview-mode detection: the service-catalog module / theme key off
+     the .is-service-catalog-preview class when viewed in the Guide editor. --}}
 <script type="text/javascript">
   (function () {
     try {
@@ -10,39 +17,514 @@
 </script>
 <div class="container-divider"></div>
 <div class="container">
-  <div class="sub-nav">
+  <div class="sub-nav svc-subnav">
     <div class="service-catalog-breadcrumbs">
       {{breadcrumbs}}
+      {{!-- Category dropdown mount the service-catalog module populates. If your
+           design intentionally removed the category selector, hide it in CSS
+           rather than deleting the div (the module still expects it). --}}
       <div id="category-selector"></div>
     </div>
-  </div>
 
+    {{!-- Native Zendesk instant search (same skin as the home hero), in the
+         breadcrumb row like the Knowledge pages. --}}
+    <div class="svc-searchrow">
+      <div class="svc-hero-search" id="svc-hero-search">
+        <span class="svc-hero-search-icon" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </span>
+        {{search submit=false instant=settings.instant_search class='search search-full'}}
+        <button type="button" class="svc-hero-search-btn" id="svc-hero-search-btn" aria-label="{{t 'search'}}">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
   <div id="main-content">
-     <div id="service-catalog-item"></div>
+    {{!-- One calm form column beside a help rail. No greeting band, step pills,
+         helper cards or nested shell: the service name leads, then the form. --}}
+    <div class="svc-form-layout">
+      <div class="svc-form-column">
+        <div class="svc-form-panel" aria-label="Service request form">
+          <div id="service-catalog-item"></div>
+          <div id="svc-form-skeleton" class="svc-skeleton" aria-hidden="true">
+            <div class="svc-skel-row svc-skel-icon-row">
+              <div class="svc-skel-avatar"></div>
+              <div class="svc-skel-lines">
+                <div class="svc-skel-bar svc-skel-title"></div>
+                <div class="svc-skel-bar svc-skel-sub"></div>
+              </div>
+            </div>
+            <div class="svc-skel-divider"></div>
+            <div class="svc-skel-bar svc-skel-label"></div>
+            <div class="svc-skel-bar svc-skel-input"></div>
+            <div class="svc-skel-bar svc-skel-label svc-skel-label-2"></div>
+            <div class="svc-skel-box"></div>
+          </div>
+          <div class="svc-custom-submit-wrap">
+            <button type="button" id="svc-custom-submit" class="svc-custom-submit-btn">{{t 'submit_a_request'}}</button>
+            <p class="svc-custom-submit-note">Review your request details, then submit to the Service Desk.</p>
+          </div>
+        </div>
+        {{!-- One-line fallback instead of a banner box. The link is the same as the
+              "General request" button: the service catalog item named by "Other request
+              service ID", else "General request service ID", else the standard request
+              form (the footer's page), with "General request category ID" added as
+              ?category_id= to an item link. --}}
+        <p class="svc-fallback">Can&rsquo;t find the right service? <a href="{{#if settings.other_request_service_id}}/hc/{{help_center.base_locale}}/services/{{settings.other_request_service_id}}{{#if settings.general_request_category_id}}?category_id={{settings.general_request_category_id}}{{/if}}{{else}}{{#if settings.general_request_service_id}}/hc/{{help_center.base_locale}}/services/{{settings.general_request_service_id}}{{#if settings.general_request_category_id}}?category_id={{settings.general_request_category_id}}{{/if}}{{else}}{{page_path 'new_request'}}{{/if}}{{/if}}">Submit a general request</a>.</p>
+      </div>
+      <aside class="svc-side-column" aria-label="Help with this request">
+        <section class="svc-article-card">
+          <div class="svc-article-card-header">
+            <h2 class="svc-card-title svc-article-title">Suggested articles</h2>
+            <p class="svc-article-subtitle">Related content appears as you type.</p>
+          </div>
+          <div id="svc-suggested-articles" class="svc-article-list" aria-live="polite">
+            <div class="svc-article-empty">Start typing in the request form to see related help articles.</div>
+          </div>
+          <div class="svc-next-steps">
+            <h2 class="svc-card-title">What happens after you submit?</h2>
+            <ul class="svc-card-list">
+              <li>You'll receive an email confirmation with your request or ticket number.</li>
+              <li>You can reply to that email at any time to add updates or attachments.</li>
+              <li>You can track progress in the Service&nbsp;Desk under <strong>{{t 'my_requests'}}</strong>.</li>
+            </ul>
+          </div>
+        </section>
+      </aside>
+    </div>
   </div>
 </div>
 
+{{!-- Render the embedded service catalog item form --}}
+<link rel="modulepreload" href="{{asset 'shared-bundle.js'}}">
 <script type="module">
   import { renderServiceCatalogItem } from "service-catalog";
-
-  const settings = {{json settings}};
+  import { initIconSupport } from "svc-page-utils";
+  const settings  = {{json settings}};
   const container = document.getElementById("service-catalog-item");
-
-  // Extract the ID from the URL
-  const id = window.location.pathname.split("/").pop()
-
+  const id = window.location.pathname.split("/").pop();
   const props = {
-    locale: {{json help_center.locale}},
-    baseLocale: {{json help_center.base_locale}},
-    hasAtMentions: {{json help_center.at_mentions_enabled}},
-    userRole: {{json user.role}},
-    userId: {{json user.id}},
-    userName: {{json user.name}},
-    brandId: {{json brand.id}},
-    organizations: {{json user.organizations}},
-    serviceCatalogItemId: id,
-    helpCenterPath: {{json (page_path 'help_center')}},
-  }
-
+    locale:                {{json help_center.locale}},
+    baseLocale:            {{json help_center.base_locale}},
+    hasAtMentions:         {{json help_center.at_mentions_enabled}},
+    userRole:              {{json user.role}},
+    userId:                {{json user.id}},
+    userName:              {{json user.name}},
+    brandId:               {{json brand.id}},
+    organizations:         {{json user.organizations}},
+    serviceCatalogItemId:  id,
+    helpCenterPath:        {{json (page_path 'help_center')}},
+  };
+  // Derive the theme's assets/ base URL from a dedicated committed asset (the
+  // module can't use the {{asset}} helper) so icon support can resolve
+  // [icon: file.svg] refs.
+  const iconAssetBase = "{{asset 'service-catalog-icon-base.svg'}}".replace(/service-catalog-icon-base\.svg.*$/, "");
+  initIconSupport(iconAssetBase, settings.iconify_api_base);
   renderServiceCatalogItem(container, settings, props);
+</script>
+
+{{!-- Native instant-search wiring: the pink button submits the native
+     {{search}} form; the field names what it covers. The real-time
+     suggestions + results page are provided by Zendesk's platform. --}}
+<script>
+  (function () {
+    var wrap = document.getElementById('svc-hero-search');
+    if (!wrap) return;
+    var form  = wrap.querySelector('form[role="search"]');
+    var input = wrap.querySelector('input[type="search"]');
+    var btn   = document.getElementById('svc-hero-search-btn');
+
+    // This search finds help articles, not services, so the field says so,
+    // visibly and to assistive technology. The wording is English; other
+    // locales keep the placeholder and accessible name Zendesk's search helper
+    // localizes.
+    {{#contains help_center.locale 'en-'}}
+    if (input) {
+      input.setAttribute('placeholder', 'Search help articles');
+      input.setAttribute('aria-label', 'Search help articles');
+    }
+    {{/contains}}
+
+    if (btn && form) {
+      btn.addEventListener('click', function () {
+        if (input && !input.value.trim()) { input.focus(); return; }
+        if (typeof form.requestSubmit === 'function') form.requestSubmit();
+        else form.submit();
+      });
+    }
+  })();
+</script>
+
+{{!-- Swap skeleton -> real form once complete. Shared reveal-on-complete
+     controller lives in src/modules/svc-page-utils (whenReady), consistent
+     with service_list_page.hbs's catalog reveal. --}}
+<script type="module">
+  const { whenReady } = await import("svc-page-utils");
+  whenReady({
+    targetId: 'service-catalog-item',
+    skeletonId: 'svc-form-skeleton',
+    readyClasses: ['svc-form-ready'],
+    // A form control, or the module's error screen (role="alert") in its place.
+    isComplete: (form) =>
+      !!form.querySelector('input, textarea, select, button[type="submit"], [role="textbox"], [role="alert"]'),
+  });
+</script>
+
+{{!-- Floating training button. Hidden by default: only rendered when an
+     admin has enabled it and provided a destination URL in the theme's
+     Settings panel (Service Catalog > Show Technology Training button /
+     Technology Training URL). See manifest.json's show_training_fab /
+     training_url settings. --}}
+<script>
+  (function () {
+    var showTrainingFab = {{json settings.show_training_fab}};
+    var trainingUrl = {{json settings.training_url}};
+    // No Help Center "stock" translation key covers this ARPA-H-specific
+    // copy, so it's declared once here (used for both the aria-label and
+    // visible label below) rather than duplicated as two literals.
+    var trainingLabel = 'Looking for Technology Training?';
+    if (!showTrainingFab || typeof trainingUrl !== 'string' || !trainingUrl.trim()) return;
+    if (document.getElementById('svc-training-fab')) return;
+
+    var fab = document.createElement('a');
+    fab.id = 'svc-training-fab';
+    fab.className = 'svc-training-fab';
+    fab.href = window.svcSafeHref ? window.svcSafeHref(trainingUrl, '#') : trainingUrl;
+    fab.setAttribute('aria-label', trainingLabel);
+
+    // Built via DOM/SVG APIs (not an innerHTML string) to avoid the
+    // markup-via-string-concatenation pattern used elsewhere in this file.
+    var SVG_NS = 'http://www.w3.org/2000/svg';
+    var iconWrap = document.createElement('span');
+    iconWrap.className = 'svc-training-fab-icon';
+    iconWrap.setAttribute('aria-hidden', 'true');
+    var svg = document.createElementNS(SVG_NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    var capPath = document.createElementNS(SVG_NS, 'path');
+    capPath.setAttribute('d', 'M22 10L12 5 2 10l10 5 10-5z');
+    var basePath = document.createElementNS(SVG_NS, 'path');
+    basePath.setAttribute('d', 'M6 12v5c0 1 2.5 2.5 6 2.5s6-1.5 6-2.5v-5');
+    svg.appendChild(capPath);
+    svg.appendChild(basePath);
+    iconWrap.appendChild(svg);
+
+    var labelEl = document.createElement('span');
+    labelEl.className = 'svc-training-fab-label';
+    labelEl.textContent = trainingLabel;
+
+    fab.appendChild(iconWrap);
+    fab.appendChild(labelEl);
+    document.body.appendChild(fab);
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    setTimeout(function () {
+      fab.classList.add('svc-fab-pulse');
+      fab.addEventListener('animationend', function () { fab.classList.remove('svc-fab-pulse'); }, { once: true });
+    }, 1200);
+  })();
+</script>
+
+{{!-- Custom submit: hide the native action area and proxy the click --}}
+<script>
+  (function () {
+    var serviceContainer = document.getElementById('service-catalog-item');
+    var customSubmit = document.getElementById('svc-custom-submit');
+
+    function getNativeSubmit() {
+      if (!serviceContainer) return null;
+      // [data-svc-native-submit] is set on the real submit Button in
+      // ItemRequestForm.tsx and is checked first. The native submit-type
+      // fallback below must never include a bare `[role="button"]` — that
+      // previously matched Garden's FileUpload dropzone (it hardcodes
+      // role="button") whenever a service had an attachments field, since
+      // that dropzone renders earlier in the DOM than the real submit
+      // button. That caused this proxy to open the OS file picker instead
+      // of submitting the form.
+      return (
+        serviceContainer.querySelector('[data-svc-native-submit]') ||
+        serviceContainer.querySelector('button[type="submit"], input[type="submit"]')
+      );
+    }
+
+    // The form module keeps the action box in a flex column of its own. Hiding
+    // only the box would leave that column empty but still holding a third of the
+    // width, so the fields would stay narrow. Collapse the whole column, unless it
+    // also holds fields (a layout change in the module), in which case leave it.
+    function collapseActionColumn(submitEl) {
+      var column = submitEl.closest('form > *');
+      if (column && !column.querySelector('input, textarea, select, [role="textbox"]')) {
+        column.classList.add('svc-hide-native-actions');
+      }
+    }
+
+    function hideNativeActionArea() {
+      if (!serviceContainer) return;
+      var submitEl = getNativeSubmit();
+      if (!submitEl) return;
+      var actionBlock = submitEl.closest('section') || submitEl.closest('fieldset') || submitEl.closest('div[role="group"]') || submitEl.parentElement;
+      while (actionBlock && actionBlock !== serviceContainer) {
+        var txt = (actionBlock.textContent || '').replace(/\s+/g, ' ').trim();
+        if (/submit request/i.test(txt) && /(user|requester)/i.test(txt)) {
+          actionBlock.classList.add('svc-hide-native-actions');
+          collapseActionColumn(submitEl);
+          return;
+        }
+        actionBlock = actionBlock.parentElement;
+      }
+    }
+
+    function wireCustomSubmit() {
+      if (!customSubmit) return;
+      var originalLabel = customSubmit.textContent;
+      // True from a click that starts a submission until the real button is
+      // enabled again. The label and the disabled state are the click's until then.
+      var submitting = false;
+
+      // Keeps this button in step with the module's real submit button, which is
+      // disabled while a request is on its way and, with a title that says why, for
+      // the whole life of a draft preview. Only a click used to read that state, so
+      // a preview offered a button that showed "Submitting…" until the timeout
+      // below and then did nothing.
+      function syncWithNativeSubmit() {
+        var nativeSubmit = getNativeSubmit();
+        if (!nativeSubmit) return;
+        if (submitting) {
+          if (nativeSubmit.disabled) return;
+          submitting = false;
+          customSubmit.textContent = originalLabel;
+        }
+        customSubmit.disabled = nativeSubmit.disabled;
+        if (nativeSubmit.title) customSubmit.title = nativeSubmit.title;
+        else customSubmit.removeAttribute('title');
+      }
+
+      customSubmit.addEventListener('click', function () {
+        var nativeSubmit = getNativeSubmit();
+        // A disabled real button is a draft preview or a request already on its
+        // way: either way there is nothing to start.
+        if (!nativeSubmit || nativeSubmit.disabled) return;
+        submitting = true;
+        customSubmit.disabled = true;
+        customSubmit.textContent = 'Submitting\u2026';
+
+        nativeSubmit.click();
+
+        // Last-resort safety net only: the observer below restores this button
+        // as soon as the real one is enabled again.
+        setTimeout(function () {
+          if (!submitting) return;
+          submitting = false;
+          customSubmit.textContent = originalLabel;
+          syncWithNativeSubmit();
+        }, 5000);
+      });
+
+      // Watched for the page's whole life, so it is already in place before
+      // nativeSubmit.click() above: React's submit handler disables and
+      // re-enables the real button synchronously (via flushSync) for a purely
+      // client-side validation failure, entirely inside that call, and an
+      // observer started afterwards would miss it and leave this button on
+      // "Submitting…" until the timeout, even though the error appeared at once.
+      if (serviceContainer) {
+        new MutationObserver(syncWithNativeSubmit).observe(serviceContainer, {
+          attributes: true,
+          attributeFilter: ['disabled', 'title'],
+          childList: true,
+          subtree: true
+        });
+      }
+      syncWithNativeSubmit();
+    }
+
+    window.addEventListener('load', function () {
+      wireCustomSubmit();
+      hideNativeActionArea();
+      if (serviceContainer) {
+        var obs = new MutationObserver(function () { hideNativeActionArea(); });
+        obs.observe(serviceContainer, { childList: true, subtree: true });
+      }
+    });
+  })();
+</script>
+
+{{!-- Suggested articles: live search based on form input --}}
+<script>
+  (function () {
+    var serviceContainer = document.getElementById('service-catalog-item');
+    var suggestionsEl = document.getElementById('svc-suggested-articles');
+    var locale = {{json help_center.locale}};
+    var brandId = {{json brand.id}};
+    if (!serviceContainer || !suggestionsEl) return;
+
+    var lastQuery = '';
+    var activeController = null;
+
+    // ARPA-H-specific copy: no Help Center "stock" {{t}} key covers these, and
+    // a theme cannot add keys the {{t}} helper resolves (see AGENTS.md).
+    // Centralized here as the single source of truth for this widget; the
+    // "empty" string must match the server-rendered placeholder in the markup
+    // above (shown before JS runs / when the query is too short).
+    var STRINGS = {
+      searching: 'Searching for related articles...',
+      loadError: "We couldn't load suggested articles right now.",
+      noResults: 'No related articles found yet. Try adding more detail in the request description.',
+      empty: 'Start typing in the request form to see related help articles.',
+      untitledArticle: 'Untitled article',
+      openForDetails: 'Open this article for more details.',
+      sectionPrefix: 'Section: '
+    };
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+    function stripHtml(str) {
+      // Parse via a <template> element's content fragment: it's spec-guaranteed
+      // inert (no subresource fetches for <img>/<iframe>, no handlers), unlike
+      // a DOMParser document, and this receives raw article body HTML from the
+      // search API.
+      if (!str) return '';
+      var template = document.createElement('template');
+      template.innerHTML = String(str);
+      return ((template.content && template.content.textContent) || '').trim();
+    }
+    function truncate(str, max) {
+      var text = String(str || '').trim();
+      return text.length <= max ? text : text.slice(0, max).trim() + '…';
+    }
+
+    function renderEmpty(message) {
+      suggestionsEl.innerHTML = '<div class="svc-article-empty">' + escapeHtml(message) + '</div>';
+    }
+    function renderLoading() {
+      suggestionsEl.innerHTML = '<div class="svc-article-loading">' + escapeHtml(STRINGS.searching) + '</div>';
+    }
+    function renderError() {
+      suggestionsEl.innerHTML = '<div class="svc-article-error">' + escapeHtml(STRINGS.loadError) + '</div>';
+    }
+    function renderArticles(results) {
+      if (!results || !results.length) {
+        renderEmpty(STRINGS.noResults);
+        return;
+      }
+      suggestionsEl.innerHTML = results.map(function (article) {
+        var t = escapeHtml(article.title || STRINGS.untitledArticle);
+        var href = escapeHtml(window.svcSafeHref ? window.svcSafeHref(article.html_url || article.url, '#') : '#');
+        var body = truncate(stripHtml(article.snippet || article.body || article.description || ''), 140) || STRINGS.openForDetails;
+        var section = article.section_name ? STRINGS.sectionPrefix + escapeHtml(article.section_name) : '';
+        return '<a class="svc-article-item" href="' + href + '">' +
+          '<span class="svc-article-item-title">' + t + '</span>' +
+          '<span class="svc-article-item-meta">' + escapeHtml(body) + '</span>' +
+          (section ? '<span class="svc-article-item-meta">' + section + '</span>' : '') +
+          '</a>';
+      }).join('');
+    }
+
+    function getFormText() {
+      var fields = serviceContainer.querySelectorAll('input[type="text"], input:not([type]), textarea, select');
+      var values = [];
+      fields.forEach(function (field) {
+        if (field.disabled) return;
+        if (field.tagName === 'SELECT') {
+          var selected = field.options[field.selectedIndex];
+          if (selected && selected.value) values.push((selected.textContent || '').trim());
+          return;
+        }
+        var value = (field.value || '').trim();
+        if (value) values.push(value);
+      });
+      return values.join(' ').replace(/\s+/g, ' ').trim();
+    }
+    function normalizeQuery(text) {
+      return text.toLowerCase().replace(/[^\w\s-]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function searchArticles(query) {
+      if (activeController) activeController.abort();
+      activeController = new AbortController();
+      var url = new URL('/api/v2/help_center/articles/search.json', window.location.origin);
+      url.searchParams.set('query', query);
+      url.searchParams.set('per_page', '5');
+      if (locale) url.searchParams.set('locale', locale);
+      if (brandId) url.searchParams.set('brand_id', String(brandId));
+      return fetch(url.toString(), { method: 'GET', headers: { Accept: 'application/json' }, signal: activeController.signal })
+        .then(function (response) {
+          if (!response.ok) throw new Error('Article search failed with status ' + response.status);
+          return response.json();
+        })
+        .then(function (data) { return data.results || []; });
+    }
+
+    function updateSuggestions() {
+      var query = normalizeQuery(getFormText());
+      if (query.length < 3) {
+        lastQuery = '';
+        if (activeController) activeController.abort();
+        renderEmpty(STRINGS.empty);
+        return;
+      }
+      if (query === lastQuery) return;
+      lastQuery = query;
+      renderLoading();
+      searchArticles(query).then(renderArticles).catch(function (error) {
+        if (error.name === 'AbortError') return;
+        renderError();
+      });
+    }
+
+    var debouncedUpdate = (function () {
+      var timer;
+      return function () {
+        clearTimeout(timer);
+        timer = setTimeout(updateSuggestions, 350);
+      };
+    })();
+
+    serviceContainer.addEventListener('input', debouncedUpdate);
+    serviceContainer.addEventListener('change', debouncedUpdate);
+    new MutationObserver(debouncedUpdate).observe(serviceContainer, { childList: true, subtree: true });
+    updateSuggestions();
+  })();
+</script>
+
+{{!-- Redirect the "Services" breadcrumb to the help center home --}}
+<script>
+  (function () {
+    var HOME_URL = (location.pathname.match(/^\/hc\/[^/]+/) || ['/hc/en-us'])[0];
+
+    function rewireServicesCrumb() {
+      var subnav = document.querySelector('.svc-subnav');
+      if (!subnav) return;
+      subnav.querySelectorAll('a').forEach(function (a) {
+        if (a.dataset.svcRewired === '1') return;
+        var label = (a.textContent || '').replace(/\s+/g, ' ').trim();
+        if (label.toLowerCase() === 'services') {
+          a.setAttribute('href', HOME_URL);
+          a.dataset.svcRewired = '1';
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.location.href = HOME_URL;
+          });
+        }
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', rewireServicesCrumb);
+    } else {
+      rewireServicesCrumb();
+    }
+
+    var subnav = document.querySelector('.svc-subnav');
+    if (subnav) new MutationObserver(rewireServicesCrumb).observe(subnav, { childList: true, subtree: true });
+  })();
 </script>

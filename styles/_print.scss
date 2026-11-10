@@ -1,0 +1,176 @@
+/***** Print *****/
+
+// A printed page is its content: no site chrome and no controls, dark text on
+// white, the full width of the paper, and the address of each outside link
+// after its text (paper cannot be clicked). Browsers drop background colors
+// when printing, which would leave the white logo, footer and hero text
+// unreadable (Chrome pales it to light gray), so the header and footer are
+// left out and the hero keeps only its dark greeting. The catalog prints its
+// services without the category list, search field and sort menu, which only
+// work on a screen. A request form prints as a paper form, its labels and
+// boxes without the Submit button or the suggested-articles rail, because the
+// fields are what that page is.
+@page {
+  margin: 2cm;
+}
+
+@media print {
+  .usa-banner,
+  .skip-navigation,
+  .header,
+  .footer,
+  .sub-nav .search-container,
+  .svc-hero-search,
+  .svc-hero-chips,
+  .svc-hero-cta,
+  .service-catalog-sidebar,
+  .service-catalog-search,
+  .service-catalog-sort,
+  .svc-custom-submit-wrap,
+  .svc-fallback,
+  .svc-side-column,
+  .article-sidebar,
+  .collapsible-sidebar,
+  .article-subscribe,
+  .article-votes,
+  .article-more-questions,
+  .article-comments,
+  .article-relatives,
+  .article-return-to-top,
+  .section-subscribe,
+  .pagination,
+  .alert-banner,
+  .svc-training-fab,
+  .svc-tooltip {
+    display: none !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  body {
+    background: none;
+    color: var(--color-black);
+    font-size: 11pt;
+    line-height: 1.45;
+  }
+
+  .svc-hero {
+    background: none !important;
+    min-height: 0;
+
+    &::before {
+      display: none !important;
+    }
+  }
+
+  .svc-hero-title,
+  .svc-hero-subtitle {
+    color: var(--color-black) !important;
+  }
+
+  // With the category list gone the services take the whole width of the paper,
+  // instead of the column that sat beside it.
+  .service-catalog-main-content {
+    display: block;
+  }
+
+  .container,
+  .article,
+  .article-container,
+  .article-content {
+    display: block;
+    margin: 0;
+    max-width: none;
+    padding: 0;
+    width: auto;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    break-after: avoid;
+    color: var(--color-black);
+  }
+
+  .article-title {
+    font-size: 20pt;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  // The selected tab is white text on a fill, and the fill is not printed, so it
+  // would be blank on paper. The tabs print as plain names, the selected one bold
+  // and underlined, which is what Zendesk's own tabs do; the icons are fills too,
+  // so they are left to the browser's "background graphics" setting.
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar {
+    background: none !important;
+    gap: var(--space-2);
+    padding: 0;
+  }
+
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab {
+    background: none !important;
+    border-radius: 0;
+    color: var(--color-black) !important;
+    flex: none;
+    min-height: 0;
+    padding: 0 0 var(--space-05);
+
+    &[aria-selected="true"] {
+      border-bottom: 2px solid var(--color-black);
+      font-weight: var(--font-weight-bold);
+    }
+  }
+
+  p,
+  li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  .article-body a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    overflow-wrap: anywhere;
+  }
+
+  img,
+  figure,
+  table,
+  pre,
+  blockquote {
+    break-inside: avoid;
+    max-width: 100% !important;
+  }
+
+  pre,
+  code {
+    background: none !important;
+  }
+
+  pre {
+    border: 1px solid var(--surface-stroke);
+    padding: 0.5em;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border: 1px solid var(--surface-stroke);
+  }
+}

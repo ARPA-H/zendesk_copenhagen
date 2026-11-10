@@ -29,7 +29,7 @@ export const ErrorScreen = ({
     if (helpCenterPath) window.location.href = helpCenterPath;
   };
   return (
-    <Container>
+    <Container role="alert">
       <TextContainer>
         <LG>{t("cph-theme-error-boundary.title", "Something went wrong.")}</LG>
         <MD>

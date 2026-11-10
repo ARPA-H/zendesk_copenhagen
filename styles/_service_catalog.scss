@@ -1,7 +1,7 @@
 .service-catalog {
   &-hero {
     background-image: url($service_catalog_hero_image);
-    margin-bottom: 10px;
+    margin-bottom: var(--space-1);
     height: 320px;
   }
 
@@ -11,7 +11,7 @@
 
   &-main-content {
     display: flex;
-    gap: 32px;
+    gap: var(--space-4);
   }
 
   &-list {
@@ -21,7 +21,7 @@
   &-breadcrumbs {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: var(--space-3);
   }
 }
 
@@ -37,5 +37,68 @@
   .assembly-bar,
   [data-garden-id="chrome.subnav"] {
     display: none !important;
+  }
+}
+
+/***** Service Catalog ARPA-H overrides *****/
+
+.service-catalog-breadcrumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  min-width: 0;
+
+  nav {
+    min-width: 0;
+  }
+}
+
+// Mobile: stack the categories sidebar above the service list instead of
+// squeezing them side-by-side (the sidebar's fixed SIDEBAR_WIDTH otherwise
+// ate a large chunk of a narrow viewport, halving the grid's usable width).
+// The sidebar itself collapses into a full-width dropdown-style toggle
+// (see ServiceCatalogCategoriesSidebar.tsx) so the grid can follow at full
+// width regardless of whether the category tree is expanded.
+@media (max-width: 768px) {
+  .service-catalog-main-content {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .service-catalog-sidebar,
+  .service-catalog-list {
+    width: 100%;
+  }
+
+  .svc-cat-sidebar-toggle {
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-105) var(--space-2);
+    border: 1px solid var(--color-ui-20);
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    text-align: start;
+  }
+
+  .svc-cat-sidebar-toggle-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .svc-cat-sidebar-toggle svg {
+    flex-shrink: 0;
+    margin-inline-start: var(--space-105);
+  }
+
+  .svc-cat-sidebar-list {
+    margin-top: var(--space-1);
+    border: 1px solid var(--color-ui-20);
+    border-radius: var(--radius-md);
+    padding: var(--space-1);
   }
 }

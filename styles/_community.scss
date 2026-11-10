@@ -10,13 +10,13 @@
     text-align: center;
 
     &-title {
-      font-size: 16px;
+      font-size: var(--font-size-xs);
       margin-bottom: 20px;
     }
   }
 
   &-featured-posts .title {
-    font-size: 18px;
+    font-size: var(--font-size-sm);
     font-weight: 600;
   }
 
@@ -31,7 +31,7 @@
 
     .title {
       margin-bottom: 0;
-      font-size: 16px;
+      font-size: var(--font-size-xs);
     }
   }
 }
@@ -58,7 +58,7 @@
 
 .topic-header {
   @include tablet { padding-bottom: 10px; }
-  border-bottom: 1px solid $low-contrast-border-color;
+  border-bottom: 1px solid var(--surface-stroke);
   font-size: $font-size-small;
 
   .dropdown {
@@ -70,7 +70,7 @@
     }
 
     display: block;
-    border-top: 1px solid $low-contrast-border-color;
+    border-top: 1px solid var(--surface-stroke);
     padding: 10px 0;
   }
 }
@@ -99,25 +99,19 @@
     position: relative;
     width: 100%;
 
-    &:hover { background-color: $brand_color; }
-
-    &:hover::after, &:focus::after {
-      border-color: $brand_text_color;
-      color: $brand_text_color;
-    }
-
     &[data-selected="true"] {
-      background-color: $brand_color;
-      color: $brand_text_color;
+      background-color: var(--color-brand-primary);
+      color: var(--color-white);
 
       &::after {
-        border-left: 1px solid $brand_text_color;
-        color: $brand_text_color;
+        border-left: 1px solid var(--color-white);
+        color: var(--color-white);
       }
 
       &:hover {
-        background-color: $hover-button-color;
-        border-color: $hover-button-color;
+        @include nexus-hover-overlay(var(--color-hover-dark-15));
+        background-color: var(--color-brand-primary);
+        border-color: var(--color-brand-primary);
       }
     }
 
@@ -126,9 +120,9 @@
         position: static;
       }
 
-      border-left: 1px solid $button-color;
+      border-left: 1px solid var(--color-brand-primary);
       content: attr(data-follower-count);
-      color: $button-color;
+      color: var(--color-brand-primary);
       display: inline-block;
       font-family: $heading_font;
       margin-left: 15px;
@@ -138,7 +132,7 @@
 
       [dir="rtl"] & {
         border-left: 0;
-        border-right: 1px solid $button-color;
+        border-right: 1px solid var(--color-brand-primary);
         margin: 0 10px 0 0;
         padding: 0 10px 0 0;
       }

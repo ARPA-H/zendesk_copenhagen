@@ -1,0 +1,48 @@
+// U.S. government banner: https://designsystem.digital.gov/components/banner/
+//
+// Stock USWDS, unmodified. The NEXUS reference says the banner must never be visually
+// modified, so its colors, type, spacing, container and focus ring are exactly what
+// USWDS ships, and NEXUS styling stops at the banner's edge. The component's CSS is
+// compiled from the package by bin/build-usa-banner.mjs. This file adds only what a
+// full USWDS build would supply around it: the one font family name the banner asks
+// for (see _fonts.scss), the grid helpers its markup uses, and the no-script
+// fallback. The markup is in templates/header.hbs and the disclosure behavior in
+// src/govBanner.js.
+@import "usa-banner-generated";
+
+// The USWDS grid helpers the markup uses, scoped to the banner so no grid
+// library is needed.
+.usa-banner {
+  .grid-col-auto {
+    flex: 0 1 auto;
+    max-width: 100%;
+    width: auto;
+  }
+
+  .grid-col-fill {
+    flex: 1 1 0%;
+    max-width: 100%;
+    width: auto;
+  }
+
+  @media (min-width: 40em) {
+    .tablet\:grid-col-auto {
+      flex: 0 1 auto;
+      max-width: 100%;
+      width: auto;
+    }
+  }
+}
+
+// Without script, or when the controller never starts (document_head.hbs drops
+// "js" after five seconds without "js-ready"), the explanation stays readable
+// and the dead button goes away.
+html:not(.js) {
+  .usa-banner__content[hidden] {
+    display: block;
+  }
+
+  .usa-banner__button {
+    display: none;
+  }
+}

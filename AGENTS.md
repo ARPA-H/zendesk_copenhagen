@@ -24,6 +24,10 @@ yarn test path/to/file.test.tsx
 # Lint
 yarn eslint src
 
+# Lint markdown docs (PLAN.md, AGENTS.md, CLAUDE.md — README.md/CHANGELOG.md
+# are intentionally excluded, see .markdownlint-cli2.jsonc)
+yarn lint:md
+
 # Extract i18n strings from source code
 yarn i18n:extract
 yarn i18n:extract --module=module-name
@@ -38,11 +42,13 @@ yarn i18n:update-translations --module=module-name
 ## Architecture
 
 ### Build System
+
 - **Rollup** compiles everything - outputs `script.js`, `style.css`, and ES module bundles in `assets/`
 - **Do not edit** `script.js`, `style.css`, or files in `assets/` directly - they are generated
 - ES2015 only for `script.js` (no Babel) - avoid newer JavaScript features in `src/*.js` files
 
 ### Directory Structure
+
 - `templates/` - Curlybars templates (`.hbs`) for Help Center pages. Curlybars is a subset of Handlebars and may not support all Handlebars features.
 - `src/` - JavaScript source
   - `src/*.js` - Legacy vanilla JS (bundled into `script.js` as IIFE)
@@ -51,7 +57,9 @@ yarn i18n:update-translations --module=module-name
 - `manifest.json` - Theme settings configuration
 
 ### React Modules
+
 Located in `src/modules/`, bundled to `assets/*-bundle.js`:
+
 - `new-request-form` - Ticket submission form
 - `request-list` - User's requests page
 - `service-catalog` - Service catalog pages
@@ -63,19 +71,26 @@ Located in `src/modules/`, bundled to `assets/*-bundle.js`:
 Modules are isolated - ESLint enforces that modules only import from `shared/`, `test/`, `ticket-fields/`, or `flash-notifications/`.
 
 ### Import Maps
+
 React modules are loaded via import maps generated during build. The `document_head.hbs` template contains the import map mapping module names to asset URLs.
 
 ### i18n in React
+
 Uses react-i18next with `.` separator for plurals (not `_`). Translation strings use:
+
 ```ts
 const { t } = useTranslation();
 t("key", "Default English value");
 ```
+
 Translations stored in `src/modules/[module]/translations/`.
 
 ### Translations: what goes where
+
 - `translations.yml` (repo root) is only for strings referenced by `manifest.json` (theme settings labels/descriptions shown in the Settings panel). Don't add template or React strings here.
 - In Curlybars templates (`templates/*.hbs`), the `{{t "key"}}` helper only resolves keys that Help Center exposes to the theme's `t` helper. A new key must be added there first; defining it in `translations.yml` or a module's `translations/` folder does not make it available to `{{t}}`.
+- `manifest.json` `label`/`description` fields hold translation *keys*, not literal text. The actual strings shown in the Settings panel live in `translations/en-us.json` — edit that file directly for new/changed setting labels and descriptions.
+- **Never run `yarn download-locales`** in this fork. It overwrites every file under `translations/*.json` (including `en-us.json`) with strings fetched from Zendesk's official `help_center_copenhagen_theme` CDN package, which has no knowledge of this fork's custom keys — running it silently deletes any custom translations added here.
 - React component strings live in `src/modules/[module]/translations/` and are loaded via `react-i18next` (see README for the extraction/update workflow).
 
 ## File Naming Conventions
@@ -85,4 +100,19 @@ Translations stored in `src/modules/[module]/translations/`.
 
 ## APIs
 
-Use only public REST APIs documented at https://developer.zendesk.com/api-reference/
+Use only public REST APIs documented at <https://developer.zendesk.com/api-reference/>
+
+## Upstream Repository
+
+This repo is a fork of [zendesk/copenhagen_theme](https://github.com/zendesk/copenhagen_theme). Do not do anything with the upstream repo unless the user explicitly instructs you to: no comments, issues, pull requests, reviews, reactions or pushes there; no fetching, pulling, merging or rebasing from it; and no reading its pull requests, issues or code. Everything you do on GitHub for this project happens in [ARPA-H/zendesk_copenhagen](https://github.com/ARPA-H/zendesk_copenhagen).
+
+A bare `gh` command can reach the upstream repo by mistake. A clone with a remote named `upstream` ranks it [above `origin`](https://github.com/cli/cli/blob/d6b82b12e67d108b7c82d76d943a3a47814acbc1/context/remote.go#L60), and where `gh` cannot prompt (an agent's shell, for one) it [uses the first remote](https://github.com/cli/cli/blob/d6b82b12e67d108b7c82d76d943a3a47814acbc1/context/context.go#L84) unless a default is set. So:
+
+- Pass `--repo ARPA-H/zendesk_copenhagen` to every `gh pr` and `gh issue` command, and write `gh api` paths out in full (`repos/ARPA-H/zendesk_copenhagen/...`) instead of using the `{owner}/{repo}` placeholders. Or set the default once: [`gh repo set-default`](https://cli.github.com/manual/gh_repo_set-default) `ARPA-H/zendesk_copenhagen` in each clone, or [`GH_REPO=ARPA-H/zendesk_copenhagen`](https://cli.github.com/manual/gh_help_environment) in the environment (`--repo` still overrides it). The devcontainer sets `GH_REPO`, so a Codespace already has it.
+- Check that any URL a command prints starts with `https://github.com/ARPA-H/zendesk_copenhagen/`.
+- If something does reach the upstream repo, tell the user at once and say what it was.
+
+## Agent Skills
+
+Do **not** load or apply the `arpa-h-internal-design` skill (`.github/skills/arpa-h-internal-design/SKILL.md`).
+This is a Zendesk Copenhagen help-center theme; ARPA-H internal app design conventions do not apply here.

@@ -1,4 +1,4 @@
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { createTranslationLoader } from "../shared/i18n/createTranslationLoader";
 import { ticketFieldsTranslations } from "../ticket-fields";
 
@@ -11,6 +11,7 @@ import {
   ThemeProviders,
   initI18next,
   loadTranslations,
+  normalizeHelpCenterPath,
 } from "../shared";
 import type { Settings } from "../shared";
 import { ErrorBoundary } from "../shared/error-boundary/ErrorBoundary";
@@ -61,14 +62,15 @@ export async function renderServiceCatalogPage(
   helpCenterPath: string,
   locale: string
 ) {
+  const safeHelpCenterPath = normalizeHelpCenterPath(helpCenterPath);
   initI18next(baseLocale);
   const theme = createTheme(settings);
+  const root = createRoot(container);
 
-  render(
+  root.render(
     <ThemeProviders theme={theme}>
       <PageLoadingState />
-    </ThemeProviders>,
-    container
+    </ThemeProviders>
   );
 
   const [, categoryTree] = await Promise.all([
@@ -83,22 +85,22 @@ export async function renderServiceCatalogPage(
     fetchCategoryTree({ publishedOnly: !isPreviewMode() }),
   ]);
 
-  render(
+  // The fallback is a div, not a main, for the reason given in ServiceCatalogPage.
+  root.render(
     <ThemeProviders theme={theme}>
       <ErrorBoundary
-        helpCenterPath={helpCenterPath}
+        helpCenterPath={safeHelpCenterPath}
         fallback={
-          <main className="service-catalog-list">
-            <ErrorScreen helpCenterPath={helpCenterPath} />
-          </main>
+          <div className="service-catalog-list">
+            <ErrorScreen helpCenterPath={safeHelpCenterPath} />
+          </div>
         }
       >
         <ServiceCatalogPage
-          helpCenterPath={helpCenterPath}
+          helpCenterPath={safeHelpCenterPath}
           categoryTree={categoryTree}
         />
       </ErrorBoundary>
-    </ThemeProviders>,
-    container
+    </ThemeProviders>
   );
 }

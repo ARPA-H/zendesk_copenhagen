@@ -279,3 +279,188 @@ describe("ServiceCatalogList sorting", () => {
     });
   });
 });
+
+describe("ServiceCatalogList category heading", () => {
+  beforeEach(() => {
+    setUrl("");
+    jest.clearAllMocks();
+  });
+
+  // The CSS styled-components generated for an element, read from the injected
+  // style tags (jsdom has no layout engine to compute it for us).
+  function cssRulesFor(element: Element) {
+    const css = Array.from(document.querySelectorAll("style"))
+      .map((style) => style.textContent)
+      .join("\n");
+
+    return Array.from(element.classList)
+      .map(
+        (cls) => css.match(new RegExp(`\\.${cls}\\s*\\{([^}]*)\\}`))?.[1] ?? ""
+      )
+      .join(" ");
+  }
+
+  it("wraps a long category name instead of truncating it", async () => {
+    const fetchMock = mockFetch();
+    const longName =
+      "Information technology equipment, accessories and peripheral requests for government-furnished devices";
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId="123"
+        selectedCategoryName={longName}
+      />
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+
+    const heading = screen.getByRole("heading", { level: 2, name: longName });
+    const rules = cssRulesFor(heading);
+
+    expect(rules).toMatch(/overflow-wrap:\s*anywhere/);
+    expect(rules).not.toMatch(/white-space:\s*nowrap/);
+    expect(rules).not.toMatch(/text-overflow/);
+  });
+});
+
+describe("ServiceCatalogList results count", () => {
+  beforeEach(() => {
+    setUrl("");
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    setUrl("");
+  });
+
+  // One response per fetch, in order, each carrying the given count.
+  function mockFetchCounts(...counts: number[]) {
+    const fetchMock = jest.fn();
+    counts.forEach((count) =>
+      fetchMock.mockImplementationOnce(() =>
+        Promise.resolve({
+          json: () => Promise.resolve({ ...emptyResponse, count }),
+          status: 200,
+          ok: true,
+        })
+      )
+    );
+    global.fetch = fetchMock;
+    return fetchMock;
+  }
+
+  it("announces the number of services in a status region", async () => {
+    mockFetchCounts(3);
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
+    );
+
+    const region = await screen.findByRole("status");
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
+
+    // The visible count is hidden from assistive technology so the number is
+    // not read twice.
+    const visible = screen
+      .getAllByText("3 services")
+      .find((element) => element !== region);
+    expect(visible).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("has the status region in the page before the first count arrives", async () => {
+    mockFetchCounts(3);
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
+    );
+
+    const region = screen.getByRole("status");
+    expect(region).toBeEmptyDOMElement();
+
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
+    expect(screen.getByRole("status")).toBe(region);
+  });
+
+  it("changes the text of the same status region when a new count arrives", async () => {
+    const fetchMock = mockFetchCounts(3, 1);
+
+    render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
+    );
+
+    const region = await screen.findByRole("status");
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /A-Z/ }));
+    await user.click(screen.getByRole("menuitemradio", { name: "Newest" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    await waitFor(() => expect(region).toHaveTextContent("1 service"));
+    expect(screen.getByRole("status")).toBe(region);
+  });
+
+  it("keeps the status region through a category change and never announces the old count", async () => {
+    let respondToSecondFetch: () => void = () => undefined;
+    const response = (count: number) => ({
+      json: () => Promise.resolve({ ...emptyResponse, count }),
+      status: 200,
+      ok: true,
+    });
+    const fetchMock = jest
+      .fn()
+      .mockImplementationOnce(() => Promise.resolve(response(3)))
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            respondToSecondFetch = () => resolve(response(1));
+          })
+      );
+    global.fetch = fetchMock;
+
+    const { rerender } = render(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId={null}
+        selectedCategoryName={null}
+      />
+    );
+
+    const region = await screen.findByRole("status");
+    await waitFor(() => expect(region).toHaveTextContent("3 services"));
+
+    rerender(
+      <ServiceCatalogList
+        helpCenterPath={HELP_CENTER_PATH}
+        selectedCategoryId="7"
+        selectedCategoryName="Hardware"
+      />
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+    // The same node, and empty while the new category loads: the stale count
+    // is not spoken.
+    expect(screen.getByRole("status")).toBe(region);
+    expect(region).toBeEmptyDOMElement();
+
+    await act(async () => {
+      respondToSecondFetch();
+    });
+
+    await waitFor(() => expect(region).toHaveTextContent("1 service"));
+    expect(screen.getByRole("status")).toBe(region);
+  });
+});

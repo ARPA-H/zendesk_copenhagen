@@ -2,7 +2,6 @@
  * Builds urls to audit by fetching the required ids
  * Account's API should have basic authentication enabled
  */
-const fetch = require("node-fetch");
 
 const fetchCategoryId = async (subdomain) => {
   const response = await fetch(

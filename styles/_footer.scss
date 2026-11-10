@@ -1,28 +1,158 @@
 /***** Footer *****/
+// The NEXUS footer for an internal portal (the Solutions Portal variant plus
+// the auxiliary navigation the skill requires): logo, a row of site links,
+// a divider, centered policy links, then the copyright line. Only the direct
+// links are recolored, so the language menu keeps its own white-card styling.
 .footer {
-  border-top: 1px solid $low-contrast-border-color;
-  margin-top: 60px;
-  padding: 30px 0;
+  margin-top: var(--space-8);
+  padding: var(--space-6) 0 var(--space-5);
+  background-color: var(--color-brand-primary);
+  color: var(--color-white);
 
-  a {
-    color: $secondary-text-color;
+  @include tablet {
+    padding-top: var(--space-8);
+  }
+
+  :focus-visible {
+    box-shadow: var(--shadow-focus-on-dark);
   }
 
   &-inner {
     @include max-width-container;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: var(--space-5);
+  }
+
+  &-top {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+
+    @include tablet {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3) var(--space-5);
+    }
+  }
+
+  // Pushes the link row and the language menu to the end of the logo row.
+  &-nav {
+    @include tablet {
+      margin-inline-start: auto;
+    }
+  }
+
+  // A signed-out footer has no site links, so the language menu follows the
+  // logo directly and pushes itself to the end of the row.
+  &-logo + &-language-selector {
+    @include tablet {
+      margin-inline-start: auto;
+    }
+  }
+
+  &-logo {
+    display: inline-flex;
+    border-radius: var(--radius-sm);
+
+    img {
+      display: block;
+      width: 180px;
+      height: auto;
+    }
+  }
+
+  &-nav-list,
+  &-aux-nav-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &-nav-list {
+    gap: var(--space-1) var(--space-3);
+
+    @include tablet {
+      column-gap: var(--space-4);
+    }
+  }
+
+  &-aux-nav-list {
+    justify-content: center;
+    gap: var(--space-1) var(--space-2);
+  }
+
+  &-nav a,
+  &-aux-nav a {
+    display: inline-block;
+    padding: var(--space-05) 0;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-2xs);
+    text-decoration: none;
+
+    &,
+    &:visited {
+      color: var(--color-white);
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--on-dark-stroke);
+  }
+
+  &-copyright {
+    margin: 0;
+    color: var(--on-dark-text-subtle);
+    font-size: var(--font-size-2xs);
+    opacity: 0.6;
+    text-align: center;
   }
 
   &-language-selector button {
-    color: $secondary-text-color;
+    color: var(--color-white);
     display: inline-block;
+  }
+
+  // Below the tablet breakpoint the toggle starts its own row, so the menu
+  // opens from the start edge; from the tablet breakpoint the toggle sits at
+  // the end of the row and the menu aligns to the end again.
+  &-language-selector .dropdown-menu {
+    left: 0;
+    right: auto;
+
+    [dir="rtl"] & {
+      left: auto;
+      right: 0;
+    }
+
+    @include tablet {
+      left: auto;
+      right: 0;
+
+      [dir="rtl"] & {
+        left: 0;
+        right: auto;
+      }
+    }
   }
 }
 
 .powered-by-zendesk {
   a,
   a:visited {
-    color: $secondary-text-color;
+    color: var(--color-white);
   }
 }

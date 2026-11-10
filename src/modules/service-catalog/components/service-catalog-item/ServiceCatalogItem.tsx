@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useCallback, useEffect, useState } from "react";
-import { createPortal } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { useItemFormFields } from "../../hooks/useItemFormFields";
 import { ItemRequestForm } from "./ItemRequestForm";
 import type { UserOption } from "../../../ticket-fields/data-types/UserOption";
@@ -9,6 +9,7 @@ import { PreviewModeBanner } from "./PreviewModeBanner";
 import type { Organization } from "../../../ticket-fields/data-types/Organization";
 import { useServiceCatalogItem } from "../../hooks/useServiceCatalogItem";
 import { submitServiceItemRequest } from "./submitServiceItemRequest";
+import { focusFirstInvalidField } from "./focusFirstInvalidField";
 import type { ServiceRequestResponse } from "../../data-types/ServiceRequestResponse";
 import { addFlashNotification, notify } from "../../../shared";
 import { Anchor } from "@zendeskgarden/react-buttons";
@@ -104,7 +105,9 @@ export function ServiceCatalogItem({
     );
 
     setSelectedCategoryId(
-      matchesUrl ? matchesUrl.id : serviceCatalogItem.categories[0]?.id ?? null
+      matchesUrl
+        ? matchesUrl.id
+        : (serviceCatalogItem.categories[0]?.id ?? null)
     );
   }, [serviceCatalogItem]);
 
@@ -253,17 +256,33 @@ export function ServiceCatalogItem({
     fields: TicketFieldObject[],
     attachments: Attachment[]
   ): boolean {
-    const { hasError, errors } = validate(fields, attachments);
+    const { hasError, errors, fieldErrors } = validate(fields, attachments);
 
     setAttachmentsRequiredError(errors.attachments);
     setAssetTypeError(errors.assetType);
     setAssetError(errors.asset);
 
-    setRequestFields((currentFields) =>
-      currentFields.map((field) => ({
-        ...field,
-        error: errors.fields[field.id] ?? null,
-      }))
+    // Merge the generic required-field errors directly onto each field's
+    // `error` prop, the same way handleValidationErrors() below merges
+    // server-returned errors -- this is what actually drives aria-invalid
+    // (see _svc-form-validation.scss). Runs fresh on every submit attempt,
+    // so any field not currently in fieldErrors is reset to no error.
+    //
+    // `fields` here is only the currently *visible* subset (conditionally
+    // hidden fields are filtered out upstream by getVisibleFields), but
+    // setRequestFields is the hook's raw setter over the *full* field
+    // list -- calling it with just the visible subset would silently and
+    // permanently drop any field hidden by an end-user condition at this
+    // moment. Merge by id onto the previous full list instead of
+    // replacing it wholesale.
+    setRequestFields((prevFields) =>
+      prevFields.map((field) => {
+        const updatedField = fields.find((f) => f.id === field.id);
+        if (!updatedField) {
+          return field;
+        }
+        return { ...updatedField, error: fieldErrors[field.id] ?? null };
+      })
     );
 
     return hasError;
@@ -325,13 +344,17 @@ export function ServiceCatalogItem({
     // so we must merge via a functional update rather than replacing it with
     // a mapped copy of `requestFields` (the visible subset) — otherwise any
     // field currently hidden by an end-user condition would be dropped.
-    setRequestFields((prevFields) =>
-      prevFields.map((field) => {
-        const errorField = invalidFieldErrors.find(
-          (errorField) => errorField.field_id === field.id
-        );
-        return { ...field, error: errorField?.description || null };
-      })
+    // Committed at once (flushSync) so the errors are on screen when the
+    // caller hands focus to the first of them.
+    flushSync(() =>
+      setRequestFields((prevFields) =>
+        prevFields.map((field) => {
+          const errorField = invalidFieldErrors.find(
+            (errorField) => errorField.field_id === field.id
+          );
+          return { ...field, error: errorField?.description || null };
+        })
+      )
     );
   }
 
@@ -376,15 +399,30 @@ export function ServiceCatalogItem({
       return field;
     });
 
+    // Disable the real submit button for the whole attempt -- including
+    // synchronous client-side validation below -- rather than only once an
+    // async request is actually in flight. service_page.hbs's static
+    // "custom submit" proxy button mirrors this button's `disabled`
+    // attribute via a MutationObserver so its own disabled state tracks
+    // reality; flushSync forces this update to actually commit to the DOM
+    // immediately instead of being batched away (a same-tick true-then-
+    // false toggle would otherwise never touch the DOM at all), so the
+    // observer can see it even on a validation failure that never reaches
+    // a network request.
+    flushSync(() => setIsSubmitting(true));
+
     if (validateForm(requestFieldsWithFormData, attachments)) {
+      flushSync(() => setIsSubmitting(false));
+      // The errors are on screen now. Without this a keyboard user stays on the
+      // Submit button and has to hunt for the field that failed.
+      focusFirstInvalidField(form);
       return;
     }
 
     if (!serviceCatalogItem || !associatedLookupField) {
+      flushSync(() => setIsSubmitting(false));
       return;
     }
-
-    setIsSubmitting(true);
 
     try {
       const isRequestingOnBehalf =
@@ -433,6 +471,14 @@ export function ServiceCatalogItem({
       }
 
       await handleSubmitError(response);
+      if (response?.status === 422) {
+        // The server's field errors are on screen now (handleValidationErrors
+        // commits them), so hand focus to the first, as for the client-side
+        // check above. Without it focus is left on the body: the Submit
+        // button was disabled for the attempt.
+        flushSync(() => setIsSubmitting(false));
+        focusFirstInvalidField(form);
+      }
     } catch {
       // caught by handleSubmitError in most cases, this handles unexpected errors
     }
@@ -496,6 +542,7 @@ export function ServiceCatalogItem({
           onAttachmentUploadingChange={setIsUploadingAttachments}
           isFormInitializing={isFormInitializing}
           isPreviewMode={isPreviewMode}
+          isSubmitting={isSubmitting}
         />
       )}
     </Container>

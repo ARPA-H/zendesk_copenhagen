@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react-hooks";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ServiceCatalogItem } from "../data-types/ServiceCatalogItem";
 import { useItemFormFields } from "./useItemFormFields";
 
@@ -103,15 +103,15 @@ describe("useItemFormFields", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes("/api/v2/ticket_fields?locale=en-us")
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
         status: 200,
         ok: true,
       });
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -119,9 +119,9 @@ describe("useItemFormFields", () => {
     expect(result.current.associatedLookupField).toBe(undefined);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
-
-    expect(result.current.requestFields).toEqual([expectedTextField]);
+    await waitFor(() => {
+      expect(result.current.requestFields).toEqual([expectedTextField]);
+    });
 
     expect(result.current.associatedLookupField).toEqual(expectedLookupField);
     expect(result.current.error).toBe(null);
@@ -135,7 +135,7 @@ describe("useItemFormFields", () => {
       });
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -143,9 +143,11 @@ describe("useItemFormFields", () => {
     expect(result.current.associatedLookupField).toBe(undefined);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
-
-    expect(result.current.error).toEqual(new Error("Error fetching form data"));
+    await waitFor(() => {
+      expect(result.current.error).toEqual(
+        new Error("Error fetching form data")
+      );
+    });
   });
 
   it("should return an error if ticket fields fetch fails", async () => {
@@ -165,14 +167,14 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            status: 500,
-            ok: false,
-          })
-        : {};
+          ? Promise.resolve({
+              status: 500,
+              ok: false,
+            })
+          : {};
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -180,11 +182,11 @@ describe("useItemFormFields", () => {
     expect(result.current.associatedLookupField).toBe(undefined);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
-
-    expect(result.current.error).toEqual(
-      new Error("Error fetching fields data")
-    );
+    await waitFor(() => {
+      expect(result.current.error).toEqual(
+        new Error("Error fetching fields data")
+      );
+    });
   });
 
   it("should return an error if form data is not active", async () => {
@@ -204,7 +206,7 @@ describe("useItemFormFields", () => {
       });
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -212,11 +214,11 @@ describe("useItemFormFields", () => {
     expect(result.current.associatedLookupField).toBe(undefined);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
-
-    expect(result.current.error).toEqual(
-      new Error("Associated ticket form is not active")
-    );
+    await waitFor(() => {
+      expect(result.current.error).toEqual(
+        new Error("Associated ticket form is not active")
+      );
+    });
   });
 
   it("should return an error if the associated lookup field is not found", async () => {
@@ -249,15 +251,15 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -265,11 +267,11 @@ describe("useItemFormFields", () => {
     expect(result.current.associatedLookupField).toBe(undefined);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
-
-    expect(result.current.error).toEqual(
-      new Error("Associated lookup field not found")
-    );
+    await waitFor(() => {
+      expect(result.current.error).toEqual(
+        new Error("Associated lookup field not found")
+      );
+    });
   });
 
   it("should set the request fields when setRequestFields is called", async () => {
@@ -293,15 +295,15 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -309,9 +311,10 @@ describe("useItemFormFields", () => {
     expect(result.current.associatedLookupField).toBe(undefined);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.requestFields).toEqual([expectedTextField]);
+    });
 
-    expect(result.current.requestFields).toEqual([expectedTextField]);
     expect(result.current.associatedLookupField).toEqual(expectedLookupField);
     expect(result.current.error).toBe(null);
 
@@ -349,15 +352,15 @@ describe("useItemFormFields", () => {
             ok: true,
           })
         : url.includes("/api/v2/ticket_fields?locale=en-us")
-        ? Promise.resolve({
-            json: () => Promise.resolve(ticketFieldResponse),
-            status: 200,
-            ok: true,
-          })
-        : {};
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -365,9 +368,10 @@ describe("useItemFormFields", () => {
     expect(result.current.associatedLookupField).toBe(undefined);
     expect(result.current.error).toBe(null);
 
-    await waitForNextUpdate();
+    await waitFor(() => {
+      expect(result.current.requestFields).toEqual([expectedTextField]);
+    });
 
-    expect(result.current.requestFields).toEqual([expectedTextField]);
     expect(result.current.associatedLookupField).toEqual(expectedLookupField);
     expect(result.current.error).toBe(null);
 
@@ -403,6 +407,188 @@ describe("useItemFormFields", () => {
         value: "Test Value",
       },
     ]);
+  });
+
+  it("should clear a field's error once handleChange gives it a value", async () => {
+    const formResponse = {
+      ticket_form: {
+        id: 1,
+        ticket_field_ids: [1, 2],
+        active: true,
+      },
+    };
+
+    const ticketFieldResponse = {
+      ticket_fields: [textField, lookupField],
+    };
+
+    (globalThis.fetch as jest.Mock) = jest.fn((url) => {
+      return url.includes("/api/v2/ticket_forms/1")
+        ? Promise.resolve({
+            json: () => Promise.resolve(formResponse),
+            status: 200,
+            ok: true,
+          })
+        : url.includes("/api/v2/ticket_fields?locale=en-us")
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
+    });
+
+    const { result } = renderHook(() =>
+      useItemFormFields(serviceCatalogItem, baseLocale)
+    );
+
+    await waitFor(() => {
+      expect(result.current.requestFields).toEqual([expectedTextField]);
+    });
+
+    // Simulate a required field that was flagged invalid on a prior submit
+    // attempt (mirroring what validateForm()/handleValidationErrors do in
+    // ServiceCatalogItem.tsx).
+    act(() => {
+      result.current.setRequestFields([
+        { ...expectedTextField, error: "This field is required." },
+      ]);
+    });
+
+    expect(result.current.requestFields[0].error).toBe(
+      "This field is required."
+    );
+
+    act(() => {
+      result.current.handleChange(
+        { ...expectedTextField, error: "This field is required." },
+        "Now filled in"
+      );
+    });
+
+    expect(result.current.requestFields[0].value).toBe("Now filled in");
+    expect(result.current.requestFields[0].error).toBeNull();
+  });
+
+  it("should not clear a field's error if handleChange gives it an empty value", async () => {
+    const formResponse = {
+      ticket_form: {
+        id: 1,
+        ticket_field_ids: [1, 2],
+        active: true,
+      },
+    };
+
+    const ticketFieldResponse = {
+      ticket_fields: [textField, lookupField],
+    };
+
+    (globalThis.fetch as jest.Mock) = jest.fn((url) => {
+      return url.includes("/api/v2/ticket_forms/1")
+        ? Promise.resolve({
+            json: () => Promise.resolve(formResponse),
+            status: 200,
+            ok: true,
+          })
+        : url.includes("/api/v2/ticket_fields?locale=en-us")
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
+    });
+
+    const { result } = renderHook(() =>
+      useItemFormFields(serviceCatalogItem, baseLocale)
+    );
+
+    await waitFor(() => {
+      expect(result.current.requestFields).toEqual([expectedTextField]);
+    });
+
+    act(() => {
+      result.current.setRequestFields([
+        { ...expectedTextField, error: "This field is required." },
+      ]);
+    });
+
+    act(() => {
+      result.current.handleChange(
+        { ...expectedTextField, error: "This field is required." },
+        ""
+      );
+    });
+
+    expect(result.current.requestFields[0].error).toBe(
+      "This field is required."
+    );
+  });
+
+  it("should not clear a field's error if handleChange gives it false (an unchecked checkbox)", async () => {
+    const formResponse = {
+      ticket_form: {
+        id: 1,
+        ticket_field_ids: [1, 2],
+        active: true,
+      },
+    };
+
+    const ticketFieldResponse = {
+      ticket_fields: [textField, lookupField],
+    };
+
+    (globalThis.fetch as jest.Mock) = jest.fn((url) => {
+      return url.includes("/api/v2/ticket_forms/1")
+        ? Promise.resolve({
+            json: () => Promise.resolve(formResponse),
+            status: 200,
+            ok: true,
+          })
+        : url.includes("/api/v2/ticket_fields?locale=en-us")
+          ? Promise.resolve({
+              json: () => Promise.resolve(ticketFieldResponse),
+              status: 200,
+              ok: true,
+            })
+          : {};
+    });
+
+    const { result } = renderHook(() =>
+      useItemFormFields(serviceCatalogItem, baseLocale)
+    );
+
+    await waitFor(() => {
+      expect(result.current.requestFields).toEqual([expectedTextField]);
+    });
+
+    act(() => {
+      result.current.setRequestFields([
+        {
+          ...expectedTextField,
+          type: "checkbox",
+          error: "This field is required.",
+        },
+      ]);
+    });
+
+    // Boolean `false` (an unchecked required checkbox) must not be treated
+    // as a value -- otherwise a previously-flagged required error would be
+    // cleared even though the checkbox is still unchecked.
+    act(() => {
+      result.current.handleChange(
+        {
+          ...expectedTextField,
+          type: "checkbox",
+          error: "This field is required.",
+        },
+        false
+      );
+    });
+
+    expect(result.current.requestFields[0].error).toBe(
+      "This field is required."
+    );
   });
 
   it("should not include fields with type 'subject', type 'description', active false, or editable_in_portal false in requestFields", async () => {
@@ -476,19 +662,20 @@ describe("useItemFormFields", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
         status: 200,
         ok: true,
       });
     });
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
-    await waitForNextUpdate();
-    const presentIds = result.current.requestFields.map((f) => f.id);
-    expect(presentIds).toEqual([1, 6]);
+    await waitFor(() => {
+      const presentIds = result.current.requestFields.map((f) => f.id);
+      expect(presentIds).toEqual([1, 6]);
+    });
   });
 
   it("renders a portal-editable zen:user lookup exactly once", async () => {
@@ -519,19 +706,20 @@ describe("useItemFormFields", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
         status: 200,
         ok: true,
       });
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
-    await waitForNextUpdate();
-    expect(result.current.requestFields.map((f) => f.id)).toEqual([1, 9]);
+    await waitFor(() => {
+      expect(result.current.requestFields.map((f) => f.id)).toEqual([1, 9]);
+    });
     expect(result.current.requestFields.filter((f) => f.id === 9)).toHaveLength(
       1
     );
@@ -578,22 +766,23 @@ describe("useItemFormFields", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
         status: 200,
         ok: true,
       });
     });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
-    await waitForNextUpdate();
+    await waitFor(() => {
+      const presentIds = result.current.requestFields.map((f) => f.id);
+      expect(presentIds).toEqual([1]);
+    });
 
-    const presentIds = result.current.requestFields.map((f) => f.id);
-    expect(presentIds).toEqual([1]);
     expect(result.current.associatedLookupField).toEqual(
       expect.objectContaining({ id: 2, type: "lookup" })
     );
@@ -666,7 +855,7 @@ describe("useItemFormFields", () => {
       });
     });
 
-    const { result, waitFor } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(itemWithAssetOptions, baseLocale)
     );
 

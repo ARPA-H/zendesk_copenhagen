@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@zendeskgarden/react-buttons";
 import { Menu, Item } from "@zendeskgarden/react-dropdowns";
 import { Tabs } from "@zendeskgarden/react-tabs";
+import { getColor } from "@zendeskgarden/react-theming";
 import ChevronIcon from "@zendeskgarden/svg-icons/src/16/chevron-down-stroke.svg";
 import type {
   SelectedTab,
@@ -31,7 +32,7 @@ const StyledButton = styled(Button)`
   line-height: 40px;
   margin-bottom: 20px;
   &:hover {
-    color: ${(p) => p.theme.colors.primaryHue};
+    color: ${({ theme }) => getColor({ theme, variable: "foreground.primary" })};
   }
 `;
 

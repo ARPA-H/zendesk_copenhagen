@@ -1,4 +1,4 @@
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { createTranslationLoader } from "../shared/i18n/createTranslationLoader";
 import { ticketFieldsTranslations } from "../ticket-fields";
 import type { Settings } from "../shared";
@@ -29,10 +29,9 @@ export async function renderNewRequestForm(
     sharedTranslations,
   ]);
 
-  render(
+  createRoot(container).render(
     <ThemeProviders theme={createTheme(settings)}>
       <NewRequestForm {...props} />
-    </ThemeProviders>,
-    container
+    </ThemeProviders>
   );
 }

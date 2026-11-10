@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import type { ServiceCatalogItem } from "../data-types/ServiceCatalogItem";
 import { useItemFormFields } from "./useItemFormFields";
 
@@ -106,8 +106,8 @@ describe("useItemFormFields — query-string prefill integration", () => {
             url.includes("/api/v2/ticket_forms/1")
               ? formResponse
               : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
-              ? ticketFieldResponse
-              : {}
+                ? ticketFieldResponse
+                : {}
           ),
       })
     );
@@ -126,7 +126,7 @@ describe("useItemFormFields — query-string prefill integration", () => {
     setUrl("/?tf_1=Hello%20World");
     mockFetch([1, 2], [basicText, associatedLookup]);
 
-    const { result, waitFor } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -143,7 +143,7 @@ describe("useItemFormFields — query-string prefill integration", () => {
     setUrl("/?tf_9999=ignored&subject=nope");
     mockFetch([1, 2], [basicText, associatedLookup]);
 
-    const { result, waitFor } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -164,7 +164,7 @@ describe("useItemFormFields — query-string prefill integration", () => {
       [revealChildCondition]
     );
 
-    const { result, waitFor } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -193,7 +193,7 @@ describe("useItemFormFields — query-string prefill integration", () => {
       [revealChildCondition]
     );
 
-    const { result, waitFor } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 
@@ -211,7 +211,7 @@ describe("useItemFormFields — query-string prefill integration", () => {
     setUrl("/?category_id=42");
     mockFetch([1, 2], [basicText, associatedLookup]);
 
-    const { result, waitFor } = renderHook(() =>
+    const { result } = renderHook(() =>
       useItemFormFields(serviceCatalogItem, baseLocale)
     );
 

@@ -1,0 +1,336 @@
+const fs = require('fs');
+const path = require('path');
+
+// Validate required environment variables
+if (!process.env['ZENDESK_SUBDOMAIN'] || !process.env['ZENDESK_EMAIL'] || !process.env['ZENDESK_TOKEN'] || !process.env['BRAND_ID']) {
+    console.error('Missing required environment variables: ZENDESK_SUBDOMAIN, ZENDESK_EMAIL, ZENDESK_TOKEN, BRAND_ID');
+    process.exit(1);
+}
+
+const authValue = Buffer.from(`${process.env['ZENDESK_EMAIL']}/token:${process.env['ZENDESK_TOKEN']}`).toString('base64');
+const baseURL = `https://${process.env['ZENDESK_SUBDOMAIN']}.zendesk.com/api/v2`;
+const brandId = process.env['BRAND_ID'];
+const filePath = path.join(__dirname, 'theme.zip');
+const MAX_WAIT_TIME = 5 * 60 * 1000;
+
+async function zendeskFetch(endpoint, options = {}) {
+    const url = `${baseURL}${endpoint}`;
+    const response = await fetch(url, {
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${authValue}`,
+            ...options.headers,
+        },
+    });
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`${response.status} ${response.statusText}: ${text}`);
+    }
+    // DELETE returns 204 No Content
+    if (response.status === 204) return null;
+    return response.json();
+}
+
+async function getLiveThemeId(brandId) {
+    try {
+        const data = await zendeskFetch(`/guide/theming/themes?brand_id=${brandId}`, { method: 'GET' });
+        const themes = data.themes || [];
+        const liveTheme = themes.find(t => t.live);
+        return liveTheme ? liveTheme.id : null;
+    } catch (error) {
+        console.log('::group::Action failed with error');
+        console.log(error.message);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## List Themes Error\n\`\`\`\n${error.message}\n\`\`\``);
+        process.exit(1);
+    }
+}
+
+async function importTheme(brandId) {
+    try {
+        const data = await zendeskFetch('/guide/theming/jobs/themes/imports', {
+            method: 'POST',
+            body: JSON.stringify({
+                job: {
+                    attributes: {
+                        brand_id: brandId,
+                        format: "zip"
+                    }
+                }
+            }),
+        });
+
+        const safeData = {
+            job: {
+                id: data.job.id,
+                status: data.job.status,
+                theme_id: data.job.data.theme_id,
+                upload_url: '[REDACTED]',
+                upload_parameters: '[REDACTED]'
+            }
+        };
+        console.log('::group::Import Theme Response');
+        const prettyResponse = JSON.stringify(safeData, null, 2);
+        console.log(prettyResponse);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Import Theme Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+
+        return {
+            jobId: data.job.id,
+            themeId: data.job.data.theme_id,
+            uploadUrl: data.job.data.upload.url,
+            uploadParameters: data.job.data.upload.parameters
+        };
+    } catch (error) {
+        console.log('::group::Action failed with error');
+        console.log(error.message);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Import Theme Error\n\`\`\`\n${error.message}\n\`\`\``);
+        process.exit(1);
+    }
+}
+
+async function updateTheme(themeId) {
+    try {
+        const data = await zendeskFetch('/guide/theming/jobs/themes/updates', {
+            method: 'POST',
+            body: JSON.stringify({
+                job: {
+                    attributes: {
+                        theme_id: themeId,
+                        // Preserve settings customized per-environment in the Theming Center
+                        // (e.g. service catalog IDs) instead of resetting them to manifest.json defaults.
+                        replace_settings: false,
+                        format: "zip"
+                    }
+                }
+            }),
+        });
+
+        const safeData = {
+            job: {
+                id: data.job.id,
+                status: data.job.status,
+                upload_url: '[REDACTED]',
+                upload_parameters: '[REDACTED]'
+            }
+        };
+        console.log('::group::Update Theme Response');
+        const prettyResponse = JSON.stringify(safeData, null, 2);
+        console.log(prettyResponse);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Update Theme Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+
+        return {
+            jobId: data.job.id,
+            uploadUrl: data.job.data.upload.url,
+            uploadParameters: data.job.data.upload.parameters
+        };
+    } catch (error) {
+        console.log('::group::Action failed with error');
+        console.log(error.message);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Update Theme Error\n\`\`\`\n${error.message}\n\`\`\``);
+        process.exit(1);
+    }
+}
+
+async function publishTheme(themeId) {
+    try {
+        const data = await zendeskFetch(`/guide/theming/themes/${themeId}/publish`, {
+            method: 'POST',
+        });
+        console.log('::group::Publish Theme Response');
+        const prettyResponse = JSON.stringify(data, null, 2);
+        console.log(prettyResponse);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Publish Theme Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+    } catch (error) {
+        console.log('::group::Publish failed with error');
+        console.log(error.message);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Publish Theme Error\n\`\`\`\n${error.message}\n\`\`\``);
+        process.exit(1);
+    }
+}
+
+async function uploadThemeFile(uploadUrl, uploadParameters, filePath) {
+    const form = new FormData();
+
+    for (const key in uploadParameters) {
+        form.append(key, uploadParameters[key]);
+    }
+
+    const fileBuffer = fs.readFileSync(filePath);
+    const blob = new Blob([fileBuffer]);
+    form.append('file', blob, 'theme.zip');
+
+    try {
+        const response = await fetch(uploadUrl, {
+            method: 'POST',
+            body: form,
+        });
+
+        const text = await response.text();
+        console.log('::group::Upload Theme File Response');
+        console.log(text);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Upload Theme File Response\n\`\`\`\n${text}\n\`\`\``);
+
+        if (!response.ok) {
+            throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+        }
+    } catch (error) {
+        console.log('::group::Action failed with error');
+        console.log(error.message);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Upload Theme File Error\n\`\`\`\n${error.message}\n\`\`\``);
+        process.exit(1);
+    }
+}
+
+async function checkJobStatus(jobId) {
+    try {
+        const data = await zendeskFetch(`/guide/theming/jobs/${jobId}`, { method: 'GET' });
+
+        if (data.job.status !== 'pending') {
+            // SECURITY: same redaction as importTheme()/updateTheme() above -
+            // this status payload can echo the pre-signed upload target back.
+            const safeJob = {
+                job: {
+                    id: data.job.id,
+                    status: data.job.status,
+                    theme_id: data.job.data && data.job.data.theme_id,
+                    errors: data.job.errors,
+                }
+            };
+            console.log('::group::Check Job Status Response');
+            const prettyResponse = JSON.stringify(safeJob, null, 2);
+            console.log(prettyResponse);
+            console.log('::endgroup::');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Check Job Status Response\n\`\`\`json\n${prettyResponse}\n\`\`\``);
+        }
+        return data.job;
+    } catch (error) {
+        console.log('::group::Action failed with error');
+        console.log(error.message);
+        console.log('::endgroup::');
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Check Job Status Error\n\`\`\`\n${error.message}\n\`\`\``);
+        process.exit(1);
+    }
+}
+
+async function pruneOldThemes(newThemeId) {
+    const KEEP = 4;
+    try {
+        const data = await zendeskFetch(`/guide/theming/themes?brand_id=${brandId}`, { method: 'GET' });
+        const themes = data.themes || [];
+
+        // Never delete the live theme or the one we just imported
+        const deletable = themes
+            .filter(t => !t.live && t.id !== newThemeId)
+            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+        const liveCount = themes.filter(t => t.live).length;
+        const totalAfterImport = themes.length;
+        const deleteCount = Math.max(0, totalAfterImport - liveCount - KEEP);
+        const toDelete = deletable.slice(0, deleteCount);
+
+        if (toDelete.length === 0) {
+            console.log(`Theme count (${totalAfterImport}) within limit — no pruning needed.`);
+            return;
+        }
+
+        console.log(`Pruning ${toDelete.length} old theme(s) to stay within ${KEEP} non-live themes...`);
+        for (const theme of toDelete) {
+            await zendeskFetch(`/guide/theming/themes/${theme.id}`, { method: 'DELETE' });
+            console.log(`Deleted theme ${theme.id} (created ${theme.created_at})`);
+        }
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Pruned Themes\nDeleted ${toDelete.length} old theme(s): ${toDelete.map(t => t.id).join(', ')}`);
+    } catch (error) {
+        // Non-fatal — log and continue
+        console.warn('Theme pruning warning:', error.message);
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Theme Pruning Warning\n\`\`\`\n${error.message}\n\`\`\``);
+    }
+}
+
+async function waitForJob(jobId, actionLabel) {
+    let jobStatus = await checkJobStatus(jobId);
+    const startTime = Date.now();
+    let attemptInterval = 5000;
+
+    while (jobStatus.status !== 'completed' && jobStatus.status !== 'failed') {
+        if (Date.now() - startTime > MAX_WAIT_TIME) {
+            console.error('Job status check timed out');
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Job Status Check Timeout\nJob did not complete within ${MAX_WAIT_TIME / 1000} seconds`);
+            process.exit(1);
+        }
+        console.log(`Waiting for ${actionLabel} to complete...`);
+        await new Promise(resolve => setTimeout(resolve, attemptInterval));
+        jobStatus = await checkJobStatus(jobId);
+        attemptInterval = Math.min(attemptInterval * 1.5, 60000);
+    }
+
+    if (jobStatus.status === 'failed') {
+        console.error(`${actionLabel} failed:`, JSON.stringify(jobStatus.errors, null, 2));
+        fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## ${actionLabel} Failed\n\`\`\`json\n${JSON.stringify(jobStatus.errors, null, 2)}\n\`\`\``);
+        process.exit(1);
+    }
+
+    return jobStatus;
+}
+
+async function run() {
+    try {
+        const liveThemeId = await getLiveThemeId(brandId);
+
+        if (liveThemeId) {
+            // Update the existing live theme in place with replace_settings: false so
+            // per-environment settings (e.g. service catalog IDs) set in the Theming
+            // Center aren't reset to the manifest.json defaults on every deploy.
+            console.log('Live theme found:', liveThemeId);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## Live Theme ID\n\`${liveThemeId}\``);
+
+            const { jobId, uploadUrl, uploadParameters } = await updateTheme(liveThemeId);
+            console.log('Job ID:', jobId);
+
+            console.log('Uploading theme file...');
+            await uploadThemeFile(uploadUrl, uploadParameters, filePath);
+            console.log('Theme file uploaded.');
+
+            await waitForJob(jobId, 'Update');
+            console.log('Theme updated in place. No publish needed — it was already live.');
+
+            console.log('Pruning old themes...');
+            await pruneOldThemes(liveThemeId);
+        } else {
+            // No live theme yet for this brand (e.g. first-time setup) — fall back to
+            // importing a brand-new theme and publishing it.
+            console.log('No live theme found for brand. Falling back to import.');
+
+            const { jobId, themeId, uploadUrl, uploadParameters } = await importTheme(brandId);
+            console.log('Job ID:', jobId);
+            console.log('Theme ID:', themeId);
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `\n\n## New Theme ID\n\`${themeId}\``);
+
+            console.log('Uploading theme file...');
+            await uploadThemeFile(uploadUrl, uploadParameters, filePath);
+            console.log('Theme file uploaded.');
+
+            await waitForJob(jobId, 'Import');
+
+            console.log('Pruning old themes before publish...');
+            await pruneOldThemes(themeId);
+
+            console.log('Import completed. Publishing theme...');
+            await publishTheme(themeId);
+            console.log('Theme published.');
+        }
+    } catch (error) {
+        console.error('An error occurred:', error);
+        process.exit(1);
+    }
+}
+
+run();

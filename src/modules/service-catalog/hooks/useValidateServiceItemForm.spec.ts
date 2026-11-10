@@ -1,4 +1,4 @@
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook } from "@testing-library/react";
 import { useValidateServiceItemForm } from "./useValidateServiceItemForm";
 import type { TicketFieldObject } from "../../ticket-fields/data-types/TicketFieldObject";
 import type { Attachment } from "../../ticket-fields/data-types/AttachmentsField";
@@ -92,6 +92,7 @@ describe("useValidateServiceItemForm", () => {
         asset: null,
         fields: {},
       });
+      expect(validationResult.fieldErrors).toEqual({});
     });
 
     it("returns no errors when optional fields are empty", () => {
@@ -340,33 +341,18 @@ describe("useValidateServiceItemForm", () => {
       expect(validationResult.errors.assetType).toBe("Select an asset type");
     });
 
-    it("handles boolean false value as valid", () => {
+    it("treats boolean false as no value, so a required unchecked checkbox is flagged", () => {
       const { result } = renderHook(() =>
         useValidateServiceItemForm(undefined)
       );
 
+      // Checkbox fields store a boolean `value`; `false` (unchecked) must
+      // not be treated the same as having answered the field, or a
+      // required checkbox left unchecked would silently pass validation.
       const fields = [
         createTextField({
-          required: true,
-          value: false,
-          relationship_target_type: ASSET_TYPE_KEY,
-        }),
-      ];
-
-      // Boolean false is a valid value (not empty)
-      const validationResult = result.current.validate(fields, []);
-
-      expect(validationResult.hasError).toBe(false);
-    });
-
-    it("handles boolean false value for a required regular field as valid", () => {
-      const { result } = renderHook(() =>
-        useValidateServiceItemForm(undefined)
-      );
-
-      const fields = [
-        createTextField({
-          id: 7,
+          id: 43,
+          type: "checkbox",
           required: true,
           value: false,
           relationship_target_type: undefined,
@@ -375,17 +361,39 @@ describe("useValidateServiceItemForm", () => {
 
       const validationResult = result.current.validate(fields, []);
 
-      expect(validationResult.hasError).toBe(false);
-      expect(validationResult.errors.fields).toEqual({});
+      expect(validationResult.hasError).toBe(true);
+      expect(validationResult.fieldErrors[43]).toBe("This field is required.");
     });
-  });
 
-  describe("required regular field validation", () => {
-    it("flags a blank required regular field keyed by field id", () => {
+    it("treats boolean true as satisfying a required checkbox", () => {
       const { result } = renderHook(() =>
         useValidateServiceItemForm(undefined)
       );
 
+      const fields = [
+        createTextField({
+          id: 43,
+          type: "checkbox",
+          required: true,
+          value: true,
+          relationship_target_type: undefined,
+        }),
+      ];
+
+      const validationResult = result.current.validate(fields, []);
+
+      expect(validationResult.hasError).toBe(false);
+    });
+
+    it("flags a required non-asset field generically instead of ignoring it", () => {
+      const { result } = renderHook(() =>
+        useValidateServiceItemForm(undefined)
+      );
+
+      // A required text field without an asset relationship used to be
+      // silently ignored by this hook (no client-side error at all),
+      // leaving it entirely up to a server round-trip to ever flag it.
+      // It must now get a generic required-field error instead.
       const fields = [
         createTextField({
           id: 42,
@@ -398,11 +406,29 @@ describe("useValidateServiceItemForm", () => {
       const validationResult = result.current.validate(fields, []);
 
       expect(validationResult.hasError).toBe(true);
-      expect(validationResult.errors.fields).toEqual({
-        42: "This field is required",
-      });
       expect(validationResult.errors.assetType).toBeNull();
       expect(validationResult.errors.asset).toBeNull();
+      expect(validationResult.fieldErrors[42]).toBe("This field is required.");
+    });
+
+    it("does not flag a required non-asset field once it has a value", () => {
+      const { result } = renderHook(() =>
+        useValidateServiceItemForm(undefined)
+      );
+
+      const fields = [
+        createTextField({
+          id: 42,
+          required: true,
+          value: "some answer",
+          relationship_target_type: undefined,
+        }),
+      ];
+
+      const validationResult = result.current.validate(fields, []);
+
+      expect(validationResult.hasError).toBe(false);
+      expect(validationResult.fieldErrors).toEqual({});
     });
 
     it("does not flag a required regular field that has a value", () => {
@@ -459,9 +485,9 @@ describe("useValidateServiceItemForm", () => {
       const validationResult = result.current.validate(fields, []);
 
       expect(validationResult.hasError).toBe(true);
-      expect(validationResult.errors.fields).toEqual({
-        1: "This field is required",
-        2: "This field is required",
+      expect(validationResult.fieldErrors).toEqual({
+        1: "This field is required.",
+        2: "This field is required.",
       });
     });
   });

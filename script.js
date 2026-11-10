@@ -37,17 +37,19 @@
     const menuButton = document.querySelector(".header .menu-button-mobile");
     const menuList = document.querySelector("#user-nav-mobile");
 
-    menuButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      toggleNavigation(menuButton, menuList);
-    });
-
-    menuList.addEventListener("keyup", (event) => {
-      if (event.keyCode === ESCAPE) {
+    if (menuButton && menuList) {
+      menuButton.addEventListener("click", (event) => {
         event.stopPropagation();
-        closeNavigation(menuButton, menuList);
-      }
-    });
+        toggleNavigation(menuButton, menuList);
+      });
+
+      menuList.addEventListener("keyup", (event) => {
+        if (event.keyCode === ESCAPE) {
+          event.stopPropagation();
+          closeNavigation(menuButton, menuList);
+        }
+      });
+    }
 
     // Toggles expanded aria to collapsible elements
     const collapsible = document.querySelectorAll(
@@ -64,7 +66,6 @@
       });
 
       element.addEventListener("keyup", (event) => {
-        console.log("escape");
         if (event.keyCode === ESCAPE) {
           closeCollapsible(toggle, element);
         }
@@ -394,18 +395,6 @@
     });
   });
 
-  // Share
-
-  window.addEventListener("DOMContentLoaded", () => {
-    const links = document.querySelectorAll(".share a");
-    links.forEach((anchor) => {
-      anchor.addEventListener("click", (event) => {
-        event.preventDefault();
-        window.open(anchor.href, "", "height = 500, width = 500");
-      });
-    });
-  });
-
   // Vanilla JS debounce function, by Josh W. Comeau:
   // https://www.joshwcomeau.com/snippets/javascript/debounce/
   function debounce(callback, wait) {
@@ -515,7 +504,9 @@
     if (returnFocusTo) {
       sessionStorage.removeItem("returnFocusTo");
       const returnFocusToEl = document.querySelector(returnFocusTo);
-      returnFocusToEl && returnFocusToEl.focus && returnFocusToEl.focus();
+      if (returnFocusToEl && returnFocusToEl.focus) {
+        returnFocusToEl.focus();
+      }
     }
   }
 
@@ -608,10 +599,13 @@
       return s.trim() === "";
     }
 
-    function isEmptyHtml(xml) {
-      const doc = new DOMParser().parseFromString(`<_>${xml}</_>`, "text/xml");
-      const img = doc.querySelector("img");
-      return img === null && isEmptyPlaintext(doc.children[0].textContent);
+    function isEmptyHtml(html) {
+      // Parse with DOMParser (rather than assigning to innerHTML) so the
+      // untrusted comment text is never reinterpreted as live, renderable HTML.
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const hasImg = doc.querySelector("img") !== null;
+      const text = doc.body.textContent || "";
+      return !hasImg && isEmptyPlaintext(text);
     }
 
     const isEmpty = usesWysiwyg ? isEmptyHtml : isEmptyPlaintext;
@@ -684,5 +678,870 @@
       notificationElm.previousElementSibling.focus();
     }
   });
+
+  /*
+   * Global DOM fix-ups that were previously inline <script> blocks in
+   * templates/document_head.hbs. Kept here so they live in the built script.js
+   * (source of truth) instead of the template head.
+   *
+   * ES2015 only (no async/await) — this file is bundled into script.js.
+   */
+
+  // ---------------------------------------------------------------------------
+  // 1. Neutralize the current-page breadcrumb link.
+  //    Zendesk renders the active breadcrumb as <a href="#" aria-current="page">;
+  //    clicking it navigates to "#", which blanks the page. It represents the
+  //    page you are already on, so it should not navigate at all. Removing the
+  //    href makes navigation impossible for both mouse and keyboard; the matching
+  //    `pointer-events: none` rule in _breadcrumbs.scss is a visual backstop.
+  //
+  //    (Replaces the former inline version, which ran a body-wide
+  //    MutationObserver forever on every DOM mutation.)
+  // ---------------------------------------------------------------------------
+  (function () {
+    var SEL = 'nav[aria-label="Breadcrumb"] a, .breadcrumbs a';
+
+    function isDead(a) {
+      if (!a) return false;
+      var href = a.getAttribute("href");
+      return (
+        a.getAttribute("aria-current") === "page" ||
+        href === "#" ||
+        href === "" ||
+        href === null
+      );
+    }
+
+    function neutralize() {
+      var links = document.querySelectorAll(SEL);
+      for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        if (!isDead(a)) continue;
+        if (a.hasAttribute("href")) {
+          a.setAttribute("data-dead-href", a.getAttribute("href"));
+          a.removeAttribute("href");
+        }
+        a.setAttribute("role", "link");
+        a.setAttribute("aria-disabled", "true");
+      }
+    }
+
+    if (document.readyState !== "loading") {
+      neutralize();
+    } else {
+      document.addEventListener("DOMContentLoaded", neutralize);
+    }
+  })();
+
+  // ---------------------------------------------------------------------------
+  // 2. Hide any element whose only text is literally "empty".
+  //    This is a placeholder that can leak into the rendered page. Adding the
+  //    `.svc-empty-hidden` class (styled in _svc-tokens.scss) hides it without an
+  //    inline style.
+  //    TODO: find and fix the source that emits "empty" so this can be removed.
+  // ---------------------------------------------------------------------------
+  (function () {
+    function hideEmpty() {
+      var els = document.querySelectorAll("a, li, div");
+      for (var i = 0; i < els.length; i++) {
+        if (els[i].textContent.trim().toLowerCase() === "empty") {
+          els[i].classList.add("svc-empty-hidden");
+        }
+      }
+    }
+
+    if (document.readyState !== "loading") {
+      hideEmpty();
+    } else {
+      document.addEventListener("DOMContentLoaded", hideEmpty);
+    }
+  })();
+
+  // ---------------------------------------------------------------------------
+  // 3. Wire the pink search-pill button (templates/search_results.hbs) to
+  //    submit the native search, matching native <button type="submit"> behavior.
+  //    Previously an inline <script> in that template; moved here per the
+  //    "don't re-add inline scripts" rule documented in document_head.hbs.
+  // ---------------------------------------------------------------------------
+  (function () {
+    function wireSearchPillButton() {
+      var btn = document.getElementById("svc-search-pill-btn");
+      if (!btn || btn.dataset.svcWired === "1") return;
+      var pill = btn.closest(".svc-search-pill");
+      if (!pill) return;
+      btn.dataset.svcWired = "1";
+      btn.addEventListener("click", function () {
+        var input = pill.querySelector(
+          'input[type="search"], input[type="text"], input:not([type])'
+        );
+        if (!input) return;
+        var form = input.form || input.closest("form");
+        if (form) {
+          if (typeof form.requestSubmit === "function") form.requestSubmit();
+          else form.submit();
+        } else {
+          input.focus();
+          input.dispatchEvent(
+            new KeyboardEvent("keydown", {
+              key: "Enter",
+              code: "Enter",
+              keyCode: 13,
+              which: 13,
+              bubbles: true,
+            })
+          );
+        }
+      });
+    }
+
+    if (document.readyState !== "loading") {
+      wireSearchPillButton();
+    } else {
+      document.addEventListener("DOMContentLoaded", wireSearchPillButton);
+    }
+  })();
+
+  // ---------------------------------------------------------------------------
+  // 4. Keep the footer copyright year current. The template renders the year it
+  //    was last edited so the notice is complete without JavaScript; this swaps
+  //    in the visitor's current year.
+  // ---------------------------------------------------------------------------
+  function setFooterYear() {
+    var years = document.querySelectorAll("[data-footer-year]");
+    var year = String(new Date().getFullYear());
+    for (var i = 0; i < years.length; i++) {
+      years[i].textContent = year;
+    }
+  }
+
+  if (document.readyState !== "loading") {
+    setFooterYear();
+  } else {
+    document.addEventListener("DOMContentLoaded", setFooterYear);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. Let a table that is wider than its column scroll sideways inside its own
+  //    region. Without this the page either widens or, where it is clipped, the
+  //    last columns cannot be reached. Each table in an article body gets a
+  //    wrapper; the wrapper becomes a focusable region only while the table
+  //    actually overflows, so keyboard users can scroll it and tables that fit
+  //    add no tab stop. It is worked out again on load, on resize and whenever a
+  //    table or its wrapper changes size, so a table in a tab that is shown later
+  //    becomes a region then. The region is named by the table's caption, which
+  //    is the article's own text. A table without one gets a fixed English name,
+  //    and it is numbered when several tables need it so the regions stay
+  //    distinguishable. On an English page that name is the region's aria-label.
+  //    On any other page it comes from a hidden element marked lang="en"
+  //    (aria-labelledby), so the region still has a name and a role there, and
+  //    the English words are not passed off as the page's own language.
+  // ---------------------------------------------------------------------------
+  var SCROLLABLE_TABLE_LABEL = "Scrollable table";
+  var SCROLLABLE_LABEL_ATTR = "data-table-scroll-label";
+  var scrollableLabelCount = 0;
+
+  function isEnglishPage() {
+    var lang = document.documentElement.getAttribute("lang") || "en";
+    return /^en(-|$)/i.test(lang);
+  }
+
+  function findFallbackLabel(wrapper) {
+    for (var i = 0; i < wrapper.children.length; i++) {
+      if (wrapper.children[i].hasAttribute(SCROLLABLE_LABEL_ATTR)) {
+        return wrapper.children[i];
+      }
+    }
+    return null;
+  }
+
+  function removeFallbackLabel(wrapper) {
+    var label = findFallbackLabel(wrapper);
+    if (label) {
+      wrapper.removeChild(label);
+    }
+    wrapper.removeAttribute("aria-labelledby");
+  }
+
+  function setFallbackLabel(wrapper, text) {
+    var label = findFallbackLabel(wrapper);
+    if (!label) {
+      label = document.createElement("span");
+      label.hidden = true;
+      label.setAttribute("lang", "en");
+      label.setAttribute(SCROLLABLE_LABEL_ATTR, "");
+      label.id = "table-scroll-label-" + ++scrollableLabelCount;
+      wrapper.insertBefore(label, wrapper.firstChild);
+    }
+    label.textContent = text;
+    wrapper.setAttribute("aria-labelledby", label.id);
+  }
+
+  function wrapWideTables(root) {
+    var scope = document;
+    var tables = scope.querySelectorAll(".article-body table");
+    var watched = [];
+    for (var i = 0; i < tables.length; i++) {
+      var table = tables[i];
+      if (
+        table.parentNode &&
+        table.parentNode.classList.contains("table-scroll")
+      ) {
+        continue;
+      }
+      var wrapper = document.createElement("div");
+      wrapper.className = "table-scroll";
+      var caption = table.querySelector("caption");
+      var captionText = caption && caption.textContent.trim();
+      if (captionText) {
+        wrapper.setAttribute("data-label", captionText);
+      }
+      table.parentNode.insertBefore(wrapper, table);
+      wrapper.appendChild(table);
+      watched.push(wrapper, table);
+    }
+    watchTableSizes(watched);
+    updateScrollableTables(scope);
+  }
+
+  // A table in a tab that is not showing has no box, so it measures as not
+  // overflowing and is not made a region. Showing the tab fires neither load nor
+  // resize, so the regions are worked out again whenever a wrapper or its table
+  // changes size: that covers a tab being shown or hidden, and a table that grows
+  // after load (a late font or image). Setting the attributes changes no size, so
+  // this cannot loop.
+  function watchTableSizes(elements) {
+    if (!elements.length || typeof ResizeObserver !== "function") {
+      return;
+    }
+    var observer = new ResizeObserver(function () {
+      updateScrollableTables();
+    });
+    for (var i = 0; i < elements.length; i++) {
+      observer.observe(elements[i]);
+    }
+  }
+
+  function updateScrollableTables(root) {
+    var scope = root || document;
+    var wrappers = scope.querySelectorAll(".table-scroll");
+    var overflowing = [];
+    var unnamed = [];
+    for (var i = 0; i < wrappers.length; i++) {
+      var wrapper = wrappers[i];
+      if (wrapper.scrollWidth > wrapper.clientWidth) {
+        overflowing.push(wrapper);
+        if (!wrapper.getAttribute("data-label")) {
+          unnamed.push(wrapper);
+        }
+      } else {
+        wrapper.removeAttribute("role");
+        wrapper.removeAttribute("tabindex");
+        wrapper.removeAttribute("aria-label");
+        removeFallbackLabel(wrapper);
+      }
+    }
+
+    var english = isEnglishPage();
+    for (var j = 0; j < overflowing.length; j++) {
+      var scroller = overflowing[j];
+      var label = scroller.getAttribute("data-label");
+      var captioned = !!label;
+      if (!captioned) {
+        label =
+          unnamed.length > 1
+            ? SCROLLABLE_TABLE_LABEL +
+              " " +
+              (unnamed.indexOf(scroller) + 1) +
+              " of " +
+              unnamed.length
+            : SCROLLABLE_TABLE_LABEL;
+      }
+      scroller.setAttribute("tabindex", "0");
+      scroller.setAttribute("role", "region");
+      if (captioned || english) {
+        scroller.setAttribute("aria-label", label);
+        removeFallbackLabel(scroller);
+      } else {
+        scroller.removeAttribute("aria-label");
+        setFallbackLabel(scroller, label);
+      }
+    }
+  }
+
+  if (document.readyState !== "loading") {
+    wrapWideTables();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      wrapWideTables();
+    });
+  }
+  window.addEventListener("load", function () {
+    updateScrollableTables();
+  });
+  window.addEventListener("resize", function () {
+    updateScrollableTables();
+  });
+
+  /*
+   * Platform icons for the tabs of an article.
+   *
+   * The article editor's Tabs component is turned into a tab bar by Zendesk's own
+   * script, which copies each tab's name into a <button class="wysiwyg-tabs-tab">.
+   * This file reads each name, works out which platform it is about, and sets
+   * data-platform on the tab. styles/_article-tabs.scss draws the matching icon, one of
+   * the plain-named SVG files in assets/ (android.svg, apple.svg, ios.svg, macos.svg,
+   * web.svg, windows.svg), so nothing is fetched at run time and nothing is inserted into
+   * the page. The icons are SVG on purpose: a small raster icon is blurry and, on a phone,
+   * illegible, while an SVG is scaled to its box at any size and pixel density.
+   *
+   * A name is matched by the platforms it mentions:
+   *   iOS (also iPadOS, iPhone, iPad)        -> ios
+   *   macOS (also Mac, Mac OS X, OS X)       -> macos   ("Mac" only as a capitalized word,
+   *                                                       so a "MAC address" is not one)
+   *   Windows                                -> windows
+   *   Android                                -> android
+   *   Web (also Website, Browser)            -> web
+   *   iOS and macOS together, or Apple       -> apple
+   * A name that mentions more than one of Apple, Windows, Android and Web is ambiguous, and
+   * a name that mentions none of them has nothing to show, so neither gets an icon.
+   *
+   * An author can pick the icon in the name instead, the way a service catalog item does
+   * in its description, with a marker such as  [icon: ios.svg] Phone setup . The marker
+   * names one of the six files above and is removed from the visible name; the extension
+   * is optional, and ".png" is read as ".svg" (the theme also holds ios.png, macos.png and
+   * windows.png for the Device FAQs tiles, and a PNG is never drawn as a tab icon). Any
+   * other name shows no icon. The marker wins over the name.
+   *
+   * Zendesk's script can run before or after this one, so tabs already on the page are
+   * labelled at once and tabs added later are caught by a MutationObserver.
+   *
+   * ES2015 only (no async/await); this file is bundled into script.js.
+   */
+
+  var BODY_SELECTOR = ".article-body";
+  var TAB_SELECTOR = ".wysiwyg-tabs-tab";
+  var PLATFORM_ATTRIBUTE = "data-platform";
+  var PLATFORMS = ["android", "apple", "ios", "macos", "web", "windows"];
+
+  // The marker also takes the whitespace after it, so a name never starts with a gap.
+  var MARKER = /\[icon:\s*([^\]]*?)\s*\]\s*/i;
+  var IOS = /\b(?:ios|ipados|iphone|ipad)\b/i;
+  // The explicit forms match in any case. A bare "Mac" counts only as the capitalized
+  // product name: "MAC" is the network address, so a tab named "MAC address" is not
+  // about a Mac, and neither is "Mac address".
+  var MACOS = /\b(?:macos|mac\s?os(?:\s?x)?|os\s?x)\b/i;
+  var MAC = /\bMac\b(?!\s+address\b)/;
+  var WINDOWS = /\bwindows\b/i;
+  var ANDROID = /\bandroid\b/i;
+  var WEB = /\b(?:web|website|browser)s?\b/i;
+  var APPLE = /\bapple\b/i;
+
+  function platformFromName(name) {
+    var android = ANDROID.test(name);
+    var web = WEB.test(name);
+    var windows = WINDOWS.test(name);
+    var apple = APPLE.test(name);
+    var ios = apple || IOS.test(name);
+    var macos = apple || MACOS.test(name) || MAC.test(name);
+    var families =
+      (android ? 1 : 0) +
+      (web ? 1 : 0) +
+      (windows ? 1 : 0) +
+      (ios || macos ? 1 : 0);
+
+    // None has nothing to show, and more than one is ambiguous.
+    if (families !== 1) return "";
+    if (android) return "android";
+    if (web) return "web";
+    if (windows) return "windows";
+    if (ios && macos) return "apple";
+    return ios ? "ios" : "macos";
+  }
+
+  function platformFromMarker(value) {
+    var name = value.toLowerCase().replace(/\.(?:svg|png)$/, "");
+
+    return PLATFORMS.indexOf(name) === -1 ? "" : name;
+  }
+
+  function removeMarker(tab) {
+    var walker = document.createTreeWalker(tab, NodeFilter.SHOW_TEXT, null);
+    var node = walker.nextNode();
+
+    while (node) {
+      if (MARKER.test(node.nodeValue)) {
+        node.nodeValue = node.nodeValue.replace(MARKER, "");
+        return;
+      }
+      node = walker.nextNode();
+    }
+  }
+
+  // Tabs whose icon an author chose with a marker. The marker is removed from the name on
+  // the first pass, so a later pass would see only the name and infer an icon from it,
+  // overriding the author: "[icon: nothing.svg] iOS" is meant to show no icon.
+  var chosen = new WeakSet();
+
+  function labelTab(tab) {
+    // Already labelled, or chosen by the author. A tab with no platform and no marker is
+    // checked again, which finds the same nothing, and finds a name that Zendesk's script
+    // fills in after it added the tab.
+    if (chosen.has(tab) || tab.hasAttribute(PLATFORM_ATTRIBUTE)) return;
+
+    var marker = MARKER.exec(tab.textContent);
+    var platform;
+
+    if (marker) {
+      chosen.add(tab);
+      platform = platformFromMarker(marker[1]);
+      removeMarker(tab);
+    } else {
+      platform = platformFromName(tab.textContent);
+    }
+
+    if (platform) tab.setAttribute(PLATFORM_ATTRIBUTE, platform);
+  }
+
+  function labelTabs(root) {
+    var tabs = (root || document).querySelectorAll(TAB_SELECTOR);
+
+    for (var i = 0; i < tabs.length; i++) {
+      labelTab(tabs[i]);
+    }
+  }
+
+  function initArticleTabs() {
+    var body = document.querySelector(BODY_SELECTOR);
+
+    if (!body) return;
+
+    labelTabs(body);
+
+    if (typeof MutationObserver === "function") {
+      new MutationObserver(function () {
+        labelTabs(body);
+      }).observe(body, { childList: true, subtree: true });
+    }
+  }
+
+  if (document.readyState !== "loading") {
+    initArticleTabs();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      initArticleTabs();
+    });
+  }
+
+  /*
+   * Disclosure behavior for the USWDS "official government website" banner
+   * (templates/header.hbs, styles/_usa-banner.scss). It mirrors the USWDS banner
+   * script (packages/usa-banner/src/index.js in @uswds/uswds): the button flips
+   * aria-expanded, the panel it controls is shown or hidden, and the header gets
+   * the expanded modifier class that hides the "Here's how you know" prompt.
+   *
+   * ES2015 only (no async/await); this file is bundled into script.js.
+   */
+
+  var BUTTON_SELECTOR = ".usa-banner__button";
+  var HEADER_SELECTOR = ".usa-banner__header";
+  var EXPANDED_CLASS = "usa-banner__header--expanded";
+
+  function setBannerExpanded(button, expanded) {
+    var panel = document.getElementById(button.getAttribute("aria-controls"));
+    var header = button.closest(HEADER_SELECTOR);
+
+    button.setAttribute("aria-expanded", expanded ? "true" : "false");
+    if (panel) panel.hidden = !expanded;
+    if (header) header.classList.toggle(EXPANDED_CLASS, expanded);
+  }
+
+  function toggleBanner(button) {
+    setBannerExpanded(button, button.getAttribute("aria-expanded") !== "true");
+  }
+
+  // document_head.hbs sets "js" before this script loads, so the collapsed banner
+  // never flashes open, and drops it again after five seconds unless "js-ready" is
+  // there. Marking the page only after the handlers are installed means a blocked or
+  // failed script leaves the explanation readable instead of behind an inert button.
+  function markScriptReady() {
+    var classes = document.documentElement.classList;
+
+    classes.add("js");
+    classes.add("js-ready");
+  }
+
+  function initGovBanner(root) {
+    var scope = document;
+    var buttons = scope.querySelectorAll(BUTTON_SELECTOR);
+
+    for (var i = 0; i < buttons.length; i++) {
+      (function (button) {
+        setBannerExpanded(
+          button,
+          button.getAttribute("aria-expanded") === "true"
+        );
+        button.addEventListener("click", function () {
+          toggleBanner(button);
+        });
+      })(buttons[i]);
+    }
+
+    markScriptReady();
+  }
+
+  if (document.readyState !== "loading") {
+    initGovBanner();
+  } else {
+    document.addEventListener("DOMContentLoaded", function () {
+      initGovBanner();
+    });
+  }
+
+  /**
+   * Restrict a URL to a safe scheme before it is inserted via innerHTML.
+   * Defense in depth per the OWASP DOM-based XSS Prevention Cheat Sheet
+   * (https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html):
+   * entity-escaping neutralizes markup breakout but not a `javascript:` URI, so
+   * the scheme itself must also be validated. Relative URLs (no scheme, e.g.
+   * "/hc/en-us/services/123") are always allowed; absolute URLs are allowed
+   * only for http:/https:. Anything else (javascript:, data:, vbscript:, etc.)
+   * falls back to `fallback` (default "#").
+   */
+  function safeHref(url, fallback) {
+    var fb = fallback || "#";
+    if (url == null) return fb;
+    var str = String(url).trim();
+    if (!str) return fb;
+    // Strip control/whitespace characters that can be used to smuggle a scheme
+    // past naive checks (e.g. "java\tscript:").
+    // eslint-disable-next-line no-control-regex
+    var stripped = str.replace(/[\x00-\x1f\x7f]/g, "");
+    var schemeMatch = stripped.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
+    if (!schemeMatch) return str; // no scheme => relative URL, safe
+    var scheme = schemeMatch[1].toLowerCase();
+    return scheme === "http" || scheme === "https" ? str : fb;
+  }
+
+  // service_page.hbs reads this from `window` for the training button and the
+  // suggested-article links. script.js is a classic script, so a page's inline
+  // <script> cannot import it.
+  if (typeof window !== "undefined") {
+    window.svcSafeHref = safeHref;
+  }
+
+  /*
+   * Service-catalog list-page enhancements that used to be two separate inline
+   * <script> blocks in templates/service_list_page.hbs ("Catalog enhancements"
+   * and "Category-swap skeleton hiding"). Neither depends on server-rendered
+   * Curlybars data, so — same rationale as src/domFixups.js — they belong here
+   * instead of inline in the template.
+   *
+   * Both sections no-op on any page without #service-catalog-main-content, so
+   * this file is safe to include globally (bundled into script.js for every
+   * page) rather than only on the service list page.
+   *
+   * ES2015 only — this file is bundled into script.js.
+   */
+
+  // ---------------------------------------------------------------------------
+  // 1. Tooltips for truncated card descriptions and category description text.
+  //    (This used to also strip the Zendesk service-catalog widget's own
+  //    "search within services" field so it wouldn't duplicate the page's hero
+  //    search. PR #69 intentionally restored that native in-catalog search box,
+  //    so this module no longer removes it — see PR description "Added native
+  //    search back into services page list to search within services".)
+  // ---------------------------------------------------------------------------
+  (function () {
+    const main = document.getElementById("service-catalog-main-content");
+    if (!main) return;
+
+    const safeClosest = (el, sel) =>
+      el && el.nodeType === 1 && typeof el.closest === "function"
+        ? el.closest(sel)
+        : null;
+    const inSidebar = (el) =>
+      !!safeClosest(el, '[data-test-id^="sidebar-category"]');
+
+    const tip = document.createElement("div");
+    tip.className = "svc-tooltip";
+    // A visual copy of the card description, which describeCards() ties to the
+    // card for assistive technology.
+    tip.setAttribute("aria-hidden", "true");
+    tip.style.left = "-9999px";
+    tip.style.top = "-9999px";
+    document.body.appendChild(tip);
+    let hideTimer = null;
+
+    function getCard(el) {
+      if (!el || el.nodeType !== 1) return null;
+      if (inSidebar(el)) return null;
+      const card =
+        safeClosest(el, 'a[href*="/services/"]') ||
+        safeClosest(el, '[data-testid="service-catalog-list-item-container"]');
+      if (!card || inSidebar(card)) return null;
+      if (
+        !safeClosest(card, 'a[href*="/services/"]') &&
+        !card.querySelector('a[href*="/services/"]')
+      )
+        return null;
+      return card;
+    }
+    function findDescEl(card) {
+      if (!card || inSidebar(card) || typeof card.querySelectorAll !== "function")
+        return null;
+      const leaves = Array.from(card.querySelectorAll("div, p, span")).filter(
+        (el) =>
+          el &&
+          !el.querySelector(
+            "a, h1, h2, h3, h4, h5, h6, svg, img, button, div, p, span"
+          ) &&
+          (el.textContent || "").trim().length > 0
+      );
+      if (leaves.length < 2) return null;
+      const heading = card.querySelector("h1,h2,h3,h4,h5,h6");
+      const titleText = heading
+        ? heading.textContent.trim()
+        : leaves[0].textContent.trim();
+      return (
+        leaves.find((l) => {
+          const t = l.textContent.trim();
+          return t && t !== titleText;
+        }) || null
+      );
+    }
+    function descText(card) {
+      const el = findDescEl(card);
+      if (!el) return "";
+      const t = el.textContent.trim();
+      if (/^\d+$/.test(t)) return "";
+      return t;
+    }
+
+    function hideDescriptions() {
+      main
+        .querySelectorAll(
+          'a[href*="/services/"], [class*="card"], [class*="Card"]'
+        )
+        .forEach((card) => {
+          if (inSidebar(card)) return;
+          const el = findDescEl(card);
+          if (el && !el.classList.contains("svc-desc-hidden"))
+            el.classList.add("svc-desc-hidden");
+        });
+    }
+    // The description is hidden by CSS (a hover tooltip shows it), which also
+    // hides it from assistive technology, so each card is described by it
+    // explicitly; aria-describedby may point at hidden content. Where the
+    // description is shown inside the card (a device that cannot hover) it is
+    // already read as part of the link, so nothing is added there.
+    const cannotHover = window.matchMedia
+      ? window.matchMedia("(hover: none)")
+      : null;
+    let describedCount = 0;
+    function describeCards() {
+      const shownInCard = !!cannotHover && cannotHover.matches;
+      main.querySelectorAll('a[href*="/services/"]').forEach((card) => {
+        if (inSidebar(card)) return;
+        const el = findDescEl(card);
+        if (!shownInCard && el && descText(card)) {
+          if (!el.id) el.id = "svc-card-desc-" + ++describedCount;
+          card.setAttribute("aria-describedby", el.id);
+        } else if (
+          /^svc-card-desc-/.test(card.getAttribute("aria-describedby") || "")
+        ) {
+          card.removeAttribute("aria-describedby");
+        }
+      });
+    }
+    if (cannotHover) {
+      if (cannotHover.addEventListener)
+        cannotHover.addEventListener("change", describeCards);
+      else if (cannotHover.addListener) cannotHover.addListener(describeCards);
+    }
+    function positionTip(card) {
+      const rect = card.getBoundingClientRect();
+      tip.style.maxWidth = Math.max(180, Math.min(240, rect.width + 20)) + "px";
+      const t = tip.getBoundingClientRect(),
+        gap = 8;
+      let left = Math.min(
+        Math.max(rect.left, 12),
+        window.innerWidth - t.width - 12
+      );
+      tip.style.setProperty(
+        "--svc-arrow-left",
+        Math.max(
+          10,
+          Math.min(t.width - 18, rect.left + rect.width / 2 - left - 4)
+        ) + "px"
+      );
+      let top;
+      if (window.innerHeight - rect.bottom > t.height + gap + 12) {
+        top = rect.bottom + gap;
+        tip.classList.add("svc-tooltip-below");
+        tip.classList.remove("svc-tooltip-above");
+      } else {
+        top = rect.top - t.height - gap;
+        tip.classList.add("svc-tooltip-above");
+        tip.classList.remove("svc-tooltip-below");
+      }
+      tip.style.left = Math.round(left) + "px";
+      tip.style.top = Math.round(top) + "px";
+    }
+    function showTip(card) {
+      if (!card || inSidebar(card)) return;
+      const d = descText(card);
+      if (!d) return;
+      clearTimeout(hideTimer);
+      tip.textContent = d;
+      tip.style.left = "-9999px";
+      tip.style.top = "0px";
+      requestAnimationFrame(() => {
+        positionTip(card);
+        requestAnimationFrame(() => tip.classList.add("svc-tooltip-visible"));
+      });
+    }
+    function hideTip() {
+      tip.classList.remove("svc-tooltip-visible");
+      hideTimer = setTimeout(() => {
+        tip.style.left = "-9999px";
+      }, 200);
+    }
+
+    let userInteracted = false;
+    ["pointerdown", "keydown", "mousemove"].forEach((evt) =>
+      window.addEventListener(
+        evt,
+        () => {
+          userInteracted = true;
+        },
+        { once: true, passive: true }
+      )
+    );
+
+    main.addEventListener("mouseover", (e) => {
+      const c = getCard(e.target);
+      if (c) showTip(c);
+    });
+    main.addEventListener("mouseout", (e) => {
+      const c = getCard(e.target),
+        to = e.relatedTarget ? getCard(e.relatedTarget) : null;
+      if (c && c !== to) hideTip();
+    });
+    main.addEventListener("focusin", (e) => {
+      if (!userInteracted) return;
+      const c = getCard(e.target);
+      if (c) showTip(c);
+    });
+    main.addEventListener("focusout", (e) => {
+      const c = getCard(e.target),
+        to = e.relatedTarget ? getCard(e.relatedTarget) : null;
+      if (c && c !== to) hideTip();
+    });
+    window.addEventListener("scroll", hideTip, { passive: true });
+    window.addEventListener("resize", hideTip);
+
+    const DESCRIPTIONS = {
+      "all services":
+        "Browse every service available from the Service Desk, or pick a category to narrow things down.",
+      accessibility:
+        "Request accessibility reviews and support to ensure content and tools work for everyone.",
+      "account services":
+        "Manage your accounts, access, passwords, and identity credentials like PIV cards.",
+      "apps & tools":
+        "Get access to, install, or troubleshoot the software applications and tools you use day to day.",
+      aurora: "Support and requests related to the AURORA platform.",
+      collaboration:
+        "Tools and support for working together — chat, meetings, file sharing, and team spaces.",
+      "devices & equipment":
+        "Request, return, or get help with laptops, peripherals, and other hardware.",
+      "event and room support":
+        "Book and get technical support for conference rooms, events, and presentations.",
+      "get help":
+        "Report an issue or get support — outages, hardware and software problems, lost devices, security incidents, and more.",
+      grace: "Support and requests related to the GRACE platform.",
+      "help me learn":
+        "Find training, certifications, and learning resources to build your skills.",
+    };
+    const DEFAULT_DESC =
+      "Browse the services in this category and submit a request to the Service Desk.";
+    function applyCategoryDescription() {
+      const heading = Array.from(main.querySelectorAll("h1, h2, h3")).find(
+        (h) => !inSidebar(h)
+      );
+      if (!heading) return;
+      const text =
+        DESCRIPTIONS[(heading.textContent || "").trim().toLowerCase()] ||
+        DEFAULT_DESC;
+      let desc = heading.parentElement
+        ? heading.parentElement.querySelector(":scope > .svc-cat-description")
+        : null;
+      if (!desc) {
+        desc = document.createElement("p");
+        desc.className = "svc-cat-description";
+        heading.insertAdjacentElement("afterend", desc);
+      }
+      if (desc.textContent !== text) desc.textContent = text;
+    }
+
+    function enhance() {
+      [hideDescriptions, describeCards, applyCategoryDescription].forEach(
+        (fn) => {
+          try {
+            fn();
+          } catch (e) {
+            console.warn("enhance step failed:", e);
+          }
+        }
+      );
+    }
+    enhance();
+    new MutationObserver(enhance).observe(main, {
+      childList: true,
+      subtree: true,
+    });
+  })();
+
+  // ---------------------------------------------------------------------------
+  // 2. Category-swap skeleton hiding: tag catalog grid cells that haven't
+  //    rendered their real link yet as skeletons so the CSS shimmer applies.
+  // ---------------------------------------------------------------------------
+  (function () {
+    const main = document.getElementById("service-catalog-main-content");
+    if (!main) return;
+
+    const inSidebar = (el) =>
+      !!(
+        el &&
+        el.nodeType === 1 &&
+        typeof el.closest === "function" &&
+        el.closest('[data-test-id^="sidebar-category"]')
+      );
+
+    function tagSkeletons() {
+      const cells = main.querySelectorAll(
+        '[data-testid="service-catalog-list-item-container"], [data-garden-id="grid.col"]'
+      );
+      cells.forEach((cell) => {
+        if (cell.nodeType !== 1) return;
+        if (inSidebar(cell)) return;
+        const link = cell.querySelector('a[href*="/services/"]');
+        const isSkeleton = !link || (link.textContent || "").trim().length === 0;
+        cell.classList.toggle("svc-skeleton", isSkeleton);
+      });
+    }
+
+    try {
+      tagSkeletons();
+    } catch (e) {
+      console.warn("skeleton tag failed:", e);
+    }
+    new MutationObserver(() => {
+      try {
+        tagSkeletons();
+      } catch (e) {
+        console.warn("skeleton tag failed:", e);
+      }
+    }).observe(main, { childList: true, subtree: true });
+  })();
 
 })();

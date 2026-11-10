@@ -4,6 +4,7 @@ import {
 } from "@zendeskgarden/react-forms";
 import { Span } from "@zendeskgarden/react-typography";
 import type { TicketFieldObject } from "../data-types/TicketFieldObject";
+import { sanitizeDescription } from "../sanitizeDescription";
 
 interface InputProps {
   field: TicketFieldObject;
@@ -29,7 +30,11 @@ export function Input({ field, onChange }: InputProps): JSX.Element {
         {required && <Span aria-hidden="true">*</Span>}
       </GardenField.Label>
       {description && (
-        <GardenField.Hint dangerouslySetInnerHTML={{ __html: description }} />
+        <GardenField.Hint
+          dangerouslySetInnerHTML={{
+            __html: sanitizeDescription(description),
+          }}
+        />
       )}
       <GardenInput
         name={name}
@@ -38,7 +43,7 @@ export function Input({ field, onChange }: InputProps): JSX.Element {
         validation={error ? "error" : undefined}
         required={required}
         onChange={(e) => {
-          onChange && onChange(e.target.value);
+          if (onChange) onChange(e.target.value);
         }}
         autoComplete={autocomplete}
         {...stepProp}

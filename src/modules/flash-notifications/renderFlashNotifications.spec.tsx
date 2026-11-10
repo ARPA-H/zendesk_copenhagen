@@ -1,6 +1,8 @@
 import { cleanup, screen, act } from "@testing-library/react";
+import i18next from "i18next";
 import { renderFlashNotifications } from "./renderFlashNotifications";
 import { emitNotify } from "../shared/notifications/notifyBus";
+import { initI18next } from "../shared";
 import type { Settings, ToastNotification } from "../shared";
 
 afterEach(() => {
@@ -8,27 +10,23 @@ afterEach(() => {
   document.body.innerHTML = "";
 });
 
-const settings: Settings = {
-  background_color: "#ffffff",
-  text_color: "#000000",
-  brand_color: "#0000ff",
-  brand_text_color: "#ffffff",
-  link_color: "#0000ff",
-  hover_link_color: "#0000aa",
-  visited_link_color: "#800080",
-};
+const settings: Settings = {};
 const baseLocale = "en-us";
 
 describe("renderFlashNotifications", () => {
   it("creates a container div and mounts provider", async () => {
-    await renderFlashNotifications(settings, baseLocale, "en-us");
+    await act(async () => {
+      await renderFlashNotifications(settings, baseLocale, "en-us");
+    });
 
     const container: HTMLDivElement | null = document.body.querySelector("div");
     expect(container).not.toBeNull();
   });
 
   it("renders toast when emitNotify is called after initialization", async () => {
-    await renderFlashNotifications(settings, baseLocale, "en-us");
+    await act(async () => {
+      await renderFlashNotifications(settings, baseLocale, "en-us");
+    });
 
     const testId = "toast-test";
     const notification: ToastNotification = {
@@ -41,5 +39,16 @@ describe("renderFlashNotifications", () => {
       emitNotify(notification);
     });
     expect(await screen.findByTestId(testId)).toBeInTheDocument();
+  });
+
+  it("leaves the translations a page module already loaded", async () => {
+    initI18next(baseLocale);
+    i18next.addResourceBundle(baseLocale, "translation", { page: "kept" });
+
+    await act(async () => {
+      await renderFlashNotifications(settings, baseLocale, "en-us");
+    });
+
+    expect(i18next.getResource(baseLocale, "translation", "page")).toBe("kept");
   });
 });

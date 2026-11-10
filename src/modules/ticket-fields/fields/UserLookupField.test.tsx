@@ -231,7 +231,9 @@ describe("UserLookupField", () => {
         expect.objectContaining({ signal: expect.any(AbortSignal) })
       );
     });
-    expect(await screen.findByLabelText("Assignee")).toHaveValue("Alice");
+    await waitFor(() => {
+      expect(screen.getByLabelText("Assignee")).toHaveValue("Alice");
+    });
   });
 
   it("clears the value when the initial value's user can't be read (e.g. 403)", async () => {

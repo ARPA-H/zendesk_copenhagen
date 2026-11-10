@@ -1,0 +1,118 @@
+/***** Forced colors (Windows High Contrast) *****/
+// In forced-colors mode the browser swaps authored colors for the user's system
+// palette and drops shadows. Anything said by a fill alone needs a border, an
+// outline or a surface of its own to survive. Keyboard focus already survives: the
+// ring is a box-shadow plus a transparent outline, and the outline is repainted.
+// The stock USWDS banner brings its own forced-colors rules.
+@media (forced-colors: active) {
+  // The white reverse wordmark sits on the indigo bar and the indigo footer, which
+  // the palette replaces with the canvas, so on a light canvas it disappeared. Each
+  // logo link keeps a dark tile.
+  .header .logo a,
+  .footer-logo {
+    background-color: var(--color-brand-primary);
+    border-radius: var(--radius-md);
+    forced-color-adjust: none;
+    padding: var(--space-1) var(--space-105);
+  }
+
+  // Pill buttons are a fill with no border, so without one they read as bare text.
+  .ask-ai,
+  .button-large,
+  .hbs-form input[type="submit"],
+  .split-button button,
+  .svc-hero-search-btn,
+  .svc-hero-cta,
+  .svc-custom-submit-btn,
+  .svc-training-fab {
+    border: 1px solid ButtonText;
+  }
+
+  // The mobile menu button is a bare icon in the header's text color. The palette
+  // turns that into ButtonText, which is dark on the dark artwork behind the
+  // transparent header, so on phones the only way into the navigation vanished.
+  // It gets a surface and a border of its own.
+  .nav-wrapper-mobile .menu-button-mobile {
+    background-color: ButtonFace;
+    border: 1px solid ButtonText;
+  }
+
+  // The hero pill strips the border from every child with !important.
+  .svc-hero-search .svc-hero-search-btn {
+    border: 1px solid ButtonText !important;
+  }
+
+  // A selected state said only by a fill or a color is lost when the palette
+  // replaces both. The selected Yes or No vote and the selected follow button are
+  // the outline button turned primary (a fill), and a voted comment arrow only
+  // changes color, so each gets a ring in the system highlight inside its edge.
+  // A focused control keeps the focus outline instead, outside the edge, as the
+  // selected sidebar row above does.
+  .button-primary:not(:focus-visible),
+  button[data-selected="true"]:not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -5px;
+  }
+
+  .vote-voted:not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -3px;
+  }
+
+  // A selected row is a tint, so give it an outline. A focused row keeps the
+  // focus outline instead, on both lists. The catalog's ring sits on the select
+  // button's overlay, which is the size of the whole row.
+  .service-catalog-sidebar button[aria-current="true"]:not(:focus-visible)::after,
+  .svc-search-sidebar .sidenav-item.current:not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .service-catalog-sidebar button:focus-visible::after {
+    outline-color: Highlight;
+  }
+
+  // A heading reached through a link is tinted in the normal palette, and the
+  // tint is dropped here, so it gets an outline and no wash to fade.
+  .article-body :is(h1, h2, h3, h4, h5, h6):is(:target, :has(:target)) {
+    animation: none;
+    outline: 2px solid Highlight;
+    outline-offset: var(--space-05);
+  }
+
+  // The pager is text only and its hover cue is a tint, which the palette drops,
+  // so a hovered control gets the underline instead.
+  .pagination li > a:hover {
+    text-decoration: underline;
+  }
+
+  // Article tabs. The track and the selected pill are fills, which the palette
+  // drops, so each tab gets a border and the selected one the system highlight.
+  // Its colors are set by hand because the platform's fill would otherwise be
+  // replaced by the canvas. The icon is a mask over the tab's background color,
+  // which the palette would also turn into the canvas, so it takes the text color
+  // explicitly. A hovered tab says so with its border, since the tint is dropped.
+  .article-body .wysiwyg-tabs-active > .wysiwyg-tabs-bar > .wysiwyg-tabs-tab {
+    border: 1px solid ButtonText;
+
+    &:hover {
+      border-color: Highlight;
+    }
+
+    &[aria-selected="true"] {
+      background-color: Highlight;
+      border-color: Highlight;
+      color: HighlightText;
+      forced-color-adjust: none;
+    }
+
+    &[data-platform]::before {
+      background-color: ButtonText;
+      forced-color-adjust: none;
+    }
+
+    &[aria-selected="true"][data-platform]::before {
+      background-color: HighlightText;
+    }
+  }
+}

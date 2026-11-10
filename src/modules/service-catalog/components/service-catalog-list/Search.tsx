@@ -32,7 +32,7 @@ export const Search = ({
   const { t } = useTranslation();
 
   return (
-    <StyledField>
+    <StyledField className="service-catalog-search">
       <StyledField.Label hidden>
         {t("service-catalog.search-services", "Search for services")}
       </StyledField.Label>

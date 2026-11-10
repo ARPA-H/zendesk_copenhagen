@@ -1,0 +1,25 @@
+/* ============================================================
+   ARPA-H custom — small-screen guards and tooltip safety.
+   The header itself lives in _header.scss.
+   ============================================================ */
+@media (max-width: 768px) {
+  /* Mobile: prevent user-menu overflow from locking horizontal scroll */
+  html, body {
+    max-width: 100% !important;
+  }
+  .svc-cardwrap {
+    overflow-x: clip !important;
+    max-width: 100% !important;
+  }
+}
+/* Tooltip must never create off-screen scroll area (all widths) */
+.svc-tooltip {
+  right: auto;
+}
+.svc-tooltip:not(.svc-tooltip-visible) {
+  left: 0 !important;
+  top: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(-9999px) !important;
+}

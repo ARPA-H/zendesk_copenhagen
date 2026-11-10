@@ -1,64 +1,10 @@
 {
-  "name": "Copenhagen",
+  "name": "Copenhagen 12-30.2",
   "author": "Zendesk",
   "version": "4.54.0",
   "api_version": 4,
   "default_locale": "en-us",
   "settings": [
-    {
-      "label": "colors_group_label",
-      "variables": [
-        {
-          "identifier": "brand_color",
-          "type": "color",
-          "description": "brand_color_description",
-          "label": "brand_color_label",
-          "value": "#17494D"
-        },
-        {
-          "identifier": "brand_text_color",
-          "type": "color",
-          "description": "brand_text_color_description",
-          "label": "brand_text_color_label",
-          "value": "#FFFFFF"
-        },
-        {
-          "identifier": "text_color",
-          "type": "color",
-          "description": "text_color_description",
-          "label": "text_color_label",
-          "value": "#2F3941"
-        },
-        {
-          "identifier": "link_color",
-          "type": "color",
-          "description": "link_color_description",
-          "label": "link_color_label",
-          "value": "#1F73B7"
-        },
-        {
-          "identifier": "hover_link_color",
-          "type": "color",
-          "description": "hover_link_color_description",
-          "label": "hover_link_color_label",
-          "value": "#0F3554"
-        },
-        {
-          "identifier": "visited_link_color",
-          "type": "color",
-          "description": "visited_link_color_description",
-          "label": "visited_link_color_label",
-          "value": "#9358B0"
-        },
-        {
-          "identifier": "background_color",
-          "type": "color",
-          "description": "background_color_description",
-          "label": "background_color_label",
-          "value": "#FFFFFF"
-        }
-      ]
-    },
     {
       "label": "fonts_group_label",
       "variables": [
@@ -67,7 +13,12 @@
           "type": "list",
           "description": "heading_font_description",
           "label": "heading_font_label",
+          "value": "'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
           "options": [
+            {
+              "label": "Public Sans",
+              "value": "'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+            },
             {
               "label": "System",
               "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
@@ -132,15 +83,19 @@
               "label": "Trebuchet MS",
               "value": "'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif"
             }
-          ],
-          "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+          ]
         },
         {
           "identifier": "text_font",
           "type": "list",
           "description": "text_font_description",
           "label": "text_font_label",
+          "value": "'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif",
           "options": [
+            {
+              "label": "Public Sans",
+              "value": "'Public Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+            },
             {
               "label": "System",
               "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
@@ -205,27 +160,13 @@
               "label": "Trebuchet MS",
               "value": "'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif"
             }
-          ],
-          "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif"
+          ]
         }
       ]
     },
     {
       "label": "brand_group_label",
       "variables": [
-        {
-          "identifier": "logo",
-          "type": "file",
-          "description": "logo_description",
-          "label": "logo_label"
-        },
-        {
-          "identifier": "show_brand_name",
-          "type": "checkbox",
-          "description": "show_brand_name_description",
-          "label": "show_brand_name_label",
-          "value": true
-        },
         {
           "identifier": "favicon",
           "type": "file",
@@ -285,7 +226,7 @@
           "type": "checkbox",
           "description": "scoped_community_search_description",
           "label": "scoped_community_search_label",
-          "value": true
+          "value": false
         }
       ]
     },
@@ -316,7 +257,7 @@
           "type": "checkbox",
           "description": "article_author_description",
           "label": "article_author_label",
-          "value": true
+          "value": false
         },
         {
           "identifier": "show_article_comments",
@@ -345,13 +286,6 @@
           "description": "related_articles_description",
           "label": "related_articles_label",
           "value": true
-        },
-        {
-          "identifier": "show_article_sharing",
-          "type": "checkbox",
-          "description": "article_sharing_description",
-          "label": "article_sharing_label",
-          "value": true
         }
       ]
     },
@@ -375,14 +309,7 @@
           "type": "checkbox",
           "description": "follow_post_description",
           "label": "follow_post_label",
-          "value": true
-        },
-        {
-          "identifier": "show_post_sharing",
-          "type": "checkbox",
-          "description": "post_sharing_description",
-          "label": "post_sharing_label",
-          "value": true
+          "value": false
         }
       ]
     },
@@ -394,7 +321,40 @@
           "type": "checkbox",
           "description": "follow_topic_description",
           "label": "follow_topic_label",
+          "value": false
+        }
+      ]
+    },
+    {
+      "label": "Alert Banner Settings",
+      "variables": [
+        {
+          "identifier": "display_alert_banner",
+          "type": "checkbox",
+          "description": "Display Alert Banner",
+          "label": "Display Alert Banner",
           "value": true
+        },
+        {
+          "identifier": "alert_banner_bg_color",
+          "type": "color",
+          "description": "Set background color for alert banner",
+          "label": "Alert Banner Background Color",
+          "value": "rgba(148, 40, 89, 1)"
+        },
+        {
+          "identifier": "alert_banner_text_color",
+          "type": "color",
+          "description": "Set text color for alert banner",
+          "label": "Alert Banner Text Color",
+          "value": "rgba(255, 255, 255, 1)"
+        },
+        {
+          "identifier": "alert_banner_text",
+          "type": "text",
+          "description": "Alert Banner Text",
+          "label": "Alert Banner Text",
+          "value": "For onboarding inquiries, please contact your onboarding specialist. For all other inquiries, please log in and submit a support request. Our hours of operation for weekdays are 6am - 6pm (ET). Thank you!"
         }
       ]
     },
@@ -419,6 +379,53 @@
           "description": "filter_ticket_fields_by_brand_description",
           "label": "filter_ticket_fields_by_brand_label",
           "value": true
+        }
+      ]
+    },
+    {
+      "label": "service_catalog_group_label",
+      "variables": [
+        {
+          "identifier": "show_training_fab",
+          "type": "checkbox",
+          "description": "show_training_fab_description",
+          "label": "show_training_fab_label",
+          "value": false
+        },
+        {
+          "identifier": "training_url",
+          "type": "text",
+          "description": "training_url_description",
+          "label": "training_url_label",
+          "value": ""
+        },
+        {
+          "identifier": "general_request_service_id",
+          "type": "text",
+          "description": "general_request_service_id_description",
+          "label": "general_request_service_id_label",
+          "value": ""
+        },
+        {
+          "identifier": "general_request_category_id",
+          "type": "text",
+          "description": "general_request_category_id_description",
+          "label": "general_request_category_id_label",
+          "value": ""
+        },
+        {
+          "identifier": "other_request_service_id",
+          "type": "text",
+          "description": "other_request_service_id_description",
+          "label": "other_request_service_id_label",
+          "value": ""
+        },
+        {
+          "identifier": "iconify_api_base",
+          "type": "text",
+          "description": "iconify_api_base_description",
+          "label": "iconify_api_base_label",
+          "value": ""
         }
       ]
     }

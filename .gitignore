@@ -5,6 +5,10 @@ node_modules/
 *.DS_Store
 coverage/
 .idea/
+.vscode/settings.json
+
+# Impeccable design hook cache (design.json is kept)
+.impeccable/hook.cache.json
 
 # yarn
 .yarn/*

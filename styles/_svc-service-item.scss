@@ -1,0 +1,371 @@
+/* ==========================================================
+   ARPA-H CUSTOM — Service request (item) page
+   ========================================================== */
+
+/* The stock #category-selector mount stays in the markup (the service-catalog
+   module expects it), but the ARPA-H item-page design omits the category
+   dropdown, so hide it rather than deleting the div. */
+#category-selector { display: none; }
+
+/* ---- BASE LAYOUT ---- */
+/* One flat page on the shared container: no shell, no greeting band, no step
+   pills. The service name (rendered by the form module) leads, then the form. */
+body { background: var(--color-white); }
+
+/* ---- CONTENT LAYOUT (form + help rail) ---- */
+/* The form takes the reading column and the rail the aside column, the same
+   720 | 320 split as the article page. Below desktop the rail drops under the
+   form. The search row above them uses the same two columns (see SEARCH below),
+   so one definition serves both and they cannot drift apart. */
+@mixin item-columns {
+  grid-template-columns: minmax(0, var(--column-reading)) minmax(0, var(--column-aside));
+  column-gap: var(--column-gap);
+  justify-content: space-between;
+}
+
+.svc-form-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+  margin-bottom: var(--space-8);
+
+  @include desktop {
+    @include item-columns;
+  }
+}
+.svc-form-column, .svc-side-column { min-width: 0; }
+.svc-form-panel {
+  min-height: 520px;
+  position: relative;
+}
+.svc-form-ready .svc-form-panel { min-height: 0; }
+
+/* One-line fallback in place of a banner. */
+.svc-fallback {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-4);
+  color: var(--type-subheading);
+}
+.svc-fallback a { color: var(--color-brand-primary); text-decoration: underline; }
+
+/* ---- HELP RAIL ---- */
+/* One quiet surface. Suggestions are flat rows divided by hairlines, not cards
+   inside a card. The rail is static: with five suggestions it is taller than most
+   viewports, and a sticky panel would clip its own content or scroll inside itself. */
+.svc-article-card {
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--surface-subtle);
+}
+.svc-card-title {
+  margin: 0 0 var(--space-1);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--type-body);
+}
+.svc-article-title { margin-bottom: var(--space-05); }
+.svc-article-subtitle {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-4);
+  color: var(--type-subheading);
+}
+/* Until something has been suggested the empty message below says the same thing,
+   so the subtitle waits for the results. */
+.svc-article-card:has(.svc-article-empty) .svc-article-subtitle { display: none; }
+.svc-article-list { display: flex; flex-direction: column; margin-top: var(--space-2); }
+.svc-article-empty, .svc-article-loading, .svc-article-error {
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-4);
+  color: var(--type-subheading);
+}
+.svc-article-error { color: var(--color-error-dark); }
+.svc-article-item {
+  display: block;
+  padding: var(--space-105) 0;
+  border-top: 1px solid var(--surface-stroke);
+  color: var(--type-body);
+  text-decoration: none;
+}
+.svc-article-item-title {
+  display: block;
+  margin-bottom: var(--space-05);
+  font-size: var(--font-size-2xs);
+  font-weight: 600;
+  color: var(--color-brand-primary);
+}
+.svc-article-item:hover .svc-article-item-title,
+.svc-article-item:focus-visible .svc-article-item-title { text-decoration: underline; }
+.svc-article-item-meta {
+  display: block;
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-4);
+  color: var(--type-subheading);
+}
+
+.svc-next-steps {
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--surface-stroke);
+}
+.svc-card-list {
+  margin: 0;
+  font-size: var(--font-size-2xs);
+  line-height: var(--line-height-4);
+  color: var(--type-subheading);
+}
+.svc-card-list li + li { margin-top: var(--space-1); }
+
+/* ---- CATALOG FORM WIDTH OVERRIDES ---- */
+.svc-form-panel #service-catalog-item,
+.svc-form-panel #service-catalog-item > *,
+.svc-form-panel #service-catalog-item > * > *,
+.svc-form-panel #service-catalog-item > * > * > *,
+.svc-form-panel form,
+.svc-form-panel form > *,
+.svc-form-panel form > * > *,
+.svc-form-panel form > * > * > * {
+  width: 100% !important; max-width: none !important; min-width: 0 !important; box-sizing: border-box !important;
+}
+.svc-form-panel * { box-sizing: border-box; }
+.svc-form-panel .form-field, .svc-form-panel .field, .svc-form-panel .request-form,
+.svc-form-panel fieldset, .svc-form-panel section, .svc-form-panel article,
+.svc-form-panel div, .svc-form-panel div[role="group"],
+.svc-form-panel [class*="Field"] {
+  max-width: none !important; min-width: 0 !important;
+}
+.svc-form-panel figure,
+.svc-form-panel [data-garden-id="avatars.avatar"],
+.svc-form-panel [class*="StyledAvatar"] {
+  background: transparent !important; background-color: transparent !important;
+  box-shadow: none !important; border: none !important;
+}
+.svc-form-panel label { display: block; width: 100%; }
+.svc-form-panel input[type],
+.svc-form-panel input[type="text"], .svc-form-panel input[type="email"],
+.svc-form-panel input[type="search"], .svc-form-panel input[type="tel"],
+.svc-form-panel input[type="url"], .svc-form-panel input[type="number"],
+.svc-form-panel select, .svc-form-panel textarea {
+  display: block; width: 100% !important; max-width: none !important; min-width: 0 !important; box-sizing: border-box !important;
+}
+.svc-form-panel textarea { resize: both !important; min-width: 100% !important; max-width: 100% !important; overflow: auto; }
+.svc-form-panel select { min-height: 38px; }
+/* The width overrides above are for form fields; the module's error screen sits in the
+   same container, so its button keeps its natural size. */
+.svc-form-panel #service-catalog-item [role="alert"] button { width: auto !important; }
+
+/* The module's form is a flex row of the fields column and the action column,
+   which the page script collapses (the custom submit replaces it). With that
+   column gone, drop the gutter margins that used to separate the two so the
+   fields use the whole reading column. */
+.svc-form-panel form > :first-child,
+.svc-form-panel form > :first-child > :last-child {
+  margin-inline-end: 0;
+}
+
+.svc-form-panel #service-catalog-item h1,
+.svc-form-panel #service-catalog-item h2 {
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  white-space: normal !important;
+  max-width: 100% !important;
+  line-height: var(--line-height-2) !important;
+}
+.svc-form-panel #service-catalog-item h1 { font-size: var(--font-size-2xl) !important; }
+.svc-form-panel #service-catalog-item h2 { font-size: var(--font-size-lg) !important; }
+
+.svc-form-panel #service-catalog-item figure,
+.svc-form-panel #service-catalog-item [data-garden-id="avatars.avatar"],
+.svc-form-panel #service-catalog-item [class*="StyledAvatar"],
+.svc-form-panel #service-catalog-item [class*="Avatar"],
+.svc-form-panel #service-catalog-item [class*="Icon"] {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  line-height: normal !important;
+}
+.svc-form-panel #service-catalog-item svg,
+.svc-form-panel #service-catalog-item img {
+  overflow: visible !important;
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+}
+.svc-form-panel #service-catalog-item > *:first-child {
+  overflow: visible !important;
+  padding-top: 4px !important;
+}
+
+/* ---- CUSTOM SUBMIT BUTTON ---- */
+.svc-hide-native-actions { display: none !important; }
+.svc-custom-submit-wrap {
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--color-ui-10);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+}
+.svc-custom-submit-btn {
+  min-width: 240px; min-height: 48px; background-color: var(--color-brand-secondary); color: var(--color-brand-primary);
+  padding: var(--space-105) var(--space-4); border-radius: var(--radius-round); font-size: var(--font-size-xs); line-height: var(--line-height-3);
+  font-weight: var(--font-weight-medium); border: none; cursor: pointer;
+}
+.svc-custom-submit-btn:hover,
+.svc-custom-submit-btn:active { background-image: linear-gradient(var(--color-hover-light-10), var(--color-hover-light-10)); }
+.svc-custom-submit-btn:disabled { opacity: 0.4; cursor: wait; }
+/* In a draft preview the real button stays disabled for good, and service_page.hbs copies
+   its title (the reason) onto this one. A "wait" cursor would promise that it ends. */
+.svc-custom-submit-btn:disabled[title] { cursor: not-allowed; }
+.svc-custom-submit-note { margin: 0; font-size: var(--font-size-2xs); color: var(--color-ui-60); }
+/* The button only proxies a click to the module's real submit button, so with none on
+   the page (the module showed its error screen) it would do nothing. Same lookup as
+   getNativeSubmit() in service_page.hbs. */
+.svc-form-panel:not(:has(#service-catalog-item :is([data-svc-native-submit], button[type="submit"], input[type="submit"]))) .svc-custom-submit-wrap { display: none; }
+
+/* ---- SUBMIT BUTTON: overlap-aware hiding handled by JS ---- */
+/* Ensure form dropdowns render above the submit wrap */
+.svc-form-panel #service-catalog-item {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- FLOATING TRAINING BUTTON ---- */
+.svc-training-fab {
+  position: fixed; inset-inline-end: 24px; bottom: 24px; z-index: 9000;
+  display: inline-flex; align-items: center; gap: 0;
+  height: 52px; width: 52px; max-width: 52px; padding: 0; border-radius: 1000px;
+  background-color: var(--color-brand-secondary);
+  color: var(--color-brand-primary) !important; text-decoration: none !important;
+  overflow: hidden; white-space: nowrap; box-shadow: var(--shadow-3);
+  transition: max-width var(--motion-slow) var(--ease-out), width var(--motion-slow) var(--ease-out), box-shadow var(--motion-base) ease, transform var(--motion-base) ease;
+}
+.svc-training-fab-icon { flex: 0 0 52px; width: 52px; height: 52px; display: inline-flex; align-items: center; justify-content: center; }
+.svc-training-fab-icon svg { width: 22px; height: 22px; stroke: var(--color-brand-primary); }
+.svc-training-fab-label {
+  flex: 1 1 auto; padding-inline-end: var(--space-205); font-size: var(--font-size-2xs); font-weight: 600; line-height: 1;
+  opacity: 0; transform: translateX(-4px);
+  transition: opacity var(--motion-base) ease 0.06s, transform var(--motion-base) ease 0.06s;
+}
+.svc-training-fab:hover, .svc-training-fab:focus-visible {
+  width: auto; max-width: 320px; transform: translateY(-2px); box-shadow: var(--shadow-4);
+}
+.svc-training-fab:hover .svc-training-fab-label, .svc-training-fab:focus-visible .svc-training-fab-label { opacity: 1; transform: translateX(0); }
+.svc-training-fab.svc-fab-pulse { animation: svcFabPulse 1.6s ease-in-out 1; }
+@keyframes svcFabPulse {
+  0%   { box-shadow: var(--shadow-3), 0 0 0 0 var(--color-brand-secondary); }
+  60%  { box-shadow: var(--shadow-3), 0 0 0 14px transparent; }
+  100% { box-shadow: var(--shadow-3), 0 0 0 0 transparent; }
+}
+
+/* ---- PAGE LOAD (skeleton placeholder) ---- */
+#service-catalog-item { opacity: 0; transition: opacity var(--motion-slow) ease; }
+.svc-form-ready #service-catalog-item { opacity: 1; }
+@keyframes svcFormFailsafe { to { opacity: 1; } }
+#service-catalog-item { animation: svcFormFailsafe 0s linear 6.5s forwards; }
+
+.svc-custom-submit-wrap { opacity: 0; transition: opacity var(--motion-slow) ease; }
+.svc-form-ready .svc-custom-submit-wrap { opacity: 1; }
+.svc-custom-submit-wrap { animation: svcFormFailsafe 0s linear 6.5s forwards; }
+
+.svc-skeleton {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  transition: opacity var(--motion-slow) ease;
+  z-index: 1;
+}
+.svc-skeleton.svc-skel-hide { opacity: 0; pointer-events: none; }
+.svc-skel-row { display: flex; align-items: center; gap: 14px; }
+.svc-skel-icon-row { margin-bottom: 6px; }
+.svc-skel-avatar { width: 52px; height: 52px; border-radius: 16px; flex: 0 0 52px; }
+.svc-skel-lines { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.svc-skel-bar { height: 14px; border-radius: 8px; }
+.svc-skel-title { width: 60%; height: 22px; }
+.svc-skel-sub { width: 85%; }
+.svc-skel-divider { height: 1px; background: var(--color-ui-10); margin: 18px 0; }
+.svc-skel-label { width: 30%; height: 12px; margin-bottom: 10px; }
+.svc-skel-label-2 { margin-top: 22px; }
+.svc-skel-input { width: 100%; height: 40px; border-radius: 8px; }
+.svc-skel-box { width: 100%; height: 120px; border-radius: 8px; }
+
+.svc-skel-avatar, .svc-skel-bar, .svc-skel-input, .svc-skel-box {
+  @extend %svc-skel-shimmer;
+}
+
+body > pre, body > code, body > .template-name, body > .editor-label { display: none !important; }
+
+/* ---- SEARCH (in the breadcrumb row, like the Knowledge pages) ---- */
+/* The pill keeps the hero's skin and its hot pink button, scaled down to sit
+   beside the breadcrumbs from tablet up and above the form below that. */
+.svc-searchrow {
+  margin: 0;
+  width: 100%;
+
+  @include tablet { flex: 0 1 360px; width: auto; }
+}
+
+/* From desktop the help rail sits directly under this row, so the row is laid
+   on the form layout's two columns: the breadcrumbs over the form and the pill
+   over the rail. The pill is then exactly as wide as the rail's card and the two
+   share both edges, and so a center, at any width or text size. It was a fixed
+   360px against the card's 320px: flush on the right, 40px too wide on the left
+   and 20px off center. Tablet keeps the flex row above, where the rail is far
+   below the pill, under the form. */
+.sub-nav.svc-subnav {
+  @include desktop {
+    display: grid;
+    @include item-columns;
+  }
+}
+
+.svc-searchrow .svc-hero-search {
+  max-width: none;
+  margin: 0;
+  padding: var(--space-05) var(--space-05) var(--space-05) var(--space-2);
+  border: 1px solid var(--color-ui-30);
+}
+
+.svc-searchrow .svc-hero-search:focus-within {
+  border-color: var(--color-focus-ring);
+  box-shadow: var(--shadow-focus);
+}
+
+/* The button is the one magnifier here; the leading icon is decorative. */
+.svc-searchrow .svc-hero-search-icon { display: none; }
+
+.svc-searchrow .svc-hero-search input[type="search"] {
+  font-size: var(--font-size-2xs) !important;
+  padding: var(--space-1) var(--space-1) var(--space-1) 0 !important;
+}
+
+.svc-searchrow .svc-hero-search-btn {
+  width: 36px;
+  height: 36px;
+}
+
+/* ---- BELOW DESKTOP: single column ---- */
+.svc-custom-submit-btn { width: 100%; min-width: 0; }
+@include tablet {
+  .svc-custom-submit-btn { width: auto; min-width: 240px; }
+}
+@media (max-width: 960px) {
+  .svc-form-panel textarea { resize: vertical !important; }
+  .svc-training-fab { inset-inline-end: 16px; bottom: 16px; }
+}
+@media (max-width: 600px) {
+  .svc-form-panel #service-catalog-item h1 {
+    font-size: var(--font-size-2xl) !important;
+  }
+  .svc-form-panel #service-catalog-item h2 {
+    font-size: var(--font-size-md) !important;
+  }
+}
+
+/* ---- REDUCED MOTION ---- */
+@media (prefers-reduced-motion: reduce) {
+  .svc-training-fab, .svc-training-fab-label { transition: none !important; }
+  .svc-training-fab.svc-fab-pulse { animation: none !important; }
+  .svc-custom-submit-btn { transition: none !important; }
+  .svc-custom-submit-btn:hover, .svc-custom-submit-btn:active { transform: none !important; }
+  .svc-skel-avatar, .svc-skel-bar, .svc-skel-input, .svc-skel-box { animation: none !important; }
+  #service-catalog-item { transition: none !important; }
+}

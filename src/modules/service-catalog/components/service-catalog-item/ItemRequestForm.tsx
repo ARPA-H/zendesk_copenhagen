@@ -162,6 +162,7 @@ interface ItemRequestFormProps {
   onAttachmentUploadingChange: (isUploading: boolean) => void;
   isFormInitializing: boolean;
   isPreviewMode?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function ItemRequestForm({
@@ -193,6 +194,7 @@ export function ItemRequestForm({
   onAttachmentUploadingChange,
   isFormInitializing,
   isPreviewMode = false,
+  isSubmitting = false,
 }: ItemRequestFormProps) {
   const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -222,8 +224,7 @@ export function ItemRequestForm({
         name: rec.name,
         value: rec.id,
         serialNumber: rec.custom_object_fields["standard::serial_number"] as
-          | string
-          | undefined,
+          string | undefined,
       };
 
       if (rec.custom_object_key === "standard::itam_asset") {
@@ -346,8 +347,8 @@ export function ItemRequestForm({
         error: isAssetField(field)
           ? assetError || field.error
           : isAssetTypeField(field)
-          ? assetTypeError || field.error
-          : field.error,
+            ? assetTypeError || field.error
+            : field.error,
       };
 
       elements.push(
@@ -418,7 +419,22 @@ export function ItemRequestForm({
                 size="large"
                 isStretched
                 type="submit"
-                disabled={isPreviewMode}
+                // Marks the real submit button so the static proxy button in
+                // service_page.hbs (#svc-custom-submit) can find it
+                // unambiguously. Do not remove: a generic `[role="button"]`
+                // selector also matches Garden's FileUpload dropzone (it
+                // hardcodes role="button"), which sits earlier in the DOM
+                // when an attachments field is configured and was
+                // previously matched first, causing the proxy to open the
+                // file picker instead of submitting the form.
+                data-svc-native-submit
+                // Disabled for the whole submit attempt (not just preview
+                // mode) so this attribute is an accurate, observable signal
+                // of "a submission is in flight" -- service_page.hbs's
+                // custom-submit proxy button mirrors it via a
+                // MutationObserver to keep its own disabled state in sync
+                // instead of guessing with a blind timeout.
+                disabled={isPreviewMode || isSubmitting}
                 title={
                   isPreviewMode
                     ? t(

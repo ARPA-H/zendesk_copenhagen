@@ -1,4 +1,4 @@
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { createTranslationLoader } from "../shared/i18n/createTranslationLoader";
 
 import ApprovalRequestPage from "./ApprovalRequestPage";
@@ -9,6 +9,7 @@ import {
   ThemeProviders,
   initI18next,
   loadTranslations,
+  normalizeHelpCenterPath,
 } from "../shared";
 import type { Settings } from "../shared";
 import { ErrorBoundary } from "../shared/error-boundary/ErrorBoundary";
@@ -20,6 +21,7 @@ export async function renderApprovalRequest(
   helpCenterPath: string
 ) {
   const { baseLocale, locale } = props;
+  const safeHelpCenterPath = normalizeHelpCenterPath(helpCenterPath);
   initI18next(baseLocale);
   await loadTranslations(locale, baseLocale, [
     createTranslationLoader(
@@ -29,12 +31,11 @@ export async function renderApprovalRequest(
     sharedTranslations,
   ]);
 
-  render(
+  createRoot(container).render(
     <ThemeProviders theme={createTheme(settings)}>
-      <ErrorBoundary helpCenterPath={helpCenterPath}>
-        <ApprovalRequestPage {...props} helpCenterPath={helpCenterPath} />
+      <ErrorBoundary helpCenterPath={safeHelpCenterPath}>
+        <ApprovalRequestPage {...props} helpCenterPath={safeHelpCenterPath} />
       </ErrorBoundary>
-    </ThemeProviders>,
-    container
+    </ThemeProviders>
   );
 }

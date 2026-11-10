@@ -1,0 +1,132 @@
+name: Update theme
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - sandbox
+    paths-ignore:
+      - '.github/**'
+      - '**.md'
+      - 'LICENSE'
+      - 'bin/**'
+      - '__mocks__/**'
+      - 'jest.config.mjs'
+      - 'jest.setup.js'
+      - 'src/**/*.test.ts'
+      - 'src/**/*.test.tsx'
+      - 'src/**/*.spec.ts'
+      - 'src/**/*.spec.tsx'
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+      - sandbox
+    paths-ignore:
+      - '.github/**'
+      - '**.md'
+      - 'LICENSE'
+      - 'bin/**'
+      - '__mocks__/**'
+      - 'jest.config.mjs'
+      - 'jest.setup.js'
+      - 'src/**/*.test.ts'
+      - 'src/**/*.test.tsx'
+      - 'src/**/*.spec.ts'
+      - 'src/**/*.spec.tsx'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: update-theme-${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  update_theme:
+    # SECURITY: fail closed for manual dispatches. workflow_dispatch has no
+    # branch restriction of its own, so a dispatch from an arbitrary ref would
+    # otherwise check out and run unreviewed code, while TARGET_BRANCH (from
+    # github.ref_name) still resolves to the production secrets below for any
+    # branch name other than 'sandbox'. Only allow it from the two reviewed
+    # deployment branches.
+    if: >-
+      github.event.pull_request.merged == true ||
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/sandbox'))
+    # SECURITY (residual risk, not closable from this file alone): the `if`
+    # above is self-bypassable - it lives in the dispatched ref's own copy of
+    # this workflow, so a writer can dispatch a feature-branch copy with the
+    # guard removed and still reach the production secrets below. The real
+    # boundary is this `environment:` binding: GitHub enforces an
+    # environment's deployment-branch policy and required reviewers
+    # server-side, independent of the YAML being executed - but only once the
+    # `production`/`sandbox` environments are configured in Settings ->
+    # Environments (branch restriction, required reviewers) and the Zendesk
+    # secrets are moved into them, a repo-admin action this file can't do.
+    environment:
+      name: ${{ (github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name) == 'sandbox' && 'sandbox' || 'production' }}
+    runs-on: ubuntu-latest
+    env:
+      TARGET_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build theme assets
+        run: yarn build
+
+      - name: Set theme version name
+        run: |
+          VERSION=$(node -p "require('./manifest.json').version.split('.').slice(0,2).join('.')")
+          BRANCH="${TARGET_BRANCH}"
+          RUN_NUMBER="${{ github.run_number }}"
+          THEME_NAME="ARPA-H Theme ${VERSION}.${RUN_NUMBER} (${BRANCH})"
+          echo "Setting theme name to: ${THEME_NAME}"
+          # The Theme Update Job rejects uploads whose manifest "version" isn't strictly
+          # higher than the currently live theme's version, so bump the patch component
+          # with the ever-increasing run number. This is build-only (not committed back
+          # to git) — the real semantic version is still managed by semantic-release.
+          # SECURITY: THEME_NAME embeds the branch name (attacker-influenced on
+          # workflow_dispatch), so it is passed to node via the environment and
+          # read with process.env instead of being shell-interpolated into the
+          # inline script, which allowed JS injection via a crafted branch name.
+          THEME_NAME="${THEME_NAME}" THEME_VERSION="${VERSION}.${RUN_NUMBER}" node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+            m.name = process.env.THEME_NAME;
+            m.version = process.env.THEME_VERSION;
+            fs.writeFileSync("manifest.json", JSON.stringify(m, null, 2) + "\n");
+          '
+
+      - name: Zip theme files
+        run: |
+          zip -r theme.zip . -x ".*" -x "node_modules/*"
+          mv theme.zip ./.github/workflows/scripts/
+
+      - name: Run updateTheme.js
+        run: node ./.github/workflows/scripts/updateTheme.js
+        env:
+          ZENDESK_SUBDOMAIN: ${{ (env.TARGET_BRANCH == 'sandbox') && secrets.SANDBOX_DOMAIN || secrets.ZENDESK_SUBDOMAIN }}
+          ZENDESK_EMAIL: ${{ secrets.ZENDESK_EMAIL }}
+          ZENDESK_TOKEN: ${{ (env.TARGET_BRANCH == 'sandbox') && secrets.SANDBOX_TOKEN || secrets.ZENDESK_TOKEN }}
+          BRAND_ID: ${{ (env.TARGET_BRANCH == 'sandbox') && vars.SANDBOX_BRAND_ID || vars.BRAND_ID }}
+
+      - name: Upload theme file
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: theme-file
+          path: ./.github/workflows/scripts/theme.zip

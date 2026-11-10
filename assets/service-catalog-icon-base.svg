@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1">
+<!-- Not rendered. Its sole purpose is to give service_list_page.hbs / service_page.hbs
+     a stable, purpose-named {{asset}} call to derive the theme's assets/ base URL
+     from (see src/modules/svc-page-utils/initIconSupport.ts). Do not rename or
+     remove without updating both templates. -->
+</svg>

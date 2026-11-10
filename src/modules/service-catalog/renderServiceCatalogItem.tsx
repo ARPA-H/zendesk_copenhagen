@@ -1,4 +1,4 @@
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { createTranslationLoader } from "../shared/i18n/createTranslationLoader";
 import { ticketFieldsTranslations } from "../ticket-fields";
 
@@ -11,6 +11,7 @@ import {
   ThemeProviders,
   initI18next,
   loadTranslations,
+  normalizeHelpCenterPath,
 } from "../shared";
 import type { Settings } from "../shared";
 import { ErrorBoundary } from "../shared/error-boundary/ErrorBoundary";
@@ -21,6 +22,7 @@ export async function renderServiceCatalogItem(
   props: ServiceCatalogItemProps & { locale: string }
 ) {
   const { baseLocale, locale, helpCenterPath } = props;
+  const safeHelpCenterPath = normalizeHelpCenterPath(helpCenterPath);
   initI18next(baseLocale);
   await loadTranslations(locale, baseLocale, [
     createTranslationLoader(
@@ -30,12 +32,11 @@ export async function renderServiceCatalogItem(
     ticketFieldsTranslations,
     sharedTranslations,
   ]);
-  render(
+  createRoot(container).render(
     <ThemeProviders theme={createTheme(settings)}>
-      <ErrorBoundary helpCenterPath={helpCenterPath}>
-        <ServiceCatalogItem {...props} />
+      <ErrorBoundary helpCenterPath={safeHelpCenterPath}>
+        <ServiceCatalogItem {...props} helpCenterPath={safeHelpCenterPath} />
       </ErrorBoundary>
-    </ThemeProviders>,
-    container
+    </ThemeProviders>
   );
 }

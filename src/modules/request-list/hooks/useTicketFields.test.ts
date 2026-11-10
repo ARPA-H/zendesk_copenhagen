@@ -4,7 +4,7 @@ jest.mock("../utils/pagination/fetchAllCursorPages", () => ({
 }));
 
 import type { TicketField } from "../data-types";
-import { renderHook } from "@testing-library/react-hooks";
+import { renderHook, waitFor } from "@testing-library/react";
 import { useTicketFields } from "./useTicketFields";
 
 const activeTicketField: TicketField = {
@@ -46,7 +46,7 @@ test("fetches all ticket fields via ticket_fields api call and returns the activ
       },
     ]);
 
-  const { result, waitForNextUpdate } = renderHook(() =>
+  const { result } = renderHook(() =>
     useTicketFields({
       locale: "dk",
       viewRequestsAcrossBrandsEnabled: false,
@@ -54,22 +54,22 @@ test("fetches all ticket fields via ticket_fields api call and returns the activ
     })
   );
 
-  await waitForNextUpdate();
+  await waitFor(() => {
+    expect(result.current).toEqual({
+      ticketFields: [activeTicketField],
+      error: undefined,
+      isLoading: false,
+    });
+  });
 
   expect(fetchAllCursorPages.mock.calls[0][1]).toEqual("ticket_fields");
   expect(fetchAllCursorPages.mock.calls[1][1]).toEqual("ticket_forms");
-
-  expect(result.current).toEqual({
-    ticketFields: [activeTicketField],
-    error: undefined,
-    isLoading: false,
-  });
 });
 
 test("handles exceptions", async () => {
   fetchAllCursorPages.mockRejectedValueOnce(new Error("Network error"));
 
-  const { result, waitForNextUpdate } = renderHook(() =>
+  const { result } = renderHook(() =>
     useTicketFields({
       locale: "dk",
       viewRequestsAcrossBrandsEnabled: false,
@@ -77,11 +77,12 @@ test("handles exceptions", async () => {
     })
   );
 
-  await waitForNextUpdate();
+  await waitFor(() => {
+    expect(result.current.isLoading).toBe(false);
+  });
 
   expect(result.current.error).toEqual(new Error("Network error"));
   expect(result.current.ticketFields).toEqual([]);
-  expect(result.current.isLoading).toBe(false);
 });
 
 test("filters out inactive subject field", async () => {
@@ -105,7 +106,7 @@ test("filters out inactive subject field", async () => {
       },
     ]);
 
-  const { result, waitForNextUpdate } = renderHook(() =>
+  const { result } = renderHook(() =>
     useTicketFields({
       locale: "dk",
       viewRequestsAcrossBrandsEnabled: false,
@@ -113,12 +114,12 @@ test("filters out inactive subject field", async () => {
     })
   );
 
-  await waitForNextUpdate();
-
-  expect(result.current).toEqual({
-    ticketFields: [activeTicketField],
-    error: undefined,
-    isLoading: false,
+  await waitFor(() => {
+    expect(result.current).toEqual({
+      ticketFields: [activeTicketField],
+      error: undefined,
+      isLoading: false,
+    });
   });
 });
 
@@ -141,7 +142,7 @@ test("only returns ticket fields present in active ticket forms", async () => {
       { id: 1, active: true, ticket_field_ids: [10, 40] },
     ]);
 
-  const { result, waitForNextUpdate } = renderHook(() =>
+  const { result } = renderHook(() =>
     useTicketFields({
       locale: "dk",
       viewRequestsAcrossBrandsEnabled: false,
@@ -149,12 +150,12 @@ test("only returns ticket fields present in active ticket forms", async () => {
     })
   );
 
-  await waitForNextUpdate();
-
-  expect(result.current).toEqual({
-    ticketFields: [activeTicketField, activeCustomField40],
-    error: undefined,
-    isLoading: false,
+  await waitFor(() => {
+    expect(result.current).toEqual({
+      ticketFields: [activeTicketField, activeCustomField40],
+      error: undefined,
+      isLoading: false,
+    });
   });
 });
 
@@ -163,19 +164,20 @@ test("when viewRequestsAcrossBrandsEnabled=true, returns all active fields when 
     .mockResolvedValueOnce([activeTicketField, inactiveTicketField])
     .mockResolvedValueOnce([]);
 
-  const { result, waitForNextUpdate } = renderHook(() =>
+  const { result } = renderHook(() =>
     useTicketFields({
       locale: "dk",
       viewRequestsAcrossBrandsEnabled: true,
       filterByBrand: false,
     })
   );
-  await waitForNextUpdate();
 
-  expect(result.current).toEqual({
-    ticketFields: [activeTicketField],
-    error: undefined,
-    isLoading: false,
+  await waitFor(() => {
+    expect(result.current).toEqual({
+      ticketFields: [activeTicketField],
+      error: undefined,
+      isLoading: false,
+    });
   });
 });
 
@@ -196,7 +198,7 @@ test("when filterByBrand is false, only fetches ticket fields and filters by act
     activeCustomField,
   ]);
 
-  const { result, waitForNextUpdate } = renderHook(() =>
+  const { result } = renderHook(() =>
     useTicketFields({
       locale: "dk",
       viewRequestsAcrossBrandsEnabled: false,
@@ -204,21 +206,21 @@ test("when filterByBrand is false, only fetches ticket fields and filters by act
     })
   );
 
-  await waitForNextUpdate();
+  await waitFor(() => {
+    expect(result.current).toEqual({
+      ticketFields: [activeTicketField, activeCustomField],
+      error: undefined,
+      isLoading: false,
+    });
+  });
 
   expect(fetchAllCursorPages).toHaveBeenCalledTimes(1);
-
-  expect(result.current).toEqual({
-    ticketFields: [activeTicketField, activeCustomField],
-    error: undefined,
-    isLoading: false,
-  });
 });
 
 test("when filterByBrand is false, does not fetch ticket forms", async () => {
   fetchAllCursorPages.mockResolvedValueOnce([activeTicketField]);
 
-  const { result, waitForNextUpdate } = renderHook(() =>
+  const { result } = renderHook(() =>
     useTicketFields({
       locale: "dk",
       viewRequestsAcrossBrandsEnabled: false,
@@ -226,10 +228,10 @@ test("when filterByBrand is false, does not fetch ticket forms", async () => {
     })
   );
 
-  await waitForNextUpdate();
+  await waitFor(() => {
+    expect(result.current.ticketFields).toEqual([activeTicketField]);
+  });
 
   expect(fetchAllCursorPages).toHaveBeenCalledTimes(1);
   expect(fetchAllCursorPages.mock.calls[0][1]).toEqual("ticket_fields");
-
-  expect(result.current.ticketFields).toEqual([activeTicketField]);
 });

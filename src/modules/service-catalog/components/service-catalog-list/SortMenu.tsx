@@ -46,6 +46,7 @@ export function getSortParams(option: SortOption): {
 
 const StyledButton = styled(Button)`
   white-space: nowrap;
+  font-size: var(--font-size-2xs, 0.875rem);
 `;
 
 interface SortMenuProps {
@@ -61,11 +62,22 @@ export function SortMenu({ selectedOption, onChange }: SortMenuProps) {
     name_desc: t("service-catalog.sort.name-desc", "Z-A"),
     created_at_desc: t("service-catalog.sort.newest", "Newest"),
   };
+  const sortLabel = t("service-catalog.sort.aria-label", "Sort services");
+  // Built from messages every locale already translates, so the name is never a
+  // mix of languages. The button's visible text is only the option.
+  const buttonLabel = `${sortLabel}: ${optionLabels[selectedOption]}`;
 
   return (
     <Menu
       button={(props) => (
-        <StyledButton {...props} isBasic size="small">
+        <StyledButton
+          {...props}
+          // The print stylesheet hides this menu (styles/_print.scss).
+          className="service-catalog-sort"
+          isBasic
+          size="small"
+          aria-label={buttonLabel}
+        >
           {optionLabels[selectedOption]}
           <Button.EndIcon>
             <ChevronIcon />
@@ -78,10 +90,7 @@ export function SortMenu({ selectedOption, onChange }: SortMenuProps) {
         }
       }}
     >
-      <ItemGroup
-        type="radio"
-        aria-label={t("service-catalog.sort.aria-label", "Sort services")}
-      >
+      <ItemGroup type="radio" aria-label={sortLabel}>
         <Item value="name_asc" isSelected={selectedOption === "name_asc"}>
           {optionLabels.name_asc}
         </Item>

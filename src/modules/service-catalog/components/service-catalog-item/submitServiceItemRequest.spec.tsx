@@ -122,6 +122,53 @@ describe("submitServiceItemRequest", () => {
       { id: 1, value: "value-1" },
       { id: associatedLookupField.id, value: mockItem.id },
     ]);
+    // Guards against a regression where the request submitted through the
+    // `/hc/api/v2/service_catalog/requests` proxy loses its "web form"
+    // channel signal and falls out of channel-based omni-channel routing
+    // (unlike a native <form> submission, this endpoint has no implicit
+    // channel signal, so it must be set explicitly).
+    expect(request.via).toEqual({ channel: "web form", source: 50 });
+  });
+
+  it("encodes all user-controlled comment values as text", async () => {
+    const fetchMock = mockFetch();
+    const unsafeName = '<img src=x onerror="alert(1)"> & Service';
+    const unsafeSubmitterLabel =
+      'Submitter: <img src=x onerror="alert(2)"> Agent';
+    const unsafeRequesterLabel =
+      "Requester: <script>alert(3)</script> Employee";
+
+    await submitServiceItemRequest(
+      { ...mockItem, name: unsafeName },
+      [],
+      associatedLookupField,
+      attachments,
+      helpCenterPath,
+      null,
+      null,
+      null,
+      {
+        submitterLabel: unsafeSubmitterLabel,
+        requesterLabel: unsafeRequesterLabel,
+      }
+    );
+
+    const request = getSubmittedRequest(fetchMock);
+    const htmlBody = request.comment.html_body;
+    const parsedDocument = new DOMParser().parseFromString(
+      htmlBody,
+      "text/html"
+    );
+    const link = parsedDocument.querySelector("a");
+    const paragraphs = parsedDocument.querySelectorAll("p");
+
+    expect(request.subject).toBe(unsafeName);
+    expect(link?.textContent).toBe(unsafeName);
+    expect(link?.children).toHaveLength(0);
+    expect(paragraphs[0]?.textContent).toBe(unsafeSubmitterLabel);
+    expect(paragraphs[0]?.children).toHaveLength(0);
+    expect(paragraphs[1]?.textContent).toBe(unsafeRequesterLabel);
+    expect(paragraphs[1]?.children).toHaveLength(0);
   });
 
   it("encodes all user-controlled comment values as text", async () => {

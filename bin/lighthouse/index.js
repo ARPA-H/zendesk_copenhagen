@@ -1,4 +1,6 @@
-require("dotenv").config();
+// dotenv >=17 defaults to logging an "injected env" line (plus an ad) on
+// every run; quiet it to keep this script's console output clean.
+require("dotenv").config({ quiet: true });
 const lighthouse = require("lighthouse/core/index.cjs");
 const puppeteer = require("puppeteer");
 const config = require("./config");

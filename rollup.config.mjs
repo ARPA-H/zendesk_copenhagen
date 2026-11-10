@@ -38,6 +38,7 @@ export default defineConfig([
       "flash-notifications": "src/modules/flash-notifications/index.ts",
       "service-catalog": "src/modules/service-catalog/index.tsx",
       "approval-requests": "src/modules/approval-requests/index.tsx",
+      "svc-page-utils": "src/modules/svc-page-utils/index.ts",
     },
     output: {
       dir: "assets",
@@ -48,6 +49,13 @@ export default defineConfig([
           id.includes("node_modules/@ckeditor5")
         ) {
           return "wysiwyg";
+        }
+
+        // Keep Iconify in the service-catalog bundle (the only module that
+        // uses it) rather than the shared chunk, so non-catalog pages don't
+        // download an icon library they never render.
+        if (id.includes("node_modules/@iconify")) {
+          return undefined;
         }
 
         if (id.includes("node_modules") || id.includes("src/modules/shared")) {

@@ -2,6 +2,7 @@ import type { ServiceCatalogItem } from "../../data-types/ServiceCatalogItem";
 import styled from "styled-components";
 import { getColor } from "@zendeskgarden/react-theming";
 import { ItemThumbnail } from "../item-thumbnail/ItemThumbnail";
+import { stripIconMarker } from "../../../shared";
 import { useMemo } from "react";
 import { htmlToText } from "../../utils/sanitize";
 
@@ -20,7 +21,8 @@ const ItemLink = styled.a`
   color: ${({ theme }) => getColor({ theme, variable: "foreground.default" })};
 
   &:hover {
-    border-color: ${(props) => props.theme.colors.primaryHue};
+    border-color: ${({ theme }) =>
+      getColor({ theme, variable: "border.primaryEmphasis" })};
   }
 
   &:hover,
@@ -30,17 +32,13 @@ const ItemLink = styled.a`
 `;
 
 const ItemTitle = styled.div`
-  font-size: ${(props) => props.theme.fontSizes.md};
+  font-size: var(--font-size-xs, 1rem);
   font-weight: ${(props) => props.theme.fontWeights.semibold};
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
   word-break: break-word;
 `;
 
 const ItemDescription = styled.div`
-  font-size: ${(props) => props.theme.fontSizes.sm};
+  font-size: var(--font-size-2xs, 0.875rem);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
@@ -76,14 +74,19 @@ const ServiceCatalogListItem = ({
   );
 
   const cleanText = useMemo(
-    () => htmlToText(serviceItem.description || ""),
+    () => htmlToText(stripIconMarker(serviceItem.description || "")),
     [serviceItem.description]
   );
 
   return (
     <ItemContainer data-testid="service-catalog-list-item-container">
       <ItemLink href={itemUrl}>
-        <ItemThumbnail size="medium" url={serviceItem.thumbnail_url} />
+        <ItemThumbnail
+          size="medium"
+          name={serviceItem.name}
+          description={serviceItem.description}
+          url={serviceItem.thumbnail_url}
+        />
         <TextContainer>
           <ItemTitle>{titleText}</ItemTitle>
           <ItemDescription>{cleanText}</ItemDescription>

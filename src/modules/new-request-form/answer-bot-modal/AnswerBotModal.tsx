@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import type { AnswerBotArticle } from "../data-types";
 import { Modal } from "@zendeskgarden/react-modals";
 import { Accordion } from "@zendeskgarden/react-accordions";
@@ -176,7 +177,15 @@ export function AnswerBotModal({
                 <Accordion.Label>{title}</Accordion.Label>
               </Accordion.Header>
               <Accordion.Panel>
-                <Paragraph dangerouslySetInnerHTML={{ __html: snippet }} />
+                {/* Defense in depth: snippets are produced server-side
+                    from article content, and this client-side sanitization
+                    guarantees script-bearing markup never reaches the
+                    dangerouslySetInnerHTML sink. */}
+                <Paragraph
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(snippet),
+                  }}
+                />
                 <ArticleLink
                   isExternal
                   href={`${html_url}?auth_token=${authToken}`}

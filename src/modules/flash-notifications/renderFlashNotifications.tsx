@@ -1,8 +1,9 @@
-import { render } from "react-dom";
+import { createRoot } from "react-dom/client";
 import {
   sharedTranslations,
   ThemeProviders,
   createTheme,
+  hasInitializedI18next,
   initI18next,
   loadTranslations,
 } from "../shared";
@@ -20,17 +21,19 @@ export async function renderFlashNotifications(
   baseLocale: string,
   locale: string
 ) {
-  initI18next(baseLocale);
+  // document_head.hbs loads this host after the page's own modules may have
+  // started, and initI18next resets the shared instance, so only start it when
+  // no page module has.
+  if (!hasInitializedI18next()) initI18next(baseLocale);
   await loadTranslations(locale, baseLocale, [sharedTranslations]);
 
   try {
     const container = document.createElement("div");
     document.body.appendChild(container);
-    render(
+    createRoot(container).render(
       <ThemeProviders theme={createTheme(settings)}>
         <GlobalNotificationsRoot />
-      </ThemeProviders>,
-      container
+      </ThemeProviders>
     );
   } catch (e) {
     console.error("Cannot render flash notifications", e);

@@ -90,10 +90,13 @@ window.addEventListener("DOMContentLoaded", () => {
     return s.trim() === "";
   }
 
-  function isEmptyHtml(xml) {
-    const doc = new DOMParser().parseFromString(`<_>${xml}</_>`, "text/xml");
-    const img = doc.querySelector("img");
-    return img === null && isEmptyPlaintext(doc.children[0].textContent);
+  function isEmptyHtml(html) {
+    // Parse with DOMParser (rather than assigning to innerHTML) so the
+    // untrusted comment text is never reinterpreted as live, renderable HTML.
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const hasImg = doc.querySelector("img") !== null;
+    const text = doc.body.textContent || "";
+    return !hasImg && isEmptyPlaintext(text);
   }
 
   const isEmpty = usesWysiwyg ? isEmptyHtml : isEmptyPlaintext;

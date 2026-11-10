@@ -14,7 +14,7 @@
 }
 
 .vote-sum {
-  color: $secondary-text-color;
+  color: var(--type-subheading);
   display: block;
   margin: 3px 0;
 
@@ -30,7 +30,7 @@
 
 .vote-up:hover,
 .vote-down:hover {
-  color: $brand_color;
+  color: var(--color-brand-primary);
 }
 
 .vote-up, .vote-down {
@@ -39,7 +39,7 @@
   appearance: none;
   background-color: transparent;
   border: none;
-  color: $secondary-text-color;
+  color: var(--type-subheading);
   cursor: pointer;
   min-height: 35px;
   min-width: 35px;
@@ -49,9 +49,9 @@
 }
 
 .vote-voted {
-  color: $brand_color;
+  color: var(--color-brand-primary);
 }
 
 .vote-voted:hover {
-  color: $hover-button-color;
+  color: var(--color-link-hover);
 }

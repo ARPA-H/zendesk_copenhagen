@@ -3,7 +3,6 @@ import { screen } from "@testing-library/react";
 import { getColor } from "@zendeskgarden/react-theming";
 import ServiceCatalogListItem from "./ServiceCatalogListItem";
 import type { ServiceCatalogItem } from "../../data-types/ServiceCatalogItem";
-import { userEvent } from "@testing-library/user-event";
 
 jest.mock("@zendeskgarden/svg-icons/src/16/shapes-fill.svg", () => {
   return function MockShapesIcon() {
@@ -81,6 +80,32 @@ describe("ServiceCatalogListItem", () => {
       );
     });
 
+    it("should show a long name in full instead of clamping it behind a hover-only tooltip", () => {
+      const longName =
+        "Request an exception to the standard government-furnished laptop configuration for international travel";
+
+      render(
+        <ServiceCatalogListItem
+          serviceItem={{ ...mockServiceItem, name: longName }}
+          helpCenterPath={mockHelpCenterPath}
+        />
+      );
+
+      const title = screen.getByText(longName);
+      expect(title).not.toHaveAttribute("title");
+      expect(
+        getComputedStyle(title).getPropertyValue("-webkit-line-clamp")
+      ).toBe("");
+
+      // Control: the secondary description is still clamped, so an empty value
+      // above means "not clamped" rather than "jsdom cannot read the property".
+      expect(
+        getComputedStyle(
+          screen.getByText(/This is a keyboard/)
+        ).getPropertyValue("-webkit-line-clamp")
+      ).toBe("3");
+    });
+
     it("should render name and description as text without executing HTML payloads", () => {
       const onError = jest.fn();
       (window as unknown as { __xss?: () => void }).__xss = onError;
@@ -105,7 +130,7 @@ describe("ServiceCatalogListItem", () => {
       delete (window as unknown as { __xss?: () => void }).__xss;
     });
 
-    it("should use primaryHue as card border color on hover", async () => {
+    it("should use the primary emphasis border color on hover", async () => {
       render(
         <ServiceCatalogListItem
           serviceItem={mockServiceItem}
@@ -113,17 +138,33 @@ describe("ServiceCatalogListItem", () => {
         />
       );
 
-      const user = userEvent.setup();
       const linkElement = screen.getByRole("link");
       const defaultBorderColor = testTheme.palette.grey?.[300];
 
       expect(defaultBorderColor).toBeTruthy();
       expect(linkElement).toHaveStyle(`border-color: ${defaultBorderColor}`);
 
-      await user.hover(linkElement);
+      // jsdom has no visual/layout engine and never applies real CSS
+      // `:hover` pseudo-class styles from simulated mouse events, so we
+      // can't assert this via computed style after userEvent.hover().
+      // Instead assert directly against the compiled styled-components
+      // stylesheet for the hover rule.
+      const styleTagsText = Array.from(document.querySelectorAll("style"))
+        .map((style) => style.textContent)
+        .join("\n");
 
-      expect(linkElement).toHaveStyle(
-        `border-color: ${testTheme.colors.primaryHue}`
+      // The hover color must be a resolved Garden color: interpolating the
+      // primaryHue name directly produced the CSS keyword "blue".
+      const hoverBorderColor = getColor({
+        theme: testTheme,
+        variable: "border.primaryEmphasis",
+      });
+
+      expect(styleTagsText).toMatch(
+        new RegExp(`:hover\\s*\\{[^}]*border-color:\\s*${hoverBorderColor}`)
+      );
+      expect(styleTagsText).not.toMatch(
+        /:hover\s*\{[^}]*border-color:\s*blue\s*[;}]/
       );
     });
   });
