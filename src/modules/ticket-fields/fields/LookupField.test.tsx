@@ -542,6 +542,80 @@ describe("LookupField when the requester changes", () => {
     expect(document.querySelector('input[name="test_lookup"]')).toHaveValue("");
   });
 
+  test("keeps the initial record of a field that does not depend on the requester when the requester changes while it is in flight", async () => {
+    const nonRequesterFilter: LookupRelationshipFieldFilter = {
+      all: [{ field: "someField", operator: "is", value: "foo" }],
+      any: [],
+    };
+    let resolveFetch: (value: unknown) => void = () => {};
+    (globalThis.fetch as jest.Mock) = jest.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        })
+    );
+    const onChange = jest.fn();
+    const { rerender } = render(renderField(onChange, 1, nonRequesterFilter));
+
+    await act(async () => {
+      rerender(renderField(onChange, 2, nonRequesterFilter));
+    });
+
+    await act(async () => {
+      resolveFetch({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            custom_object_record: {
+              name: "Asset One",
+              id: "rec-1",
+              custom_object_fields: {},
+            },
+          }),
+      });
+    });
+
+    expect(onChange).not.toHaveBeenCalledWith("");
+    expect(document.querySelector('input[name="test_lookup"]')).toHaveValue(
+      "rec-1"
+    );
+  });
+
+  test("keeps ignoring the initial record fetch after the requester switches away and back", async () => {
+    let resolveFetch: (value: unknown) => void = () => {};
+    (globalThis.fetch as jest.Mock) = jest.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve;
+        })
+    );
+    const onChange = jest.fn();
+    const { rerender } = render(renderField(onChange, 1));
+
+    await act(async () => {
+      rerender(renderField(onChange, 2));
+    });
+    await act(async () => {
+      rerender(renderField(onChange, 1));
+    });
+
+    await act(async () => {
+      resolveFetch({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            custom_object_record: {
+              name: "Asset One",
+              id: "rec-1",
+              custom_object_fields: {},
+            },
+          }),
+      });
+    });
+
+    expect(document.querySelector('input[name="test_lookup"]')).toHaveValue("");
+  });
+
   test("refetches options for the new requester when focused while it changes", async () => {
     const onChange = jest.fn();
     const { rerender } = render(renderField(onChange, 1));

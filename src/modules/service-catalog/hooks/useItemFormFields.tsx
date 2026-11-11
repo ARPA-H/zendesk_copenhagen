@@ -346,25 +346,27 @@ export function useItemFormFields(
     (field: TicketFieldObject, value: TicketFieldObject["value"]) => {
       const hasValue = hasFieldValue({ ...field, value });
 
-      const updatedFields = allRequestFields.map((ticketField) =>
-        ticketField.name === field.name
-          ? {
-              ...ticketField,
-              value,
-              // Clear a previously-flagged required-field error the moment
-              // the user supplies a value, rather than leaving it red
-              // until their next submit attempt (see
-              // useValidateServiceItemForm.ts's generic fieldErrors and
-              // ServiceCatalogItem.tsx's validateForm/handleValidationErrors,
-              // which are the only other places `error` gets set/cleared).
-              error: hasValue ? null : ticketField.error,
-            }
-          : ticketField
+      // Functional update: several requester-dependent fields can clear in the
+      // same effect flush, and each call must build on the previous one
+      setAllRequestFields((currentFields) =>
+        currentFields.map((ticketField) =>
+          ticketField.name === field.name
+            ? {
+                ...ticketField,
+                value,
+                // Clear a previously-flagged required-field error the moment
+                // the user supplies a value, rather than leaving it red
+                // until their next submit attempt (see
+                // useValidateServiceItemForm.ts's generic fieldErrors and
+                // ServiceCatalogItem.tsx's validateForm/handleValidationErrors,
+                // which are the only other places `error` gets set/cleared).
+                error: hasValue ? null : ticketField.error,
+              }
+            : ticketField
+        )
       );
-
-      setAllRequestFields(updatedFields);
     },
-    [allRequestFields]
+    []
   );
 
   const requestFields = getVisibleFields(allRequestFields, endUserConditions);

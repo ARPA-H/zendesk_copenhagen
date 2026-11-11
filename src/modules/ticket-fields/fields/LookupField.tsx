@@ -108,7 +108,9 @@ export function LookupField({
     relationship_target_type as string
   );
 
-  const checkStaleRequest = useStaleRequestGuard(userId);
+  const checkStaleRequest = useStaleRequestGuard(
+    isRequesterDependentField(field.relationship_filter) ? userId : null
+  );
 
   const loadingOption = {
     name: t(

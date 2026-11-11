@@ -3,6 +3,7 @@ import { Field, Combobox, Option } from "@zendeskgarden/react-dropdowns";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TicketFieldObject } from "../data-types/TicketFieldObject";
 import type { UserOption } from "../data-types/UserOption";
+import { sanitizeDescription } from "../sanitizeDescription";
 import { Span } from "@zendeskgarden/react-typography";
 import { useTranslation } from "react-i18next";
 import { EmptyValueOption } from "./EmptyValueOption";
@@ -160,7 +161,9 @@ export function UserLookupField({ field, onChange }: UserLookupFieldProps) {
         {required && <Span aria-hidden="true">*</Span>}
       </Field.Label>
       {description && (
-        <Field.Hint dangerouslySetInnerHTML={{ __html: description }} />
+        <Field.Hint
+          dangerouslySetInnerHTML={{ __html: sanitizeDescription(description) }}
+        />
       )}
       <Combobox
         inputValue={inputValue}

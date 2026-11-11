@@ -409,6 +409,42 @@ describe("useItemFormFields", () => {
     ]);
   });
 
+  it("keeps every update when handleChange is called several times in the same batch", async () => {
+    const secondTextField = { ...textField, id: 3 };
+    (globalThis.fetch as jest.Mock) = jest.fn((url: string) => {
+      const body = url.includes("/api/v2/ticket_forms/1")
+        ? { ticket_form: { id: 1, ticket_field_ids: [1, 2, 3], active: true } }
+        : url.includes("/api/v2/ticket_fields?locale=en-us")
+          ? { ticket_fields: [textField, secondTextField, lookupField] }
+          : null;
+      return body
+        ? Promise.resolve({
+            json: () => Promise.resolve(body),
+            status: 200,
+            ok: true,
+          })
+        : {};
+    });
+
+    const { result } = renderHook(() =>
+      useItemFormFields(serviceCatalogItem, baseLocale)
+    );
+    await waitFor(() => {
+      expect(result.current.requestFields.map((f) => f.id)).toEqual([1, 3]);
+    });
+
+    const [first, second] = result.current.requestFields;
+    act(() => {
+      result.current.handleChange(first, "one");
+      result.current.handleChange(second, "two");
+    });
+
+    expect(result.current.requestFields.map((f) => f.value)).toEqual([
+      "one",
+      "two",
+    ]);
+  });
+
   it("should clear a field's error once handleChange gives it a value", async () => {
     const formResponse = {
       ticket_form: {

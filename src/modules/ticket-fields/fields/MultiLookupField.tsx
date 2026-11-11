@@ -77,7 +77,9 @@ export function MultiLookupField({
   const selectedValues = selectedOptions.map((o) => o.value);
   selectedValuesRef.current = selectedValues;
 
-  const checkStaleRequest = useStaleRequestGuard(userId);
+  const checkStaleRequest = useStaleRequestGuard(
+    isRequesterDependentField(field.relationship_filter) ? userId : null
+  );
 
   useEffect(() => {
     if (wrapperRef.current && required) {
