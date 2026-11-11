@@ -226,6 +226,17 @@ Transportation Network Company
 
 Use `Transportation Network Company` for Uber, Lyft, and similar rideshare apps.
 
+### Description Conventions
+
+Descriptions are presentable text that goes to the Travel team, so follow these rules:
+
+- **Title Case** every description. Keep short connecting words (`to`, `of`) lowercase and keep airport codes uppercase. Examples: `Uber: Hotel to Tysons Corner`, `Alaska Airlines Baggage Fee, PDX to DCA`, `Homewood Suites DC Downtown, State Tax`.
+- **Use purpose-based labels, not street addresses or times.** Rides use `Uber: [Origin] to [Destination]` (or `Lyft:`), where the origin and destination are plain labels such as `Home`, `Hotel`, `Dinner`, an airport code, or a city. Never put home addresses or driver names in a description.
+- **`ARPA-H` is the label for 1301 K Street NW** (the ARPA-H office in Washington, DC). A ride to or from that address is `Uber: Hotel to ARPA-H`.
+- **Ask when a destination is not obvious.** If a ride goes to or from an address that is not the hotel, an airport, home, or ARPA-H, ask the user what to call it in the Round 3 confirmation (for example, an evening ride to a restaurant is `Hotel to Dinner`, and the return is `Dinner to Hotel`). Do not guess from the street address.
+- **Do not name the payment or Wi-Fi vendor** when the category already says it. Use `Inflight Wi-Fi, DCA to PDX`, not `Inflight Wi-Fi (Gogo)`. Airline names stay on baggage fees (`Alaska Airlines Baggage Fee, PDX to DCA`).
+- **No en dashes or em dashes** in any field. Use `to`, a comma, or a colon instead (for example, `11/4 to 11/7 (3 Nights)`).
+
 ### Reimburse To Dropdown Values
 
 ```text
@@ -256,18 +267,29 @@ For receipts with no clear time (e.g., baggage fees booked in advance), use posi
 
 ### POV Mileage Calculation
 
-The GSA sets the POV reimbursement rate each January. **Always look up the current rate** at:
+The GSA sets the POV reimbursement rate each January and **can change it midyear**. The rate that applies is the one in effect on the date the travel began, so **always look up the rate for the trip's travel date** at:
 
 > <https://www.gsa.gov/travel/plan-a-trip/transportation-airfare-rates-pov-rates/privately-owned-vehicle-pov-mileage-reimbursement>
 
-#### 2026 rate: $0.725/mile (verify at the GSA link above before using)
+Use the **Automobile** column for the case "an automobile was authorized, or no government-owned automobile was authorized or available".
+
+Known 2026 rates (verify against the GSA page, since this list goes stale):
+
+| Travel on or after | Automobile rate |
+| ------------------ | --------------- |
+| Jan. 1, 2026       | $0.725 per mile |
+| Jul. 1, 2026       | $0.76 per mile  |
+
+The July 1, 2026 increase follows the IRS midyear change; see GSA Bulletin FTR 26-03 (<https://www.gsa.gov/policy-regulations/regulations/federal-travel-regulation/ftr-and-related-files/gsa-bulletin-ftr-2603>).
+
+**Lookup tip:** the GSA page is very large and `web_fetch` may save it to a file instead of returning it. Do not read it in full. Run a web search for "GSA POV mileage reimbursement rate [year] automobile per mile effective date", or search the saved file for `per mile` and the effective-date table rows.
 
 Use `Decimal` arithmetic to avoid floating-point rounding errors:
 
 ```python
 from decimal import Decimal, ROUND_HALF_UP
 
-def calc_pov(miles: float, rate: float = 0.725) -> str:
+def calc_pov(miles: float, rate: float) -> str:  # pass the rate for the travel date
     result = (Decimal(str(miles)) * Decimal(str(rate))).quantize(
         Decimal('0.01'), rounding=ROUND_HALF_UP
     )
@@ -277,7 +299,9 @@ def calc_pov(miles: float, rate: float = 0.725) -> str:
 Get mileage from Google Maps printouts (use the shortest reasonable route distance shown).
 
 Description format: `[Origin] to [Destination] ([X] mi @ $[rate])`
-Example: `Home to PDX (25.2 mi @ $0.725)`
+Example: `PDX to Home (25.8 mi @ $0.76)`
+
+If Google Maps shows several routes and the text extraction is jumbled, use the distance in the selected "Drive N miles" summary line and ask the user to confirm it in Round 3.
 
 ---
 
@@ -290,17 +314,19 @@ Example: `Home to PDX (25.2 mi @ $0.725)`
 Install if needed:
 
 ```bash
-pip install pymupdf
-# If pip refuses because the environment is externally managed, add --break-system-packages or use a virtual environment.
+pip install pymupdf --break-system-packages
+# If pip refuses because the environment is externally managed, --break-system-packages (or a virtual environment) is required.
 ```
+
+**Run the fill script with plain `python3 script.py`, not `python3 -I`.** The isolated flag ignores the user site-packages directory where `pip install` puts PyMuPDF in some environments, which produces `ModuleNotFoundError`. Import it as `pymupdf` (the old name `fitz` still works but prints a deprecation warning).
 
 ### Fill script pattern
 
 ```python
-import fitz
+import pymupdf as fitz  # "fitz" is the deprecated alias; keeps the rest of this script unchanged
 from decimal import Decimal, ROUND_HALF_UP
 
-def calc_pov(miles, rate=0.725):
+def calc_pov(miles, rate):  # rate for the trip's travel date; see "POV Mileage Calculation"
     return str((Decimal(str(miles)) * Decimal(str(rate))).quantize(
         Decimal('0.01'), rounding=ROUND_HALF_UP))
 
@@ -323,14 +349,14 @@ updates = {
     # Row 1
     'Date1_af_date':                          '5/17/2026',
     'Expensesp1':                             'Privately Owned Vehicle (POV)',
-    'Description Details of ExpenseRow1':     'Home to PDX (25.2 mi @ $0.725)',
+    'Description Details of ExpenseRow1':     'Home to PDX (25.2 mi @ $0.76)',
     'AmountRow1':                             calc_pov(25.2),
     'Dropdown2-1':                            'Personal',
 
     # Row 2
     'Date2_af_date':                          '5/17/2026',
     'Expensesp1-1':                           'Baggage Fee',
-    'Description Details of ExpenseRow2':     'Alaska Airlines Baggage Fee PDX',
+    'Description Details of ExpenseRow2':     'Alaska Airlines Baggage Fee, PDX to DCA',
     'AmountRow2':                             '35',
     'Dropdown2-2':                            'Government Travel Charge Card',
 
@@ -399,7 +425,7 @@ Convert the output to images to verify visually:
 pdftoppm -r 150 filled.pdf verify_imgs/page
 
 # Or with PyMuPDF:
-python -c "import fitz; d=fitz.open('filled.pdf'); [p.get_pixmap(dpi=150).save(f'verify_imgs/page-{i+1}.png') for i,p in enumerate(d)]"
+python -c "import pymupdf; d=pymupdf.open('filled.pdf'); [p.get_pixmap(dpi=150).save(f'verify_imgs/page-{i+1}.png') for i,p in enumerate(d)]"
 ```
 
 Check:
