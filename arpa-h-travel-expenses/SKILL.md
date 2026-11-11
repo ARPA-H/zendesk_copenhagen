@@ -22,20 +22,22 @@ This skill automates filling the ARPA-H Voucher Expense Report (a fillable PDF) 
 
 ## Bundled files
 
-- `${CLAUDE_SKILL_DIR}/assets/ARPA-H-VoucherExpenseReport.pdf`: the blank fillable form. Never modify it. Copy it to the working folder and fill the copy.
-- `${CLAUDE_SKILL_DIR}/assets/FORM_VERSION.txt`: the SharePoint `lastModifiedDateTime` (UTC) of the bundled form, used only for the optional staleness warning in Step 1.1.
+All paths in this skill are relative to the directory that contains this SKILL.md.
+
+- `assets/ARPA-H-VoucherExpenseReport.pdf`: the blank fillable form. Never modify it. Copy it to the working folder and fill the copy.
+- `assets/FORM_VERSION.txt`: the SharePoint last-modified timestamp (UTC) of the bundled form, used only for the optional staleness warning in Step 1.1.
 
 ## Operating rules (read these first)
 
 These rules exist because an earlier version of this skill wandered through the user's mailbox and SharePoint to guess the trip, burned dozens of tool calls, and still had to ask the user the questions it should have asked first. Ask first; search second.
 
 1. **Ask, do not explore.** Make no search, listing, or read call against Microsoft 365, Slack, email, or card systems until the user has told you where the receipts are (Step 1.3). The one exception is the optional date check in Step 1.1. Never run a broad "find anything that looks like a receipt" search to discover which trip the user means.
-2. **Free text goes in plain chat, never in a menu.** `AskUserQuestion` is for closed sets of answers only. Its "Other" free-text option is not visible to users in this deployment (confirmed), so never rely on it for a folder name, URL, date range, vendor list, or TANUM. Ask for those in a normal chat message and wait for the reply.
+2. **Free text goes in plain chat, never in a choice menu.** Use a closed-choice prompt (a menu, or numbered options in chat) only for questions with a fixed set of answers. Some clients hide the free-text field in choice menus, so ask for a folder name, URL, date range, vendor list, or TANUM in a normal chat message and wait for the reply.
 3. **Search only where the user pointed.** If they chose SharePoint/OneDrive, do not also search Outlook. If they chose Outlook, do not also search SharePoint. Ask before widening.
 4. **Sensitive sources are opt-in.** Card-alert emails (for example Citi "Notification of transaction"), travel authorizations, and other personal records are read only if the user names them as a source. Do not mine them to guess a trip. Do not store addresses, card numbers, or similar details in memory.
 5. **Batch tool calls.** Run all searches in one parallel message and all receipt reads in one parallel message. Do not page through results; if a search returns too many hits, narrow it or ask the user.
 6. **Keep the search narrow.** Scope every search and listing to the smallest folder that plausibly holds this trip's receipts. If the user gives a parent (a whole OneDrive, a SharePoint site, or a "Travel" folder that holds many trips), do not crawl it recursively or search all of it. List its immediate children once, show the user the child folder names, and have them pick the relevant child or grandchild before you read anything. If you notice you are scanning more than one or two folders, or opening files that are not about this trip, stop and ask the user which folder is right. Judge efficiency by whether you are scanning more than the trip needs, not by a fixed number of tool calls.
-7. **Use the bundled form; never try to download it.** No tool in this deployment can return a file's bytes from SharePoint or OneDrive (verified 2026-11-10), so do not spend calls on it, do not use `curl` or Python requests, and never rebuild the form from its text.
+7. **Use the bundled form; never try to download it.** When this skill was tested (2026-11-10), no available tool could return a file's bytes from SharePoint or OneDrive: connector tools returned extracted text only, and web fetches of SharePoint URLs ended at a sign-in page. Do not spend calls on it, do not use `curl` or Python requests, and never rebuild the form from its text.
 
 ---
 
@@ -46,8 +48,8 @@ These rules exist because an earlier version of this skill wandered through the 
 In a single message, run:
 
 1. One `ls` of the uploads folder and any connected folder, looking for a user-attached form (a PDF whose name contains `VoucherExpenseReport`) and any receipt files already attached.
-2. One `ls` and `cat` of `${CLAUDE_SKILL_DIR}/assets/` to confirm the bundled PDF exists and read `FORM_VERSION.txt`.
-3. Optional, only if the Microsoft 365 connector is available: one `sharepoint_search` for `ARPA-H-VoucherExpenseReport` (file type `pdf`, limit 5), used only to read the `lastModifiedDateTime` of the `/sites/ARPA-H-NET/` result. If the connector errors, skip it silently.
+2. One `ls` and `cat` of `assets/` to confirm the bundled PDF exists and read `FORM_VERSION.txt`.
+3. Optional, only if a Microsoft 365 search tool is available: one SharePoint file search for `ARPA-H-VoucherExpenseReport` (file type `pdf`, limit 5), used only to read the `lastModifiedDateTime` of the `/sites/ARPA-H-NET/` result. If the search errors, skip it silently.
 
 Use the form in this order: a user-attached form, then the bundled form. If the bundled PDF is missing, tell the user the skill install is incomplete and ask them to attach the form or contact the skill owner; do not search for it elsewhere.
 
@@ -55,9 +57,9 @@ If the SharePoint date is newer than `FORM_VERSION.txt`, still use the bundled f
 
 Whatever you find shortens Round 1: skip any question whose answer you already have.
 
-### 1.2 Round 1: one `AskUserQuestion` with up to three closed-choice questions
+### 1.2 Round 1: one prompt with up to three closed-choice questions
 
-Ask these together in one call, skipping any that are already answered:
+Ask these together in one prompt (your environment's multiple-choice prompt if it has one, otherwise numbered options in chat), skipping any that are already answered:
 
 1. **Receipt source**: "Where are this trip's receipts?" Options: "SharePoint or OneDrive folder or file", "Outlook email", "Local folder or files I'll attach".
 2. **Comp Time for Travel (CTT)**: "Are you claiming CTT hours?" Options: "No", "Yes (needs a separate CTT form, which this skill does not fill out)".
@@ -71,7 +73,7 @@ Do not call any tool for this. Send a normal chat message asking only for what t
 
 - **SharePoint or OneDrive**: "What is the folder name or URL? A rough name is fine."
 - **Outlook email**: "What dates did the trip cover, and which vendors should I look for (airline, hotel, Uber or Lyft, parking, WiFi)? Say if the receipts are in a mailbox other than your work account."
-- **Local folder or attached files**: "Please attach the receipts or share the folder path." Use `request_cowork_directory` if a folder is needed.
+- **Local folder or attached files**: "Please attach the receipts or share the folder path." If your environment needs permission to read a folder, request it.
 
 In the same message, add:
 
@@ -82,14 +84,9 @@ In the same message, add:
 
 If the user chose SharePoint, OneDrive, or Outlook as the receipt source and the first search fails with a sign-in or permission error, walk the user through setup. ARPA-H uses Microsoft 365 GCC; connectors sign in with the ARPA-H Entra ID account, and an admin may need to approve the connector. If an admin-consent or policy message appears, direct the user to the ARPA-H Service Desk rather than working around it. The bundled form does not need the connector, so setup is only for reading receipts.
 
-- **Claude Desktop**: Open **Settings → Connectors**, find **Microsoft 365** (Outlook, OneDrive, SharePoint, Teams), click **Connect**, and sign in with the ARPA-H account. If it is missing, an organization Owner may need to enable it under **Organization settings → Connectors**.
-- **ChatGPT Enterprise (app/web)**: Open **Settings → Apps** (labeled Connectors in some workspaces), enable the **Outlook**, **Microsoft OneDrive**, and **Microsoft SharePoint** apps, and sign in with the ARPA-H account. If unavailable, the workspace admin must enable them. Start a new chat and select the apps from the **+** menu.
-- **Gemini web**: Gemini does not have a native Microsoft 365 connector. Use the Antigravity route below, or have the user download the receipts into one folder and share it.
-- **Antigravity app**: Open the agent panel menu → **MCP Servers → Manage MCP Servers**, add a Microsoft 365 MCP server approved for ARPA-H (confirm the approved server and config with the Service Desk), and complete the browser sign-in with the ARPA-H account.
+Open your client's settings and look for connectors, apps, or integrations. Find **Microsoft 365** (Outlook, OneDrive, SharePoint, Teams), connect it, and sign in with the ARPA-H account. If it is missing, an administrator of your AI workspace may need to enable it. If your client has no built-in Microsoft 365 connector, ask the ARPA-H Service Desk which Microsoft 365 connector or MCP server is approved for ARPA-H and how to add it. Menu names differ between products and change between releases, so search the settings for "Microsoft 365", "Outlook", "OneDrive", or "SharePoint".
 
-Menu names change between releases; if the labels above do not match what the user sees, search the client's settings for "Microsoft 365", "Outlook", "OneDrive", or "SharePoint".
-
-**Fallback (no connector available):** the user downloads the receipts into one folder and shares it with the client, and you continue from Step 2 using that folder. The bundled form still works without the connector.
+**Fallback (no connector available):** the user downloads the receipts into one folder and shares it with you, and you continue from Step 2 using that folder. The bundled form still works without the connector.
 
 ---
 
@@ -120,11 +117,11 @@ Read every candidate receipt in one message. For each, extract:
 - Personal card, SmarTrip stored value, or cash → `Personal`
 - POV mileage → `Personal`
 
-Note that the Microsoft 365 connector returns attachment text only (a limit of the connector, not of the user's permissions). If an attachment's text is missing the amount or time, ask the user to attach the file or tell you the value rather than guessing.
+Note that Microsoft 365 tools may return extracted text only for attachments (a limit of the tooling, not of the user's permissions). If an attachment's text is missing the amount or time, ask the user to attach the file or tell you the value rather than guessing.
 
 ### 2.3 Round 3: one confirmation round
 
-First show the user a short table of what you found (item, date, amount, source). Then ask one `AskUserQuestion` call (up to four closed-choice questions) covering everything that needs a decision:
+First show the user a short table of what you found (item, date, amount, source). Then ask one prompt (up to four closed-choice questions) covering everything that needs a decision:
 
 1. **Receipt list**: "Is this the right set?" Options: "Yes, continue", "Something is missing or wrong". If they pick the second, ask what to change in plain chat.
 2. **Header values**: show the proposed Traveler's Name (the signed-in Microsoft 365 display name or the name on the receipts), Departure Date and Return Date (`m/d/yyyy`, from the earliest and latest travel receipts), and Destination(s). Options: "Use these values", "Change something" (then ask in plain chat).
@@ -285,7 +282,8 @@ Example: `Home to PDX (25.2 mi @ $0.725)`
 Install if needed:
 
 ```bash
-pip install pymupdf --break-system-packages
+pip install pymupdf
+# If pip refuses because the environment is externally managed, add --break-system-packages or use a virtual environment.
 ```
 
 ### Fill script pattern
@@ -389,11 +387,11 @@ doc.save(OUTPUT, incremental=True, encryption=fitz.PDF_ENCRYPT_KEEP)
 Convert the output to images to verify visually:
 
 ```bash
-# Using the pdf skill's script if available:
-python /path/to/pdf/skill/scripts/convert_pdf_to_images.py filled.pdf verify_imgs/
-
-# Or with poppler:
+# With poppler:
 pdftoppm -r 150 filled.pdf verify_imgs/page
+
+# Or with PyMuPDF:
+python -c "import fitz; d=fitz.open('filled.pdf'); [p.get_pixmap(dpi=150).save(f'verify_imgs/page-{i+1}.png') for i,p in enumerate(d)]"
 ```
 
 Check:
@@ -406,7 +404,7 @@ Check:
 - Total matches sum of all amounts
 - TANUM is filled in, or intentionally blank and flagged to the user
 
-Save the output PDF to the user's folder and present it with `mcp__cowork__present_files`.
+Save the output PDF to the folder the user named (or your environment's output folder) and give them the file path or a link to open it.
 
 ### Required: tell the user to validate before sending
 
@@ -433,7 +431,7 @@ Also list anything you were unsure about (assumed categories, merged or skipped 
 
 ## Common Ambiguities: Ask the User
 
-These are normally settled in the single confirmation round (Step 2.3). Use closed-choice `AskUserQuestion` options for the choice, and plain chat for any number or text you need back:
+These are normally settled in the single confirmation round (Step 2.3). Use closed-choice options for the choice, and plain chat for any number or text you need back:
 
 - **Duplicate receipts**: Same trip ID, same amount in two files; include only one
 - **Hotel with taxes**: Split into `Lodging` + `Hotel Room Tax` rows, or combine into one `Lodging` row?
