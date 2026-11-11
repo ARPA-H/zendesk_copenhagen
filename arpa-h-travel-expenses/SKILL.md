@@ -1,15 +1,6 @@
 ---
-name: arpa-h-travel-expenses
-description: >
-  Fills out the latest ARPA-H Voucher Expense Report PDF from a trip's receipts. Use when the user
-  says things like "fill out my travel voucher", "complete my ARPA-H expense report", "fill in my
-  travel form from my receipts", or references the ARPA-H Travel Voucher / Voucher Expense Report.
-  Uses the blank form bundled in this skill's assets folder, asks a short set of questions up front
-  (where the receipts are, Comp Time, TANUM), searches only the receipt source the user names,
-  extracts amounts and descriptions, categorizes and orders expenses chronologically, calculates POV
-  mileage, and fills the PDF using PyMuPDF so all fields render correctly in Adobe Acrobat, macOS
-  Preview, iOS Files/Books, and Windows Edge/Reader. Keeps searches narrow instead of scanning whole
-  sites. The output is a draft the user must validate before sending to the Travel team.
+name: "arpa-h-travel-expenses"
+description: "Fills out the latest ARPA-H Voucher Expense Report PDF from a trip's receipts. Use when the user says \"fill out my travel voucher\", \"complete my ARPA-H expense report\", or references the ARPA-H Travel Voucher / Voucher Expense Report. Accepts an optional argument: the name or URL of the SharePoint/OneDrive folder holding that trip's receipts, e.g. \"/arpa-h-travel-expenses Portland May 2026\". Uses the bundled blank form, asks a few questions up front (receipt location if no argument, Comp Time, TANUM), searches only the named source, extracts amounts, categorizes and orders expenses chronologically, calculates POV mileage, and fills the PDF with PyMuPDF so it renders in Acrobat, Preview, iOS, and Edge. Keeps searches narrow. The output is a draft the user must validate before sending to the Travel team."
 ---
 
 # ARPA-H Travel Voucher Skill
@@ -20,20 +11,38 @@ This skill automates filling the ARPA-H Voucher Expense Report (a fillable PDF) 
 
 **The output is a draft.** The user must validate every field before sending it to the Travel team (see Step 6).
 
+## Argument: trip folder (optional)
+
+The skill accepts one optional argument: the name of the folder where this trip's expenses are located. Examples:
+
+- `/arpa-h-travel-expenses Portland May 2026`
+- `/arpa-h-travel-expenses https://arpah-my.sharepoint.com/personal/.../Documents/Travel/Portland-May-2026`
+
+How to treat the argument:
+
+1. **Presence of an argument means the receipt source is SharePoint or OneDrive.** Do not ask the "Where are this trip's receipts?" question (Step 1.2, question 1), and do not ask for the folder name in Round 2 (Step 1.3). The argument already answers both.
+2. **Treat it as a folder name or URL, never as a date range or search topic.** A rough name is fine. If it is a full URL, use it directly. If it is a name, resolve it with a single `sharepoint_folder_search` (limit 10) for that name, run in parallel with any other Step 2.1 searches.
+3. **Resolve ambiguity with a closed-choice question, not more searching.**
+   - No folder matches: tell the user, and ask in plain chat for a different name or a URL.
+   - Several folders match: show the paths and ask which one is the trip folder.
+   - The match is a parent that holds many trips or unrelated folders (for example a folder named only by year or month): follow Operating rule 6. List its immediate children once, then ask which child holds this trip's receipts.
+4. **The argument does not widen the search.** Search or list only the resolved folder (and, if the receipts are split into subfolders such as `Receipts` or `Uber`, only its immediate children). Do not search Outlook or the rest of the site.
+5. **Still ask the other Round 1 questions** (Comp Time and TANUM) in one prompt, and still run the Round 3 confirmation. The argument replaces only the receipt-location questions.
+6. **No argument given:** run the normal flow in Step 1 unchanged.
+
 ## Bundled files
 
 All paths in this skill are relative to the directory that contains this SKILL.md.
 
 - `assets/ARPA-H-VoucherExpenseReport.pdf`: the blank fillable form. Never modify it. Copy it to the working folder and fill the copy.
-- `assets/FORM_VERSION.txt`: the SharePoint last-modified timestamp (UTC) of the bundled form, used only for the optional staleness warning in Step 1.1.
 
 ## Operating rules (read these first)
 
 These rules exist because an earlier version of this skill wandered through the user's mailbox and SharePoint to guess the trip, burned dozens of tool calls, and still had to ask the user the questions it should have asked first. Ask first; search second.
 
-1. **Ask, do not explore.** Make no search, listing, or read call against Microsoft 365, Slack, email, or card systems until the user has told you where the receipts are (Step 1.3). The one exception is the optional date check in Step 1.1. Never run a broad "find anything that looks like a receipt" search to discover which trip the user means.
+1. **Ask, do not explore.** Make no search, listing, or read call against Microsoft 365, Slack, email, or card systems until the user has told you where the receipts are (Step 1.3), either by answering or by passing the folder argument. Never run a broad "find anything that looks like a receipt" search to discover which trip the user means.
 2. **Free text goes in plain chat, never in a choice menu.** Use a closed-choice prompt (a menu, or numbered options in chat) only for questions with a fixed set of answers. Some clients hide the free-text field in choice menus, so ask for a folder name, URL, date range, vendor list, or TANUM in a normal chat message and wait for the reply.
-3. **Search only where the user pointed.** If they chose SharePoint/OneDrive, do not also search Outlook. If they chose Outlook, do not also search SharePoint. Ask before widening.
+3. **Search only where the user pointed.** If they chose SharePoint/OneDrive (or passed a folder argument), do not also search Outlook. If they chose Outlook, do not also search SharePoint. Ask before widening.
 4. **Sensitive sources are opt-in.** Card-alert emails (for example Citi "Notification of transaction"), travel authorizations, and other personal records are read only if the user names them as a source. Do not mine them to guess a trip. Do not store addresses, card numbers, or similar details in memory.
 5. **Batch tool calls.** Run all searches in one parallel message and all receipt reads in one parallel message. Do not page through results; if a search returns too many hits, narrow it or ask the user.
 6. **Keep the search narrow.** Scope every search and listing to the smallest folder that plausibly holds this trip's receipts. If the user gives a parent (a whole OneDrive, a SharePoint site, or a "Travel" folder that holds many trips), do not crawl it recursively or search all of it. List its immediate children once, show the user the child folder names, and have them pick the relevant child or grandchild before you read anything. If you notice you are scanning more than one or two folders, or opening files that are not about this trip, stop and ask the user which folder is right. Judge efficiency by whether you are scanning more than the trip needs, not by a fixed number of tool calls.
@@ -48,12 +57,9 @@ These rules exist because an earlier version of this skill wandered through the 
 In a single message, run:
 
 1. One `ls` of the uploads folder and any connected folder, looking for a user-attached form (a PDF whose name contains `VoucherExpenseReport`) and any receipt files already attached.
-2. One `ls` and `cat` of `assets/` to confirm the bundled PDF exists and read `FORM_VERSION.txt`.
-3. Optional, only if a Microsoft 365 search tool is available: one SharePoint file search for `ARPA-H-VoucherExpenseReport` (file type `pdf`, limit 5), used only to read the `lastModifiedDateTime` of the `/sites/ARPA-H-NET/` result. If the search errors, skip it silently.
+2. One `ls` of `assets/` to confirm the bundled PDF exists.
 
-Use the form in this order: a user-attached form, then the bundled form. If the bundled PDF is missing, tell the user the skill install is incomplete and ask them to attach the form or contact the skill owner; do not search for it elsewhere.
-
-If the SharePoint date is newer than `FORM_VERSION.txt`, still use the bundled form, but add one line to the delivery summary: "The official form was revised on [date] and may differ from the one used here. Check it against the current form before submitting, and tell the skill owner so the bundle can be updated." Never ask the user to download anything.
+Use the form in this order: a user-attached form, then the bundled form. If the bundled PDF is missing, tell the user the skill install is incomplete and ask them to attach the form or contact the skill owner; do not search for it elsewhere. Never ask the user to download anything.
 
 Whatever you find shortens Round 1: skip any question whose answer you already have.
 
@@ -61,7 +67,7 @@ Whatever you find shortens Round 1: skip any question whose answer you already h
 
 Ask these together in one prompt (your environment's multiple-choice prompt if it has one, otherwise numbered options in chat), skipping any that are already answered:
 
-1. **Receipt source**: "Where are this trip's receipts?" Options: "SharePoint or OneDrive folder or file", "Outlook email", "Local folder or files I'll attach".
+1. **Receipt source** (skip if a folder argument was passed; the source is then SharePoint or OneDrive): "Where are this trip's receipts?" Options: "SharePoint or OneDrive folder or file", "Outlook email", "Local folder or files I'll attach".
 2. **Comp Time for Travel (CTT)**: "Are you claiming CTT hours?" Options: "No", "Yes (needs a separate CTT form, which this skill does not fill out)".
 3. **TANUM**: "Do you have the VCH/TANUM number?" Options: "Yes, I'll type it in chat", "No, leave it blank for the Travel Ambassador". It is found at <https://mynbs.nih.gov> and is typically formatted `TANUM##XXX`.
 
@@ -69,7 +75,9 @@ Never modify the blank form; write output to a new file.
 
 ### 1.3 Round 2: one plain chat message (branched on the receipt source)
 
-Do not call any tool for this. Send a normal chat message asking only for what the chosen source needs, then stop and wait for the reply:
+If a folder argument was passed and the user answered "Yes, I'll type it" to TANUM, the only thing left to ask here is the TANUM number, plus the optional card-alert line below. If nothing remains to ask, skip this round and go straight to Step 2.
+
+Otherwise, do not call any tool for this round. Send a normal chat message asking only for what the chosen source needs, then stop and wait for the reply:
 
 - **SharePoint or OneDrive**: "What is the folder name or URL? A rough name is fine."
 - **Outlook email**: "What dates did the trip cover, and which vendors should I look for (airline, hotel, Uber or Lyft, parking, WiFi)? Say if the receipts are in a mailbox other than your work account."
@@ -82,7 +90,7 @@ In the same message, add:
 
 ### 1.4 Connector setup (only if a receipt search fails to sign in)
 
-If the user chose SharePoint, OneDrive, or Outlook as the receipt source and the first search fails with a sign-in or permission error, walk the user through setup. ARPA-H uses Microsoft 365 GCC; connectors sign in with the ARPA-H Entra ID account, and an admin may need to approve the connector. If an admin-consent or policy message appears, direct the user to the ARPA-H Service Desk rather than working around it. The bundled form does not need the connector, so setup is only for reading receipts.
+If the user chose SharePoint, OneDrive, or Outlook as the receipt source (or passed a folder argument) and the first search fails with a sign-in or permission error, walk the user through setup. ARPA-H uses Microsoft 365 GCC; connectors sign in with the ARPA-H Entra ID account, and an admin may need to approve the connector. If an admin-consent or policy message appears, direct the user to the ARPA-H Service Desk rather than working around it. The bundled form does not need the connector, so setup is only for reading receipts.
 
 Open your client's settings and look for connectors, apps, or integrations. Find **Microsoft 365** (Outlook, OneDrive, SharePoint, Teams), connect it, and sign in with the ARPA-H account. If it is missing, an administrator of your AI workspace may need to enable it. If your client has no built-in Microsoft 365 connector, ask the ARPA-H Service Desk which Microsoft 365 connector or MCP server is approved for ARPA-H and how to add it. Menu names differ between products and change between releases, so search the settings for "Microsoft 365", "Outlook", "OneDrive", or "SharePoint".
 
@@ -94,9 +102,9 @@ Open your client's settings and look for connectors, apps, or integrations. Find
 
 ### 2.1 Scoped search (one parallel message)
 
-Using only the source and hint from Round 2, run at most three searches in a single message. Use the user's folder name or URL, or their dates and vendors, as the query. For email, always add a date range from the user's trip dates and look only at likely receipt senders (airline, hotel, rideshare, parking, WiFi provider, Google Maps/SmarTrip). Do not page, and do not open messages that are not plausible receipts.
+Using only the source and hint from the folder argument or Round 2, run at most three searches in a single message. Use the user's folder name or URL, or their dates and vendors, as the query. For email, always add a date range from the user's trip dates and look only at likely receipt senders (airline, hotel, rideshare, parking, WiFi provider, Google Maps/SmarTrip). Do not page, and do not open messages that are not plausible receipts.
 
-For SharePoint or OneDrive, check what the user gave you before searching. If it is a specific trip folder (or a file), search or list just that folder. If it is a parent that holds many trips or many unrelated folders, list only its immediate children once, then ask the user with a closed-choice question which child folder (or grandchild, if the child is still a parent) holds this trip's receipts. Never search a whole site or drive to find it.
+For SharePoint or OneDrive, check what the user gave you (or passed as the folder argument) before searching. If it is a specific trip folder (or a file), search or list just that folder. If it is a parent that holds many trips or many unrelated folders, list only its immediate children once, then ask the user with a closed-choice question which child folder (or grandchild, if the child is still a parent) holds this trip's receipts. Never search a whole site or drive to find it. See "Argument: trip folder" above for how to resolve a folder name that matches zero, one, or several folders.
 
 ### 2.2 Read every candidate receipt (one parallel message)
 
@@ -252,7 +260,7 @@ The GSA sets the POV reimbursement rate each January. **Always look up the curre
 
 > <https://www.gsa.gov/travel/plan-a-trip/transportation-airfare-rates-pov-rates/privately-owned-vehicle-pov-mileage-reimbursement>
 
-#### 2026 rate: $0.725/mile
+#### 2026 rate: $0.725/mile (verify at the GSA link above before using)
 
 Use `Decimal` arithmetic to avoid floating-point rounding errors:
 
@@ -437,6 +445,7 @@ These are normally settled in the single confirmation round (Step 2.3). Use clos
 - **Hotel with taxes**: Split into `Lodging` + `Hotel Room Tax` rows, or combine into one `Lodging` row?
 - **Missing TANUM**: The user was asked in Step 1.2. If they do not have it, point them to <https://mynbs.nih.gov>; if they still do not, leave the field blank (the Travel Ambassador can complete it) and flag it in the delivery summary. Do not go searching their mailbox for it unless they ask you to
 - **Multiple mileage legs**: Confirm each leg's mileage if multiple POV receipts exist
+- **Folder argument matches nothing, several folders, or a parent folder**: see "Argument: trip folder" near the top
 
 ---
 
@@ -448,3 +457,4 @@ These are normally settled in the single confirmation round (Step 2.3). Use clos
 - The form is revised periodically, so always re-run the introspection script in Step 3 to remap field names. Run the introspection and the fill as single scripts; do not probe fields one call at a time.
 - The `Expensesp1` / `Dropdown2-N` naming pattern (where row 1 uses no suffix, and rows 2+ use `-{N-1}`) is quirky; double-check with the introspection output if things seem off.
 - If a user has more than 23 expense rows, overflow to the "Additional Expenses Form" (page 2) using the `_2` field variants.
+
