@@ -1,5 +1,6 @@
 import DOMPurify from "dompurify";
 import type { TicketFieldObject } from "../../ticket-fields/data-types/TicketFieldObject";
+import { isUserLookupField } from "../../ticket-fields/fields/UserLookupField";
 import {
   ASSET_KEY,
   ASSET_TYPE_KEY,
@@ -13,6 +14,8 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 // Record ids are ULIDs (26 chars, Crockford base32). Validating the format
 // lets us skip a doomed `/records/:id` request (400 "id must be a ULID").
 const ULID_REGEX = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
+// zen:user lookups hold a decimal Zendesk user id, not a custom object ULID
+const USER_ID_REGEX = /^\d+$/;
 
 function isValidDate(dateString: string): boolean {
   if (!DATE_REGEX.test(dateString)) {
@@ -94,7 +97,11 @@ function coercePrefillValue(
       if (isAssetLookup(field)) {
         return undefined;
       }
-      if (!ULID_REGEX.test(sanitizedValue)) {
+      if (
+        !(isUserLookupField(field)
+          ? USER_ID_REGEX.test(sanitizedValue)
+          : ULID_REGEX.test(sanitizedValue))
+      ) {
         return undefined;
       }
       return sanitizedValue;

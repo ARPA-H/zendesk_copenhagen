@@ -367,6 +367,53 @@ describe("lookup", () => {
   });
 });
 
+describe("user lookup", () => {
+  const userLookupField: TicketFieldObject = {
+    ...lookupField,
+    id: 998,
+    name: "request[custom_fields][998]",
+    relationship_target_type: "zen:user",
+  };
+  const withUserLookup = () => {
+    const fields = baseFields();
+    return {
+      ...fields,
+      ticketFields: [
+        ...fields.ticketFields,
+        { ...userLookupField, value: null },
+      ],
+    };
+  };
+
+  test("accepts a decimal user id", () => {
+    mockLocation("?tf_998=12345");
+
+    const { result } = renderHook(() =>
+      usePrefilledTicketFields(withUserLookup())
+    );
+
+    expect(
+      fieldByName(result.current, "request[custom_fields][998]")?.value
+    ).toBe("12345");
+  });
+
+  test("ignores a ULID and non-numeric values", () => {
+    mockLocation(`?tf_998=${VALID_ULID_1}`);
+    const { result } = renderHook(() =>
+      usePrefilledTicketFields(withUserLookup())
+    );
+    expect(
+      fieldByName(result.current, "request[custom_fields][998]")?.value
+    ).toBeNull();
+
+    mockLocation("?tf_998=12abc");
+    const second = renderHook(() => usePrefilledTicketFields(withUserLookup()));
+    expect(
+      fieldByName(second.result.current, "request[custom_fields][998]")?.value
+    ).toBeNull();
+  });
+});
+
 describe("multi_lookup", () => {
   test("splits comma-separated ULIDs into an array", () => {
     mockLocation(`?tf_1000=${VALID_ULID_1},${VALID_ULID_2}`);
