@@ -134,7 +134,11 @@
   );
   if (flashWaiting || hasPageModule) {
     const { renderFlashNotifications } = await import("flash-notifications");
-    renderFlashNotifications({{json settings}}, {{json help_center.base_locale}});
+    renderFlashNotifications(
+      {{json settings}},
+      {{json help_center.base_locale}},
+      {{json help_center.locale}}
+    );
   }
 </script>
 

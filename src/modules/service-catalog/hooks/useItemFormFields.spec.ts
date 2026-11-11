@@ -409,6 +409,42 @@ describe("useItemFormFields", () => {
     ]);
   });
 
+  it("keeps every update when handleChange is called several times in the same batch", async () => {
+    const secondTextField = { ...textField, id: 3 };
+    (globalThis.fetch as jest.Mock) = jest.fn((url: string) => {
+      const body = url.includes("/api/v2/ticket_forms/1")
+        ? { ticket_form: { id: 1, ticket_field_ids: [1, 2, 3], active: true } }
+        : url.includes("/api/v2/ticket_fields?locale=en-us")
+          ? { ticket_fields: [textField, secondTextField, lookupField] }
+          : null;
+      return body
+        ? Promise.resolve({
+            json: () => Promise.resolve(body),
+            status: 200,
+            ok: true,
+          })
+        : {};
+    });
+
+    const { result } = renderHook(() =>
+      useItemFormFields(serviceCatalogItem, baseLocale)
+    );
+    await waitFor(() => {
+      expect(result.current.requestFields.map((f) => f.id)).toEqual([1, 3]);
+    });
+
+    const [first, second] = result.current.requestFields;
+    act(() => {
+      result.current.handleChange(first, "one");
+      result.current.handleChange(second, "two");
+    });
+
+    expect(result.current.requestFields.map((f) => f.value)).toEqual([
+      "one",
+      "two",
+    ]);
+  });
+
   it("should clear a field's error once handleChange gives it a value", async () => {
     const formResponse = {
       ticket_form: {
@@ -675,6 +711,62 @@ describe("useItemFormFields", () => {
     await waitFor(() => {
       const presentIds = result.current.requestFields.map((f) => f.id);
       expect(presentIds).toEqual([1, 6]);
+    });
+  });
+
+  it("renders a portal-editable zen:user lookup exactly once", async () => {
+    const userLookupField = {
+      id: 9,
+      type: "lookup",
+      description: "Colleague",
+      title_in_portal: "Find end users",
+      editable_in_portal: true,
+      required_in_portal: false,
+      relationship_target_type: "zen:user",
+      active: true,
+    };
+    const formResponse = {
+      ticket_form: {
+        id: 1,
+        ticket_field_ids: [1, 2, 9],
+        active: true,
+      },
+    };
+    const ticketFieldResponse = {
+      ticket_fields: [textField, lookupField, userLookupField],
+    };
+    (globalThis.fetch as jest.Mock) = jest.fn((url) => {
+      return Promise.resolve({
+        json: () =>
+          Promise.resolve(
+            url.includes("/api/v2/ticket_forms/1")
+              ? formResponse
+              : url.includes(`/api/v2/ticket_fields?locale=${baseLocale}`)
+                ? ticketFieldResponse
+                : {}
+          ),
+        status: 200,
+        ok: true,
+      });
+    });
+
+    const { result } = renderHook(() =>
+      useItemFormFields(serviceCatalogItem, baseLocale)
+    );
+    await waitFor(() => {
+      expect(result.current.requestFields.map((f) => f.id)).toEqual([1, 9]);
+    });
+    expect(result.current.requestFields.filter((f) => f.id === 9)).toHaveLength(
+      1
+    );
+    const renderedUserField = result.current.requestFields.find(
+      (f) => f.id === 9
+    );
+    expect(renderedUserField).toMatchObject({
+      name: "custom_fields_9",
+      label: "Find end users",
+      required: false,
+      relationship_target_type: "zen:user",
     });
   });
 

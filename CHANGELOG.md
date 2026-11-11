@@ -1,3 +1,96 @@
+# [4.54.0](https://github.com/zendesk/copenhagen_theme/compare/v4.53.7...v4.54.0) (2026-11-09)
+
+
+### Bug Fixes
+
+* mitigations to race window during requests and specs for it ([37369a0](https://github.com/zendesk/copenhagen_theme/commit/37369a01912e4d08358000c78dd4c0d9dac47954))
+
+
+### Features
+
+* extract stale request to a hook ([5802047](https://github.com/zendesk/copenhagen_theme/commit/58020477e1b72bff6d95a70813a02fed6fff92e5))
+* reload assets on requester change in item request submission ([b077454](https://github.com/zendesk/copenhagen_theme/commit/b077454cf243c5eaf5b0bc3eed8f1640809a7e02))
+
+## [4.53.7](https://github.com/zendesk/copenhagen_theme/compare/v4.53.6...v4.53.7) (2026-11-04)
+
+
+### Bug Fixes
+
+* **service-catalog:** translate built-in category labels (PDSC-1138) ([371d38a](https://github.com/zendesk/copenhagen_theme/commit/371d38a63f7f16a659b3f641ece7e58dba2e108b))
+* **ticket-fields:** keep the typed query when the initial user loads late ([f74f56f](https://github.com/zendesk/copenhagen_theme/commit/f74f56faa8ca25bc88ed7e646a7d9326ab0aa3f7)), closes [zendesk/lisbon-theme#89](https://github.com/zendesk/lisbon-theme/issues/89)
+
+## [4.53.6](https://github.com/zendesk/copenhagen_theme/compare/v4.53.5...v4.53.6) (2026-10-22)
+
+
+### Bug Fixes
+
+* load React translations for the Help Center locale ([c1e5e49](https://github.com/zendesk/copenhagen_theme/commit/c1e5e491517e5d7889e0730f6c3f6d9d0b16d486))
+
+## [4.53.5](https://github.com/zendesk/copenhagen_theme/compare/v4.53.4...v4.53.5) (2026-10-21)
+
+
+### Bug Fixes
+
+* show unified form errors message for all service catalog requests ([c77fc06](https://github.com/zendesk/copenhagen_theme/commit/c77fc0672a21a276602e4ff14c7c13e1ddbc8b8f))
+
+## [4.53.4](https://github.com/zendesk/copenhagen_theme/compare/v4.53.3...v4.53.4) (2026-10-19)
+
+
+### Bug Fixes
+
+* **GA11YFIX-480:** remove redundant title attribute from the logo link ([f407d5d](https://github.com/zendesk/copenhagen_theme/commit/f407d5d54b90395d99c2b17d57105ceef85fe566))
+
+## [4.53.3](https://github.com/zendesk/copenhagen_theme/compare/v4.53.2...v4.53.3) (2026-10-16)
+
+
+### Bug Fixes
+
+* **GA11YFIX-481:** name the mobile navigation landmark ([e32de4f](https://github.com/zendesk/copenhagen_theme/commit/e32de4feef188061beaeb8e5344b7fe7324e9431))
+
+## [4.53.2](https://github.com/zendesk/copenhagen_theme/compare/v4.53.1...v4.53.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* make Copenhagen Theme lookup fields work without a signed-in user (CD-4178) ([9f783a0](https://github.com/zendesk/copenhagen_theme/commit/9f783a0c9234a7d016043439eb731223c1d4b5b5))
+
+## [4.53.1](https://github.com/zendesk/copenhagen_theme/compare/v4.53.0...v4.53.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* update JS module translations ([e8205e6](https://github.com/zendesk/copenhagen_theme/commit/e8205e6307f02a424718a4c0af03f6bf5aa1b6eb))
+* update settings translations ([9bef79d](https://github.com/zendesk/copenhagen_theme/commit/9bef79db5e0a21fbcc0d06b89fed22c087a4ba43))
+
+# [4.53.0](https://github.com/zendesk/copenhagen_theme/compare/v4.52.1...v4.53.0) (2026-10-15)
+
+
+### Bug Fixes
+
+* **ticket-fields:** address review feedback on zen:user lookup field ([6d84cc8](https://github.com/zendesk/copenhagen_theme/commit/6d84cc8eff85b3a4bfbe44bb65daa829e447ce5d))
+* **ticket-fields:** avoid double-signal overwrite on user lookup selection ([2519eff](https://github.com/zendesk/copenhagen_theme/commit/2519eff84f918e294ef8b3d323af1dacb012087f)), closes [#876](https://github.com/zendesk/copenhagen_theme/issues/876)
+* **ticket-fields:** harden zen:user lookup initial value, a11y and search errors ([c83ac78](https://github.com/zendesk/copenhagen_theme/commit/c83ac782048729cb553dea3850af0225c3087652))
+* **ticket-fields:** ignore stale initial-value fetch after user selection ([e9bcce1](https://github.com/zendesk/copenhagen_theme/commit/e9bcce1690ebb3092fe5290e6bed9df3f49bdad8))
+
+
+### Features
+
+* **service-catalog:** zen:user lookup on SC forms via SC users search (PDSC-1037) ([c2926f2](https://github.com/zendesk/copenhagen_theme/commit/c2926f2e935b67dca7e8b9462c085c8f8729de2d))
+
+## [4.52.1](https://github.com/zendesk/copenhagen_theme/compare/v4.52.0...v4.52.1) (2026-10-14)
+
+
+### Bug Fixes
+
+* wrap long breadcrumbs instead of truncating them ([765a200](https://github.com/zendesk/copenhagen_theme/commit/765a20039b513928891bf8f4430122026e153694))
+
+# [4.52.0](https://github.com/zendesk/copenhagen_theme/compare/v4.51.5...v4.52.0) (2026-10-12)
+
+
+### Features
+
+* add filter_ticket_fields_by_brand setting ([09712a2](https://github.com/zendesk/copenhagen_theme/commit/09712a288f5b91fc08ae0302731183d7e2ae9c35))
+
 ## [4.51.5](https://github.com/zendesk/copenhagen_theme/compare/v4.51.4...v4.51.5) (2026-10-09)
 
 

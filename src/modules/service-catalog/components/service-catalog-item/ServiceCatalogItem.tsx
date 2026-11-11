@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal, flushSync } from "react-dom";
 import { useItemFormFields } from "../../hooks/useItemFormFields";
 import { ItemRequestForm } from "./ItemRequestForm";
-import type { UserOption } from "../../data-types/UserOption";
+import type { UserOption } from "../../../ticket-fields/data-types/UserOption";
 import { CategorySelector } from "./CategorySelector";
 import { PreviewModeBanner } from "./PreviewModeBanner";
 import type { Organization } from "../../../ticket-fields/data-types/Organization";
@@ -12,8 +12,8 @@ import { submitServiceItemRequest } from "./submitServiceItemRequest";
 import { focusFirstInvalidField } from "./focusFirstInvalidField";
 import type { ServiceRequestResponse } from "../../data-types/ServiceRequestResponse";
 import { addFlashNotification, notify } from "../../../shared";
-import { useTranslation } from "react-i18next";
 import { Anchor } from "@zendeskgarden/react-buttons";
+import { useTranslation } from "react-i18next";
 import type { TicketFieldObject } from "../../../ticket-fields/data-types/TicketFieldObject";
 import {
   AttachmentsInputName,
@@ -126,6 +126,7 @@ export function ServiceCatalogItem({
     serviceCatalogItem?.custom_object_fields?.["standard::attachment_option"];
 
   const requestOnBehalfEnabled = serviceCatalogItem?.is_request_on_behalf;
+  const requesterUserId = selectedUser ? Number(selectedUser.id) : userId;
 
   const {
     attachmentsOption,
@@ -313,10 +314,6 @@ export function ServiceCatalogItem({
         !requestFields.some((field) => field.id === errorField.field_id)
     );
 
-    const unmappableErrors = invalidFieldErrors.filter(
-      (errorField) => errorField.field_id == null
-    );
-
     if (staleFieldErrors.length > 0) {
       notifySubmitError(
         <>
@@ -334,16 +331,13 @@ export function ServiceCatalogItem({
           </StyledNotificationLink>
         </>
       );
-    } else if (unmappableErrors.length > 0) {
-      notifySubmitError(
-        <>
-          {unmappableErrors.map((errorField, index) => (
-            <div key={index}>{errorField.description}</div>
-          ))}
-        </>
-      );
     } else if (invalidFieldErrors.length > 0) {
-      notifySubmitError();
+      notifySubmitError(
+        t(
+          "service-catalog.item.service-request-form-errors-message",
+          "Check the form for errors and try again."
+        )
+      );
     }
 
     // setRequestFields is backed by the full (not just visible) field list,
@@ -527,7 +521,7 @@ export function ServiceCatalogItem({
           baseLocale={baseLocale}
           hasAtMentions={hasAtMentions}
           userRole={userRole}
-          userId={userId}
+          requesterId={requesterUserId}
           requestOnBehalfEnabled={requestOnBehalfEnabled}
           userName={userName}
           selectedUser={selectedUser}

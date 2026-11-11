@@ -183,6 +183,29 @@ describe("applyPrefillToFields", () => {
       ).toBeNull();
     });
 
+    it("prefills a zen:user lookup with a decimal user id and rejects a ULID", () => {
+      const fields = [
+        createField({
+          id: 9,
+          type: "lookup",
+          relationship_target_type: "zen:user",
+          value: null,
+        }),
+      ];
+      expect(
+        applyPrefillToFields(fields, prefillMap({ "9": "12345" }))[0]?.value
+      ).toBe("12345");
+      expect(
+        applyPrefillToFields(
+          fields,
+          prefillMap({ "9": "01KY4M9HVGWG9QMK31S4TZMNNN" })
+        )[0]?.value
+      ).toBeNull();
+      expect(
+        applyPrefillToFields(fields, prefillMap({ "9": "12/../34" }))[0]?.value
+      ).toBeNull();
+    });
+
     it("does not prefill asset lookups (out of scope for v1)", () => {
       const fields = [
         createField({

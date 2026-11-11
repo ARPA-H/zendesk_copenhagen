@@ -1,4 +1,6 @@
 import type { Settings } from "../shared";
+import { createTranslationLoader } from "../shared/i18n/createTranslationLoader";
+import { sharedTranslations } from "../shared";
 import { createTheme } from "../shared/garden-theme/createTheme";
 import { ThemeProviders } from "../shared/garden-theme/ThemeProviders";
 import { createRoot } from "react-dom/client";
@@ -9,17 +11,25 @@ import { ErrorBoundary } from "../shared/error-boundary/ErrorBoundary";
 
 export async function renderRequestList(
   themeSettings: Settings,
-  props: RequestsListProps,
+  props: RequestsListProps & { baseLocale: string },
   container: Element
 ): Promise<void> {
-  const { locale, customStatusesEnabled, viewRequestsAcrossBrandsEnabled } =
-    props;
+  const {
+    locale,
+    baseLocale,
+    customStatusesEnabled,
+    viewRequestsAcrossBrandsEnabled,
+    filterTicketFieldsByBrand,
+  } = props;
 
-  initI18next(locale);
+  initI18next(baseLocale);
 
-  await loadTranslations(locale, [
-    () => import(`./translations/locales/${locale}.json`),
-    () => import(`../shared/translations/locales/${locale}.json`),
+  await loadTranslations(locale, baseLocale, [
+    createTranslationLoader(
+      "request-list",
+      (locale) => import(`./translations/locales/${locale}.json`)
+    ),
+    sharedTranslations,
   ]);
 
   const helpCenterPath = `/hc/${locale}`;
@@ -28,9 +38,10 @@ export async function renderRequestList(
     <ThemeProviders theme={createTheme(themeSettings)}>
       <ErrorBoundary helpCenterPath={helpCenterPath}>
         <RequestsList
-          locale={locale}
+          locale={baseLocale}
           customStatusesEnabled={customStatusesEnabled}
           viewRequestsAcrossBrandsEnabled={viewRequestsAcrossBrandsEnabled}
+          filterTicketFieldsByBrand={filterTicketFieldsByBrand}
         />
       </ErrorBoundary>
     </ThemeProviders>

@@ -45,11 +45,13 @@ jest.mock("./ItemRequestForm", () => ({
   ItemRequestForm: ({
     onSubmit,
     isPreviewMode,
+    requesterId,
     isSubmitting,
     setSelectedUser,
   }: {
     onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
     isPreviewMode?: boolean;
+    requesterId: number;
     isSubmitting?: boolean;
     setSelectedUser: (user: {
       id: string;
@@ -60,6 +62,7 @@ jest.mock("./ItemRequestForm", () => ({
     <form
       data-testid="item-request-form"
       data-preview-mode={isPreviewMode ? "true" : "false"}
+      data-user-id={requesterId}
       onSubmit={onSubmit}
     >
       <button
@@ -659,10 +662,15 @@ describe("ServiceCatalogItem", () => {
           expect.objectContaining({
             type: "error",
             title: "Service couldn't be submitted",
-            message: "Give it a moment and try it again",
           })
         );
       });
+
+      renderLastNotifyMessage();
+      expect(
+        screen.getByText("Check the form for errors and try again.")
+      ).toBeInTheDocument();
+      expect(screen.queryByText("Field is required")).not.toBeInTheDocument();
     });
 
     it("lights up the matching field with the backend error when field_id is present", async () => {
@@ -802,7 +810,7 @@ describe("ServiceCatalogItem", () => {
       return renderWithTheme(<>{lastCall?.message}</>);
     };
 
-    it("should surface the underlying description when a 422 error has no field_id", async () => {
+    it("should show the generic form errors message instead of the raw description when a 422 error has no field_id", async () => {
       const errorResponse = {
         ok: false,
         status: 422,
@@ -841,11 +849,14 @@ describe("ServiceCatalogItem", () => {
 
       renderLastNotifyMessage();
       expect(
-        screen.getByText("What are you looking for? cannot be blank")
+        screen.getByText("Check the form for errors and try again.")
       ).toBeInTheDocument();
+      expect(
+        screen.queryByText("What are you looking for? cannot be blank")
+      ).not.toBeInTheDocument();
     });
 
-    it("should not show the refresh message when a 422 error has no field_id", async () => {
+    it("should show the generic form errors message when a 422 error has no field_id", async () => {
       const errorResponse = {
         ok: false,
         status: 422,
@@ -878,6 +889,9 @@ describe("ServiceCatalogItem", () => {
       });
 
       renderLastNotifyMessage();
+      expect(
+        screen.getByText("Check the form for errors and try again.")
+      ).toBeInTheDocument();
       expect(
         screen.queryByText(/Refresh the page and try again/i)
       ).not.toBeInTheDocument();
@@ -971,8 +985,10 @@ describe("ServiceCatalogItem", () => {
 
       // Should not throw and should handle gracefully (no notification when no errors in base array)
       await waitFor(() => {
-        expect(mockNotify).not.toHaveBeenCalled();
+        expect(mockSubmitServiceItemRequest).toHaveBeenCalled();
       });
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(mockNotify).not.toHaveBeenCalled();
     });
 
     it("should merge field errors onto the full field list via a functional update, preserving fields hidden by end-user conditions", async () => {
@@ -1180,6 +1196,39 @@ describe("ServiceCatalogItem", () => {
         submitterLabel: expect.stringContaining("Submitter: {{name}}"),
         requesterLabel: expect.stringContaining("Requester: {{name}}"),
       });
+    });
+  });
+
+  describe("request on behalf requester pass-down", () => {
+    const renderOnBehalfItem = () => {
+      mockUseServiceCatalogItem.mockReturnValue({
+        serviceCatalogItem: {
+          ...mockServiceCatalogItem,
+          is_request_on_behalf: true,
+        },
+        errorFetchingItem: null,
+      });
+      renderWithTheme(<ServiceCatalogItem {...defaultProps} />);
+    };
+
+    it("keeps the signed-in user id when no beneficiary is selected", () => {
+      renderOnBehalfItem();
+
+      expect(screen.getByTestId("item-request-form")).toHaveAttribute(
+        "data-user-id",
+        "123"
+      );
+    });
+
+    it("hands the selected beneficiary's id to ItemRequestForm as userId", () => {
+      renderOnBehalfItem();
+
+      fireEvent.click(screen.getByTestId("select-beneficiary"));
+
+      expect(screen.getByTestId("item-request-form")).toHaveAttribute(
+        "data-user-id",
+        "789"
+      );
     });
   });
 });

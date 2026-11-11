@@ -1,7 +1,7 @@
 {
   "name": "Copenhagen 12-30.2",
   "author": "Zendesk",
-  "version": "4.51.5",
+  "version": "4.54.0",
   "api_version": 4,
   "default_locale": "en-us",
   "settings": [
@@ -366,6 +366,18 @@
           "type": "checkbox",
           "description": "show_suggested_articles_in_new_request_form_description",
           "label": "show_suggested_articles_label",
+          "value": true
+        }
+      ]
+    },
+    {
+      "label": "request_page_group_label",
+      "variables": [
+        {
+          "identifier": "filter_ticket_fields_by_brand",
+          "type": "checkbox",
+          "description": "filter_ticket_fields_by_brand_description",
+          "label": "filter_ticket_fields_by_brand_label",
           "value": true
         }
       ]

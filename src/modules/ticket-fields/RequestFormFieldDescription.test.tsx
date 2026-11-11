@@ -7,7 +7,7 @@ import type { TicketFieldObject } from "./data-types/TicketFieldObject";
  * field component passes `description` to a `dangerouslySetInnerHTML` hint,
  * so each integration is rendered with a script-bearing description and the
  * output asserted sanitized. The sanitizer itself is unit-tested in
- * sanitizeDescription.spec.ts; this guards the ten sink integrations against
+ * sanitizeDescription.spec.ts; this guards the eleven sink integrations against
  * a future regression back to raw HTML rendering.
  */
 const MALICIOUS_DESCRIPTION =
@@ -55,6 +55,7 @@ const FIELD_CASES: Array<[string, Partial<TicketFieldObject>]> = [
     "lookup",
     { type: "lookup", relationship_target_type: "zen:custom_object:testco" },
   ],
+  ["user_lookup", { type: "lookup", relationship_target_type: "zen:user" }],
   [
     "multi_lookup",
     {

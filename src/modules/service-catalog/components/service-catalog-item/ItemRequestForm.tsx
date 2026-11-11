@@ -9,7 +9,7 @@ import { CollapsibleDescription } from "./CollapsibleDescription";
 import type { TicketFieldObject } from "../../../ticket-fields/data-types/TicketFieldObject";
 import type { CustomObjectRecord } from "../../../ticket-fields/data-types/CustomObjectRecord";
 import type { ITAMAssetOptionObject } from "../../data-types/ITAMAssetOptionObject";
-import type { UserOption } from "../../data-types/UserOption";
+import type { UserOption } from "../../../ticket-fields/data-types/UserOption";
 import { Span } from "@zendeskgarden/react-typography";
 import { Option } from "@zendeskgarden/react-dropdowns";
 import { Attachments } from "../../../ticket-fields/fields/attachments/Attachments";
@@ -136,7 +136,7 @@ interface ItemRequestFormProps {
   baseLocale: string;
   hasAtMentions: boolean;
   userRole: string;
-  userId: number;
+  requesterId: number;
   requestOnBehalfEnabled: boolean | undefined;
   userName: string;
   selectedUser: UserOption | null;
@@ -171,7 +171,7 @@ export function ItemRequestForm({
   baseLocale,
   hasAtMentions,
   userRole,
-  userId,
+  requesterId,
   requestOnBehalfEnabled,
   userName,
   selectedUser,
@@ -358,7 +358,7 @@ export function ItemRequestForm({
           baseLocale={baseLocale}
           hasAtMentions={hasAtMentions}
           userRole={userRole}
-          userId={userId}
+          userId={requesterId}
           brandId={brandId}
           defaultOrganizationId={defaultOrganizationId}
           handleChange={handleChange}

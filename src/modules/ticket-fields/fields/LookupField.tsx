@@ -1,6 +1,8 @@
 import type { IComboboxProps } from "@zendeskgarden/react-dropdowns";
 import { Field, Combobox, Option } from "@zendeskgarden/react-dropdowns";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useClearOnRequesterChange } from "../hooks/useClearOnRequesterChange";
+import { useStaleRequestGuard } from "../hooks/useStaleRequestGuard";
 import type {
   TicketFieldObject,
   TicketFieldOptionObject,
@@ -44,6 +46,14 @@ export function getCustomObjectKey(targetType: string) {
   return targetType.replace("zen:custom_object:", "");
 }
 
+export function isRequesterDependentField(
+  filter?: LookupRelationshipFieldFilter
+) {
+  if (!filter) return false;
+
+  return [...filter.all, ...filter.any].some((f) => f.value === "requester_id");
+}
+
 const EMPTY_OPTION = {
   value: "",
   name: "-",
@@ -51,7 +61,7 @@ const EMPTY_OPTION = {
 
 export interface LookupFieldProps {
   field: TicketFieldObject;
-  userId: number;
+  userId: number | null;
   organizationId: string | null;
   brandId?: number;
   onChange: (value: string) => void;
@@ -87,12 +97,19 @@ export function LookupField({
   const [options, setOptions] = useState<TicketFieldOptionObject[]>([]);
   const [selectedOption, setSelectedOption] =
     useState<TicketFieldOptionObject | null>(null);
+  const selectedOptionRef = useRef(selectedOption);
+  selectedOptionRef.current = selectedOption;
   const [inputValue, setInputValue] = useState<string>(value as string);
   const [isLoadingOptions, setIsLoadingOptions] = useState<boolean>(false);
+  const [isFocused, setIsFocused] = useState<boolean>(false);
   const { t } = useTranslation();
 
   const customObjectKey = getCustomObjectKey(
     relationship_target_type as string
+  );
+
+  const checkStaleRequest = useStaleRequestGuard(
+    isRequesterDependentField(field.relationship_filter) ? userId : null
   );
 
   const loadingOption = {
@@ -113,33 +130,37 @@ export function LookupField({
 
   const fetchSelectedOption = useCallback(
     async (selectionValue: string) => {
+      const { isRequesterStale } = checkStaleRequest();
       try {
         const res = await fetch(
           `/api/v2/custom_objects/${customObjectKey}/records/${selectionValue}`
         );
-        if (res.ok) {
-          const { custom_object_record } = await res.json();
-          const newSelectedOption = {
-            name: custom_object_record.name,
-            value: custom_object_record.id,
-          };
-          setSelectedOption(newSelectedOption);
-          setInputValue(custom_object_record.name);
-        }
+        if (!res.ok) return;
+
+        const { custom_object_record } = await res.json();
+        if (isRequesterStale()) return;
+
+        const newSelectedOption = {
+          name: custom_object_record.name,
+          value: custom_object_record.id,
+        };
+        setSelectedOption(newSelectedOption);
+        setInputValue(custom_object_record.name);
       } catch (error) {
         console.error(error);
       }
     },
-    [customObjectKey]
+    [customObjectKey, checkStaleRequest, userId]
   );
 
   const fetchOptions = useCallback(
     async (inputValue: string) => {
+      const { isStale, isCurrent } = checkStaleRequest();
       const searchParams = new URLSearchParams();
       searchParams.set("name", inputValue.toLocaleLowerCase());
       searchParams.set("source", "zen:ticket");
       searchParams.set("field_id", fieldId.toString());
-      searchParams.set("requester_id", userId.toString());
+      if (userId !== null) searchParams.set("requester_id", userId.toString());
 
       const filterPairs = buildAdvancedDynamicFilterParams(
         field.relationship_filter,
@@ -173,6 +194,8 @@ export function LookupField({
         );
 
         const data = await response.json();
+        if (isStale()) return;
+
         if (response.ok) {
           const fetchedRecords = data.custom_object_records;
 
@@ -180,6 +203,7 @@ export function LookupField({
 
           if (buildLookupFieldOptions) {
             options = await buildLookupFieldOptions(fetchedRecords, field);
+            if (isStale()) return;
           } else {
             options = fetchedRecords.map(
               ({ name, id }: { name: string; id: string }) => ({
@@ -188,12 +212,13 @@ export function LookupField({
               })
             );
           }
-          if (selectedOption) {
+          const currentSelectedOption = selectedOptionRef.current;
+          if (currentSelectedOption && currentSelectedOption !== EMPTY_OPTION) {
             options = options.filter(
               (option: TicketFieldOptionObject) =>
-                option.value !== selectedOption.value
+                option.value !== currentSelectedOption.value
             );
-            options = [selectedOption, ...options];
+            options = [currentSelectedOption, ...options];
           }
 
           setOptions(options);
@@ -203,16 +228,18 @@ export function LookupField({
       } catch (error) {
         console.error(error);
       } finally {
-        setIsLoadingOptions(false);
+        if (isCurrent()) {
+          setIsLoadingOptions(false);
+        }
       }
     },
     [
       brandId,
+      checkStaleRequest,
       customObjectKey,
       field,
       fieldId,
       organizationId,
-      selectedOption,
       userId,
       visibleFields,
       buildLookupFieldOptions,
@@ -263,9 +290,31 @@ export function LookupField({
     }
   }, []); //we don't set dependency array as we want this hook to be called only once
 
+  useClearOnRequesterChange(
+    userId,
+    isRequesterDependentField(field.relationship_filter),
+    () => {
+      setOptions([]);
+      setInputValue(EMPTY_OPTION.name);
+      if (
+        (selectedOption && selectedOption !== EMPTY_OPTION) ||
+        (typeof value === "string" && value.length > 0)
+      ) {
+        setSelectedOption(EMPTY_OPTION);
+        onChange(EMPTY_OPTION.value);
+      }
+      if (isFocused) fetchOptions("*");
+    }
+  );
+
   const onFocus = () => {
+    setIsFocused(true);
     setInputValue("");
     fetchOptions("*");
+  };
+
+  const onBlur = () => {
+    setIsFocused(false);
   };
 
   return (
@@ -294,6 +343,7 @@ export function LookupField({
           { label }
         )}
         onFocus={onFocus}
+        onBlur={onBlur}
         onChange={handleChange}
         renderValue={() =>
           selectedOption ? selectedOption?.name : EMPTY_OPTION.name

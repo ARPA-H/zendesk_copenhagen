@@ -1,9 +1,12 @@
 import { createRoot } from "react-dom/client";
+import { createTranslationLoader } from "../shared/i18n/createTranslationLoader";
+import { ticketFieldsTranslations } from "../ticket-fields";
 
 import { ServiceCatalogItem } from "./components/service-catalog-item/ServiceCatalogItem";
 
 import type { ServiceCatalogItemProps } from "./components/service-catalog-item/ServiceCatalogItem";
 import {
+  sharedTranslations,
   createTheme,
   ThemeProviders,
   initI18next,
@@ -12,20 +15,22 @@ import {
 } from "../shared";
 import type { Settings } from "../shared";
 import { ErrorBoundary } from "../shared/error-boundary/ErrorBoundary";
-import { normalizeHelpCenterPath } from "./utils/normalizeHelpCenterPath";
 
 export async function renderServiceCatalogItem(
   container: HTMLElement,
   settings: Settings,
-  props: ServiceCatalogItemProps
+  props: ServiceCatalogItemProps & { locale: string }
 ) {
-  const { baseLocale, helpCenterPath } = props;
+  const { baseLocale, locale, helpCenterPath } = props;
   const safeHelpCenterPath = normalizeHelpCenterPath(helpCenterPath);
   initI18next(baseLocale);
-  await loadTranslations(baseLocale, [
-    () => import(`./translations/locales/${baseLocale}.json`),
-    () => import(`../ticket-fields/translations/locales/${baseLocale}.json`),
-    () => import(`../shared/translations/locales/${baseLocale}.json`),
+  await loadTranslations(locale, baseLocale, [
+    createTranslationLoader(
+      "service-catalog",
+      (locale) => import(`./translations/locales/${locale}.json`)
+    ),
+    ticketFieldsTranslations,
+    sharedTranslations,
   ]);
   createRoot(container).render(
     <ThemeProviders theme={createTheme(settings)}>

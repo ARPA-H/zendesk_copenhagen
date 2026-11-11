@@ -16,7 +16,7 @@ const baseLocale = "en-us";
 describe("renderFlashNotifications", () => {
   it("creates a container div and mounts provider", async () => {
     await act(async () => {
-      await renderFlashNotifications(settings, baseLocale);
+      await renderFlashNotifications(settings, baseLocale, "en-us");
     });
 
     const container: HTMLDivElement | null = document.body.querySelector("div");
@@ -25,7 +25,7 @@ describe("renderFlashNotifications", () => {
 
   it("renders toast when emitNotify is called after initialization", async () => {
     await act(async () => {
-      await renderFlashNotifications(settings, baseLocale);
+      await renderFlashNotifications(settings, baseLocale, "en-us");
     });
 
     const testId = "toast-test";
@@ -46,7 +46,7 @@ describe("renderFlashNotifications", () => {
     i18next.addResourceBundle(baseLocale, "translation", { page: "kept" });
 
     await act(async () => {
-      await renderFlashNotifications(settings, baseLocale);
+      await renderFlashNotifications(settings, baseLocale, "en-us");
     });
 
     expect(i18next.getResource(baseLocale, "translation", "page")).toBe("kept");

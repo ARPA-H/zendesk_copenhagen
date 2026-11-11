@@ -11,7 +11,10 @@ import { useTranslation } from "react-i18next";
 import {
   buildAdvancedDynamicFilterParams,
   getCustomObjectKey,
+  isRequesterDependentField,
 } from "./LookupField";
+import { useClearOnRequesterChange } from "../hooks/useClearOnRequesterChange";
+import { useStaleRequestGuard } from "../hooks/useStaleRequestGuard";
 import type { CustomObjectRecord } from "../data-types/CustomObjectRecord";
 import { sanitizeDescription } from "../sanitizeDescription";
 
@@ -20,7 +23,7 @@ const COLLAPSED_MAX_TAGS = 4;
 
 interface MultiLookupFieldProps {
   field: TicketFieldObject;
-  userId: number;
+  userId: number | null;
   organizationId: string | null;
   brandId?: number;
   onChange: (value: string[]) => void;
@@ -74,6 +77,10 @@ export function MultiLookupField({
   const selectedValues = selectedOptions.map((o) => o.value);
   selectedValuesRef.current = selectedValues;
 
+  const checkStaleRequest = useStaleRequestGuard(
+    isRequesterDependentField(field.relationship_filter) ? userId : null
+  );
+
   useEffect(() => {
     if (wrapperRef.current && required) {
       const combobox = wrapperRef.current.querySelector("[role=combobox]");
@@ -101,6 +108,7 @@ export function MultiLookupField({
 
   const fetchSelectedOptions = useCallback(
     async (recordIds: string[]) => {
+      const { isRequesterStale } = checkStaleRequest();
       const fallback = recordIds.map((id) => ({ value: id, name: id }));
       try {
         const params = new URLSearchParams();
@@ -108,8 +116,12 @@ export function MultiLookupField({
         const res = await fetch(
           `/api/v2/custom_objects/${customObjectKey}/records?${params.toString()}`
         );
+        if (isRequesterStale()) return;
+
         if (res.ok) {
           const { custom_object_records } = await res.json();
+          if (isRequesterStale()) return;
+
           const results: TicketFieldOptionObject[] = custom_object_records.map(
             (record: CustomObjectRecord) => ({
               name: record.name,
@@ -122,19 +134,20 @@ export function MultiLookupField({
           setSelectedOptions(fallback);
         }
       } catch {
-        setSelectedOptions(fallback);
+        if (!isRequesterStale()) setSelectedOptions(fallback);
       }
     },
-    [customObjectKey, onChange]
+    [checkStaleRequest, customObjectKey, onChange, userId]
   );
 
   const fetchOptions = useCallback(
     async (query: string) => {
+      const { isStale, isCurrent } = checkStaleRequest();
       const searchParams = new URLSearchParams();
       searchParams.set("name", query.toLocaleLowerCase());
       searchParams.set("source", "zen:ticket");
       searchParams.set("field_id", fieldId.toString());
-      searchParams.set("requester_id", userId.toString());
+      if (userId !== null) searchParams.set("requester_id", userId.toString());
 
       const filterPairs = buildAdvancedDynamicFilterParams(
         field.relationship_filter,
@@ -168,6 +181,8 @@ export function MultiLookupField({
         );
 
         const data = await response.json();
+        if (isStale()) return;
+
         if (response.ok) {
           const fetchedRecords = data.custom_object_records;
 
@@ -175,6 +190,7 @@ export function MultiLookupField({
 
           if (buildLookupFieldOptions) {
             newOptions = await buildLookupFieldOptions(fetchedRecords, field);
+            if (isStale()) return;
           } else {
             newOptions = fetchedRecords.map(
               ({ name, id }: { name: string; id: string }) => ({
@@ -189,13 +205,16 @@ export function MultiLookupField({
           setOptions([]);
         }
       } catch {
-        setOptions([]);
+        if (!isStale()) setOptions([]);
       } finally {
-        setIsLoadingOptions(false);
+        if (isCurrent()) {
+          setIsLoadingOptions(false);
+        }
       }
     },
     [
       brandId,
+      checkStaleRequest,
       customObjectKey,
       field,
       fieldId,
@@ -257,6 +276,23 @@ export function MultiLookupField({
       fetchSelectedOptions(value as string[]);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useClearOnRequesterChange(
+    userId,
+    isRequesterDependentField(field.relationship_filter),
+    () => {
+      setOptions([]);
+      setInputValue("");
+      setSelectedOptions([]);
+      if (
+        selectedOptions.length > 0 ||
+        (Array.isArray(value) && value.length > 0)
+      ) {
+        onChange([]);
+      }
+      if (isFocused) fetchOptions("*");
+    }
+  );
 
   const onFocus = () => {
     setIsFocused(true);

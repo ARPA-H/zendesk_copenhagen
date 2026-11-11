@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import DOMPurify from "dompurify";
 import type { TicketFieldObject } from "../ticket-fields/data-types/TicketFieldObject";
 import { DEFAULT_MAX_SELECTIONS } from "../ticket-fields/fields/MultiLookupField";
+import { isUserLookupField } from "../ticket-fields/fields/UserLookupField";
 
 const MAX_URL_LENGTH = 2048;
 const TICKET_FIELD_PREFIX = "tf_";
@@ -9,6 +10,8 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 // A 26-char ULID encodes 128 bits; the first char only carries the top 2 bits
 // of that range, so it must be 0-7 (8-Z would overflow the valid ULID space).
 const ULID_REGEX = /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/i;
+// zen:user lookups hold a decimal Zendesk user id, not a custom object ULID
+const USER_ID_REGEX = /^\d+$/;
 
 const ALLOWED_BOOLEAN_VALUES = ["true", "false"];
 const ALLOWED_HTML_TAGS = [
@@ -132,7 +135,11 @@ function getPrefilledTicketFields(fields: Fields): Fields {
         }
         break;
       case "lookup":
-        if (isValidUlid(sanitizedValue)) {
+        if (
+          isUserLookupField(field)
+            ? USER_ID_REGEX.test(sanitizedValue)
+            : isValidUlid(sanitizedValue)
+        ) {
           field.value = sanitizedValue;
         }
         break;

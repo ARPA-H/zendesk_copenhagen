@@ -9,8 +9,8 @@ import type { IComboboxProps } from "@zendeskgarden/react-dropdowns";
 import { Combobox, Field, Option } from "@zendeskgarden/react-dropdowns";
 import { Span } from "@zendeskgarden/react-typography";
 import UserCircleStrokeIcon from "@zendeskgarden/svg-icons/src/16/user-circle-stroke.svg";
-import type { UserOption } from "../../data-types/UserOption";
-import { useUserSearch } from "../../hooks/useUserSearch";
+import type { UserOption } from "../../../ticket-fields/data-types/UserOption";
+import { useUserSearch } from "../../../ticket-fields/hooks/useUserSearch";
 
 interface ChangeUserFormProps {
   onCancel: () => void;
@@ -73,6 +73,7 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
   const [userError, setUserError] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [draftUser, setDraftUser] = useState<UserOption | null>(selectedUser);
   const [inputValue, setInputValue] = useState<string>(
     selectedUser?.name ?? ""
   );
@@ -80,7 +81,7 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
   const isTyping = useRef<boolean>(false);
 
   const { options, isLoadingOptions, searchUsers, clearOptions } =
-    useUserSearch(selectedUser, () => {
+    useUserSearch(draftUser, () => {
       isTyping.current = false;
     });
 
@@ -131,7 +132,7 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
           selectedOption.id !== "loading" &&
           selectedOption.id !== "no-results"
         ) {
-          setSelectedUser(selectedOption);
+          setDraftUser(selectedOption);
           setInputValue(selectedOption.name);
           setUserError(false);
           isTyping.current = false;
@@ -147,22 +148,23 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
           searchUsers(inputValue.trim());
         } else {
           clearOptions();
-          setSelectedUser(null);
+          setDraftUser(null);
           isTyping.current = false;
         }
       }
     },
-    [options, searchUsers, clearOptions, setSelectedUser]
+    [options, searchUsers, clearOptions]
   );
 
   const handleCreate = async () => {
-    if (!selectedUser) {
+    if (!draftUser) {
       setUserError(true);
       return;
     }
     setIsCreating(true);
     try {
-      await onCreate(selectedUser.name, selectedUser.id);
+      await onCreate(draftUser.name, draftUser.id);
+      setSelectedUser(draftUser);
     } catch (error) {
       console.error("Error changing user:", error);
     } finally {
@@ -172,17 +174,17 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
 
   const setSelectedUserFromInput = useCallback(() => {
     if (!inputValue.trim()) {
-      if (selectedUser) {
-        setSelectedUser(null);
+      if (draftUser) {
+        setDraftUser(null);
         setUserError(false);
       }
       return;
     }
 
     if (
-      selectedUser &&
-      (selectedUser.name.toLowerCase() === inputValue.toLowerCase() ||
-        selectedUser.email.toLowerCase() === inputValue.toLowerCase())
+      draftUser &&
+      (draftUser.name.toLowerCase() === inputValue.toLowerCase() ||
+        draftUser.email.toLowerCase() === inputValue.toLowerCase())
     ) {
       return;
     }
@@ -192,11 +194,11 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
     );
 
     if (match) {
-      setSelectedUser(match);
+      setDraftUser(match);
       setInputValue(match.name);
       setUserError(false);
     }
-  }, [inputValue, options, selectedUser]);
+  }, [inputValue, options, draftUser]);
 
   const handleBlur = useCallback(() => {
     if (!isTyping.current) {
@@ -242,7 +244,7 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
               <Combobox
                 ref={inputRef}
                 inputValue={inputValue}
-                selectionValue={selectedUser?.id}
+                selectionValue={draftUser?.id}
                 onChange={handleChange}
                 validation={userError ? "error" : undefined}
                 data-test-id="user-autocomplete-input"
@@ -251,7 +253,7 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
                   "service-catalog.change-user-modal.requester-search-placeholder",
                   "Search requesters..."
                 )}
-                renderValue={() => selectedUser?.name || ""}
+                renderValue={() => draftUser?.name || ""}
                 inputProps={{
                   onBlur: handleBlur,
                   onKeyDown: handleKeyDown,
@@ -316,7 +318,7 @@ export const ChangeUserForm: React.FC<ChangeUserFormProps> = ({
           <Button
             isPrimary
             onClick={handleCreate}
-            disabled={isCreating || !selectedUser}
+            disabled={isCreating || !draftUser}
             data-test-id="change-user-button"
           >
             {t("service-catalog.change-user-modal.change-user", "Save")}

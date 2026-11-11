@@ -57,7 +57,7 @@
 
 <header class="header">
   <div class="logo">
-    {{#link 'help_center'}}
+    <a href="{{page_path 'help_center'}}">
       {{!-- The NEXUS navigation bar is indigo and specifies the reverse (white
            wordmark) logo, so the header always uses the committed lockup. There
            is no Logo setting: a full-color upload would disappear on indigo. --}}
@@ -65,7 +65,7 @@
       {{!-- No site title beside the logo: help.arpa-h.gov serves several
            audiences (IT and HR among them), so a "Service Desk" label would
            misdescribe it. There is no Show Help Center name setting either. --}}
-    {{/link}}
+    </a>
   </div>
 
   <div class="nav-wrapper-desktop">
@@ -122,7 +122,7 @@
         <path fill="none" stroke="currentColor" stroke-linecap="round" d="M1.5 3.5h13m-13 4h13m-13 4h13"/>
       </svg>
     </button>
-    <nav class="menu-list-mobile" id="user-nav-mobile" aria-expanded="false">
+    <nav class="menu-list-mobile" id="user-nav-mobile" aria-label="{{t 'user_navigation'}}" aria-expanded="false">
       <ul class="menu-list-mobile-items">
         {{#if signed_in}}
           <li class="user-avatar-item item">
